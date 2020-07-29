@@ -1,8 +1,8 @@
-package graph.commons.util.debug
+package graph.commons.util.viz
 
 import graph.commons.util.{Type, TypeTag}
 
-case class ShowType(tpe: Type) {
+case class VizType(tpe: Type) {
 
   lazy val baseTypes: List[Type] = {
 
@@ -23,9 +23,9 @@ case class ShowType(tpe: Type) {
   }
 }
 
-object ShowType {
+object VizType {
 
-  def apply[T](implicit ttag: TypeTag[T]): ShowType = ShowType(ttag.tpe)
+  def apply[T](implicit ttag: TypeTag[T]): VizType = VizType(ttag.tpe)
 
-  def infer[T: TypeTag](v: T): ShowType = apply[T]
+  def infer[T: TypeTag](v: T): VizType = apply[T]
 }

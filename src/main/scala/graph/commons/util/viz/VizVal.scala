@@ -1,8 +1,8 @@
-package graph.commons.util.debug
+package graph.commons.util.viz
 
 import graph.commons.util.TypeTag
 
-case class ShowVal[T](
+case class VizVal[T](
     value: T,
     inferredTTag: TypeTag[_],
     runtimeClass: Class[_]
@@ -15,8 +15,8 @@ case class ShowVal[T](
          """.trim.stripMargin
   }
 
-  lazy val inferType: ShowType = {
+  lazy val inferType: VizType = {
 
-    ShowType.apply(inferredTTag)
+    VizType.apply(inferredTTag)
   }
 }

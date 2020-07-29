@@ -1,10 +1,18 @@
 package graph.commons.util
 
+import graph.commons.util.viz.VizType
+
 import scala.language.implicitConversions
 
-case class WideTyped[_T](value: _T) {
+/**
+  * @param value use compiler's type inference feature to discover the non-singleton type of the value
+  * @tparam T the wide type
+  */
+case class WideTyped[T](value: T) {
 
-  type WideType = _T
+  type Wide = T
+
+  def viz(implicit ttag: TypeTag[T]): VizType = VizType[T]
 }
 
 object WideTyped {
