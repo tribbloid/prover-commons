@@ -1,4 +1,4 @@
-//val vs: Versions = versions()
+val vs: Versions = versions()
 
 dependencies {
 
@@ -7,4 +7,6 @@ dependencies {
 //    /TODO: remove, most arity inspection macros doesn't work on collection/tuple, using shapeless Length as cheap alternative
 
 //    api("com.chuusai:shapeless_${vs.scalaBinaryV}:2.3.3")
+
+    api("com.lihaoyi:pprint_${vs.scalaBinaryV}:0.5.6")
 }
