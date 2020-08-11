@@ -89,8 +89,4 @@ object Debug {
   def liftCamelCase(str: String): String = str.head.toUpper.toString + str.substring(1)
   def toCamelCase(str: String): String = str.head.toLower.toString + str.substring(1)
 
-  def indent(text: String, str: String = "\t"): String = {
-    text.split('\n').filter(_.nonEmpty).map(str + _).mkString("\n")
-  }
-
 }
