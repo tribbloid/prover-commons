@@ -1,29 +1,55 @@
 package graph.commons.util.viz
 
-import graph.commons.util.{Type, TypeTag}
+import graph.commons.util.{indent, ScalaReflection}
 
-case class VizType(tpe: Type) {
+import ScalaReflection.universe._
+
+case class VizType(tt: Type) {
+
+  import VizType._
 
   lazy val baseTypes: List[Type] = {
 
-    val baseClzs = tpe.baseClasses
+    val baseClzs = tt.baseClasses
 
     val result = baseClzs.map { clz =>
-      tpe.baseType(clz)
+      tt.baseType(clz)
     }
     result
   }
 
   override def toString: String = {
 
+    val rows = baseTypes.map { tt =>
+      val paramTypes = tt.typeArgs
+
+      val paramStrs = paramTypes.map { tt =>
+        showFull(tt)
+      }
+
+      val paramViz = paramStrs.mkString("\n")
+
+      val rootViz =
+        s"""
+           |${showFull(tt)}
+           |${indent(paramViz)}
+           |""".stripMargin.trim
+
+      rootViz
+    }
+
     s"""
-       |$tpe
-       |${baseTypes.map(v => "\t- " + v).mkString("\n")}
+       |${showFull(tt)}
+       |${indent(rows.mkString("\n"))}
        """.trim.stripMargin
   }
 }
 
 object VizType {
+
+  def showFull(tpe: Type): String = {
+    s"$tpe \t:= ${showRaw(tpe.typeSymbol.typeSignature)}"
+  }
 
   def apply[T](implicit ttag: TypeTag[T]): VizType = VizType(ttag.tpe)
 
