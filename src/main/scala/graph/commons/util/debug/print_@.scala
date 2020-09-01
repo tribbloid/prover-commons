@@ -6,10 +6,11 @@ case class print_@[T](v: T) {
 
   val ref: CallStackRef = CallStackRef(exclude = Seq(this.getClass))
 
-  println(
+  val result: String =
     s"""
-         |${v.toString}
-         |\tat ${ref.showStr}
-         """.stripMargin
-  )
+       |${v.toString}
+       |\tat ${ref.showStr}
+    """.stripMargin
+
+  println(result)
 }
