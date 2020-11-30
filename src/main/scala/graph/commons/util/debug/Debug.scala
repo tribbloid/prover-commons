@@ -62,7 +62,7 @@ object Debug {
       exclude: Seq[Class[_]] = Nil
   ) {
 
-    val breakpointInfo: Array[StackTraceElement] = {
+    val stackInfo: Array[StackTraceElement] = {
       val bp = getBreakpointInfo()
       val filteredIndex = bp.toSeq.indexWhere(
         { element =>
@@ -76,13 +76,19 @@ object Debug {
     }
 
     def showStr: String = {
-      stackTracesShowStr(breakpointInfo)
+      stackTracesShowStr(stackInfo)
     }
 
+    lazy val stackTop: StackTraceElement = stackInfo.head
+
     def fnName: String = {
-      val bp = breakpointInfo.head
-      assert(!bp.isNativeMethod, "can only get fnName in def & lazy val blocks")
-      bp.getMethodName
+      assert(!stackTop.isNativeMethod, "can only get fnName in def & lazy val blocks")
+      stackTop.getMethodName
+    }
+
+    def className: String = {
+
+      stackTop.getClassName
     }
   }
 
