@@ -58,7 +58,7 @@ object BenchmarkStage {
         i += 1
       }
 
-      result
+      result.toSeq
     }
   }
   implicit def magnet(d: Duration): Lapse = Lapse(d)
