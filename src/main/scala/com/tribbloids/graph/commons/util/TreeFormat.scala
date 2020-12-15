@@ -10,7 +10,7 @@ trait TreeFormat {
 
   lazy val INDENT = "  "
 
-  def wText(tt: String) = new WText(tt.split('\n'))
+  def wText(tt: String) = new WText(tt.split('\n').toIndexedSeq)
 
   class WText(lines: Seq[String]) {
 
