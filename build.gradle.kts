@@ -1,4 +1,4 @@
-//val vs: Versions = versions()
+val vs: Versions = versions()
 
 dependencies {
 
@@ -8,5 +8,5 @@ dependencies {
 
 //    api("com.chuusai:shapeless_${vs.scalaBinaryV}:2.3.3")
 
-    testImplementation(project(":graph-commons:testlib"))
+    testFixturesImplementation("org.scalatest:scalatest_${vs.scalaBinaryV}:3.0.8")
 }
