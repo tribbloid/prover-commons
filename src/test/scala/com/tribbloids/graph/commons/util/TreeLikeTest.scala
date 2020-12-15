@@ -1,8 +1,8 @@
 package com.tribbloids.graph.commons.util
 
-import org.scalatest.FunSpec
+import com.tribbloids.graph.commons.testlib.BaseSpec
 
-class TreeLikeTest extends FunSpec {
+class TreeLikeTest extends BaseSpec {
 
   import TreeLike._
 
@@ -26,7 +26,7 @@ class TreeLikeTest extends FunSpec {
 
       assert(
         tree.toString ===
-        """
+          """
             |+ aaa
             |:-+ bbb
             || :-- ddd
