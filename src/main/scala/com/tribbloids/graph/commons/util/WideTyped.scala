@@ -6,13 +6,13 @@ import scala.language.implicitConversions
 
 /**
   * @param value use compiler's type inference feature to discover the non-singleton type of the value
-  * @tparam T the wide type
+  * @tparam TT the wide type
   */
-case class WideTyped[T](value: T) {
+case class WideTyped[TT](value: TT) {
 
-  type Wide = T
+  type Wide = TT
 
-  def viz(implicit ttag: TypeTag[T]): VizType = VizType[T]
+  def viz(implicit ttag: TypeTag[TT]): VizType = VizType[TT]
 }
 
 object WideTyped {
