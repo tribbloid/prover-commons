@@ -24,15 +24,14 @@ class TreeLikeTest extends BaseSpec {
         )
       )
 
-      assert(
-        tree.toString ===
-          """
-            |+ aaa
-            |:-+ bbb
-            || :-- ddd
-            |:-- ccc
+      tree.toString shouldBe
+        """
+            |-+ aaa
+            | `-+ bbb
+            | : `-- ddd
+            | `-- ccc
             |""".stripMargin.trim
-      )
+
     }
 
     it("... or not") {
@@ -52,19 +51,18 @@ class TreeLikeTest extends BaseSpec {
         )
       )
 
-      assert(
-        tree.toString ===
-          """
-            |+ aaa
-            || %%%%%
-            |:-+ bbb
-            || | %%%%%
-            || :-- ddd
-            ||     %%%%%
-            |:-- ccc
+      tree.toString shouldBe
+        """
+            |-+ aaa
+            | :%%%%%
+            | `-+ bbb
+            | : :%%%%%
+            | : `-- ddd
+            | :    %%%%%
+            | `-- ccc
             |    %%%%%
             |""".stripMargin.trim
-      )
+
     }
   }
 }

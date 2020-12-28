@@ -8,5 +8,5 @@ dependencies {
 
 //    api("com.chuusai:shapeless_${vs.scalaBinaryV}:2.3.3")
 
-    testFixturesApi("org.scalatest:scalatest_${vs.scalaBinaryV}:3.0.8")
+    testFixturesApi("org.scalatest:scalatest_${vs.scalaBinaryV}:${vs.scalatestV}")
 }
