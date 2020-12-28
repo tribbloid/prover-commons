@@ -3,6 +3,7 @@ package com.tribbloids.graph.commons.util.viz
 import com.tribbloids.graph.commons.util.ScalaReflection.universe._
 import com.tribbloids.graph.commons.util.TreeLike
 
+import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 
 case class VizType(tt: Type) {
@@ -19,10 +20,35 @@ case class VizType(tt: Type) {
 
 object VizType {
 
+  val ordinal = new AtomicInteger(0)
+
+  case class RefMap() {
+
+    case class Record(
+        @volatile var count: Int = 0
+    ) {
+
+      lazy val sid: String = {
+
+        val v = ordinal.getAndIncrement().toString
+        v
+      }
+    }
+
+    val records: mutable.HashMap[Type, Record] = mutable.HashMap.empty // Type -> Ordinal / Count
+
+    def +=(_type: Type): Unit = {
+
+      val count = records.getOrElseUpdate(_type, Record())
+
+      count.count += 1
+    }
+  }
+
   case class Tree(
       _type: Type,
       visited: mutable.Set[Type] = mutable.Set.empty,
-      expanded: mutable.ArrayBuffer[Type] = mutable.ArrayBuffer.empty
+      expanded: RefMap = RefMap()
   ) extends TreeLike {
 
     {
@@ -30,16 +56,20 @@ object VizType {
       expanded += _type
     }
 
-    def expandedCount: Int = expanded.count(v => v =:= _type)
+    def refRecord: expanded.Record = expanded.records(_type)
 
     override lazy val nodeStr: String = {
 
       children.foreach(v => v.nodeStr)
 
       val str = show1Line(_type)
-      val ref = if (expandedCount >= 2) {
-        val i = expanded.indexOf(_type)
-        s" [$i]"
+      val refFillLength = Math.max(5, 120 - str.length)
+      val refFill = Array.fill(refFillLength)(".").mkString
+
+      val rr = refRecord
+      val ref = if (rr.count >= 2) {
+        val i = rr.sid
+        s" $refFill [$i]"
       } else {
         ""
       }
@@ -61,7 +91,7 @@ object VizType {
       }
     }
 
-    protected lazy val baseTypes: List[Type] = if (expandedCount >= 2) {
+    protected lazy val baseTypes: List[Type] = if (refRecord.count >= 2) {
 
       Nil
     } else {
