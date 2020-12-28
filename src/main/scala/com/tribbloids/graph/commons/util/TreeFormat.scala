@@ -2,11 +2,11 @@ package com.tribbloids.graph.commons.util
 
 trait TreeFormat {
 
-  lazy val DENOTE = ":-"
-  lazy val WRAP = "| "
+  lazy val DENOTE = " :"
+  lazy val WRAP = " \u2223"
 
-  lazy val FORK = "+ "
-  lazy val LEAF = "- "
+  lazy val FORK = "-+ "
+  lazy val LEAF = "-- "
 
   lazy val INDENT = "  "
 
