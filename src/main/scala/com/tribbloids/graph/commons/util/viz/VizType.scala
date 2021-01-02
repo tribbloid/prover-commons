@@ -20,9 +20,9 @@ case class VizType(tt: Type) {
 
 object VizType {
 
-  val ordinal = new AtomicInteger(0)
-
   case class RefMap() {
+
+    val ordinal = new AtomicInteger(0)
 
     case class Record(
         @volatile var count: Int = 0
@@ -77,7 +77,7 @@ object VizType {
     }
 
     object ArgTree extends TreeLike {
-      override val nodeStr: String = "  (Parameters) :"
+      override val nodeStr: String = "  [ PARAMETER(S) ] :"
 
       override lazy val children: List[Tree] = _type.typeArgs.map { tt =>
         copy(tt, mutable.Set.empty)
@@ -102,7 +102,11 @@ object VizType {
         _type.baseType(clz)
       }
 
-      baseTypes
+      val notSelf = baseTypes.filterNot { tt =>
+        tt =:= _type
+      }
+
+      notSelf
     }
 
     override lazy val children: List[TreeLike] = {
