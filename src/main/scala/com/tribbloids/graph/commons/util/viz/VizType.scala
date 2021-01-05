@@ -1,12 +1,12 @@
 package com.tribbloids.graph.commons.util.viz
 
-import com.tribbloids.graph.commons.util.ScalaReflection.universe._
+import com.tribbloids.graph.commons.util.ScalaReflection.universe
 import com.tribbloids.graph.commons.util.TreeLike
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 
-case class VizType(tt: Type) {
+case class VizType(tt: universe.Type) {
 
   import VizType._
 
@@ -19,6 +19,8 @@ case class VizType(tt: Type) {
 }
 
 object VizType {
+
+  import universe._
 
   case class RefMap() {
 
@@ -62,8 +64,11 @@ object VizType {
 
       children.foreach(v => v.nodeStr)
 
-      val str = show1Line(_type)
-      val refFillLength = Math.max(5, 120 - str.length)
+      val nameStr = show1Line(_type)
+      val sameTypeStrs = sameTypes.map(show1Line)
+      val str = (Seq(nameStr) ++ sameTypeStrs).distinct.mkString(" =:= ")
+
+      val refFillLength = Math.max(5, 120 - nameStr.length)
       val refFill = Array.fill(refFillLength)(".").mkString
 
       val rr = refRecord
@@ -102,16 +107,16 @@ object VizType {
         _type.baseType(clz)
       }
 
-      val notSelf = baseTypes.filterNot { tt =>
-        tt =:= _type
-      }
-
-      notSelf
+      baseTypes
     }
+
+    lazy val sameTypes: List[universe.Type] = baseTypes.filter(tt => tt =:= _type)
+
+    lazy val superTypes: List[universe.Type] = baseTypes.filterNot(tt => tt =:= _type)
 
     override lazy val children: List[TreeLike] = {
       val result = argTreeOpt.toList ++
-        baseTypes.flatMap { tt =>
+        superTypes.flatMap { tt =>
           if (visited.contains(tt)) None
           else {
             val result = copy(tt)
