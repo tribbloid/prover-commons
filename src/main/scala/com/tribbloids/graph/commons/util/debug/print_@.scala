@@ -2,11 +2,15 @@ package com.tribbloids.graph.commons.util.debug
 
 import com.tribbloids.graph.commons.util.debug.Debug.CallStackRef
 
-case object print_@ {
+case class print_@(
+    exclusion: Seq[Class[_]]
+) {
 
-  def apply[T](v: T): Unit = {
+  def apply[T](
+      v: T
+  ): Unit = {
 
-    val ref: CallStackRef = CallStackRef(exclude = Seq(this.getClass))
+    val ref: CallStackRef = CallStackRef(exclude = Seq(this.getClass) ++ exclusion)
 
     val result: String =
       s"""
@@ -17,3 +21,5 @@ case object print_@ {
     println(result)
   }
 }
+
+object print_@ extends print_@(Nil)

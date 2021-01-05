@@ -66,9 +66,11 @@ object Debug {
       val bp = getBreakpointInfo()
       val filteredIndex = bp.toSeq.indexWhere(
         { element =>
-          !exclude.exists { v =>
-            element.getClassName.startsWith(v.getCanonicalName)
+          val isIncluded = !exclude.exists { v =>
+            v == Class.forName(element.getClassName)
           }
+
+          isIncluded
         },
         depth
       )

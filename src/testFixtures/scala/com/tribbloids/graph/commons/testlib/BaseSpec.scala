@@ -1,10 +1,17 @@
 package com.tribbloids.graph.commons.testlib
 
+import com.tribbloids.graph.commons.util.debug.print_@
 import org.scalatest.funspec.AnyFunSpec
 
 trait BaseSpec extends AnyFunSpec {
 
   @transient implicit class TestStringView(str: String) {
+
+    val print = new print_@(
+      Seq(
+        this.getClass
+      )
+    )
 
     //TODO: use reflection to figure out test name and annotate
     def shouldBe(
@@ -26,7 +33,7 @@ trait BaseSpec extends AnyFunSpec {
 
       Option(gd) match {
         case None =>
-          println(AssertionErrorObject(rows, null).actualInfo)
+          print(AssertionErrorObject(rows, null).actualInfo)
         case Some(_gd) =>
           var b = _gd
             .split("\n")
@@ -69,7 +76,7 @@ trait BaseSpec extends AnyFunSpec {
 
       Option(gd) match {
         case None =>
-          println(AssertionErrorObject(a, null).actualInfo)
+          print(AssertionErrorObject(a, null).actualInfo)
         case Some(_gd) =>
           var b = _gd
             .split("\n")
