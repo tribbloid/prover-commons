@@ -67,7 +67,7 @@ object Debug {
       val filteredIndex = bp.toSeq.indexWhere(
         { element =>
           val isIncluded = !exclude.exists { v =>
-            v == Class.forName(element.getClassName)
+            Class.forName(element.getClassName) isAssignableFrom v
           }
 
           isIncluded

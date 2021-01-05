@@ -6,9 +6,9 @@ case class print_@(
     exclusion: Seq[Class[_]]
 ) {
 
-  def apply[T](
+  def dryRun[T](
       v: T
-  ): Unit = {
+  ): String = {
 
     val ref: CallStackRef = CallStackRef(exclude = Seq(this.getClass) ++ exclusion)
 
@@ -17,6 +17,15 @@ case class print_@(
          |${v.toString}
          |\tat ${ref.showStr}
     """.stripMargin
+
+    result
+  }
+
+  def apply[T](
+      v: T
+  ): Unit = {
+
+    val result = dryRun(v)
 
     println(result)
   }
