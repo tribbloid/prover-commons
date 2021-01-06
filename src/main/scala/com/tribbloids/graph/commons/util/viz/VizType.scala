@@ -10,7 +10,7 @@ case class VizType(tt: universe.Type) {
 
   import VizType._
 
-  lazy val tree: Tree = Tree(tt)
+  lazy val tree: Tree = Tree(Node(tt))
 
   override def toString: String = {
 
@@ -47,11 +47,29 @@ object VizType {
     }
   }
 
-  case class Tree(
+  case class Node(
       _type: Type,
+      comment: Option[String] = None,
+  ) {
+
+    def show1Line: String = {
+      //    tpe.typeArgs
+      //
+      //    tpe.typeParams
+
+      //    s"$tpe \t:= ${showRaw(tpe.typeSymbol.typeSignature)}"
+
+      (Seq(_type.toString) ++ comment).mkString(" *** ")
+    }
+  }
+
+  case class Tree(
+      node: Node,
       visited: mutable.Set[Type] = mutable.Set.empty,
       expanded: RefMap = RefMap()
   ) extends TreeLike {
+
+    import node._
 
     {
       visited += _type
@@ -62,8 +80,8 @@ object VizType {
 
     lazy val typeStr: String = {
 
-      val nameStr = show1Line(_type)
-      val sameTypeStrs = sameTypes.map(show1Line)
+      val nameStr = node.show1Line
+      val sameTypeStrs = sameNodes.map(_.show1Line)
       val str = (Seq(nameStr) ++ sameTypeStrs).distinct.mkString(" =:= ")
 
       str
@@ -90,7 +108,7 @@ object VizType {
     object ArgTree extends TreeLike {
 
       override val children: List[Tree] = _type.typeArgs.map { tt =>
-        val result = copy(tt, mutable.Set.empty)
+        val result = copy(Node(tt), mutable.Set.empty)
 
         // DepthFirstTraverse
         result.Children.renderAll
@@ -115,23 +133,25 @@ object VizType {
       }
     }
 
-    protected lazy val baseTypes: List[Type] = if (refRecord.count >= 2) {
+    protected lazy val baseNodes: List[Node] = if (refRecord.count >= 2) {
 
       Nil
     } else {
 
       val baseClzs = _type.baseClasses
 
-      val baseTypes = baseClzs.map { clz =>
-        _type.baseType(clz)
+      val baseNodes = baseClzs.map { clz =>
+        val tt = _type.baseType(clz)
+        if (tt == NoType) Node(tt, Some(clz.toString))
+        else Node(tt)
       }
 
-      baseTypes
+      baseNodes
     }
 
-    lazy val sameTypes: List[universe.Type] = baseTypes.filter(tt => tt =:= _type)
+    lazy val sameNodes: List[Node] = baseNodes.filter(tt => tt._type =:= _type)
 
-    lazy val superTypes: List[universe.Type] = baseTypes.filterNot(tt => tt =:= _type)
+//    lazy val superNodes: List[Node] = baseNodes.filterNot(tt => tt._type =:= _type)
 
     object Children {
 
@@ -140,22 +160,22 @@ object VizType {
         ArgTree.opt.toList
       }
 
-      lazy val superTrees: List[Tree] = superTypes.flatMap { tt =>
-        if (visited.contains(tt)) None
+      lazy val baseTrees: List[Tree] = baseNodes.flatMap { tt =>
+        if (visited.contains(tt._type)) None
         else {
           val result = copy(tt)
 
           // DepthFirstTraverse
-          result.Children.renderSuperTrees
+          result.Children.renderBaseTrees
 
           Some(result)
         }
       }
 
-      lazy val renderSuperTrees: Unit = superTrees
+      lazy val renderBaseTrees: Unit = baseTrees
 
       lazy val renderAll: Unit = {
-        superTrees.foreach { tree =>
+        baseTrees.foreach { tree =>
           tree.Children.argTrees
         }
       }
@@ -163,20 +183,10 @@ object VizType {
 
     override lazy val children: List[TreeLike] = {
 
-      val result = Children.argTrees ++ Children.superTrees
+      val result = Children.argTrees ++ Children.baseTrees
 
       result
     }
-  }
-
-  def show1Line(tpe: Type): String = {
-//    tpe.typeArgs
-//
-//    tpe.typeParams
-
-//    s"$tpe \t:= ${showRaw(tpe.typeSymbol.typeSignature)}"
-
-    tpe.toString
   }
 
   def apply[T](implicit ttag: TypeTag[T]): VizType = VizType(ttag.tpe)
