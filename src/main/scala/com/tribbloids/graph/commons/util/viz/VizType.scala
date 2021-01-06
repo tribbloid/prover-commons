@@ -37,11 +37,11 @@ object VizType {
       }
     }
 
-    val records: mutable.HashMap[String, Record] = mutable.HashMap.empty // Type -> Ordinal / Count
+    val records: mutable.HashMap[Symbol, Record] = mutable.HashMap.empty // Type -> Ordinal / Count
 
     def +=(_type: Type): Unit = {
 
-      val count = records.getOrElseUpdate(_type.toString, Record())
+      val count = records.getOrElseUpdate(_type.typeSymbol, Record())
 
       count.count += 1
     }
@@ -76,7 +76,7 @@ object VizType {
       expanded += _type
     }
 
-    def refRecord: expanded.Record = expanded.records(_type.toString)
+    def refRecord: expanded.Record = expanded.records(_type.typeSymbol)
 
     lazy val typeStr: String = {
 
@@ -151,7 +151,7 @@ object VizType {
 
     lazy val sameNodes: List[Node] = baseNodes.filter(tt => tt._type =:= _type)
 
-//    lazy val superNodes: List[Node] = baseNodes.filterNot(tt => tt._type =:= _type)
+    lazy val baseNodes_deduplicate: List[Node] = baseNodes.filterNot(tt => tt._type.typeSymbol == _type.typeSymbol)
 
     object Children {
 
