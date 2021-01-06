@@ -37,11 +37,11 @@ object VizType {
       }
     }
 
-    val records: mutable.HashMap[Type, Record] = mutable.HashMap.empty // Type -> Ordinal / Count
+    val records: mutable.HashMap[String, Record] = mutable.HashMap.empty // Type -> Ordinal / Count
 
     def +=(_type: Type): Unit = {
 
-      val count = records.getOrElseUpdate(_type, Record())
+      val count = records.getOrElseUpdate(_type.toString, Record())
 
       count.count += 1
     }
@@ -58,41 +58,60 @@ object VizType {
       expanded += _type
     }
 
-    def refRecord: expanded.Record = expanded.records(_type)
+    def refRecord: expanded.Record = expanded.records(_type.toString)
 
-    override lazy val nodeStr: String = {
-
-      children.foreach(v => v.nodeStr)
+    lazy val typeStr: String = {
 
       val nameStr = show1Line(_type)
       val sameTypeStrs = sameTypes.map(show1Line)
       val str = (Seq(nameStr) ++ sameTypeStrs).distinct.mkString(" =:= ")
 
-      val refFillLength = Math.max(5, 120 - nameStr.length)
-      val refFill = Array.fill(refFillLength)(".").mkString
+      str
+    }
+
+    override lazy val nodeStr: String = {
+
+      Children.renderAll
 
       val rr = refRecord
       val ref = if (rr.count >= 2) {
+
+        val refFillLength = Math.max(5, 120 - typeStr.length)
+        val refFill = Array.fill(refFillLength)(".").mkString
+
         val i = rr.sid
         s" $refFill [$i]"
       } else {
         ""
       }
-      str + ref
+      typeStr + ref
     }
 
     object ArgTree extends TreeLike {
-      override val nodeStr: String = "  [ PARAMETER(S) ] :"
 
-      override lazy val children: List[Tree] = _type.typeArgs.map { tt =>
-        copy(tt, mutable.Set.empty)
+      override val children: List[Tree] = _type.typeArgs.map { tt =>
+        val result = copy(tt, mutable.Set.empty)
+
+        // DepthFirstTraverse
+        result.Children.renderAll
+
+        result
       }
-    }
 
-    lazy val argTreeOpt: Option[ArgTree.type] = {
-      if (ArgTree.children.isEmpty) None
-      else {
-        Some(ArgTree)
+      override val nodeStr: String = {
+
+        val size = children.size
+
+        if (size == 1) s"  [ $size ARG ] :"
+        else if (size == 0) "  [ No ARG ]"
+        else s"  [ $size ARGS ] :"
+      }
+
+      lazy val opt: Option[ArgTree.type] = {
+        if (ArgTree.children.isEmpty) None
+        else {
+          Some(ArgTree)
+        }
       }
     }
 
@@ -114,16 +133,37 @@ object VizType {
 
     lazy val superTypes: List[universe.Type] = baseTypes.filterNot(tt => tt =:= _type)
 
-    override lazy val children: List[TreeLike] = {
-      val result = argTreeOpt.toList ++
-        superTypes.flatMap { tt =>
-          if (visited.contains(tt)) None
-          else {
-            val result = copy(tt)
-            result.nodeStr // depth first
-            Some(result)
-          }
+    object Children {
+
+      lazy val argTrees: List[ArgTree.type] = {
+
+        ArgTree.opt.toList
+      }
+
+      lazy val superTrees: List[Tree] = superTypes.flatMap { tt =>
+        if (visited.contains(tt)) None
+        else {
+          val result = copy(tt)
+
+          // DepthFirstTraverse
+          result.Children.renderSuperTrees
+
+          Some(result)
         }
+      }
+
+      lazy val renderSuperTrees: Unit = superTrees
+
+      lazy val renderAll: Unit = {
+        superTrees.foreach { tree =>
+          tree.Children.argTrees
+        }
+      }
+    }
+
+    override lazy val children: List[TreeLike] = {
+
+      val result = Children.argTrees ++ Children.superTrees
 
       result
     }

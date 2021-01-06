@@ -27,9 +27,9 @@ class TreeLikeTest extends BaseSpec {
       tree.toString shouldBe
         """
             |-+ aaa
-            | `-+ bbb
-            | : `-- ddd
-            | `-- ccc
+            | !-+ bbb
+            | : !-- ddd
+            | !-- ccc
             |""".stripMargin.trim
 
     }
@@ -55,11 +55,11 @@ class TreeLikeTest extends BaseSpec {
         """
             |-+ aaa
             | :%%%%%
-            | `-+ bbb
+            | !-+ bbb
             | : :%%%%%
-            | : `-- ddd
+            | : !-- ddd
             | :    %%%%%
-            | `-- ccc
+            | !-- ccc
             |    %%%%%
             |""".stripMargin.trim
 
