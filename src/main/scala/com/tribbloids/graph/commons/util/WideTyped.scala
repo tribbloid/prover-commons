@@ -12,7 +12,7 @@ case class WideTyped[TT](value: TT) {
 
   type Wide = TT
 
-  def viz(implicit ttag: TypeTag[TT]): VizType = VizType[TT]
+  def viz(implicit ttag: ScalaReflection.TypeTag[TT]): VizType = VizType[TT]
 }
 
 object WideTyped {

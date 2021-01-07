@@ -22,12 +22,12 @@ trait TreeFormat {
     }
 
     def prepend(
-        ss: String,
+        header: String,
         indent: String = INDENT
     ): WText = {
 
       val line1 = lines.headOption.map { head =>
-        ss + head
+        header + head
       }.toSeq
 
       val remainder = lines.slice(1, Int.MaxValue).map { line =>

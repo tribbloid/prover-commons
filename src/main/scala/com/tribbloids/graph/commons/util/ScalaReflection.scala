@@ -14,6 +14,9 @@ object ScalaReflection extends ScalaReflection {
 
   val universe = scala.reflect.runtime.universe
 
+  type TypeTag[T] = universe.TypeTag[T]
+  type Type = universe.Type
+
   // Since we are creating a runtime mirror using the class loader of current thread,
   // we need to use def at here. So, every time we call mirror, it is using the
   // class loader of the current thread.

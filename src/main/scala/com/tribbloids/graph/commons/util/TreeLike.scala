@@ -4,17 +4,17 @@ trait TreeLike {
 
   def format: TreeFormat = TreeFormat.Indent2
 
-  def nodeStr: String // supports multiple lines
+  def nodeString: String // supports multiple lines
 
   def children: Seq[TreeLike] = Nil
 
   lazy val isLeaf: Boolean = children.isEmpty
 
-  final override def toString: String = treeString
+//  final override def toString: String = treeString
 
   lazy val treeString: String = {
 
-    val wText = format.wText(nodeStr)
+    val wText = format.wText(nodeString)
 
     if (isLeaf) {
 
@@ -26,7 +26,7 @@ trait TreeLike {
         else wText.prepend(format.FORK, format.WRAP)
 
       val childrenTProtos = children.map { child =>
-        format.wText(child.toString)
+        format.wText(child.treeString)
       }
 
       val childrenTLast = childrenTProtos.lastOption.map { tt =>
@@ -51,7 +51,7 @@ trait TreeLike {
 object TreeLike {
 
   case class Str(
-      nodeStr: String,
+      nodeString: String,
       override val children: Seq[Str] = Nil
   ) extends TreeLike {
 
