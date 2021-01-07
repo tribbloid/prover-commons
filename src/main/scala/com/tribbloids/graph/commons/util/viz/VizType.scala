@@ -35,18 +35,28 @@ object VizType {
 
   import universe._
 
-  case class RefMap() {
+  case class Expanded() {
+
+    @volatile var hide: Int = 0
 
     val ordinal = new AtomicInteger(0)
 
     case class Record(
-        @volatile var count: Int = 0
+        visibleCount: AtomicInteger = new AtomicInteger(0),
+        hiddenCount: AtomicInteger = new AtomicInteger(0)
     ) {
+
+      def count: Int = visibleCount.get() + hiddenCount.get()
 
       lazy val refString: String = {
 
         val v = ordinal.getAndIncrement().toString
         v
+      }
+
+      def ++ : Unit = {
+        if (hide > 0) hiddenCount.incrementAndGet()
+        else visibleCount.incrementAndGet()
       }
     }
 
@@ -69,7 +79,7 @@ object VizType {
 
     lazy val typeID: TypeID = getID(_type)
 
-    def show1Line: String = {
+    lazy val show1Line: String = {
 
       val base = _type.toString
 
@@ -77,6 +87,8 @@ object VizType {
 
       (Seq(base) ++ comment).mkString(" *** ")
     }
+
+    override def toString: String = show1Line
   }
 
   def emptyVisited: mutable.ArrayBuffer[TypeID] = mutable.ArrayBuffer.empty
@@ -84,7 +96,7 @@ object VizType {
   case class Tree(
       node: Node,
       visited: mutable.ArrayBuffer[TypeID] = emptyVisited,
-      expanded: RefMap = RefMap(),
+      expanded: Expanded = Expanded(),
       showArgs: Boolean = true,
       override val format: TreeFormat = TreeFormat.Indent2
   ) extends TreeLike {
@@ -127,7 +139,7 @@ object VizType {
 
     // all eager execution ends here
 
-    def expandHistory: expanded.Record = expanded(node.typeID)
+    def expansionHistory: expanded.Record = expanded(node.typeID)
 
 //    case object Strings {
 
@@ -141,13 +153,13 @@ object VizType {
     }
 
     def refStr: String = {
-      val rr: expanded.Record = expandHistory
-      val ref = if (rr.count >= 2) {
+      val history: expanded.Record = expansionHistory
+      val ref = if (history.visibleCount.get() >= 2) {
 
         val refFillLength = Math.max(5, 120 - typeStr.length)
         val refFill = Array.fill(refFillLength)(".").mkString
 
-        val i = rr.refString
+        val i = history.refString
         s" $refFill [$i]"
       } else {
         ""
@@ -210,25 +222,32 @@ object VizType {
     object Children {
 
       val history: expanded.Record = {
-        val result = expandHistory
-        result.count += 1
+        val result = expansionHistory
+        result.++
         result
       }
 
       lazy val expandBaseTrees: List[Tree] = {
+
+        def list = baseNodes_NoSelf.flatMap { node =>
+          if (visited.contains(node.typeID)) None
+          else {
+            val tree = copy(node)
+
+            tree.Children.expandBaseTrees
+
+            Some(tree)
+          }
+        }
+
         val result = if (history.count >= 2) {
+          expanded.hide += 1
+          list
+          expanded.hide -= 1
+
           Nil
         } else {
-          baseNodes_NoSelf.flatMap { node =>
-            if (visited.contains(node.typeID)) None
-            else {
-              val tree = copy(node)
-
-              tree.Children.expandBaseTrees
-
-              Some(tree)
-            }
-          }
+          list
         }
 
         result
@@ -248,7 +267,6 @@ object VizType {
 
       lazy val expandAll: Unit = {
         expandArgs
-
         expandBaseTrees
 
 //        for (args <- expandArgs; tree <- args.children) {
