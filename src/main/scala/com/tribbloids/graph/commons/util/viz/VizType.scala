@@ -266,8 +266,8 @@ object VizType {
         }
 
       lazy val expandAll: Unit = {
-        expandArgs
         expandBaseTrees
+        expandArgs
 
 //        for (args <- expandArgs; tree <- args.children) {
 //
