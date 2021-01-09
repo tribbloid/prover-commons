@@ -12,7 +12,7 @@ trait ScalaReflection extends Serializable {
 
 object ScalaReflection extends ScalaReflection {
 
-  val universe = scala.reflect.runtime.universe
+  val universe: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
 
   type TypeTag[T] = universe.TypeTag[T]
   type Type = universe.Type

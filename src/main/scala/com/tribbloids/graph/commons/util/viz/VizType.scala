@@ -288,7 +288,7 @@ object VizType {
     }
   }
 
-  def apply[T](implicit ttag: TypeTag[T]): VizType = VizType(ttag.tpe)
+  def apply[T](implicit ev: WeakTypeTag[T]): VizType = VizType(ev.tpe)
 
-  def infer[T: TypeTag](v: T): VizType = apply[T]
+  def infer[T](v: T)(implicit ev: WeakTypeTag[T]): VizType = apply[T]
 }

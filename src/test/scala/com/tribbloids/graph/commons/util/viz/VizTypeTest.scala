@@ -116,9 +116,11 @@ class VizTypeTest extends BaseSpec {
 
     // TODO: doesn't work! why?
     // TODO: may use type pimp pattern
-//    VizType[ww.T].toString.shouldBe()
-//
-//    VizType.infer(ss).toString.shouldBe()
+    VizType[ww.T].toString.shouldBe()
+
+    val vt = VizType.infer(ss) // doesn't work on scala 2.12?
+
+    vt.toString.shouldBe()
   }
 }
 
