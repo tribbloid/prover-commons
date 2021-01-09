@@ -15,6 +15,7 @@ object ScalaReflection extends ScalaReflection {
   val universe: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
 
   type TypeTag[T] = universe.TypeTag[T]
+  type WeakTypeTag[T] = universe.WeakTypeTag[T]
   type Type = universe.Type
 
   // Since we are creating a runtime mirror using the class loader of current thread,
