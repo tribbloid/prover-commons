@@ -20,6 +20,18 @@ case class VizType(tt: universe.Type) {
 
     tree.treeString
   }
+
+  def shouldBe(that: VizType): Unit = {
+
+    Predef.assert(
+      this.tt =:= that.tt,
+      s"""
+         |${this.tt}
+         |!=
+         |${that.tt}
+         |""".stripMargin.trim
+    )
+  }
 }
 
 object VizType {
