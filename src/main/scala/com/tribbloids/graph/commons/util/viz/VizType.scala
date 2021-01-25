@@ -34,7 +34,16 @@ case class VizType(tt: universe.Type) {
   }
 }
 
-object VizType {
+trait VizType_Imp0 {
+
+  import universe._
+
+  def apply[T](implicit ev: WeakTypeTag[T]): VizType = VizType(ev.tpe)
+
+  def infer[T](v: T)(implicit ev: WeakTypeTag[T]): VizType = apply[T]
+}
+
+object VizType extends VizType_Imp0 {
 
   implicit def asTree(v: VizType): Tree = v.tree
 
@@ -300,7 +309,11 @@ object VizType {
     }
   }
 
-  def apply[T](implicit ev: WeakTypeTag[T]): VizType = VizType(ev.tpe)
+  object Strong {
 
-  def infer[T](v: T)(implicit ev: WeakTypeTag[T]): VizType = apply[T]
+    def apply[T](implicit ev: TypeTag[T]): VizType = VizType(ev.tpe)
+
+    def infer[T](v: T)(implicit ev: TypeTag[T]): VizType = apply[T]
+  }
+
 }
