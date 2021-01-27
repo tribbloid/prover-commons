@@ -128,7 +128,7 @@ class VizTypeTest extends BaseSpec {
         | !-+ Int
         |   !-+ AnyVal
         |     !-- Any
-        |""".stripMargin.trim
+        |""".stripMargin
     )
 
     infer(ww)

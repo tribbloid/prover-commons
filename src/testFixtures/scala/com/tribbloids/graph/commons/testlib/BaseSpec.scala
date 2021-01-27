@@ -1,13 +1,14 @@
 package com.tribbloids.graph.commons.testlib
 
 import com.tribbloids.graph.commons.util.debug.print_@
+import com.tribbloids.graph.commons.util.diff.StringDiff
 import org.scalatest.funspec.AnyFunSpec
 
 trait BaseSpec extends AnyFunSpec {
 
   @transient implicit class TestStringView(str: String) {
 
-    val print = new print_@(
+    val _print = new print_@(
       Seq(
         this.getClass
       )
@@ -15,45 +16,13 @@ trait BaseSpec extends AnyFunSpec {
 
     //TODO: use reflection to figure out test name and annotate
     def shouldBe(
-        gd: String = null,
+        groundTruth: String = null,
         sort: Boolean = false,
         ignoreCase: Boolean = false,
-        superSet: Boolean = false
+        mode: StringDiff.ComparisonMode = StringDiff.Equal
     ): Unit = {
 
-      val rows = str
-        .split("\n")
-        .toList
-
-      var a: List[String] = rows
-        .filterNot(_.replaceAllLiterally(" ", "").isEmpty)
-        .map(v => ("|" + v).trim.stripPrefix("|"))
-      if (sort) a = a.sorted
-      if (ignoreCase) a = a.map(_.toLowerCase)
-
-      Option(gd) match {
-        case None =>
-          print(AssertionErrorObject(rows, null).actualInfo)
-        case Some(_gd) =>
-          var b = _gd
-            .split("\n")
-            .toList
-            .filterNot(_.replaceAllLiterally(" ", "").isEmpty)
-            .map(v => ("|" + v).trim.stripPrefix("|"))
-          if (sort) b = b.sorted
-          if (ignoreCase) b = b.map(_.toLowerCase)
-          if (superSet) {
-            Predef.assert(
-              a.intersect(b).nonEmpty,
-              AssertionErrorObject(a, b)
-            )
-          } else {
-            Predef.assert(
-              a == b,
-              AssertionErrorObject(a, b)
-            )
-          }
-      }
+      StringDiff(Option(str), Option(groundTruth), Seq(this.getClass), sort, ignoreCase).assert(mode)
     }
 
     def rowsShouldBe(
@@ -61,64 +30,16 @@ trait BaseSpec extends AnyFunSpec {
     ): Unit = shouldBe(gd, sort = true)
 
     def shouldBeLike(
-        gd: String = null,
+        groundTruth: String = null,
         sort: Boolean = false,
-        ignoreCase: Boolean = false
+        ignoreCase: Boolean = false,
+        mode: StringDiff.ComparisonMode = StringDiff.Equal
     ): Unit = {
-      val aRaw: List[String] = str
-        .split("\n")
-        .toList
-        .filterNot(_.replaceAllLiterally(" ", "").isEmpty)
-        .map(v => ("|" + v).trim.stripPrefix("|"))
-      val a =
-        if (sort) aRaw.sorted
-        else aRaw
 
-      Option(gd) match {
-        case None =>
-          print(AssertionErrorObject(a, null).actualInfo)
-        case Some(_gd) =>
-          var b = _gd
-            .split("\n")
-            .toList
-            .filterNot(_.replaceAllLiterally(" ", "").isEmpty)
-            .map(v => ("|" + v).trim.stripPrefix("|"))
-          if (sort) b = b.sorted
-          if (ignoreCase) b = b.map(_.toLowerCase)
-          try {
-            a.zipAll(b, null, null).foreach { tuple =>
-              val fixes = tuple._2.split("[.]{6,}", 2)
-              Predef.assert(
-                tuple._1.startsWith(fixes.head)
-              )
-              Predef.assert(
-                tuple._1.endsWith(fixes.last)
-              )
-            }
-          } catch {
-            case e: Exception =>
-              throw new AssertionError("" + AssertionErrorObject(a, b), e)
-          }
-      }
+      StringDiff(Option(str), Option(groundTruth), Seq(this.getClass), sort, ignoreCase).assert(mode, fuzzyRight = true)
     }
 
     def rowsShouldBeLike(gd: String = null): Unit = shouldBeLike(gd, sort = true)
-
-    //    def uriContains(contains: String): Boolean = {
-    //      str.contains(contains) &&
-    //        str.contains(URLEncoder.encode(contains,"UTF-8"))
-    //    }
-    //
-    //    def assertUriContains(contains: String): Unit = {
-    //      assert(
-    //        str.contains(contains) &&
-    //        str.contains(URLEncoder.encode(contains,"UTF-8")),
-    //        s"$str doesn't contain either:\n" +
-    //          s"$contains OR\n" +
-    //          s"${URLEncoder.encode(contains,"UTF-8")}"
-    //      )
-    //    }
-
   }
 }
 

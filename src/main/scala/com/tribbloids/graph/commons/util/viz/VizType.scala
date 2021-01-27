@@ -1,6 +1,8 @@
 package com.tribbloids.graph.commons.util.viz
 
 import com.tribbloids.graph.commons.util.ScalaReflection.universe
+import com.tribbloids.graph.commons.util.debug.print_@
+import com.tribbloids.graph.commons.util.diff.StringDiff
 import com.tribbloids.graph.commons.util.{TreeFormat, TreeLike}
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -21,16 +23,21 @@ case class VizType(tt: universe.Type) {
     tree.treeString
   }
 
-  def shouldBe(that: VizType): Unit = {
+  def shouldBe(that: VizType = null): Unit = {
 
-    Predef.assert(
-      this.tt =:= that.tt,
-      s"""
-         |${this.tt}
-         |!=
-         |${that.tt}
-         |""".stripMargin.trim
-    )
+    val diff = StringDiff(Option(this).map(_.toString), Option(that).map(_.toString), Seq(this.getClass))
+
+    (diff.Left.isDefined, diff.Right.isDefined) match {
+
+      case (true, true) =>
+        Predef.assert(
+          this.tt =:= that.tt,
+          diff.errorStr
+        )
+
+      case _ =>
+        diff.show()
+    }
   }
 }
 
