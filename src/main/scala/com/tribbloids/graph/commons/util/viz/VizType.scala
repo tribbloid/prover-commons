@@ -1,7 +1,6 @@
 package com.tribbloids.graph.commons.util.viz
 
 import com.tribbloids.graph.commons.util.ScalaReflection.universe
-import com.tribbloids.graph.commons.util.debug.print_@
 import com.tribbloids.graph.commons.util.diff.StringDiff
 import com.tribbloids.graph.commons.util.{TreeFormat, TreeLike}
 
@@ -45,6 +44,13 @@ trait VizType_Imp0 {
 
   import universe._
 
+  object Strong {
+
+    def apply[T](implicit ev: TypeTag[T]): VizType = VizType(ev.tpe)
+
+    def infer[T](v: T)(implicit ev: TypeTag[T]): VizType = apply[T]
+  }
+
   def apply[T](implicit ev: WeakTypeTag[T]): VizType = VizType(ev.tpe)
 
   def infer[T](v: T)(implicit ev: WeakTypeTag[T]): VizType = apply[T]
@@ -82,7 +88,7 @@ object VizType extends VizType_Imp0 {
         v
       }
 
-      def ++ : Unit = {
+      def ++(): Unit = {
         if (hide > 0) hiddenCount.incrementAndGet()
         else visibleCount.incrementAndGet()
       }
@@ -251,7 +257,7 @@ object VizType extends VizType_Imp0 {
 
       val history: expanded.Record = {
         val result = expansionHistory
-        result.++
+        result.++()
         result
       }
 
@@ -315,12 +321,4 @@ object VizType extends VizType_Imp0 {
       result
     }
   }
-
-  object Strong {
-
-    def apply[T](implicit ev: TypeTag[T]): VizType = VizType(ev.tpe)
-
-    def infer[T](v: T)(implicit ev: TypeTag[T]): VizType = apply[T]
-  }
-
 }

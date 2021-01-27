@@ -119,77 +119,108 @@ class VizTypeTest extends BaseSpec {
       )
   }
 
-  it("Singleton") {
+  describe("Singleton") {
 
-    // TODO: this is wrong, should be Int(3)
-    VizType[ww.T].toString.shouldBe(
-      """
-        |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.ww.T
-        | !-+ Int
-        |   !-+ AnyVal
-        |     !-- Any
-        |""".stripMargin
-    )
+    it("type") {
+      infer(adhocW.value)
+        .shouldBe(
+          """
+            |-+ Int(3)
+            | !-+ Int
+            |   !-+ AnyVal
+            |     !-- Any
+            |""".stripMargin
+        )
 
-    infer(ww)
-      .shouldBe(
-        """
-        |-+ shapeless.Witness.Aux[Int(3)]
-        | :       `-+ [ 1 ARG ] :
-        | :         !-+ Int(3)
-        | :           !-+ Int
-        | :             !-+ AnyVal
-        | :               !-- Any ..................................................................................................................... [0]
-        | !-- <notype> *** <refinement of shapeless.Witness>
-        | !-+ shapeless.Witness
-        |   !-+ java.io.Serializable
-        |   : !-- Any ..................................................................................................................... [0]
-        |   !-- Object
-        |""".stripMargin.trim
-      )
+      infer(singletonW.value)
+        .shouldBe(
+          """
+            |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.singletonW.T
+            | !-+ Int
+            |   !-+ AnyVal
+            |     !-- Any
+            |""".stripMargin
+        )
+    }
 
-    val vv = ww.value
+    it("witness type") {
 
-    infer(vv)
-      .shouldBe(
-        """
-        |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.ww.T
-        | !-+ Int
-        |   !-+ AnyVal
-        |     !-- Any
-        |""".stripMargin.trim
-      )
+      val adhocTree = infer(adhocW)
+      adhocTree
+        .shouldBe(
+          """
+            |-+ shapeless.Witness.Aux[Int(3)]
+            | :       `-+ [ 1 ARG ] :
+            | :         !-+ Int(3)
+            | :           !-+ Int
+            | :             !-+ AnyVal
+            | :               !-- Any ..................................................................................................................... [0]
+            | !-- <notype> *** <refinement of shapeless.Witness>
+            | !-+ shapeless.Witness
+            |   !-+ java.io.Serializable
+            |   : !-- Any ..................................................................................................................... [0]
+            |   !-- Object
+            |""".stripMargin.trim
+        )
 
-    val ww2: Witness.Lt[Int] = ww
+      infer(singletonW).shouldBe(adhocTree)
+    }
 
-    infer(ww2)
-      .shouldBe(
-        """
-          |-+ shapeless.Witness.Lt[Int]
-          | :       `-+ [ 1 ARG ] :
-          | :         !-+ Int
-          | :           !-+ AnyVal
-          | :             !-- Any ..................................................................................................................... [0]
-          | !-- <notype> *** <refinement of shapeless.Witness>
-          | !-+ shapeless.Witness
-          |   !-+ java.io.Serializable
-          |   : !-- Any ..................................................................................................................... [0]
-          |   !-- Object
-          |""".stripMargin
-      )
+    it("local variable type") {
 
-    //TODO: triggers an error
-//    VizType
-//      .infer(ww2.value)
-//      .toString
-//      .shouldBe(
+      {
+        val vv = adhocW.value
+
+        infer(vv)
+          .shouldBe(
+            infer(adhocW.value)
+          )
+      }
+
+      {
+        val vv = singletonW.value
+
+        infer(vv)
+          .shouldBe(
+            infer(singletonW.value)
+          )
+      }
+
+    }
+
+    it("local witness type") {
+
+      val ww: Witness.Lt[Int] = adhocW
+
+      infer(ww)
+        .shouldBe(
+          """
+            |-+ shapeless.Witness.Lt[Int]
+            | :       `-+ [ 1 ARG ] :
+            | :         !-+ Int
+            | :           !-+ AnyVal
+            | :             !-- Any ..................................................................................................................... [0]
+            | !-- <notype> *** <refinement of shapeless.Witness>
+            | !-+ shapeless.Witness
+            |   !-+ java.io.Serializable
+            |   : !-- Any ..................................................................................................................... [0]
+            |   !-- Object
+            |""".stripMargin
+        )
+
+      // TODO: compilation error! Why?
+//      val vv = ww.value
+//      infer(vv)
+//        .shouldBe(
+//          infer(adhocW.value)
 //        )
-
+    }
   }
 }
 
 object VizTypeTest {
 
-  val ww = Witness(3)
+  def adhocW = Witness(3)
 
+  val singletonW = Witness(3)
 }
