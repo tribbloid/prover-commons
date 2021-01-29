@@ -166,7 +166,7 @@ class VizTypeTest extends BaseSpec {
       infer(singletonW).shouldBe(adhocTree)
     }
 
-    it("local variable type") {
+    it("local value type") {
 
       {
         val vv = adhocW.value
@@ -190,9 +190,22 @@ class VizTypeTest extends BaseSpec {
 
     it("local witness type") {
 
-      val ww: Witness.Lt[Int] = adhocW
+      val ww = adhocW
 
-      infer(ww)
+      // CAUTION: copying witness into a new variable will lose its type information
+      infer(ww.value)
+        .shouldBe(
+          """
+            |-+ ww.T
+            | !-+ Int
+            |   !-+ AnyVal
+            |     !-- Any
+            |""".stripMargin
+        )
+
+      val wwErased: Witness.Lt[Int] = adhocW
+
+      infer(wwErased)
         .shouldBe(
           """
             |-+ shapeless.Witness.Lt[Int]
