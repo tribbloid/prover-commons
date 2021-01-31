@@ -2,7 +2,7 @@ package com.tribbloids.graph.commons.util.viz
 
 import com.tribbloids.graph.commons.util.ScalaReflection.universe
 import com.tribbloids.graph.commons.util.diff.StringDiff
-import com.tribbloids.graph.commons.util.{TreeFormat, TreeLike}
+import com.tribbloids.graph.commons.util.{IDMixin, TreeFormat, TreeLike}
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
@@ -61,11 +61,15 @@ object VizType extends VizType_Imp0 {
   implicit def asTree(v: VizType): Tree = v.tree
 
   case class TypeID(
-      symbol: universe.Symbol,
-      str: String
-  )
+      _type: universe.Type
+  ) extends IDMixin {
 
-  def getID(_type: universe.Type): TypeID = TypeID(_type.typeSymbol, _type.toString)
+    lazy val symbol: universe.Symbol = _type.typeSymbol
+
+    lazy val str = _type.toString
+
+    override protected def _id: Any = symbol -> str
+  }
 
   import universe._
 
@@ -111,15 +115,21 @@ object VizType extends VizType_Imp0 {
       comment: Option[String] = None,
   ) {
 
-    lazy val typeID: TypeID = getID(_type)
+    lazy val dealiased: universe.Type = _type.dealias
+
+    lazy val typeID: TypeID = TypeID(dealiased)
 
     lazy val show1Line: String = {
 
-      val base = _type.toString
+      val base = Seq(
+        _type.toString,
+        dealiased.toString
+      ).distinct
 
 //      val base = _type.typeSymbol.name.toString // TODO: what are my options?
 
-      (Seq(base) ++ comment).mkString(" *** ")
+      (Seq(base.mkString(" ==\uD83D\uDD37=>  ")) ++ comment).mkString(" ⁇ ")
+
     }
 
     override def toString: String = show1Line
@@ -159,7 +169,7 @@ object VizType extends VizType_Imp0 {
 //      }
     }
 
-    val sameNodes: List[Node] = baseNodes.filter(tt => tt._type =:= _type)
+//    val sameNodes: List[Node] = baseNodes.filter(tt => tt._type =:= _type)
 
     val baseNodes_NoSelf: List[Node] = baseNodes.filterNot(tt => tt.typeID == node.typeID)
 
@@ -180,10 +190,10 @@ object VizType extends VizType_Imp0 {
     def typeStr: String = {
 
       val nameStr = node.show1Line
-      val sameTypeStrs = sameNodes.map(_.show1Line)
-      val str = (Seq(nameStr) ++ sameTypeStrs).distinct.mkString(" =:= ")
+//      val sameTypeStrs = sameNodes.map(_.show1Line)
+//      val str = (Seq(nameStr) ++ sameTypeStrs).distinct.mkString(" =:= ")
 
-      str
+      nameStr
     }
 
     def refStr: String = {

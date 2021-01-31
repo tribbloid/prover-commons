@@ -149,13 +149,13 @@ class VizTypeTest extends BaseSpec {
       adhocTree
         .shouldBe(
           """
-            |-+ shapeless.Witness.Aux[Int(3)]
+            |-+ shapeless.Witness.Aux[Int(3)] ==🔷=>  shapeless.Witness{type T = Int(3)}
             | :       `-+ [ 1 ARG ] :
             | :         !-+ Int(3)
             | :           !-+ Int
             | :             !-+ AnyVal
             | :               !-- Any ..................................................................................................................... [0]
-            | !-- <notype> *** <refinement of shapeless.Witness>
+            | !-- <notype> ⁇ <refinement of shapeless.Witness>
             | !-+ shapeless.Witness
             |   !-+ java.io.Serializable
             |   : !-- Any ..................................................................................................................... [0]
@@ -208,12 +208,12 @@ class VizTypeTest extends BaseSpec {
       infer(wwErased)
         .shouldBe(
           """
-            |-+ shapeless.Witness.Lt[Int]
+            |-+ shapeless.Witness.Lt[Int] ==🔷=>  shapeless.Witness{type T <: Int}
             | :       `-+ [ 1 ARG ] :
             | :         !-+ Int
             | :           !-+ AnyVal
             | :             !-- Any ..................................................................................................................... [0]
-            | !-- <notype> *** <refinement of shapeless.Witness>
+            | !-- <notype> ⁇ <refinement of shapeless.Witness>
             | !-+ shapeless.Witness
             |   !-+ java.io.Serializable
             |   : !-- Any ..................................................................................................................... [0]
@@ -228,6 +228,13 @@ class VizTypeTest extends BaseSpec {
 //          infer(adhocW.value)
 //        )
     }
+  }
+
+  it("refined") {
+
+    val v = VizType[Witness.Aux[Int]]
+    v.toString.shouldBe(
+      )
   }
 }
 
