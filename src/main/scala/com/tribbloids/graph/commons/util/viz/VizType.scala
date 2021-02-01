@@ -66,9 +66,9 @@ object VizType extends VizType_Imp0 {
 
     lazy val symbol: universe.Symbol = _type.typeSymbol
 
-    lazy val str = _type.toString
+    lazy val showStr: String = _type.toString
 
-    override protected def _id: Any = symbol -> str
+    override protected def _id: Any = symbol -> showStr
   }
 
   import universe._
@@ -101,13 +101,6 @@ object VizType extends VizType_Imp0 {
     val records: mutable.HashMap[TypeID, Record] = mutable.HashMap.empty // Type -> Ordinal / Count
 
     def apply(id: TypeID): Record = records.getOrElseUpdate(id, Record())
-
-//    def +=(id: TypeID): Unit = {
-//
-//      val count = apply(id)
-//
-//      count.count += 1
-//    }
   }
 
   case class Node(
@@ -152,10 +145,6 @@ object VizType extends VizType_Imp0 {
     }
 
     val baseNodes: List[Node] = {
-//      if (expandRecord.count >= 2) {
-//
-//        Nil
-//      } else {
 
       val baseClzs = _type.baseClasses
 
@@ -166,10 +155,7 @@ object VizType extends VizType_Imp0 {
       }
 
       baseNodes
-//      }
     }
-
-//    val sameNodes: List[Node] = baseNodes.filter(tt => tt._type =:= _type)
 
     val baseNodes_NoSelf: List[Node] = baseNodes.filterNot(tt => tt.typeID == node.typeID)
 

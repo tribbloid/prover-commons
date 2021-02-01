@@ -143,6 +143,20 @@ class VizTypeTest extends BaseSpec {
         )
     }
 
+    it("local type") {
+
+      val w = 3
+
+      VizType[w.type].toString.shouldBe(
+        """
+          |-+ w.type
+          | !-+ Int
+          |   !-+ AnyVal
+          |     !-- Any
+          |""".stripMargin
+      )
+    }
+
     it("witness type") {
 
       val adhocTree = infer(adhocW)
@@ -234,7 +248,84 @@ class VizTypeTest extends BaseSpec {
 
     val v = VizType[Witness.Aux[Int]]
     v.toString.shouldBe(
+      """
+        |-+ shapeless.Witness.Aux[Int] ==🔷=>  shapeless.Witness{type T = Int}
+        | :       `-+ [ 1 ARG ] :
+        | :         !-+ Int
+        | :           !-+ AnyVal
+        | :             !-- Any ..................................................................................................................... [0]
+        | !-- <notype> ⁇ <refinement of shapeless.Witness>
+        | !-+ shapeless.Witness
+        |   !-+ java.io.Serializable
+        |   : !-- Any ..................................................................................................................... [0]
+        |   !-- Object
+        |""".stripMargin
+    )
+  }
+
+  describe("path-dependent") {
+
+    it("with upper bound") {
+
+      val e = new E { type D <: Int }
+      VizType[e.D].toString.shouldBe(
+        """
+          |-+ e.D
+          | !-+ Int
+          |   !-+ AnyVal
+          |     !-- Any
+          |""".stripMargin
       )
+    }
+
+    it("with lower bound") {
+
+      val e = new E { type D >: String <: CharSequence }
+      VizType[e.D].toString.shouldBe(
+        """
+          |-+ e.D
+          | !-+ CharSequence
+          |   !-+ Object
+          |     !-- Any
+          |""".stripMargin
+      )
+    }
+
+    it("with final type") {
+
+      val e = new E { final type D = Int }
+
+      VizType[e.D].toString.shouldBe(
+        """
+          |-+ e.D
+          | !-+ Int
+          |   !-+ AnyVal
+          |     !-- Any
+          |""".stripMargin
+      )
+    }
+
+    it("with final type in path") {
+
+      VizType[EE.D].toString.shouldBe(
+        """
+          |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.EE.D ==🔷=>  Int
+          | !-+ AnyVal
+          |   !-- Any
+          |""".stripMargin
+      )
+
+      val e = new EE
+      VizType[e.D].toString.shouldBe(
+        """
+          |-+ e.D ==🔷=>  Int
+          | !-+ AnyVal
+          |   !-- Any
+          |""".stripMargin
+      )
+
+    }
+
   }
 }
 
@@ -243,4 +334,13 @@ object VizTypeTest {
   def adhocW = Witness(3)
 
   val singletonW = Witness(3)
+
+  class E { type D }
+
+  class EE extends E {
+
+    final type D = Int
+  }
+
+  object EE extends EE
 }
