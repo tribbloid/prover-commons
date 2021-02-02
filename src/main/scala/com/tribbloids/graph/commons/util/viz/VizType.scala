@@ -51,7 +51,9 @@ trait VizType_Imp0 {
     def infer[T](v: T)(implicit ev: TypeTag[T]): VizType = apply[T]
   }
 
-  def apply[T](implicit ev: WeakTypeTag[T]): VizType = VizType(ev.tpe)
+  def apply[T](implicit ev: WeakTypeTag[T]): VizType = {
+    VizType(ev.tpe)
+  }
 
   def infer[T](v: T)(implicit ev: WeakTypeTag[T]): VizType = apply[T]
 }

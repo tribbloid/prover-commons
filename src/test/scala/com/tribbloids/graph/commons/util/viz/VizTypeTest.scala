@@ -122,25 +122,15 @@ class VizTypeTest extends BaseSpec {
   describe("Singleton") {
 
     it("type") {
-      infer(adhocW.value)
-        .shouldBe(
-          """
-            |-+ Int(3)
-            | !-+ Int
-            |   !-+ AnyVal
-            |     !-- Any
-            |""".stripMargin
-        )
 
-      infer(singletonW.value)
-        .shouldBe(
-          """
-            |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.singletonW.T
-            | !-+ Int
-            |   !-+ AnyVal
-            |     !-- Any
-            |""".stripMargin
-        )
+      VizType[VizTypeTest.singleton.type].toString.shouldBe(
+        """
+          |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.singleton.type
+          | !-+ Int
+          |   !-+ AnyVal
+          |     !-- Any
+          |""".stripMargin
+      )
     }
 
     it("local type") {
@@ -157,7 +147,31 @@ class VizTypeTest extends BaseSpec {
       )
     }
 
-    it("witness type") {
+    it("Witness.T") {
+
+      infer(singletonW.value)
+        .shouldBe(
+          """
+            |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.singletonW.T
+            | !-+ Int
+            |   !-+ AnyVal
+            |     !-- Any
+            |""".stripMargin
+        )
+
+      infer(adhocW.value)
+        .shouldBe(
+          """
+            |-+ Int(3)
+            | !-+ Int
+            |   !-+ AnyVal
+            |     !-- Any
+            |""".stripMargin
+        )
+
+    }
+
+    it("Witness type") {
 
       val adhocTree = infer(adhocW)
       adhocTree
@@ -180,7 +194,7 @@ class VizTypeTest extends BaseSpec {
       infer(singletonW).shouldBe(adhocTree)
     }
 
-    it("local value type") {
+    it("local Witness.T") {
 
       {
         val vv = adhocW.value
@@ -202,7 +216,7 @@ class VizTypeTest extends BaseSpec {
 
     }
 
-    it("local witness type") {
+    it("local Witness type") {
 
       val ww = adhocW
 
@@ -330,6 +344,8 @@ class VizTypeTest extends BaseSpec {
 }
 
 object VizTypeTest {
+
+  val singleton = 3
 
   def adhocW = Witness(3)
 
