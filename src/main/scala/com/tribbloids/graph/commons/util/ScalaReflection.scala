@@ -1,5 +1,7 @@
 package com.tribbloids.graph.commons.util
 
+import scala.reflect.internal.SymbolTable
+
 trait ScalaReflection extends Serializable {
 
   /** The universe we work in (runtime or macro) */
@@ -13,6 +15,11 @@ trait ScalaReflection extends Serializable {
 object ScalaReflection extends ScalaReflection {
 
   val universe: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
+  val internalUniverse: SymbolTable with universe.type = universe.asInstanceOf[SymbolTable with universe.type]
+
+//  implicitly[internalUniverse.Type <:< universe.Type]
+
+  type TT = universe.Type
 
   type TypeTag[T] = universe.TypeTag[T]
   type WeakTypeTag[T] = universe.WeakTypeTag[T]

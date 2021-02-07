@@ -1,21 +1,27 @@
 package com.tribbloids.graph.commons.util.viz
 
-import com.tribbloids.graph.commons.util.ScalaReflection.universe
+import com.tribbloids.graph.commons.util.ScalaReflection._
 import com.tribbloids.graph.commons.util.diff.StringDiff
-import com.tribbloids.graph.commons.util.{IDMixin, TreeFormat, TreeLike}
+import com.tribbloids.graph.commons.util.reflect.{TypeFormat, TypeID, TypeView}
+import com.tribbloids.graph.commons.util.{TreeFormat, TreeLike}
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 import scala.language.implicitConversions
 
-case class VizType(tt: universe.Type) {
+case class VizType(
+    tt: universe.Type,
+    format: TypeFormat = TypeFormat()
+) {
 
   import VizType._
+  val exe: Execution = Execution(format)
+  import exe._
 
-  lazy val tree: Tree = Tree(Node(tt))
+  lazy val tree: exe.Tree = Tree(TypeView(tt))
 
-//  def nodeStr: String = tree.nodeStr
-//  def treeStr: String = tree.treeString
+  //  def nodeStr: String = tree.nodeStr
+  //  def treeStr: String = tree.treeString
 
   override def toString: String = {
 
@@ -40,283 +46,236 @@ case class VizType(tt: universe.Type) {
   }
 }
 
-trait VizType_Imp0 {
+trait VizType_Imp0 extends TypeFormat.Default.WithFormat {
 
-  import universe._
-
-  object Strong {
-
-    def apply[T](implicit ev: TypeTag[T]): VizType = VizType(ev.tpe)
-
-    def infer[T](v: T)(implicit ev: TypeTag[T]): VizType = apply[T]
-  }
-
-  def apply[T](implicit ev: WeakTypeTag[T]): VizType = {
-    VizType(ev.tpe)
-  }
-
-  def infer[T](v: T)(implicit ev: WeakTypeTag[T]): VizType = apply[T]
+  def withFormat(format: TypeFormat) = new format.WithFormat
 }
 
 object VizType extends VizType_Imp0 {
 
-  implicit def asTree(v: VizType): Tree = v.tree
+  implicit def asTree(v: VizType): v.exe.Tree = v.tree
 
-  case class TypeID(
-      _type: universe.Type
-  ) extends IDMixin {
-
-    lazy val symbol: universe.Symbol = _type.typeSymbol
-
-    lazy val showStr: String = _type.toString
-
-    override protected def _id: Any = symbol -> showStr
-  }
-
-  import universe._
-
-  case class Expanded() {
-
-    @volatile var hide: Int = 0
-
-    val ordinal = new AtomicInteger(0)
-
-    case class Record(
-        visibleCount: AtomicInteger = new AtomicInteger(0),
-        hiddenCount: AtomicInteger = new AtomicInteger(0)
-    ) {
-
-      def count: Int = visibleCount.get() + hiddenCount.get()
-
-      lazy val refString: String = {
-
-        val v = ordinal.getAndIncrement().toString
-        v
-      }
-
-      def ++(): Unit = {
-        if (hide > 0) hiddenCount.incrementAndGet()
-        else visibleCount.incrementAndGet()
-      }
-    }
-
-    val records: mutable.HashMap[TypeID, Record] = mutable.HashMap.empty // Type -> Ordinal / Count
-
-    def apply(id: TypeID): Record = records.getOrElseUpdate(id, Record())
-  }
-
-  case class Node(
-      _type: Type,
-      comment: Option[String] = None,
+  case class Execution(
+      typeFormat: TypeFormat = TypeFormat()
   ) {
 
-    lazy val dealiased: universe.Type = _type.dealias
+    def newTCache: mutable.ArrayBuffer[TypeID] = mutable.ArrayBuffer.empty
 
-    lazy val typeID: TypeID = TypeID(dealiased)
+    case class Expanded() {
 
-    lazy val show1Line: String = {
+      @volatile var hide: Int = 0
 
-      val base = Seq(
-        _type.toString,
-        dealiased.toString
-      ).distinct
+      val ordinal = new AtomicInteger(0)
 
-//      val base = _type.typeSymbol.name.toString // TODO: what are my options?
+      case class Record(
+          visibleCount: AtomicInteger = new AtomicInteger(0),
+          hiddenCount: AtomicInteger = new AtomicInteger(0)
+      ) {
 
-      (Seq(base.mkString(" ==\uD83D\uDD37=>  ")) ++ comment).mkString(" ⁇ ")
+        def count: Int = visibleCount.get() + hiddenCount.get()
 
-    }
+        lazy val refString: String = {
 
-    override def toString: String = show1Line
-  }
+          val v = ordinal.getAndIncrement().toString
+          v
+        }
 
-  def emptyVisited: mutable.ArrayBuffer[TypeID] = mutable.ArrayBuffer.empty
-
-  case class Tree(
-      node: Node,
-      visited: mutable.ArrayBuffer[TypeID] = emptyVisited,
-      expanded: Expanded = Expanded(),
-      showArgs: Boolean = true,
-      override val format: TreeFormat = TreeFormat.Indent2
-  ) extends TreeLike {
-
-    import node._
-
-    {
-      visited += node.typeID
-    }
-
-    val baseNodes: List[Node] = {
-
-      val baseClzs = _type.baseClasses
-
-      val baseNodes = baseClzs.map { clz =>
-        val tt = _type.baseType(clz)
-        if (tt == NoType) Node(tt, Some(clz.toString))
-        else Node(tt)
+        def ++(): Unit = {
+          if (hide > 0) hiddenCount.incrementAndGet()
+          else visibleCount.incrementAndGet()
+        }
       }
 
-      baseNodes
+      val records: mutable.HashMap[TypeID, Record] = mutable.HashMap.empty // Type -> Ordinal / Count
+
+      def apply(id: TypeID): Record = records.getOrElseUpdate(id, Record())
     }
 
-    val baseNodes_NoSelf: List[Node] = baseNodes.filterNot(tt => tt.typeID == node.typeID)
+    case class Tree(
+        node: TypeView,
+        visited: mutable.ArrayBuffer[TypeID] = newTCache,
+        expanded: Expanded = Expanded()
+    ) extends TreeLike {
 
-    val argsOpt: Option[Args.type] = {
-      if (Args.children.isEmpty) None
-//      else if (expandRecord.count >= 2) None
-      else {
-        Some(Args)
-      }
-    }
+      override def format: TreeFormat = typeFormat.format
 
-    // all eager execution ends here
+      import node._
 
-    def expansionHistory: expanded.Record = expanded(node.typeID)
-
-//    case object Strings {
-
-    def typeStr: String = {
-
-      val nameStr = node.show1Line
-//      val sameTypeStrs = sameNodes.map(_.show1Line)
-//      val str = (Seq(nameStr) ++ sameTypeStrs).distinct.mkString(" =:= ")
-
-      nameStr
-    }
-
-    def refStr: String = {
-      val history: expanded.Record = expansionHistory
-      val ref = if (history.visibleCount.get() >= 2) {
-
-        val refFillLength = Math.max(5, 120 - typeStr.length)
-        val refFill = Array.fill(refFillLength)(".").mkString
-
-        val i = history.refString
-        s" $refFill [$i]"
-      } else {
-        ""
+      {
+        visited += node.id
       }
 
-      ref
-    }
+      val baseNodes: List[TypeView] = {
 
-    def argTreeStr: String = {
+        val baseClzs = self.baseClasses
 
-      if (!showArgs) {
-        ""
-      } else {
+        val baseNodes = baseClzs.map { clz =>
+          val tt = self.baseType(clz)
+          if (tt == universe.NoType) TypeView(tt, Some(clz.toString))
+          else TypeView(tt)
+        }
 
-        val raw = Children.expandArgs
-          .map { tree =>
-            tree.treeString
+        baseNodes
+      }
+
+      val baseNodes_NoSelf: List[TypeView] = baseNodes.filterNot(tt => tt.id == node.id)
+
+      val argsOpt: Option[Args.type] = {
+        if (Args.children.isEmpty) None
+        //      else if (expandRecord.count >= 2) None
+        else {
+          Some(Args)
+        }
+      }
+
+      // all eager execution ends here
+
+      def expansionHistory: expanded.Record = expanded(node.id)
+
+      //    case object Strings {
+
+      def typeStr: String = {
+
+        val result = node.Viz(typeFormat).full
+
+        result
+      }
+
+      def refStr: String = {
+        val history: expanded.Record = expansionHistory
+        val ref = if (history.visibleCount.get() >= 2) {
+
+          val refFillLength = Math.max(5, 120 - typeStr.length)
+          val refFill = Array.fill(refFillLength)(".").mkString
+
+          val i = history.refString
+          s" $refFill [$i]"
+        } else {
+          ""
+        }
+
+        ref
+      }
+
+      def argTreeStr: String = {
+
+        if (!typeFormat.showArgTree) {
+          ""
+        } else {
+
+          val raw = Children.expandArgs
+            .map { tree =>
+              tree.treeString
+            }
+
+          val indented = raw.map { tt =>
+            "\n" + format
+              .wText(tt)
+              .prepend(
+                "       `",
+                "        "
+              )
+              .build
           }
 
-        val indented = raw.map { tt =>
-          "\n" + format
-            .wText(tt)
-            .prepend(
-              "       `",
-              "        "
-            )
-            .build
+          indented.getOrElse("")
+        }
+      }
+      //    }
+
+      override def nodeString: String = {
+
+        Children.expandAll
+
+        typeStr + refStr + argTreeStr
+      }
+
+      object Args extends TreeLike {
+
+        override lazy val children: List[Tree] = self.typeArgs.map { tt =>
+          val result = copy(TypeView(tt), visited = newTCache)
+
+          result
         }
 
-        indented.getOrElse("")
-      }
-    }
-//    }
+        override lazy val nodeString: String = {
 
-    override def nodeString: String = {
+          val size = children.size
 
-      Children.expandAll
-
-      typeStr + refStr + argTreeStr
-    }
-
-    object Args extends TreeLike {
-
-      override lazy val children: List[Tree] = _type.typeArgs.map { tt =>
-        val result = copy(Node(tt), visited = emptyVisited)
-
-        result
+          if (size == 1) s"[ $size ARG ] :"
+          else if (size == 0) "[ No ARG ]"
+          else s"[ $size ARGS ] :"
+        }
       }
 
-      override lazy val nodeString: String = {
+      object Children {
 
-        val size = children.size
+        val history: expanded.Record = {
+          val result = expansionHistory
+          result.++()
+          result
+        }
 
-        if (size == 1) s"[ $size ARG ] :"
-        else if (size == 0) "[ No ARG ]"
-        else s"[ $size ARGS ] :"
-      }
-    }
+        lazy val expandBaseTrees: List[Tree] = {
 
-    object Children {
+          def list = baseNodes_NoSelf.flatMap { node =>
+            if (visited.contains(node.id)) None
+            else {
+              val tree = copy(node)
 
-      val history: expanded.Record = {
-        val result = expansionHistory
-        result.++()
-        result
-      }
+              tree.Children.expandBaseTrees
 
-      lazy val expandBaseTrees: List[Tree] = {
-
-        def list = baseNodes_NoSelf.flatMap { node =>
-          if (visited.contains(node.typeID)) None
-          else {
-            val tree = copy(node)
-
-            tree.Children.expandBaseTrees
-
-            Some(tree)
+              Some(tree)
+            }
           }
+
+          val result = if (history.count >= 2) {
+            expanded.hide += 1
+            list
+            expanded.hide -= 1
+
+            Nil
+          } else {
+            list
+          }
+
+          result
         }
 
-        val result = if (history.count >= 2) {
-          expanded.hide += 1
-          list
-          expanded.hide -= 1
+        lazy val expandArgs: Option[Args.type] =
+          if (history.count >= 2) {
+            None
+          } else {
+            for (args <- argsOpt; tree <- args.children) {
 
-          Nil
-        } else {
-          list
-        }
+              tree.Children.expandAll
+            }
 
-        result
-      }
+            argsOpt
+          }
 
-      lazy val expandArgs: Option[Args.type] =
-        if (history.count >= 2) {
-          None
-        } else {
-          for (args <- argsOpt; tree <- args.children) {
+        lazy val expandAll: Unit = {
+          expandBaseTrees
+          expandArgs
 
+          //        for (args <- expandArgs; tree <- args.children) {
+          //
+          //          tree.Children.expandAll
+          //        }
+
+          expandBaseTrees.foreach { tree =>
             tree.Children.expandAll
           }
-
-          argsOpt
         }
+      }
 
-      lazy val expandAll: Unit = {
-        expandBaseTrees
-        expandArgs
+      override lazy val children: List[TreeLike] = {
 
-//        for (args <- expandArgs; tree <- args.children) {
-//
-//          tree.Children.expandAll
-//        }
+        val result = Children.expandBaseTrees
 
-        expandBaseTrees.foreach { tree =>
-          tree.Children.expandAll
-        }
+        result
       }
     }
 
-    override lazy val children: List[TreeLike] = {
-
-      val result = Children.expandBaseTrees
-
-      result
-    }
   }
 }
