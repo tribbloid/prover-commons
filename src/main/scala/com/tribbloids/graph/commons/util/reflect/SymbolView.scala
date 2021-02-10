@@ -40,5 +40,5 @@ case class SymbolView(
     .reverse
     .mkString(".")
 
-  def packagePrefix = packageRepr + "."
+  def packagePrefix: String = packageRepr + "."
 }
