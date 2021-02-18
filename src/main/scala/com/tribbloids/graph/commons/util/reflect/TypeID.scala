@@ -4,12 +4,17 @@ import com.tribbloids.graph.commons.util.IDMixin
 import com.tribbloids.graph.commons.util.ScalaReflection._
 
 case class TypeID(
-    _type: universe.Type
+    self: universe.Type
 ) extends IDMixin {
 
-  lazy val symbol: universe.Symbol = _type.typeSymbol
+  lazy val symbols: Seq[universe.Symbol] = Seq(
+    self.typeSymbol,
+    self.termSymbol
+  ).filter { ss =>
+    ss != universe.NoSymbol
+  }
 
-  lazy val showStr: String = _type.toString
+  lazy val showStr: String = self.toString
 
-  override protected def _id: Any = symbol -> showStr
+  override protected def _id: Any = symbols -> showStr
 }

@@ -97,7 +97,7 @@ object VizType extends VizType_Imp0 {
         expanded: Expanded = Expanded()
     ) extends TreeLike {
 
-      override def format: TreeFormat = typeFormat.format
+      override def format: TreeFormat = typeFormat.treeFormat
 
       import node._
 
@@ -130,13 +130,13 @@ object VizType extends VizType_Imp0 {
 
       // all eager execution ends here
 
-      def expansionHistory: expanded.Record = expanded(node.id)
+      def expansionHistory: expanded.Record = expanded.apply(node.id)
 
       //    case object Strings {
 
       def typeStr: String = {
 
-        val result = node.Viz(typeFormat).full
+        val result = node.Display(typeFormat).full
 
         result
       }

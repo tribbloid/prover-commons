@@ -177,7 +177,7 @@ class VizTypeTest extends BaseSpec {
       adhocTree
         .shouldBe(
           """
-            |-+ shapeless.Witness.Aux[Int(3)] ==🔷=>  shapeless.Witness{type T = Int(3)}
+            |-+ shapeless.Witness{type T = Int(3)} 🔷 shapeless.Witness.Aux[Int(3)]
             | :       `-+ [ 1 ARG ] :
             | :         !-+ Int(3)
             | :           !-+ Int
@@ -236,7 +236,7 @@ class VizTypeTest extends BaseSpec {
       infer(wwErased)
         .shouldBe(
           """
-            |-+ shapeless.Witness.Lt[Int] ==🔷=>  shapeless.Witness{type T <: Int}
+            |-+ shapeless.Witness{type T <: Int} 🔷 shapeless.Witness.Lt[Int]
             | :       `-+ [ 1 ARG ] :
             | :         !-+ Int
             | :           !-+ AnyVal
@@ -263,7 +263,7 @@ class VizTypeTest extends BaseSpec {
     val v = VizType[Witness.Aux[Int]]
     v.toString.shouldBe(
       """
-        |-+ shapeless.Witness.Aux[Int] ==🔷=>  shapeless.Witness{type T = Int}
+        |-+ shapeless.Witness{type T = Int} 🔷 shapeless.Witness.Aux[Int]
         | :       `-+ [ 1 ARG ] :
         | :         !-+ Int
         | :           !-+ AnyVal
@@ -323,7 +323,7 @@ class VizTypeTest extends BaseSpec {
 
       VizType[EE.D].toString.shouldBe(
         """
-          |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.EE.D ==🔷=>  Int
+          |-+ Int 🔷 com.tribbloids.graph.commons.util.viz.VizTypeTest.EE.D
           | !-+ AnyVal
           |   !-- Any
           |""".stripMargin
@@ -332,7 +332,7 @@ class VizTypeTest extends BaseSpec {
       val e = new EE
       VizType[e.D].toString.shouldBe(
         """
-          |-+ e.D ==🔷=>  Int
+          |-+ Int 🔷 e.D
           | !-+ AnyVal
           |   !-- Any
           |""".stripMargin

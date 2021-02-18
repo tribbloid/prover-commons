@@ -7,23 +7,36 @@ import com.tribbloids.graph.commons.util.viz.VizType
 case class TypeFormat(
     showArgTree: Boolean = true,
     hidePackages: Boolean = false,
-    format: TreeFormat = TreeFormat.Indent2
+    hideAlias: Boolean = false,
+    treeFormat: TreeFormat = TreeFormat.Indent2
 ) {
 
   class WithFormat {
 
     object Strong {
 
-      def apply[T](implicit ev: TypeTag[T]): VizType = VizType(ev.tpe, TypeFormat.this)
+      def apply[T](
+          implicit
+          ev: TypeTag[T]
+      ): VizType = VizType(ev.tpe, TypeFormat.this)
 
-      def infer[T](v: T)(implicit ev: TypeTag[T]): VizType = apply[T]
+      def infer[T](v: T)(
+          implicit
+          ev: TypeTag[T]
+      ): VizType = apply[T]
     }
 
-    def apply[T](implicit ev: WeakTypeTag[T]): VizType = {
+    def apply[T](
+        implicit
+        ev: WeakTypeTag[T]
+    ): VizType = {
       VizType(ev.tpe, TypeFormat.this)
     }
 
-    def infer[T](v: T)(implicit ev: WeakTypeTag[T]): VizType = apply[T]
+    def infer[T](v: T)(
+        implicit
+        ev: WeakTypeTag[T]
+    ): VizType = apply[T]
   }
 }
 

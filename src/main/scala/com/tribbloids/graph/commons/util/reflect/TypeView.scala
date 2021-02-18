@@ -6,12 +6,12 @@ import scala.language.implicitConversions
 
 case class TypeView(
     self: Type,
-    comment: Option[String] = None,
+    comment: Option[String] = None
 ) {
 
   import com.tribbloids.graph.commons.util.reflect.TypeView._
 
-  lazy val id: TypeID = TypeID(dealiased)
+  lazy val id: TypeID = TypeID(dealias)
 
   lazy val internal: Option[internalUniverse.Type] = {
     self match {
@@ -22,18 +22,8 @@ case class TypeView(
     }
   }
 
-  lazy val dealiased: universe.Type = self.dealias
-  lazy val variants: Seq[universe.Type] = Seq(
-    self,
-    dealiased
-  ).distinct
-
-  lazy val symbols: Seq[universe.Symbol] = Seq(
-    self.typeSymbol,
-    self.termSymbol
-  ).filter { ss =>
-    ss != universe.NoSymbol
-  }
+  lazy val dealias: universe.Type = self.dealias
+  lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == dealias)
 
   object Recursive {
 
@@ -51,10 +41,10 @@ case class TypeView(
       result
     }
 
-    lazy val collectSymbols: List[universe.Symbol] = (List(self) ++ collectArgs).flatMap(v => TypeView(v).symbols)
+    lazy val collectSymbols: List[universe.Symbol] = (List(self) ++ collectArgs).flatMap(v => TypeView(v).id.symbols)
   }
 
-  case class Viz(format: TypeFormat) {
+  case class Display(format: TypeFormat) {
 
     lazy val base: String = {
 
@@ -71,17 +61,23 @@ case class TypeView(
       result
     }
 
-    lazy val deduction: String = {
+    lazy val variants: Seq[universe.Type] = if (format.hideAlias) {
+      Seq(dealias)
+    } else {
+      (Seq(dealias) ++ aliasOpt)
+    }
+
+    lazy val both: String = {
 
       variants
         .map { vv =>
-          (TypeView(vv).Viz(format).base)
+          (TypeView(vv).Display(format).base)
         }
         .distinct
-        .mkString(DEALIAS)
+        .mkString(ALIAS_SPLITTER)
     }
 
-    lazy val full: String = (Seq(deduction) ++ comment).mkString(" ⁇ ")
+    lazy val full: String = (Seq(both) ++ comment).mkString(" ⁇ ")
 
   }
 
@@ -90,5 +86,5 @@ case class TypeView(
 
 object TypeView {
 
-  val DEALIAS = " ==\uD83D\uDD37=>  "
+  val ALIAS_SPLITTER = " \uD83D\uDD37 "
 }
