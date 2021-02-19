@@ -134,9 +134,11 @@ object VizType extends VizType_Imp0 {
 
       //    case object Strings {
 
+      lazy val display: node.Display = node.Display(typeFormat)
+
       def typeStr: String = {
 
-        val result = node.Display(typeFormat).full
+        val result = display.full
 
         result
       }
@@ -192,11 +194,15 @@ object VizType extends VizType_Imp0 {
 
       object Args extends TreeLike {
 
-        override lazy val children: List[Tree] = self.typeArgs.map { tt =>
-          val result = copy(TypeView(tt), visited = newTCache)
+        override lazy val children: List[Tree] = display.variants
+          .flatMap(_.typeArgs)
+          .distinct
+          .map { tt =>
+            val result = copy(TypeView(tt), visited = newTCache)
 
-          result
-        }
+            result
+          }
+          .toList
 
         override lazy val nodeString: String = {
 
