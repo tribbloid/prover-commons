@@ -3,6 +3,7 @@ package com.tribbloids.graph.commons.testlib
 import com.tribbloids.graph.commons.util.debug.print_@
 import com.tribbloids.graph.commons.util.diff.StringDiff
 import org.scalatest.funspec.AnyFunSpec
+import shapeless.test.illTyped
 
 trait BaseSpec extends AnyFunSpec {
 
@@ -41,6 +42,13 @@ trait BaseSpec extends AnyFunSpec {
 
     def rowsShouldBeLike(gd: String = null): Unit = shouldBeLike(gd, sort = true)
   }
+
+  /**
+    * ScalaTest assertDoesNotCompile sometimes malfunction (due to unwashed execution order?)
+    * & doesn't perform literal check
+    * if the code compiles successfully, the project compilation will fail
+    */
+  val shouldNotCompile: illTyped.type = illTyped
 }
 
 object BaseSpec {}
