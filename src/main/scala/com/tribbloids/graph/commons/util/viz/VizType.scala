@@ -1,6 +1,7 @@
 package com.tribbloids.graph.commons.util.viz
 
 import com.tribbloids.graph.commons.util.ScalaReflection._
+import com.tribbloids.graph.commons.util.TreeFormat.Block
 import com.tribbloids.graph.commons.util.diff.StringDiff
 import com.tribbloids.graph.commons.util.reflect.{TypeFormat, TypeID, TypeView}
 import com.tribbloids.graph.commons.util.{TreeFormat, TreeLike}
@@ -97,7 +98,7 @@ object VizType extends VizType_Imp0 {
         expanded: Expanded = Expanded()
     ) extends TreeLike {
 
-      override def format: TreeFormat = typeFormat.treeFormat
+      override lazy val format: TreeFormat = typeFormat.treeFormat
 
       import node._
 
@@ -173,10 +174,7 @@ object VizType extends VizType_Imp0 {
           val indented = raw.map { tt =>
             "\n" + format
               .wText(tt)
-              .prepend(
-                "       `",
-                "        "
-              )
+              .prepend(Block("      `", "       "))
               .build
           }
 

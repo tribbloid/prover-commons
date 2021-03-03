@@ -2,7 +2,7 @@ package com.tribbloids.graph.commons.util
 
 trait TreeLike {
 
-  def format: TreeFormat = TreeFormat.Indent2
+  lazy val format: TreeFormat = TreeFormat.Indent2
 
   def nodeString: String // supports multiple lines
 
@@ -14,30 +14,29 @@ trait TreeLike {
 
   lazy val treeString: String = {
 
-    val wText = format.wText(nodeString)
+    val wText = format.wText(nodeString).indent(format.DOT)
 
     if (isLeaf) {
 
       wText.prepend(format.LEAF).build
+
     } else {
 
-      val selfT =
-        if (isLeaf) wText.prepend(format.FORK)
-        else wText.prepend(format.FORK, format.WRAP)
+      val selfT = wText.prepend(format.FORK)
 
-      val childrenTProtos = children.map { child =>
+      val childrenTProtos: Seq[format.WText] = children.map { child =>
         format.wText(child.treeString)
       }
 
-      val childrenTLast = childrenTProtos.lastOption.map { tt =>
-        tt.prepend(format.DENOTE)
-      }.toSeq
-
-      val childrenTOthers = childrenTProtos.dropRight(1).map { tt =>
-        tt.prepend(format.DENOTE, format.WRAP)
+      val childrenTMid = childrenTProtos.dropRight(1).map { tt =>
+        tt.prepend(format.SUB)
       }
 
-      val result = (Seq(selfT) ++ childrenTOthers ++ childrenTLast)
+      val childrenTLast = childrenTProtos.lastOption.map { tt =>
+        tt.prepend(format.SUB_LAST)
+      }.toSeq
+
+      val result = (Seq(selfT) ++ childrenTMid ++ childrenTLast)
         .map { v =>
           v.build
         }
@@ -48,13 +47,4 @@ trait TreeLike {
   }
 }
 
-object TreeLike {
-
-  case class Str(
-      nodeString: String,
-      override val children: Seq[Str] = Nil
-  ) extends TreeLike {
-
-    override val format: TreeFormat = TreeFormat.Indent2
-  }
-}
+object TreeLike {}
