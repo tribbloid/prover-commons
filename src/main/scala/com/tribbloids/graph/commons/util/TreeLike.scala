@@ -1,5 +1,7 @@
 package com.tribbloids.graph.commons.util
 
+import com.tribbloids.graph.commons.util.TextBlock.Padding
+
 trait TreeLike {
 
   lazy val format: TreeFormat = TreeFormat.Indent2
@@ -14,26 +16,26 @@ trait TreeLike {
 
   lazy val treeString: String = {
 
-    val wText = format.wText(nodeString).indent(format.DOT)
+    val wText = TextBlock(nodeString).indent(format.DOT)
 
     if (isLeaf) {
 
-      wText.prepend(format.LEAF).build
+      wText.padLeft(format.LEAF).build
 
     } else {
 
-      val selfT = wText.prepend(format.FORK)
+      val selfT = wText.padLeft(format.FORK)
 
-      val childrenTProtos: Seq[format.WText] = children.map { child =>
-        format.wText(child.treeString)
+      val childrenTProtos: Seq[TextBlock] = children.map { child =>
+        TextBlock(child.treeString)
       }
 
       val childrenTMid = childrenTProtos.dropRight(1).map { tt =>
-        tt.prepend(format.SUB)
+        tt.padLeft(format.SUB)
       }
 
       val childrenTLast = childrenTProtos.lastOption.map { tt =>
-        tt.prepend(format.SUB_LAST)
+        tt.padLeft(format.SUB_LAST)
       }.toSeq
 
       val result = (Seq(selfT) ++ childrenTMid ++ childrenTLast)
@@ -47,4 +49,53 @@ trait TreeLike {
   }
 }
 
-object TreeLike {}
+object TreeLike {
+
+  val argLeftBracket: Padding = Padding(
+    "┏ ",
+    "┃ "
+  )
+
+  trait ProductMixin extends TreeLike with Product {
+
+    private val argList = this.productIterator.toList
+
+    private val constructorName = {
+
+      val clz = this.getClass
+
+      val result = clz.getCanonicalName.replaceAllLiterally(clz.getPackage.getName, "").stripPrefix(".")
+      result
+    }
+
+    final override lazy val nodeString = {
+
+      val notTree = this.argList
+        .filterNot(v => v.isInstanceOf[TreeLike])
+
+      if (notTree.isEmpty) {
+
+        constructorName
+      } else {
+
+        val _notTree = notTree.map { str =>
+          TextBlock(str.toString).padLeft(argLeftBracket).build
+        }
+
+        val fill = Padding(
+          constructorName,
+          constructorName.map(v => ' ')
+        )
+
+        TextBlock(_notTree.mkString("\n")).padLeft(fill).build
+      }
+    }
+
+    final override lazy val children: List[TreeLike] = {
+
+      this.argList.collect {
+        case v: TreeLike => v
+      }
+    }
+  }
+}

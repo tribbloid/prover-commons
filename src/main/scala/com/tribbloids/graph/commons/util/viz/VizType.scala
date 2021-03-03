@@ -1,10 +1,10 @@
 package com.tribbloids.graph.commons.util.viz
 
 import com.tribbloids.graph.commons.util.ScalaReflection._
-import com.tribbloids.graph.commons.util.TreeFormat.Block
+import com.tribbloids.graph.commons.util.TextBlock.Padding
 import com.tribbloids.graph.commons.util.diff.StringDiff
 import com.tribbloids.graph.commons.util.reflect.{TypeFormat, TypeID, TypeView}
-import com.tribbloids.graph.commons.util.{TreeFormat, TreeLike}
+import com.tribbloids.graph.commons.util.{TextBlock, TreeFormat, TreeLike}
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
@@ -172,9 +172,8 @@ object VizType extends VizType_Imp0 {
             }
 
           val indented = raw.map { tt =>
-            "\n" + format
-              .wText(tt)
-              .prepend(Block("      `", "       "))
+            "\n" + TextBlock(tt)
+              .padLeft(Padding("      `", "       "))
               .build
           }
 

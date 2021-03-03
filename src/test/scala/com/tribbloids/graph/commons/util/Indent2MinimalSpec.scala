@@ -2,7 +2,7 @@ package com.tribbloids.graph.commons.util
 
 class Indent2MinimalSpec extends TreeLikeSpec {
 
-  override lazy val format = TreeFormat.Indent2Minimal
+  override lazy val format: TreeFormat.Indent2Minimal.type = TreeFormat.Indent2Minimal
 
   describe("toString") {
     it("supports nodes each with 1 line str") {
@@ -10,9 +10,9 @@ class Indent2MinimalSpec extends TreeLikeSpec {
       tree1.treeString shouldBe
         """
           |aaa
-          | > bbb
-          | :  > ddd
-          | > ccc
+          | ‣ bbb
+          | :  ‣ ddd
+          | ‣ ccc
           |""".stripMargin.trim
 
     }
@@ -24,11 +24,11 @@ class Indent2MinimalSpec extends TreeLikeSpec {
         """
           |aaa
           |%%%%%
-          | > bbb
+          | ‣ bbb
           | : %%%%%
-          | :  > ddd
+          | :  ‣ ddd
           | :    %%%%%
-          | > ccc
+          | ‣ ccc
           |   %%%%%
           |""".stripMargin.trim
     }
