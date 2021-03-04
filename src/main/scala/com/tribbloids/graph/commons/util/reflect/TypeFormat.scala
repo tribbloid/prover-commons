@@ -9,36 +9,7 @@ case class TypeFormat(
     hidePackages: Boolean = false,
     hideAlias: Boolean = false,
     treeFormat: TreeFormat = TreeFormat.Indent2
-) {
-
-  class WithFormat {
-
-    object Strong {
-
-      def apply[T](
-          implicit
-          ev: TypeTag[T]
-      ): VizType = VizType(ev.tpe, TypeFormat.this)
-
-      def infer[T](v: T)(
-          implicit
-          ev: TypeTag[T]
-      ): VizType = apply[T]
-    }
-
-    def apply[T](
-        implicit
-        ev: WeakTypeTag[T]
-    ): VizType = {
-      VizType(ev.tpe, TypeFormat.this)
-    }
-
-    def infer[T](v: T)(
-        implicit
-        ev: WeakTypeTag[T]
-    ): VizType = apply[T]
-  }
-}
+) {}
 
 object TypeFormat {
 

@@ -10,28 +10,32 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 import scala.language.implicitConversions
 
-case class VizType(
-    tt: universe.Type,
-    format: TypeFormat = TypeFormat()
+class VizType(
+    val tt: universe.Type,
+    val format: TypeFormat = TypeFormat()
 ) {
 
   import VizType._
   val exe: Execution = Execution(format)
   import exe._
 
-  lazy val tree: exe.Tree = Tree(TypeView(tt))
+  lazy val typeTree: exe.Tree = Tree(TypeView(tt))
 
   //  def nodeStr: String = tree.nodeStr
   //  def treeStr: String = tree.treeString
 
   override def toString: String = {
 
-    tree.treeString
+    typeTree.treeString
   }
 
   def shouldBe(that: VizType = null): Unit = {
 
-    val diff = StringDiff(Option(this).map(_.toString), Option(that).map(_.toString), Seq(this.getClass))
+    val Seq(s1, s2) = Seq(this, that).map { v =>
+      Option(v).map(_.typeTree.toString)
+    }
+
+    val diff = StringDiff(s1, s2, Seq(this.getClass))
 
     (diff.Left.isDefined, diff.Right.isDefined) match {
 
@@ -45,16 +49,15 @@ case class VizType(
         diff.show()
     }
   }
+
+  def =!=(that: VizType = null): Unit = shouldBe(that)
 }
 
-trait VizType_Imp0 extends TypeFormat.Default.WithFormat {
+object VizType extends WithFormat(TypeFormat.Default) {
 
-  def withFormat(format: TypeFormat) = new format.WithFormat
-}
+  def withFormat(format: TypeFormat) = new WithFormat(format)
 
-object VizType extends VizType_Imp0 {
-
-  implicit def asTree(v: VizType): v.exe.Tree = v.tree
+  implicit def asTree(v: VizType): v.exe.Tree = v.typeTree
 
   case class Execution(
       typeFormat: TypeFormat = TypeFormat()
