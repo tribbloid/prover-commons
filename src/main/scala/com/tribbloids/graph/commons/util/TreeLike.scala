@@ -51,16 +51,28 @@ trait TreeLike {
 
 object TreeLike {
 
-  trait ProductMixin extends TreeLike with Product {
+  trait ProductAsTree extends TreeLike with Product {
 
-    private val argList = this.productIterator.toList
+    private lazy val argList = this.productIterator.toList
 
-    private val constructorName = {
+    lazy val constructorString: String = {
 
-      val clz = this.getClass
+      val hasOuter = this.getClass.getDeclaringClass != null
 
-      val result = clz.getCanonicalName.replaceAllLiterally(clz.getPackage.getName, "").stripPrefix(".")
-      result
+      if (hasOuter) {
+        val list = HasOuter.outerListOf(this)
+
+        val names = list.map { v =>
+          val dec = decodedStrOf(v)
+
+          dec
+        }
+
+        names.reverse.mkString(" ‣ ")
+      } else {
+        decodedStrOf(this)
+      }
+
     }
 
     final override lazy val nodeString = {
@@ -70,19 +82,18 @@ object TreeLike {
 
       if (notTree.isEmpty) {
 
-        constructorName
+        constructorString
       } else {
 
         val _notTree = notTree.map { str =>
           TextBlock(str.toString).padLeft(Padding.argLeftBracket).build
         }
 
-        val fill = Padding(
-          constructorName,
-          constructorName.map(v => ' ')
-        )
-
-        TextBlock(_notTree.mkString("\n")).padLeft(fill).build
+        TextBlock(constructorString)
+          .zipRight(
+            TextBlock(_notTree.mkString("\n"))
+          )
+          .build
       }
     }
 
@@ -92,5 +103,14 @@ object TreeLike {
         case v: TreeLike => v
       }
     }
+  }
+
+  def decodedStrOf(v: AnyRef): String = {
+    val clz = v.getClass
+    val enc =
+      clz.getCanonicalName.replaceAllLiterally(clz.getPackage.getName, "").stripPrefix(".").stripSuffix("$")
+
+    val dec = ScalaReflection.universe.TypeName(enc).decodedName
+    dec.toString
   }
 }

@@ -1,15 +1,24 @@
 package com.tribbloids.graph.commons.util
 
-trait HasInner {
+trait HasOuter {
 
-  trait Inner {
-
-    final val outer: HasInner.this.type = HasInner.this
-
-    type Self <: outer.Inner
-
-    final val inner: Self = this.asInstanceOf[Self]
-  }
+  def outer: AnyRef
 }
 
-object HasInner {}
+object HasOuter {
+
+  def outerListOf(v: AnyRef): List[AnyRef] = {
+
+    val self = List(v)
+
+    val outers = v match {
+      case vv: HasOuter =>
+        val outer = vv.outer
+        outerListOf(outer)
+      case _ =>
+        Nil
+    }
+
+    self ++ outers
+  }
+}

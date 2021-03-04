@@ -14,7 +14,7 @@ case class TextBlock(lines: Seq[String]) {
   lazy val rectangular: TextBlock = {
 
     val longest = lines.map(_.length).max
-    val withSpace = lines.map(v => v + (0 to (longest - v.length)).map(_ => ' ').mkString(""))
+    val withSpace = lines.map(v => v + (0 until (longest - v.length)).map(_ => ' ').mkString(""))
     TextBlock(withSpace)
   }
 
@@ -46,6 +46,22 @@ case class TextBlock(lines: Seq[String]) {
 
     new TextBlock(line1 ++ remainder)
   }
+
+  def zipRight(
+      that: TextBlock
+  ): TextBlock = {
+
+    val maxLines = Seq(this, that).map(_.lines.size).max
+    val expanded = Seq(this, that).map { block =>
+      TextBlock(block.lines.padTo(maxLines, ""))
+    }
+
+    val zipped = expanded(0).rectangular.lines.zip(expanded(1).lines).map { v =>
+      v._1 + v._2
+    }
+
+    TextBlock(zipped)
+  }
 }
 
 object TextBlock {
@@ -57,12 +73,18 @@ object TextBlock {
       body: String
   ) {
 
-    require(
-      head.length == body.length,
-      s"prepend cannot use 2 strings with different lengths:" +
-        s"\t`$head`" +
-        s"\t`$body`"
-    )
+    {
+      Seq(head, body).foreach { s =>
+        require(s.split('\n').length == 1, "cannot use string with multiple lines")
+      }
+
+      require(
+        head.length == body.length,
+        s"cannot use 2 strings with different lengths:" +
+          s"\t`$head`" +
+          s"\t`$body`"
+      )
+    }
   }
 
   object Padding {
