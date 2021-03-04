@@ -32,7 +32,7 @@ class TermAndTypeOf[T](
 
       case (true, true) =>
         Predef.assert(
-          this.tt =:= that.tt,
+          this.value == that.value,
           diff.errorStr
         )
 
