@@ -121,13 +121,13 @@ object VizType extends VizType_Imp0 {
 
       val baseNodes_NoSelf: List[TypeView] = baseNodes.filterNot(tt => tt.id == node.id)
 
-      val argsOpt: Option[Args.type] = {
-        if (Args.children.isEmpty) None
-        //      else if (expandRecord.count >= 2) None
-        else {
-          Some(Args)
-        }
-      }
+//      val argsOpt: Option[ArgTree.type] = {
+//        if (ArgTree.children.isEmpty) None
+//        //      else if (expandRecord.count >= 2) None
+//        else {
+//          Some(ArgTree)
+//        }
+//      }
 
       // all eager execution ends here
 
@@ -148,7 +148,8 @@ object VizType extends VizType_Imp0 {
         val history: expanded.Record = expansionHistory
         val ref = if (history.visibleCount.get() >= 2) {
 
-          val refFillLength = Math.max(5, 120 - typeStr.length)
+          val refFillLength = Math.max(5, 80 - typeStr.length)
+//          val refFillLength = 3
           val refFill = Array.fill(refFillLength)(".").mkString
 
           val i = history.refString
@@ -173,11 +174,12 @@ object VizType extends VizType_Imp0 {
 
           val indented = raw.map { tt =>
             "\n" + TextBlock(tt)
-              .padLeft(Padding("      `", "       "))
+              .padLeft(Padding.argLeftBracket)
+              .indent("      ")
               .build
           }
 
-          indented.getOrElse("")
+          indented.mkString("\n")
         }
       }
       //    }
@@ -189,13 +191,12 @@ object VizType extends VizType_Imp0 {
         typeStr + refStr + argTreeStr
       }
 
-      object Args extends TreeLike {
+      case class ArgTree(_tt: Type) extends TreeLike {
 
-        override lazy val children: List[Tree] = display.variants
+        override lazy val children: List[Tree] = Seq(_tt)
           .flatMap(_.typeArgs)
-          .distinct
           .map { tt =>
-            val result = copy(TypeView(tt), visited = newTCache)
+            val result = Tree.this.copy(TypeView(tt), visited = newTCache)
 
             result
           }
@@ -203,12 +204,28 @@ object VizType extends VizType_Imp0 {
 
         override lazy val nodeString: String = {
 
+          val ttStr = _tt.typeConstructor.toString
+
           val size = children.size
 
-          if (size == 1) s"[ $size ARG ] :"
-          else if (size == 0) "[ No ARG ]"
-          else s"[ $size ARGS ] :"
+          if (size == 1) s"$ttStr [ $size ARG ] :"
+          else if (size == 0) s"$ttStr [ No ARG ]"
+          else s"$ttStr [ $size ARGS ] :"
         }
+      }
+
+      object ArgTree {
+
+        lazy val lists: Seq[ArgTree] = {
+          display.variants
+            .map { tt =>
+              ArgTree(tt)
+            }
+            .filter { tree =>
+              tree.children.nonEmpty
+            }
+        }
+
       }
 
       object Children {
@@ -245,16 +262,16 @@ object VizType extends VizType_Imp0 {
           result
         }
 
-        lazy val expandArgs: Option[Args.type] =
+        lazy val expandArgs: Seq[ArgTree] =
           if (history.count >= 2) {
-            None
+            Nil
           } else {
-            for (args <- argsOpt; tree <- args.children) {
+            for (args <- ArgTree.lists; tree <- args.children) {
 
               tree.Children.expandAll
             }
 
-            argsOpt
+            ArgTree.lists
           }
 
         lazy val expandAll: Unit = {

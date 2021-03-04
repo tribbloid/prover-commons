@@ -86,5 +86,5 @@ case class TypeView(
 
 object TypeView {
 
-  val ALIAS_SPLITTER = " \uD83D\uDD37 "
+  val ALIAS_SPLITTER = " ≅ "
 }

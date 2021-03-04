@@ -51,11 +51,6 @@ trait TreeLike {
 
 object TreeLike {
 
-  val argLeftBracket: Padding = Padding(
-    "┏ ",
-    "┃ "
-  )
-
   trait ProductMixin extends TreeLike with Product {
 
     private val argList = this.productIterator.toList
@@ -79,7 +74,7 @@ object TreeLike {
       } else {
 
         val _notTree = notTree.map { str =>
-          TextBlock(str.toString).padLeft(argLeftBracket).build
+          TextBlock(str.toString).padLeft(Padding.argLeftBracket).build
         }
 
         val fill = Padding(

@@ -65,4 +65,12 @@ object TextBlock {
     )
   }
 
+  object Padding {
+
+    val argLeftBracket: Padding = Padding(
+      "┏ ",
+      "┃ "
+    )
+  }
+
 }
