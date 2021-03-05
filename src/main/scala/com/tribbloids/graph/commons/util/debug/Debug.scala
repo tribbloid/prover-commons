@@ -1,5 +1,7 @@
 package com.tribbloids.graph.commons.util.debug
 
+import scala.util.Try
+
 object Debug {
 
   //  def cartesianProductSet[T](xss: Seq[Set[T]]): Set[List[T]] = xss match {
@@ -29,12 +31,13 @@ object Debug {
       .mkString("\n\t< ")
   }
 
-  private final val breakpointInfoBlacklist = {
+  final private val breakpointInfoBlacklist = {
     Seq(
       this.getClass.getCanonicalName,
       classOf[Thread].getCanonicalName
     ).map(_.stripSuffix("$"))
   }
+
   private def breakpointInfoFilter(vs: Array[StackTraceElement]) = {
     vs.filterNot { v =>
       val className = v.getClassName
@@ -67,7 +70,12 @@ object Debug {
       val filteredIndex = bp.toSeq.indexWhere(
         { element =>
           val isIncluded = !exclude.exists { v =>
-            Class.forName(element.getClassName) isAssignableFrom v
+            val tryClzAtStack = Try {
+              Class.forName(element.getClassName)
+            }
+            tryClzAtStack.toOption.exists {
+              _.isAssignableFrom(v)
+            }
           }
 
           isIncluded
