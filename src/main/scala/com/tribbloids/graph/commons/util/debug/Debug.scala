@@ -70,12 +70,15 @@ object Debug {
       val filteredIndex = bp.toSeq.indexWhere(
         { element =>
           val isIncluded = !exclude.exists { v =>
-            val tryClzAtStack = Try {
-              Class.forName(element.getClassName)
+            try {
+
+              val atStack = Class.forName(element.getClassName)
+              atStack.isAssignableFrom(v)
+            } catch {
+              case e: Exception =>
+                false
             }
-            tryClzAtStack.toOption.exists {
-              _.isAssignableFrom(v)
-            }
+
           }
 
           isIncluded
