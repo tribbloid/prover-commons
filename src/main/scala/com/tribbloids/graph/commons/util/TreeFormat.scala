@@ -17,7 +17,7 @@ trait TreeFormat {
       override val children: Seq[Demo] = Nil
   ) extends TreeLike {
 
-    override lazy val format: TreeFormat = TreeFormat.this
+    override lazy val treeFormat: TreeFormat = TreeFormat.this
   }
 }
 

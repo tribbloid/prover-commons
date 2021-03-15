@@ -1,16 +1,16 @@
 package com.tribbloids.graph.commons.util.viz
 
 import com.tribbloids.graph.commons.testlib.BaseSpec
-import com.tribbloids.graph.commons.util.ScalaReflection.WeakTypeTag
+import com.tribbloids.graph.commons.util.reflect.ScalaReflection.WeakTypeTag
 import shapeless.{syntax, HNil, Witness}
 
-class VizTypeTest extends BaseSpec {
+class TypeVizTest extends BaseSpec {
 
-  import VizTypeTest._
+  import TypeVizTest._
 
   def infer[T: WeakTypeTag](v: T): String = {
 
-    VizType
+    TypeViz
       .infer(v)
       .toString
 //      .split('\n')
@@ -22,7 +22,7 @@ class VizTypeTest extends BaseSpec {
 
   it("String") {
 
-    VizType[String].toString.shouldBe(
+    TypeViz[String].toString.shouldBe(
       """
         |-+ String .......................................................................... [0]
         | !-+ CharSequence
@@ -110,7 +110,7 @@ class VizTypeTest extends BaseSpec {
 
     it("type") {
 
-      VizType[VizTypeTest.singleton.type].toString.shouldBe(
+      TypeViz[TypeVizTest.singleton.type].toString.shouldBe(
         """
           |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.singleton.type
           | !-+ Int
@@ -124,7 +124,7 @@ class VizTypeTest extends BaseSpec {
 
       val w = 3
 
-      VizType[w.type].toString.shouldBe(
+      TypeViz[w.type].toString.shouldBe(
         """
           |-+ w.type
           | !-+ Int
@@ -247,7 +247,7 @@ class VizTypeTest extends BaseSpec {
 
   it("refined") {
 
-    val v = VizType[Witness.Aux[Int]]
+    val v = TypeViz[Witness.Aux[Int]]
     v.toString.shouldBe(
       """
         |-+ shapeless.Witness{type T = Int} ≅ shapeless.Witness.Aux[Int]
@@ -269,7 +269,7 @@ class VizTypeTest extends BaseSpec {
     it("with upper bound") {
 
       val e = new E { type D <: Int }
-      VizType[e.D].toString.shouldBe(
+      TypeViz[e.D].toString.shouldBe(
         """
           |-+ e.D
           | !-+ Int
@@ -282,7 +282,7 @@ class VizTypeTest extends BaseSpec {
     it("with lower bound") {
 
       val e = new E { type D >: String <: CharSequence }
-      VizType[e.D].toString.shouldBe(
+      TypeViz[e.D].toString.shouldBe(
         """
           |-+ e.D
           | !-+ CharSequence
@@ -296,7 +296,7 @@ class VizTypeTest extends BaseSpec {
 
       val e = new E { final type D = Int }
 
-      VizType[e.D].toString.shouldBe(
+      TypeViz[e.D].toString.shouldBe(
         """
           |-+ e.D
           | !-+ Int
@@ -308,7 +308,7 @@ class VizTypeTest extends BaseSpec {
 
     it("with final type in path") {
 
-      VizType[EE.D].toString.shouldBe(
+      TypeViz[EE.D].toString.shouldBe(
         """
           |-+ Int ≅ com.tribbloids.graph.commons.util.viz.VizTypeTest.EE.D
           | !-+ AnyVal
@@ -317,7 +317,7 @@ class VizTypeTest extends BaseSpec {
       )
 
       val e = new EE
-      VizType[e.D].toString.shouldBe(
+      TypeViz[e.D].toString.shouldBe(
         """
           |-+ Int ≅ e.D
           | !-+ AnyVal
@@ -330,7 +330,7 @@ class VizTypeTest extends BaseSpec {
   }
 }
 
-object VizTypeTest {
+object TypeVizTest {
 
   val singleton = 3
 

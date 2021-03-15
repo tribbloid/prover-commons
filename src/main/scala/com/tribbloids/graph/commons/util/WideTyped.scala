@@ -1,6 +1,7 @@
 package com.tribbloids.graph.commons.util
 
-import com.tribbloids.graph.commons.util.viz.VizType
+import com.tribbloids.graph.commons.util.reflect.ScalaReflection
+import com.tribbloids.graph.commons.util.viz.TypeViz
 
 import scala.language.implicitConversions
 
@@ -12,7 +13,10 @@ case class WideTyped[TT](value: TT) {
 
   type Wide = TT
 
-  def viz(implicit ttag: ScalaReflection.TypeTag[TT]): VizType = VizType[TT]
+  def viz(
+      implicit
+      ttag: ScalaReflection.TypeTag[TT]
+  ) = TypeViz[TT]
 }
 
 object WideTyped {

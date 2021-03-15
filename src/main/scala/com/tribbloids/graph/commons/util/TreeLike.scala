@@ -1,10 +1,11 @@
 package com.tribbloids.graph.commons.util
 
 import com.tribbloids.graph.commons.util.TextBlock.Padding
+import com.tribbloids.graph.commons.util.reflect.ScalaReflection
 
 trait TreeLike {
 
-  lazy val format: TreeFormat = TreeFormat.Indent2
+  lazy val treeFormat: TreeFormat = TreeFormat.Indent2
 
   def nodeString: String // supports multiple lines
 
@@ -16,26 +17,26 @@ trait TreeLike {
 
   lazy val treeString: String = {
 
-    val wText = TextBlock(nodeString).indent(format.DOT)
+    val wText = TextBlock(nodeString).indent(treeFormat.DOT)
 
     if (isLeaf) {
 
-      wText.padLeft(format.LEAF).build
+      wText.padLeft(treeFormat.LEAF).build
 
     } else {
 
-      val selfT = wText.padLeft(format.FORK)
+      val selfT = wText.padLeft(treeFormat.FORK)
 
       val childrenTProtos: Seq[TextBlock] = children.map { child =>
         TextBlock(child.treeString)
       }
 
       val childrenTMid = childrenTProtos.dropRight(1).map { tt =>
-        tt.padLeft(format.SUB)
+        tt.padLeft(treeFormat.SUB)
       }
 
       val childrenTLast = childrenTProtos.lastOption.map { tt =>
-        tt.padLeft(format.SUB_LAST)
+        tt.padLeft(treeFormat.SUB_LAST)
       }.toSeq
 
       val result = (Seq(selfT) ++ childrenTMid ++ childrenTLast)
