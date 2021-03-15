@@ -112,7 +112,7 @@ class TypeVizTest extends BaseSpec {
 
       TypeViz[TypeVizTest.singleton.type].toString.shouldBe(
         """
-          |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.singleton.type
+          |-+ com.tribbloids.graph.commons.util.viz.TypeVizTest.singleton.type
           | !-+ Int
           |   !-+ AnyVal
           |     !-- Any
@@ -139,7 +139,7 @@ class TypeVizTest extends BaseSpec {
       infer(singletonW.value)
         .shouldBe(
           """
-            |-+ com.tribbloids.graph.commons.util.viz.VizTypeTest.singletonW.T
+            |-+ com.tribbloids.graph.commons.util.viz.TypeVizTest.singletonW.T
             | !-+ Int
             |   !-+ AnyVal
             |     !-- Any
@@ -310,7 +310,7 @@ class TypeVizTest extends BaseSpec {
 
       TypeViz[EE.D].toString.shouldBe(
         """
-          |-+ Int ≅ com.tribbloids.graph.commons.util.viz.VizTypeTest.EE.D
+          |-+ Int ≅ com.tribbloids.graph.commons.util.viz.TypeVizTest.EE.D
           | !-+ AnyVal
           |   !-- Any
           |""".stripMargin
