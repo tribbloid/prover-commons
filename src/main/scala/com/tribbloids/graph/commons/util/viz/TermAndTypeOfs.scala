@@ -17,7 +17,7 @@ trait TermAndTypeOfs extends TypeOfs {
     //       |""".trim.stripMargin
     //  }
 
-    def ===!===(that: TermAndTypeOf[_] = null): Unit = {
+    def ===!(that: TermAndTypeOf[_] = null): Unit = {
 
       should_=:=(that)
 
