@@ -87,7 +87,7 @@ object TreeLike {
       } else {
 
         val _notTree = notTree.map { str =>
-          TextBlock(str.toString).padLeft(Padding.argLeftBracket).build
+          TextBlock("" + str).padLeft(Padding.argLeftBracket).build
         }
 
         TextBlock(constructorString)
