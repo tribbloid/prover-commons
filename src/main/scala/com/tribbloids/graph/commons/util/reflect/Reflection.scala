@@ -23,5 +23,5 @@ object Reflection {
     }
   }
 
-  case class Compiletime[U <: Universe](universe: U) extends Reflection {}
+  case class CompileTime[U <: Universe](universe: U) extends Reflection {}
 }
