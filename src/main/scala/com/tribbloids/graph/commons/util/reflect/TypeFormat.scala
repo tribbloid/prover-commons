@@ -1,15 +1,23 @@
 package com.tribbloids.graph.commons.util.reflect
 
-import com.tribbloids.graph.commons.util.TreeFormat
-
+// TODO: this should be broken into type format and tree format
 case class TypeFormat(
-    showArgTree: Boolean = true,
     hidePackages: Boolean = false,
-    hideAlias: Boolean = false,
-    treeFormat: TreeFormat = TreeFormat.Indent2
+    nameOf: TypeFormat.nameOf.Value = TypeFormat.nameOf.Type,
+    variants: TypeFormat.variants.Value = TypeFormat.variants.Both
 ) {}
 
 object TypeFormat {
+
+  object nameOf extends Enumeration {
+
+    val Type, TypeConstructor, Class = Value
+  }
+
+  object variants extends Enumeration {
+
+    val Alias, Dealias, Both = Value
+  }
 
   object Default extends TypeFormat()
 }
