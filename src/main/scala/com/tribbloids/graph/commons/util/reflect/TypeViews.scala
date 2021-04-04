@@ -80,23 +80,30 @@ trait TypeViews extends SymbolViews {
 
       lazy val base: String = {
 
-        var result: String = self.toString
+        var name: String = format.nameOf match {
+          case TypeFormat.nameOf.Type => self.toString
+          case TypeFormat.nameOf.Class => self.getClass.getCanonicalName
+          case TypeFormat.nameOf.TypeConstructor => self.typeConstructor.toString
+        }
 
         if (format.hidePackages) {
 
           for (ss <- Recursive.collectSymbols) {
 
-            result = result.replaceAllLiterally(SymbolView(ss).packagePrefix, "")
+            name = name.replaceAllLiterally(SymbolView(ss).packagePrefix, "")
           }
         }
 
-        result
+        name
       }
 
-      lazy val variants: Seq[universe.Type] = if (format.hideAlias) {
-        Seq(dealias)
-      } else {
-        Seq(dealias) ++ aliasOpt
+      lazy val variants: Seq[universe.Type] = format.variants match {
+        case TypeFormat.variants.Alias =>
+          Seq(self)
+        case TypeFormat.variants.Dealias =>
+          Seq(dealias)
+        case TypeFormat.variants.Both =>
+          Seq(dealias) ++ aliasOpt
       }
 
       lazy val both: String = {

@@ -7,7 +7,7 @@ trait TypeVizSystem extends HasUniverse {
   val reflection: Reflection
   final val universe: reflection.universe.type = reflection.universe
 
-  val format: TypeFormat
+  val format: TypeVizFormat
 
   class WithFormat(val format: TypeFormat) extends WithFormat.Like[WeakTypeTag] {
 
