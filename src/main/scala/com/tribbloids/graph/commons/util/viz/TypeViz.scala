@@ -4,7 +4,7 @@ import com.tribbloids.graph.commons.util.reflect.{Reflection, ScalaReflection, T
 
 class TypeViz[R <: Reflection](
     override val reflection: R,
-    override val format: TypeFormat
+    override val format: TypeVizFormat
 ) extends TypeVizLike {
 
   override type F[T] = universe.WeakTypeTag[T]
@@ -14,13 +14,13 @@ class TypeViz[R <: Reflection](
     override type F[T] = TypeTag[T]
     override val reflection: Reflection = ScalaReflection
 
-    override val format: TypeFormat = TypeViz.this.format
+    override val format: TypeVizFormat = TypeViz.this.format
   }
 
-  def withFormat(format: TypeFormat = TypeFormat.Default) = new TypeViz[R](reflection, format)
+  def withFormat(format: TypeVizFormat = TypeVizFormat.Default) = new TypeViz[R](reflection, format)
 }
 
-object TypeViz extends TypeViz(ScalaReflection, TypeFormat.Default) {
+object TypeViz extends TypeViz(ScalaReflection, TypeVizFormat.Default) {
 
-  def apply[R <: Reflection](reflection: R) = new TypeViz[R](reflection, TypeFormat.Default)
+  def apply[R <: Reflection](reflection: R) = new TypeViz[R](reflection, TypeVizFormat.Default)
 }

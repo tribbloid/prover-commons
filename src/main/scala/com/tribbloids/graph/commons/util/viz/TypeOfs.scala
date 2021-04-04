@@ -117,7 +117,7 @@ trait TypeOfs extends TypeVizSystem {
 
       //    case object Strings {
 
-      lazy val display: node.Display = node.Display(format)
+      lazy val display: node.Display = node.Display(format.base)
 
       def typeStr: String = {
 
