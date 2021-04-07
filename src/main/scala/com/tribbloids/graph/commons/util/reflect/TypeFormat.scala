@@ -16,7 +16,7 @@ object TypeFormat {
 
   object variants extends Enumeration {
 
-    val Alias, Dealias, Both = Value
+    val Alias, DeAlias, Both = Value
   }
 
   object Default extends TypeFormat()

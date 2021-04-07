@@ -29,7 +29,7 @@ trait TypeViews extends SymbolViews {
 
     import com.tribbloids.graph.commons.util.reflect.TypeViews._
 
-    lazy val id: TypeID = TypeID(dealias)
+    lazy val id: TypeID = TypeID(deAlias)
 
     // TODO: useless?
 //    lazy val internal: Option[internalUniverse.Type] = {
@@ -41,8 +41,8 @@ trait TypeViews extends SymbolViews {
 //      }
 //    }
 
-    lazy val dealias: universe.Type = self.dealias
-    lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == dealias)
+    lazy val deAlias: universe.Type = self.dealias
+    lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == deAlias)
 
     object Recursive {
 
@@ -100,10 +100,10 @@ trait TypeViews extends SymbolViews {
       lazy val variants: Seq[universe.Type] = format.variants match {
         case TypeFormat.variants.Alias =>
           Seq(self)
-        case TypeFormat.variants.Dealias =>
-          Seq(dealias)
+        case TypeFormat.variants.DeAlias =>
+          Seq(deAlias)
         case TypeFormat.variants.Both =>
-          Seq(dealias) ++ aliasOpt
+          Seq(deAlias) ++ aliasOpt
       }
 
       lazy val both: String = {
@@ -118,6 +118,7 @@ trait TypeViews extends SymbolViews {
 
       lazy val full: String = (Seq(both) ++ comment).mkString(" ⁇ ")
 
+      override def toString: String = full
     }
 
     //  override def toString: String = show1Line
