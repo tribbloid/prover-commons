@@ -7,11 +7,11 @@ class TypeViz[R <: Reflection](
     override val format: TypeVizFormat
 ) extends TypeVizLike {
 
-  override type F[T] = universe.WeakTypeTag[T]
+  override type Tag[T] = universe.WeakTypeTag[T]
 
   object Strong extends TypeVizLike {
 
-    override type F[T] = TypeTag[T]
+    override type Tag[T] = TypeTag[T]
     override val reflection: Reflection = ScalaReflection
 
     override val format: TypeVizFormat = TypeViz.this.format

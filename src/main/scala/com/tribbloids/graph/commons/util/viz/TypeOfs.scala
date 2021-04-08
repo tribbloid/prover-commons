@@ -13,11 +13,13 @@ trait TypeOfs extends TypeVizSystem {
 
   import reflection._
 
-  class TypeOf(
+  class TypeOf[T](
       val tt: universe.Type
   ) {
     val exe: Execution = Execution()
     import exe._
+
+    type TT = T
 
     lazy val typeTree: exe.Tree = Tree(TypeView(tt))
 
@@ -29,7 +31,7 @@ trait TypeOfs extends TypeVizSystem {
       typeTree.treeString
     }
 
-    def should_=:=(that: TypeOf = null): Unit = {
+    def should_=:=(that: TypeOf[_] = null): Unit = {
 
       val Seq(s1, s2) = Seq(this, that).map { v =>
         Option(v).map(_.typeTree.treeString)
@@ -50,14 +52,14 @@ trait TypeOfs extends TypeVizSystem {
       }
     }
 
-    def =!=(that: TypeOf = null): Unit = should_=:=(that)
+    def =!=(that: TypeOf[_] = null): Unit = should_=:=(that)
   }
 
   object TypeOf {
 
     def withFormat(format: TypeFormat) = new WithFormat(format)
 
-    implicit def asTree(v: TypeOf): v.exe.Tree = v.typeTree
+    implicit def asTree(v: TypeOf[_]): v.exe.Tree = v.typeTree
 
   }
 
