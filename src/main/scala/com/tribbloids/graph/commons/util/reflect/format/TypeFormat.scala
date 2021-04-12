@@ -53,7 +53,7 @@ object TypeFormat {
   case object TypeInternal extends TypeFormat {
     override def resolve(ff: Formatting): Output = {
       val tt: Reflection#Type = ff.typeView.self
-      tt.toString + " : " + tt.getClass.getSimpleName
+      tt.toString + ": " + tt.getClass.getSimpleName
     }
   }
 

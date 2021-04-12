@@ -61,13 +61,13 @@ class InfoOvrdSpec extends BaseSpec {
   describe(~~.toString) {
 
     it("1") {
-      viz[W_~~[3]].typeStr.shouldBe("3 3 3")
+      viz[W_~~[3]].typeStr.shouldBe("3 3 Int(3): UniqueConstantType")
     }
 
     it("2") {
 
       val o = W_~~(3)
-      viz.infer(o).typeStr.shouldBe("3 3 3")
+      viz.infer(o).typeStr.shouldBe("3 3 Int(3): UniqueConstantType")
     }
   }
 }
@@ -87,7 +87,7 @@ object InfoOvrdSpec {
 
   class W_~~[T <: Int](w: Witness.Aux[T]) extends HasTypeInfo {
 
-    override type _TypeInfo = ConstV[T] ~~ WConstV[T] ~~ ConstV[T]
+    override type _TypeInfo = ConstV[T] ~~ WConstV[T] ~~ T
   }
   object W_~~ {
 
