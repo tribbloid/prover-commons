@@ -13,6 +13,17 @@ trait TreeLike {
 
   lazy val isLeaf: Boolean = children.isEmpty
 
+  lazy val allOffsprings: Seq[TreeLike] = {
+    val cc = children
+    cc ++ children.flatMap { child =>
+      child.allOffsprings
+    }
+  }
+
+  def offsprings[T <: TreeLike]: Seq[T] = allOffsprings.collect {
+    case v: T => v
+  }
+
 //  final override def toString: String = treeString
 
   lazy val treeString: String = {
@@ -111,7 +122,7 @@ object TreeLike {
     val enc =
       clz.getCanonicalName.replaceAllLiterally(clz.getPackage.getName, "").stripPrefix(".").stripSuffix("$")
 
-    val dec = ScalaReflection.universe.TypeName(enc).decodedName
+    val dec = ScalaReflection._universe.TypeName(enc).decodedName
     dec.toString
   }
 }

@@ -2,7 +2,7 @@ package com.tribbloids.graph.commons.util.viz
 
 import com.tribbloids.graph.commons.util.TextBlock.Padding
 import com.tribbloids.graph.commons.util.diff.StringDiff
-import com.tribbloids.graph.commons.util.reflect.TypeFormat
+import com.tribbloids.graph.commons.util.reflect.format.TypeFormat
 import com.tribbloids.graph.commons.util.{TextBlock, TreeFormat, TreeLike}
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -14,7 +14,7 @@ trait TypeOfs extends TypeVizSystem {
   import reflection._
 
   class TypeOf[T](
-      val tt: universe.Type
+      val tt: _universe.Type
   ) {
     val exe: Execution = Execution()
     import exe._
@@ -119,13 +119,13 @@ trait TypeOfs extends TypeVizSystem {
 
       //    case object Strings {
 
-      lazy val display: node.Display = node.Display(format.base)
+      lazy val formatting: reflection.Formatting = node.formattedBy(format.base)
 
-      def typeStr: String = {
+      lazy val typeStr: String = {
 
-        val result = display.full
+        val result = node.formattedBy(format.base)
 
-        result
+        result.complete
       }
 
       def refStr: String = {
@@ -198,18 +198,19 @@ trait TypeOfs extends TypeVizSystem {
         }
       }
 
-      object ArgTree {
+      lazy val argTrees: Seq[ArgTree] = {
 
-        lazy val lists: Seq[ArgTree] = {
-          display.variants
-            .map { tt =>
-              ArgTree(tt)
-            }
-            .filter { tree =>
-              tree.children.nonEmpty
-            }
-        }
-
+        formatting.selfAndChildren
+          .map { ff =>
+            ff.typeView.self
+          }
+          .distinct
+          .map { v =>
+            ArgTree(v)
+          }
+          .filter { tree =>
+            tree.children.nonEmpty
+          }
       }
 
       object Children {
@@ -250,12 +251,12 @@ trait TypeOfs extends TypeVizSystem {
           if (history.count >= 2) {
             Nil
           } else {
-            for (args <- ArgTree.lists; tree <- args.children) {
+            for (args <- argTrees; tree <- args.children) {
 
               tree.Children.expandAll
             }
 
-            ArgTree.lists
+            argTrees
           }
 
         lazy val expandAll: Unit = {

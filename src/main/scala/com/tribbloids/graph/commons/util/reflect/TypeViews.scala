@@ -1,20 +1,23 @@
 package com.tribbloids.graph.commons.util.reflect
 
 import com.tribbloids.graph.commons.util.IDMixin
+import com.tribbloids.graph.commons.util.reflect.format.TypeFormat
 
 import scala.language.implicitConversions
+import scala.util.Try
 
 trait TypeViews extends SymbolViews {
+  self: Reflection =>
 
   case class TypeID(
-      self: universe.Type
+      self: _universe.Type
   ) extends IDMixin {
 
-    lazy val symbols: Seq[universe.Symbol] = Seq(
+    lazy val symbols: Seq[_universe.Symbol] = Seq(
       self.typeSymbol,
       self.termSymbol
     ).filter { ss =>
-      ss != getUniverse.NoSymbol
+      ss != universe.NoSymbol
     }
 
     lazy val showStr: String = self.toString
@@ -27,7 +30,7 @@ trait TypeViews extends SymbolViews {
       comment: Option[String] = None
   ) {
 
-    import com.tribbloids.graph.commons.util.reflect.TypeViews._
+    final val refl: TypeViews.this.type = TypeViews.this
 
     lazy val id: TypeID = TypeID(deAlias)
 
@@ -41,88 +44,76 @@ trait TypeViews extends SymbolViews {
 //      }
 //    }
 
-    lazy val deAlias: universe.Type = self.dealias
+    lazy val deAlias: _universe.Type = self.dealias
     lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == deAlias)
 
     object Recursive {
 
-      lazy val collectArgs: List[universe.Type] = {
+      lazy val collectArgs: Seq[TypeView] = {
 
         val selfArgs = self.typeArgs
         val loopEliminated = selfArgs.filterNot(v => v =:= self)
 
-        val transitive: List[universe.Type] = loopEliminated.flatMap { v =>
+        val transitive = loopEliminated.flatMap { v =>
           TypeView(v).Recursive.collectArgs
         }
 
-        val result = selfArgs ++ transitive
+        val result = selfArgs.map { v =>
+          TypeView(v)
+        } ++ transitive
 
         result
       }
 
-      lazy val collectSymbols: List[universe.Symbol] = (List(self) ++ collectArgs).flatMap(v => TypeView(v).id.symbols)
+      lazy val collectSymbols: List[SymbolView] =
+        (List(TypeView.this) ++ collectArgs).flatMap(v => v.id.symbols).map { v =>
+          SymbolView(v)
+        }
     }
 
     lazy val baseTypes: List[TypeView] = {
 
-      val baseClzs = self.baseClasses
+      val baseClzSyms = self.baseClasses
 
-      val baseNodes = baseClzs.map { clz =>
-        val tt = self.baseType(clz)
-        if (tt == getUniverse.NoType) TypeView(tt, Some(clz.toString))
-        else TypeView(tt)
+      val baseNodes = self match {
+        case v: _universe.Type with scala.reflect.internal.Types#Type =>
+          val list = v.baseTypeSeq.toList.map { v =>
+            v.asInstanceOf[Type]
+          }
+
+          val withIndices = list.map { tt =>
+            val index = Try {
+              baseClzSyms.indexOf(tt.typeSymbol.asClass)
+            }
+              .getOrElse(-2)
+
+            tt -> index
+          }
+
+          val reAligned = withIndices.sortBy(_._2).map(_._1)
+
+          reAligned.map { tt =>
+            TypeView(tt)
+          }
+        case _ =>
+          baseClzSyms.map { clz =>
+            val tt = self.baseType(clz)
+            if (tt == universe.NoType) TypeView(tt, Some(clz.toString))
+            else TypeView(tt)
+          }
+
       }
 
       baseNodes
     }
 
-    case class Display(format: TypeFormat) {
-
-      lazy val base: String = {
-
-        var name: String = format.nameOf match {
-          case TypeFormat.nameOf.Type => self.toString
-          case TypeFormat.nameOf.Class => self.getClass.getCanonicalName
-          case TypeFormat.nameOf.TypeConstructor => self.typeConstructor.toString
-        }
-
-        if (format.hidePackages) {
-
-          for (ss <- Recursive.collectSymbols) {
-
-            name = name.replaceAllLiterally(SymbolView(ss).packagePrefix, "")
-          }
-        }
-
-        name
-      }
-
-      lazy val variants: Seq[universe.Type] = format.variants match {
-        case TypeFormat.variants.Alias =>
-          Seq(self)
-        case TypeFormat.variants.DeAlias =>
-          Seq(deAlias)
-        case TypeFormat.variants.Both =>
-          Seq(deAlias) ++ aliasOpt
-      }
-
-      lazy val both: String = {
-
-        variants
-          .map { vv =>
-            TypeView(vv).Display(format).base
-          }
-          .distinct
-          .mkString(ALIAS_SPLITTER)
-      }
-
-      lazy val full: String = (Seq(both) ++ comment).mkString(" ⁇ ")
-
-      override def toString: String = full
+    def formattedBy(format: TypeFormat): Formatting = {
+      Formatting(this, format)
     }
 
     //  override def toString: String = show1Line
   }
+
 }
 
 object TypeViews {

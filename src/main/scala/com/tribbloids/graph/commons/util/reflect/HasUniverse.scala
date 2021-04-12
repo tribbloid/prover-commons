@@ -4,16 +4,16 @@ import scala.reflect.api.Universe
 
 trait HasUniverse {
 
-  val universe: Universe
+  val _universe: Universe
 
-  final type UU = universe.type
-  final def getUniverse: UU = universe
+  final type UU = _universe.type
+  final lazy val universe: UU = _universe
 
-  type TypeTag[T] = universe.TypeTag[T]
-  type WeakTypeTag[T] = universe.WeakTypeTag[T]
-  type Type = universe.Type
+  type TypeTag[T] = _universe.TypeTag[T]
+  type WeakTypeTag[T] = _universe.WeakTypeTag[T]
+  type Type = _universe.Type
 
-  def rootMirror: universe.Mirror = universe.rootMirror
+  def rootMirror: _universe.Mirror = _universe.rootMirror
 
-  def mirror: universe.Mirror = rootMirror
+  def mirror: _universe.Mirror = rootMirror
 }

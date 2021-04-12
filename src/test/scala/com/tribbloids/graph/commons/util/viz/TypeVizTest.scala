@@ -108,7 +108,7 @@ class TypeVizTest extends BaseSpec {
 
   describe("Singleton") {
 
-    it("type") {
+    it("global") {
 
       TypeViz[TypeVizTest.singleton.type].toString.shouldBe(
         """
@@ -120,7 +120,7 @@ class TypeVizTest extends BaseSpec {
       )
     }
 
-    it("local type") {
+    it("local") {
 
       val w = 3
 
@@ -134,7 +134,7 @@ class TypeVizTest extends BaseSpec {
       )
     }
 
-    it("Witness.T") {
+    it("global Witness.T") {
 
       infer(singletonW.value)
         .shouldBe(
@@ -158,29 +158,6 @@ class TypeVizTest extends BaseSpec {
 
     }
 
-    it("Witness type") {
-
-      val adhocTree = infer(adhocW)
-      adhocTree
-        .shouldBe(
-          """
-            |-+ shapeless.Witness{type T = Int(3)} ≅ shapeless.Witness.Aux[Int(3)]
-            | :       ┏ -+ shapeless.Witness.Aux [ 1 ARG ] :
-            | :       ┃  !-+ Int(3)
-            | :       ┃    !-+ Int
-            | :       ┃      !-+ AnyVal
-            | :       ┃        !-- Any ............................................................................. [0]
-            | !-- <notype> ⁇ <refinement of shapeless.Witness>
-            | !-+ shapeless.Witness
-            |   !-+ java.io.Serializable
-            |   : !-- Any ............................................................................. [0]
-            |   !-- Object
-            |""".stripMargin.trim
-        )
-
-      infer(singletonW).shouldBe(adhocTree)
-    }
-
     it("local Witness.T") {
 
       {
@@ -200,10 +177,36 @@ class TypeVizTest extends BaseSpec {
             infer(singletonW.value)
           )
       }
-
     }
 
-    it("local Witness type") {
+  }
+
+  describe("Witness") {
+
+    it("global") {
+
+      val adhocTree = infer(adhocW)
+      adhocTree
+        .shouldBe(
+          """
+            |-+ shapeless.Witness{type T = Int(3)} ≅ shapeless.Witness.Aux[Int(3)]
+            | :       ┏ -+ shapeless.Witness.Aux [ 1 ARG ] :
+            | :       ┃  !-+ Int(3)
+            | :       ┃    !-+ Int
+            | :       ┃      !-+ AnyVal
+            | :       ┃        !-- Any ............................................................................. [0]
+            | !-+ shapeless.Witness{type T = T0}
+            |   !-+ shapeless.Witness
+            |     !-+ java.io.Serializable
+            |     : !-- Any ............................................................................. [0]
+            |     !-- Object
+            |""".stripMargin.trim
+        )
+
+      infer(singletonW).shouldBe(adhocTree)
+    }
+
+    it("local") {
 
       val ww = adhocW
 
@@ -228,20 +231,13 @@ class TypeVizTest extends BaseSpec {
             | :       ┃  !-+ Int
             | :       ┃    !-+ AnyVal
             | :       ┃      !-- Any ............................................................................. [0]
-            | !-- <notype> ⁇ <refinement of shapeless.Witness>
-            | !-+ shapeless.Witness
-            |   !-+ java.io.Serializable
-            |   : !-- Any ............................................................................. [0]
-            |   !-- Object
+            | !-+ shapeless.Witness{type T <: Lub}
+            |   !-+ shapeless.Witness
+            |     !-+ java.io.Serializable
+            |     : !-- Any ............................................................................. [0]
+            |     !-- Object
             |""".stripMargin
         )
-
-      // TODO: compilation error! Why?
-//      val vv = ww.value
-//      infer(vv)
-//        .shouldBe(
-//          infer(adhocW.value)
-//        )
     }
   }
 
@@ -255,11 +251,11 @@ class TypeVizTest extends BaseSpec {
         | :       ┃  !-+ Int
         | :       ┃    !-+ AnyVal
         | :       ┃      !-- Any ............................................................................. [0]
-        | !-- <notype> ⁇ <refinement of shapeless.Witness>
-        | !-+ shapeless.Witness
-        |   !-+ java.io.Serializable
-        |   : !-- Any ............................................................................. [0]
-        |   !-- Object
+        | !-+ shapeless.Witness{type T = T0}
+        |   !-+ shapeless.Witness
+        |     !-+ java.io.Serializable
+        |     : !-- Any ............................................................................. [0]
+        |     !-- Object
         |""".stripMargin
     )
   }

@@ -1,11 +1,12 @@
 package com.tribbloids.graph.commons.util.viz
 
-import com.tribbloids.graph.commons.util.reflect.{HasUniverse, Reflection, TypeFormat}
+import com.tribbloids.graph.commons.util.reflect.format.TypeFormat
+import com.tribbloids.graph.commons.util.reflect.{HasUniverse, Reflection}
 
 trait TypeVizSystem extends HasUniverse {
 
   val reflection: Reflection
-  final val universe: reflection.universe.type = reflection.universe
+  final val _universe: reflection._universe.type = reflection._universe
 
   val format: TypeVizFormat
 

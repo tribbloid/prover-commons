@@ -1,7 +1,7 @@
 package com.tribbloids.graph.commons.util.viz
 
 import com.tribbloids.graph.commons.util.TreeFormat
-import com.tribbloids.graph.commons.util.reflect.TypeFormat
+import com.tribbloids.graph.commons.util.reflect.format.TypeFormat
 
 import scala.language.implicitConversions
 
