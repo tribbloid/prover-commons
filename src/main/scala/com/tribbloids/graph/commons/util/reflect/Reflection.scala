@@ -30,7 +30,7 @@ trait Reflection extends TypeViews {
       copy(format = ff)
     }
 
-    def complete: String = text
+    def fullText: String = text
   }
 
   object Formatting {}
@@ -41,24 +41,24 @@ object Reflection {
 
   object Runtime extends Reflection {
 
-    final val _universe: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
+    final val universe: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
 
     // TODO: useless? what's the difference
     // Since we are creating a runtime mirror using the class loader of current thread,
     // we need to use def at here. So, every time we call mirror, it is using the
     // class loader of the current thread.
-    override def mirror: _universe.Mirror = {
+    override def mirror: universe.Mirror = {
 
-      val result: _universe.Mirror = _universe
+      val result: universe.Mirror = universe
         .runtimeMirror(Thread.currentThread().getContextClassLoader)
 
       result
     }
   }
 
-  case class CompileTime[U <: macros.Universe](_universe: U) extends Reflection {}
+  case class CompileTime[U <: macros.Universe](universe: U) extends Reflection {}
 
-  class General[U <: api.Universe](val _universe: U) extends Reflection {}
+  class General[U <: api.Universe](val universe: U) extends Reflection {}
 
   def General(universe: api.Universe) = new General[universe.type](universe)
 }

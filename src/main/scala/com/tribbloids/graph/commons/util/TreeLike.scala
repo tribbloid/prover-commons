@@ -1,7 +1,7 @@
 package com.tribbloids.graph.commons.util
 
 import com.tribbloids.graph.commons.util.TextBlock.Padding
-import com.tribbloids.graph.commons.util.reflect.ScalaReflection
+import com.tribbloids.graph.commons.util.reflect.{Reflection, ScalaReflection}
 
 trait TreeLike {
 
@@ -20,7 +20,10 @@ trait TreeLike {
     }
   }
 
-  def offsprings[T <: TreeLike]: Seq[T] = allOffsprings.collect {
+  def offsprings[T <: TreeLike](
+      implicit
+      ttag: Reflection.Runtime.TypeTag[T]
+  ): Seq[T] = allOffsprings.collect {
     case v: T => v
   }
 
@@ -122,7 +125,7 @@ object TreeLike {
     val enc =
       clz.getCanonicalName.replaceAllLiterally(clz.getPackage.getName, "").stripPrefix(".").stripSuffix("$")
 
-    val dec = ScalaReflection._universe.TypeName(enc).decodedName
+    val dec = ScalaReflection.universe.TypeName(enc).decodedName
     dec.toString
   }
 }

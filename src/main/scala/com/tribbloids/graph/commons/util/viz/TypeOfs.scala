@@ -14,7 +14,7 @@ trait TypeOfs extends TypeVizSystem {
   import reflection._
 
   class TypeOf[T](
-      val tt: _universe.Type
+      val tt: universe.Type
   ) {
     val exe: Execution = Execution()
     import exe._
@@ -125,7 +125,7 @@ trait TypeOfs extends TypeVizSystem {
 
         val result = node.formattedBy(format.base)
 
-        result.complete
+        result.fullText
       }
 
       def refStr: String = {

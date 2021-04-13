@@ -6,7 +6,7 @@ import com.tribbloids.graph.commons.util.reflect.{HasUniverse, Reflection}
 trait TypeVizSystem extends HasUniverse {
 
   val reflection: Reflection
-  final val _universe: reflection._universe.type = reflection._universe
+  final val universe: reflection.universe.type = reflection.universe
 
   val format: TypeVizFormat
 

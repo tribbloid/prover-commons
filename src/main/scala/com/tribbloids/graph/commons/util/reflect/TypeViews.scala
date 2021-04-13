@@ -10,10 +10,10 @@ trait TypeViews extends SymbolViews {
   self: Reflection =>
 
   case class TypeID(
-      self: _universe.Type
+      self: universe.Type
   ) extends IDMixin {
 
-    lazy val symbols: Seq[_universe.Symbol] = Seq(
+    lazy val symbols: Seq[universe.Symbol] = Seq(
       self.typeSymbol,
       self.termSymbol
     ).filter { ss =>
@@ -44,7 +44,7 @@ trait TypeViews extends SymbolViews {
 //      }
 //    }
 
-    lazy val deAlias: _universe.Type = self.dealias
+    lazy val deAlias: universe.Type = self.dealias
     lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == deAlias)
 
     object Recursive {
@@ -76,7 +76,7 @@ trait TypeViews extends SymbolViews {
       val baseClzSyms = self.baseClasses
 
       val baseNodes = self match {
-        case v: _universe.Type with scala.reflect.internal.Types#Type =>
+        case v: universe.Type with scala.reflect.internal.Types#Type =>
           val list = v.baseTypeSeq.toList.map { v =>
             v.asInstanceOf[Type]
           }

@@ -2,7 +2,7 @@ package com.tribbloids.graph.commons.util.debug
 
 import com.tribbloids.graph.commons.testlib.BaseSpec
 
-class print_At_Test extends BaseSpec {
+class print_At_Spec extends BaseSpec {
 
   it("can identify line number") {
 

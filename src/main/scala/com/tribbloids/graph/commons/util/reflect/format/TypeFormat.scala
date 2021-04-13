@@ -45,11 +45,13 @@ object TypeFormat {
     Type
   )
 
+  trait Type[T]
   case object Type extends TypeFormat {
     override def resolve(ff: Formatting): Output =
       ff.typeView.self.toString
   }
 
+  trait TypeInternal[T]
   case object TypeInternal extends TypeFormat {
     override def resolve(ff: Formatting): Output = {
       val tt: Reflection#Type = ff.typeView.self
@@ -57,11 +59,13 @@ object TypeFormat {
     }
   }
 
+  trait Kind[T]
   case object Kind extends TypeFormat {
     override def resolve(ff: Formatting): Output =
       ff.typeView.self.typeConstructor.toString
   }
 
+  trait Class[T]
   case object Class extends TypeFormat {
     override def resolve(ff: Formatting): Output =
       ff.typeView.self.typeSymbol.asClass.fullName

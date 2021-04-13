@@ -6,7 +6,7 @@ trait TermAndTypeOfs extends TypeOfs {
 
   class TermAndTypeOf[T](
       val rtValue: T,
-      override val tt: _universe.Type
+      override val tt: universe.Type
   ) extends TypeOf(tt) {
 
     //  override def toString: String = {

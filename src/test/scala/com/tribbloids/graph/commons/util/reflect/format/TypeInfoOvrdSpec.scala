@@ -1,21 +1,36 @@
-package com.tribbloids.graph.commons.util.reflect.extension
+package com.tribbloids.graph.commons.util.reflect.format
 
 import com.tribbloids.graph.commons.testlib.BaseSpec
 import com.tribbloids.graph.commons.util.reflect.Reflection
-import com.tribbloids.graph.commons.util.reflect.format.HasTypeInfo.{~~, ConstV}
-import com.tribbloids.graph.commons.util.reflect.format.{HasTypeInfo, InfoOvrd, TypeFormat}
+import com.tribbloids.graph.commons.util.reflect.format.InfoFormat.{~~, ConstV}
 import com.tribbloids.graph.commons.util.viz.TypeViz
 import shapeless.Witness
 
-class InfoOvrdSpec extends BaseSpec {
+class TypeInfoOvrdSpec extends BaseSpec {
 
-  import InfoOvrdSpec._
+  import TypeInfoOvrdSpec._
 
-  val format: TypeFormat = InfoOvrd(
+  val format: TypeFormat = TypeInfoOvrd(
     TypeFormat.DeAlias(TypeFormat.TypeInternal)
   )
 
   val viz: TypeViz[Reflection.Runtime.type] = TypeViz.withFormat(format)
+
+  describe("fallback") {
+
+    it("1") {
+
+      viz[String].typeStr.shouldBe("String: ClassNoArgsTypeRef")
+    }
+
+    it("2") {
+      val tt = Reflection.Runtime.universe.typeOf[Undefined[Int]]
+
+      viz[Undefined[Int]].typeStr.shouldBe(
+        s"$tt: ClassArgsTypeRef"
+      )
+    }
+  }
 
   describe(ConstV.toString) {
 
@@ -33,7 +48,7 @@ class InfoOvrdSpec extends BaseSpec {
     it("3") {
 
       viz[ConstV[global.type]].typeStr.shouldBe(
-        s"${InfoOvrdSpec.getClass.getCanonicalName.stripSuffix("$")}.global.type"
+        s"${TypeInfoOvrdSpec.getClass.getCanonicalName.stripSuffix("$")}.global.type"
       )
     }
 
@@ -45,7 +60,7 @@ class InfoOvrdSpec extends BaseSpec {
         .infer(o3)
         .typeStr
         .shouldBe(
-          s"${InfoOvrdSpec.getClass.getCanonicalName.stripSuffix("$")}.global.type"
+          s"${TypeInfoOvrdSpec.getClass.getCanonicalName.stripSuffix("$")}.global.type"
         )
     }
 
@@ -72,9 +87,11 @@ class InfoOvrdSpec extends BaseSpec {
   }
 }
 
-object InfoOvrdSpec {
+object TypeInfoOvrdSpec {
 
   val global = 3
+
+  class Undefined[T] extends HasTypeInfo
 
   class WConstV[T <: Int](w: Witness.Aux[T]) extends HasTypeInfo {
 

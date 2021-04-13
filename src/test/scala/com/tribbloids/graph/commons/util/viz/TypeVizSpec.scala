@@ -4,9 +4,9 @@ import com.tribbloids.graph.commons.testlib.BaseSpec
 import com.tribbloids.graph.commons.util.reflect.ScalaReflection.WeakTypeTag
 import shapeless.{syntax, HNil, Witness}
 
-class TypeVizTest extends BaseSpec {
+class TypeVizSpec extends BaseSpec {
 
-  import TypeVizTest._
+  import TypeVizSpec._
 
   def infer[T: WeakTypeTag](v: T): String = {
 
@@ -110,9 +110,9 @@ class TypeVizTest extends BaseSpec {
 
     it("global") {
 
-      TypeViz[TypeVizTest.singleton.type].toString.shouldBe(
+      TypeViz[TypeVizSpec.singleton.type].toString.shouldBe(
         """
-          |-+ com.tribbloids.graph.commons.util.viz.TypeVizTest.singleton.type
+          |-+ com.tribbloids.graph.commons.util.viz.TypeVizSpec.singleton.type
           | !-+ Int
           |   !-+ AnyVal
           |     !-- Any
@@ -139,7 +139,7 @@ class TypeVizTest extends BaseSpec {
       infer(singletonW.value)
         .shouldBe(
           """
-            |-+ com.tribbloids.graph.commons.util.viz.TypeVizTest.singletonW.T
+            |-+ com.tribbloids.graph.commons.util.viz.TypeVizSpec.singletonW.T
             | !-+ Int
             |   !-+ AnyVal
             |     !-- Any
@@ -306,7 +306,7 @@ class TypeVizTest extends BaseSpec {
 
       TypeViz[EE.D].toString.shouldBe(
         """
-          |-+ Int ≅ com.tribbloids.graph.commons.util.viz.TypeVizTest.EE.D
+          |-+ Int ≅ com.tribbloids.graph.commons.util.viz.TypeVizSpec.EE.D
           | !-+ AnyVal
           |   !-- Any
           |""".stripMargin
@@ -326,7 +326,7 @@ class TypeVizTest extends BaseSpec {
   }
 }
 
-object TypeVizTest {
+object TypeVizSpec {
 
   val singleton = 3
 
