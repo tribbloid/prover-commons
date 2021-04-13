@@ -9,7 +9,7 @@ class TypeFormatSpec extends BaseSpec {
 
     val v1 = DeAlias(Type)
 
-    val v2 = Type +> DeAlias
+    val v2 = Type ~ DeAlias
 
     assert(v1 == v2)
   }

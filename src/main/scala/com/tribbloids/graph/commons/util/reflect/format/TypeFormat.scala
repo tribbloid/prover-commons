@@ -1,13 +1,13 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
 import com.tribbloids.graph.commons.util.reflect.Reflection
-import com.tribbloids.graph.commons.util.reflect.format.TypeFormat.Output
+import com.tribbloids.graph.commons.util.reflect.format.TypeFormat.{Concat, DeAlias, HidePackages, Output, Type}
 
 import scala.language.implicitConversions
 
 trait TypeFormat {
 
-  def +>(fn: TypeFormat => TypeFormat): TypeFormat = fn(this)
+  def ~(fn: TypeFormat => TypeFormat): TypeFormat = fn(this)
 
   def resolve(ff: Formatting): Output
 
@@ -24,6 +24,15 @@ trait TypeFormat {
     require(v.format != this, "cannot convert Formatting into Output: may trigger dead loop")
     Output(v.text, Seq(v))
   }
+
+  def Default: Concat = Concat(
+    DeAlias(this),
+    Type
+  )
+
+  def Short: HidePackages = HidePackages(
+    DeAlias(this)
+  )
 }
 
 object TypeFormat {
@@ -40,12 +49,7 @@ object TypeFormat {
     implicit def fromTuple(v: (String, Seq[Formatting])): Output = Output(v._1, v._2)
   }
 
-  val Default: Concat = Concat(
-    DeAlias(Type),
-    Type
-  )
-
-  val Short: HidePackages = HidePackages(DeAlias(Type))
+  val Default: Concat = Type.Default
 
   trait Type[T]
   case object Type extends TypeFormat {
