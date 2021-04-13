@@ -45,6 +45,8 @@ object TypeFormat {
     Type
   )
 
+  val Short: HidePackages = HidePackages(DeAlias(Type))
+
   trait Type[T]
   case object Type extends TypeFormat {
     override def resolve(ff: Formatting): Output =

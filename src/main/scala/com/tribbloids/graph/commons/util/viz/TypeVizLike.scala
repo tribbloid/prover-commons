@@ -4,7 +4,7 @@ trait TypeVizLike extends TermAndTypeOfs {
 
   type TTag[T] <: WeakTypeTag[T]
 
-  def fromType(tt: Type) = new TypeOf[Any](tt)
+  def of(tt: Type) = new TypeOf[Any](tt)
 
   def apply[T](
       implicit
