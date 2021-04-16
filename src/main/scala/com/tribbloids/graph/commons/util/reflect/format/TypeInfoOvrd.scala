@@ -37,7 +37,7 @@ case class TypeInfoOvrd(
           v.self
         }
 
-      complete.toStream.map { v =>
+      complete.to(LazyList).map { v =>
         v.companion -> v.typeArgs
       }
     }

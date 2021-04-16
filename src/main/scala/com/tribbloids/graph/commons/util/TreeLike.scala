@@ -3,6 +3,8 @@ package com.tribbloids.graph.commons.util
 import com.tribbloids.graph.commons.util.TextBlock.Padding
 import com.tribbloids.graph.commons.util.reflect.{Reflection, ScalaReflection}
 
+import scala.reflect.ClassTag
+
 trait TreeLike {
 
   lazy val treeFormat: TreeFormat = TreeFormat.Indent2
@@ -20,10 +22,7 @@ trait TreeLike {
     }
   }
 
-  def offsprings[T <: TreeLike](
-      implicit
-      ttag: Reflection.Runtime.TypeTag[T]
-  ): Seq[T] = allOffsprings.collect {
+  def offsprings[T <: TreeLike: ClassTag]: Seq[T] = allOffsprings.collect {
     case v: T => v
   }
 

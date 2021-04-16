@@ -76,9 +76,9 @@ trait TypeViews extends SymbolViews {
       val baseClzSyms = self.baseClasses
 
       val baseNodes = self match {
-        case v: universe.Type with scala.reflect.internal.Types#Type =>
+        case v: Type with scala.reflect.internal.Types#Type =>
           val list = v.baseTypeSeq.toList.map { v =>
-            v.asInstanceOf[Type]
+            v.asInstanceOf[Type] //https://github.com/scala/bug/issues/9837
           }
 
           val withIndices = list.map { tt =>
