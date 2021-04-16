@@ -123,7 +123,7 @@ object TreeLike {
   def decodedStrOf(v: AnyRef): String = {
     val clz = v.getClass
     val enc =
-      clz.getCanonicalName.replaceAllLiterally(clz.getPackage.getName, "").stripPrefix(".").stripSuffix("$")
+      clz.getCanonicalName.replaceAll(clz.getPackage.getName, "").stripPrefix(".").stripSuffix("$")
 
     val dec = ScalaReflection.universe.TypeName(enc).decodedName
     dec.toString

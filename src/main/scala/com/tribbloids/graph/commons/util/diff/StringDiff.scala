@@ -35,7 +35,7 @@ case class StringDiff(
     val effective: List[String] = {
 
       var a = rows
-        .filterNot(_.replaceAllLiterally(" ", "").isEmpty)
+        .filterNot(_.replaceAll(" ", "").isEmpty)
         .map(v => ("|" + v).trim.stripPrefix("|"))
 
       if (sort) a = a.sorted
