@@ -1,130 +1,49 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
-import com.tribbloids.graph.commons.util.reflect.Reflection
-import com.tribbloids.graph.commons.util.reflect.format.TypeFormat.{Concat, DeAlias, HidePackages, Output, Type}
-
 import scala.language.implicitConversions
 
 trait TypeFormat {
-
-  def ~(fn: TypeFormat => TypeFormat): TypeFormat = fn(this)
 
   def resolve(ff: Formatting): Output
 
   def joinText(v: Seq[String]): String = v.mkString(" ")
 
-  def unsupported(): Nothing = {
+  def unsupported(ff: Formatting): Nothing = {
     throw new UnsupportedOperationException(
-      "unsupported"
+      s"Type ${ff.typeView} is not supported by format $this"
     )
   }
 
-  // TODO: add loop elimination
+  implicit def fromText(v: String): Output = Output(v)
+
+  implicit def fromTuple(v: (String, Seq[Formatting])): Output = Output(v._1, v._2)
+
   implicit def fromFormatting(v: Formatting): Output = {
     require(v.format != this, "cannot convert Formatting into Output: may trigger dead loop")
     Output(v.text, Seq(v))
   }
 
-  def Default: Concat = Concat(
-    DeAlias(this),
-    Type
-  )
+  def ~(factory: TypeFormat => TypeFormat): TypeFormat = factory(this)
 
-  def Short: HidePackages = HidePackages(
-    DeAlias(this)
-  )
+  // TODO: the following should be moved into a view that also contains TypeVizFormat
+  //  should make compile-time macro much easier to define
+  object DeAlias extends Factories.DeAlias(this)
+
+  object HidePackages extends Factories.HidePackages(this)
+
+  object Both
+      extends Factories.Concat(
+        this.DeAlias,
+        this
+      )
+
+  object Short
+      extends Factories.HidePackages(
+        DeAlias
+      )
 }
 
 object TypeFormat {
 
-  case class Output(
-      text: String,
-      children: Seq[Formatting] = Nil
-  )
-
-  object Output {
-
-    implicit def fromText(v: String): Output = Output(v)
-
-    implicit def fromTuple(v: (String, Seq[Formatting])): Output = Output(v._1, v._2)
-  }
-
-  val Default: Concat = Type.Default
-
-  trait Type[T]
-  case object Type extends TypeFormat {
-    override def resolve(ff: Formatting): Output =
-      ff.typeView.self.toString
-  }
-
-  trait TypeInternal[T]
-  case object TypeInternal extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
-      val tt: Reflection#Type = ff.typeView.self
-      tt.toString + ": " + tt.getClass.getSimpleName
-    }
-  }
-
-  trait Kind[T]
-  case object Kind extends TypeFormat {
-    override def resolve(ff: Formatting): Output =
-      ff.typeView.self.typeConstructor.toString
-  }
-
-  trait Class[T]
-  case object Class extends TypeFormat {
-    override def resolve(ff: Formatting): Output =
-      ff.typeView.self.typeSymbol.asClass.fullName
-  }
-
-  case class DeAlias(
-      base: TypeFormat
-  ) extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
-
-      val refl = ff.refl
-      val _ff = ff.asInstanceOf[refl.Formatting]
-
-      val v = _ff.typeView
-
-      val vN = v.copy(self = v.deAlias)
-      val ffN = _ff.copy(typeView = vN)
-
-      ffN.formattedBy(base)
-    }
-  }
-
-  case class Concat(
-      bases: TypeFormat*
-  ) extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
-      val prevs = bases.map { base =>
-        ff.formattedBy(base)
-      }
-
-      prevs.map(_.nodeString).distinct.mkString(" ≅ ") -> prevs
-    }
-  }
-
-  case class HidePackages(
-      base: TypeFormat
-  ) extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
-
-      val prev = ff.formattedBy(base)
-
-      var out = prev.nodeString
-
-      val symbols = prev.selfAndChildren.flatMap { v =>
-        v.typeView.Recursive.collectSymbols
-      }
-
-      for (ss <- symbols) {
-
-        out = out.replaceAll(ss.packagePrefix, "")
-      }
-
-      out -> Seq(prev)
-    }
-  }
+  val Default: Formats.TypeInfo.Both.type = Formats.TypeInfo.Both
 }

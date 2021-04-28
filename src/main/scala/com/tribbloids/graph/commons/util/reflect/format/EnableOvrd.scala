@@ -1,13 +1,12 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
-import com.tribbloids.graph.commons.util.reflect.format.TypeFormat.Output
 import com.tribbloids.graph.commons.util.reflect.{format, Reflection}
 
 import scala.collection.mutable
 import scala.util.Try
 
-case class TypeInfoOvrd(
-    fallback: TypeFormat
+case class EnableOvrd(
+    lastResort: TypeFormat
 ) extends TypeFormat {
 
   override def resolve(ff: Formatting): Output = {
@@ -16,15 +15,17 @@ case class TypeInfoOvrd(
     val u = refl.getUniverse
     val tt = ff.typeView.self.asInstanceOf[u.Type]
 
-    lazy val typeInfoName = u.weakTypeOf[HasTypeInfo#_TypeInfo].typeSymbol.name
+//    lazy val typeInfoName = u.weakTypeOf[HasTypeInfo#_TypeInfo].typeSymbol.name
 
-    val infoTT: u.Type = {
-      if (tt <:< u.weakTypeOf[HasTypeInfo]) {
-        tt.member(typeInfoName).typeSignatureIn(tt)
-      } else {
-        tt
-      }
-    }
+//    val infoTT: u.Type = {
+//      if (tt <:< u.weakTypeOf[HasTypeInfo]) {
+//        tt.member(typeInfoName).typeSignatureIn(tt)
+//      } else {
+//        tt
+//      }
+//    }
+
+    val infoTT = tt
 
     //    val companionTs = Stream(infoT.companion)
 
@@ -61,13 +62,13 @@ case class TypeInfoOvrd(
 //          print_@(v._1.typeSymbol.fullName)
 //          print_@(v._1.termSymbol.fullName)
 
-          TypeInfoOvrd.cache.getOrElseUpdate(
+          EnableOvrd.cache.getOrElseUpdate(
             fnName, {
 
               // cross universe operation may be unsafe?
               val mirror = Reflection.Runtime.mirror
 
-              // TODO: doesn't work! why
+              // TODO: doesn't work! why?
               val fn = mirror.staticModule(fnName)
 
               val fnMirror = mirror.reflectModule(fn)
@@ -94,23 +95,23 @@ case class TypeInfoOvrd(
 
           val text = companion.joinText(textParts)
 
-          text -> outputs.flatMap(v => v.children): Output
+          text -> outputs.flatMap(v => v.causes): Output
         }.toOption
       }
-      .headOption // at the moment, _Info are mutually exclusive
+      .headOption
       .getOrElse {
-        ff.formattedBy(fallback)
+        ff.formattedBy(lastResort)
       }
   }
 }
 
-object TypeInfoOvrd extends TypeInfoOvrd(TypeFormat.Default) {
+object EnableOvrd extends EnableOvrd(TypeFormat.Default) {
 
-  import com.tribbloids.graph.commons.util.reflect.format.InfoFormat._
+  import com.tribbloids.graph.commons.util.reflect.format.FormatOvrd._
 
   val cache: mutable.HashMap[String, TypeFormat] = {
 
-    val list = Seq(ConstV, ~~).map { v =>
+    val list = Seq(Singleton, ~~).map { v =>
       v.getClass.getCanonicalName.stripSuffix("$") -> v
     }
 

@@ -1,11 +1,13 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
-import com.tribbloids.graph.commons.util.reflect.format.TypeFormat.Output
+import scala.annotation.StaticAnnotation
 
-object InfoFormat {
+trait FormatOvrd extends StaticAnnotation
 
-  trait ConstV[T]
-  case object ConstV extends TypeFormat {
+object FormatOvrd {
+
+  trait Singleton[T] extends FormatOvrd
+  case object Singleton extends TypeFormat {
     override def resolve(ff: Formatting): Output = {
       val u = ff.refl.getUniverse
       val tt = ff.typeView.self.asInstanceOf[u.Type].dealias
@@ -16,17 +18,17 @@ object InfoFormat {
         case v: u.SingletonType =>
           v.toString
         case _ =>
-          ff.resolved
+          unsupported(ff)
       }
     }
   }
 
-  trait ~~[A, B]
+  trait ~~[A, B] extends FormatOvrd
   case object ~~ extends TypeFormat {
 
     override def resolve(ff: Formatting): Output = {
 
-      ff.resolved
+      ff.output
     }
   }
 }

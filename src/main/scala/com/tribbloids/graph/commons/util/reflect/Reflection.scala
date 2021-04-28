@@ -1,7 +1,7 @@
 package com.tribbloids.graph.commons.util.reflect
 
 import com.tribbloids.graph.commons.util.TreeLike
-import com.tribbloids.graph.commons.util.reflect.format.TypeFormat
+import com.tribbloids.graph.commons.util.reflect.format.{Output, TypeFormat}
 
 import scala.reflect.{api, macros}
 
@@ -14,10 +14,10 @@ trait Reflection extends TypeViews {
 
     val refl: Reflection = Reflection.this
 
-    lazy val resolved: TypeFormat.Output = format.resolve(this)
+    lazy val output: Output = format.resolve(this)
 
-    def text: String = resolved.text
-    override lazy val children: Seq[Formatting] = resolved.children.collect {
+    def text: String = output.text
+    override lazy val children: Seq[Formatting] = output.causes.collect {
       case v: Formatting => v
     }
 

@@ -324,6 +324,20 @@ class TypeVizSpec extends BaseSpec {
     }
 
   }
+
+  it("this") {
+
+    val e = new EE
+    TypeViz[e.THIS].toString.shouldBe(
+      """
+        |-+ e.type ≅ e.THIS
+        | !-+ com.tribbloids.graph.commons.util.viz.TypeVizSpec.EE
+        |   !-+ com.tribbloids.graph.commons.util.viz.TypeVizSpec.E
+        |     !-+ Object
+        |       !-- Any
+        |""".stripMargin
+    )
+  }
 }
 
 object TypeVizSpec {
@@ -339,6 +353,8 @@ object TypeVizSpec {
   class EE extends E {
 
     final type D = Int
+
+    final type THIS = this.type
   }
 
   object EE extends EE
