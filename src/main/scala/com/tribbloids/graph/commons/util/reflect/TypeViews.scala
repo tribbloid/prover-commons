@@ -4,6 +4,7 @@ import com.tribbloids.graph.commons.util.IDMixin
 import com.tribbloids.graph.commons.util.reflect.format.TypeFormat
 
 import scala.language.implicitConversions
+import scala.tools.reflect.ToolBox
 import scala.util.Try
 
 trait TypeViews extends SymbolViews {
@@ -33,6 +34,34 @@ trait TypeViews extends SymbolViews {
     final val refl: TypeViews.this.type = TypeViews.this
 
     lazy val id: TypeID = TypeID(deAlias)
+
+    def getOnlyInstance: Any = {
+
+      self.dealias match {
+        case v: universe.ConstantType =>
+          v.value.value
+        case v @ _ =>
+          val onlySym = (v.termSymbol, v.typeSymbol) match {
+            case (term, _) if term.isTerm && term.isStatic => term
+            case (_, tt) if tt.isModuleClass => tt
+            case _ =>
+              throw new UnsupportedOperationException(
+                s"${v} : ${v.getClass} is not a Singleton"
+              )
+          }
+
+          val mirror = Reflection.Runtime.mirror
+
+          val tb = ToolBox(mirror).mkToolBox()
+
+          try {
+            tb.eval(tb.parse(onlySym.fullName))
+          } catch {
+            case e: Throwable =>
+              throw new InternalError(s"cannot parse or evaluate ${onlySym} : ${onlySym.getClass}", e)
+          }
+      }
+    }
 
     // TODO: useless?
 //    lazy val internal: Option[internalUniverse.Type] = {

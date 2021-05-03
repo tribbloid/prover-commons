@@ -43,6 +43,8 @@ object Reflection {
 
     final val universe: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
 
+    val _classloader: ClassLoader = Reflection.getClass.getClassLoader
+
     // TODO: useless? what's the difference
     // Since we are creating a runtime mirror using the class loader of current thread,
     // we need to use def at here. So, every time we call mirror, it is using the
@@ -50,7 +52,7 @@ object Reflection {
     override def mirror: universe.Mirror = {
 
       val result: universe.Mirror = universe
-        .runtimeMirror(Thread.currentThread().getContextClassLoader)
+        .runtimeMirror(_classloader)
 
       result
     }

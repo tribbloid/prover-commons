@@ -6,20 +6,12 @@ trait FormatOvrd extends StaticAnnotation
 
 object FormatOvrd {
 
-  trait Singleton[T] extends FormatOvrd
-  case object Singleton extends TypeFormat {
+  trait Only[T] extends FormatOvrd
+  case object Only extends TypeFormat {
     override def resolve(ff: Formatting): Output = {
-      val u = ff.refl.getUniverse
-      val tt = ff.typeView.self.asInstanceOf[u.Type].dealias
+      val only = ff.typeView.getOnlyInstance
 
-      tt match {
-        case v: u.ConstantType =>
-          v.value.value.toString
-        case v: u.SingletonType =>
-          v.toString
-        case _ =>
-          unsupported(ff)
-      }
+      "" + only
     }
   }
 

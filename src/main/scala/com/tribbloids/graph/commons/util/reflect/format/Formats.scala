@@ -1,5 +1,6 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
+import com.tribbloids.graph.commons.util.debug.print_@
 import com.tribbloids.graph.commons.util.reflect.Reflection
 
 object Formats {
@@ -20,8 +21,10 @@ object Formats {
 
   trait KindName[T] extends FormatOvrd
   case object KindName extends TypeFormat {
-    override def resolve(ff: Formatting): Output =
+    override def resolve(ff: Formatting): Output = {
+
       ff.typeView.self.typeConstructor.toString
+    }
   }
 
   trait ClassName[T]

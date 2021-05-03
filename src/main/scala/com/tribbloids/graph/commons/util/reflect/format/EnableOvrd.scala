@@ -1,9 +1,8 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
-import com.tribbloids.graph.commons.util.reflect.{format, Reflection}
+import com.tribbloids.graph.commons.util.reflect.format
 
 import scala.collection.mutable
-import scala.util.Try
 
 case class EnableOvrd(
     lastResort: TypeFormat
@@ -29,7 +28,7 @@ case class EnableOvrd(
 
     //    val companionTs = Stream(infoT.companion)
 
-    val fns_args = {
+    val companions_args = {
 
       val complete = refl
         .TypeView(infoTT)
@@ -43,7 +42,7 @@ case class EnableOvrd(
       }
     }
 
-    val qualified = fns_args
+    val qualified = companions_args
       .filter { v =>
         val hasFormat = v._1 <:< u.typeOf[format.TypeFormat]
 
@@ -57,28 +56,19 @@ case class EnableOvrd(
       .flatMap { v =>
         val companion = {
 
-          val fnName = v._1.typeSymbol.fullName
+          val cName = v._1.typeSymbol.fullName
 
 //          print_@(v._1.typeSymbol.fullName)
 //          print_@(v._1.termSymbol.fullName)
 
           EnableOvrd.cache.getOrElseUpdate(
-            fnName, {
-
-              // cross universe operation may be unsafe?
-              val mirror = Reflection.Runtime.mirror
-
-              // TODO: doesn't work! why?
-              val fn = mirror.staticModule(fnName)
-
-              val fnMirror = mirror.reflectModule(fn)
-              fnMirror.instance.asInstanceOf[TypeFormat]
-            }
+            cName,
+            refl.TypeView(v._1).getOnlyInstance.asInstanceOf[TypeFormat]
           )
 
         }
 
-        Try {
+        try {
           val outputs = v._2.map { arg =>
             val _ff = refl.Formatting(
               refl.TypeView(arg),
@@ -95,8 +85,11 @@ case class EnableOvrd(
 
           val text = companion.joinText(textParts)
 
-          text -> outputs.flatMap(v => v.causes): Output
-        }.toOption
+          Some(text -> outputs.flatMap(v => v.causes): Output)
+        } catch {
+          case e: UnsupportedOperationException =>
+            None
+        }
       }
       .headOption
       .getOrElse {
@@ -107,18 +100,16 @@ case class EnableOvrd(
 
 object EnableOvrd extends EnableOvrd(TypeFormat.Default) {
 
-  import com.tribbloids.graph.commons.util.reflect.format.FormatOvrd._
-
   val cache: mutable.HashMap[String, TypeFormat] = {
 
-    val list = Seq(Singleton, ~~).map { v =>
-      v.getClass.getCanonicalName.stripSuffix("$") -> v
-    }
+//    val list = Seq(Singleton, ~~).map { v =>
+//      v.getClass.getCanonicalName.stripSuffix("$") -> v
+//    }
+//
+//    mutable.HashMap(
+//      list: _*
+//    )
 
-    mutable.HashMap(
-      list: _*
-    )
-
-//    mutable.HashMap.empty
+    mutable.HashMap.empty
   }
 }

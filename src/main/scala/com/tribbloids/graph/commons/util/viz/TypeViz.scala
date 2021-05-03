@@ -17,7 +17,7 @@ class TypeViz[R <: Reflection](
     override val format: TypeVizFormat = TypeViz.this.format
   }
 
-  def withFormat(format: TypeVizFormat = TypeVizFormat.Default) = new TypeViz[R](reflection, format)
+  def formattedBy(format: TypeVizFormat = TypeVizFormat.Default) = new TypeViz[R](reflection, format)
 }
 
 object TypeViz extends TypeViz(ScalaReflection, TypeVizFormat.Default) {

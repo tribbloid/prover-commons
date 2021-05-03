@@ -2,8 +2,8 @@ package com.tribbloids.graph.commons.util.reflect.format
 
 import com.tribbloids.graph.commons.testlib.BaseSpec
 import com.tribbloids.graph.commons.util.reflect.Reflection
-import com.tribbloids.graph.commons.util.reflect.format.FormatOvrd.{~~, Singleton}
-import com.tribbloids.graph.commons.util.reflect.format.Formats.{ClassName, KindName, TypeImpl}
+import com.tribbloids.graph.commons.util.reflect.format.FormatOvrd.{~~, Only}
+import com.tribbloids.graph.commons.util.reflect.format.Formats.{ClassName, TypeImpl}
 import com.tribbloids.graph.commons.util.viz.TypeViz
 import shapeless.Witness
 
@@ -13,7 +13,7 @@ class FormatOvrdSpec extends BaseSpec {
 
   val format: TypeFormat = EnableOvrd(TypeImpl.DeAlias)
 
-  val viz: TypeViz[Reflection.Runtime.type] = TypeViz.withFormat(format)
+  val viz: TypeViz[Reflection.Runtime.type] = TypeViz.formattedBy(format)
 
   describe("fallback") {
 
@@ -31,11 +31,11 @@ class FormatOvrdSpec extends BaseSpec {
     }
   }
 
-  describe(Singleton.toString) {
+  describe(Only.toString) {
 
     it("1") {
 
-      viz[Singleton[3]].typeStr.shouldBe("3")
+      viz[Only[3]].typeStr.shouldBe("3")
     }
 
     it("2") {
@@ -46,8 +46,8 @@ class FormatOvrdSpec extends BaseSpec {
 
     it("3") {
 
-      viz[Singleton[global.type]].typeStr.shouldBe(
-        s"${FormatOvrdSpec.getClass.getCanonicalName.stripSuffix("$")}.global.type"
+      viz[Only[global.type]].typeStr.shouldBe(
+        "3"
       )
     }
 
@@ -57,22 +57,22 @@ class FormatOvrdSpec extends BaseSpec {
 
       viz[o3._Info].typeStr
         .shouldBe(
-          s"${FormatOvrdSpec.getClass.getCanonicalName.stripSuffix("$")}.global.type"
+          "3"
         )
-    }
-
-    it("5") {
-
-      val local = 3
-      val o2 = W_Singleton(local)
-
-      viz[o2._Info].typeStr.shouldBe("local.type")
     }
 
     it("fallback") {
 
+      val local = 3
+      val o2 = W_Singleton(local)
+
+      viz[o2._Info].typeStr
+        .shouldBe(
+          "com.tribbloids.graph.commons.util.reflect.format.FormatOvrd.Only[local.type]: ClassArgsTypeRef"
+        )
+
       viz[W_Singleton[Int]#_Info].typeStr.shouldBe(
-        s"com.tribbloids.graph.commons.util.reflect.format.FormatOvrd.Singleton[Int]: ClassArgsTypeRef"
+        s"com.tribbloids.graph.commons.util.reflect.format.FormatOvrd.Only[Int]: ClassArgsTypeRef"
       )
 
       viz[W_Singleton[Int]#_InfoWFallback].typeStr.shouldBe(
@@ -97,13 +97,13 @@ class FormatOvrdSpec extends BaseSpec {
 
 object FormatOvrdSpec {
 
-  val global = 3
+  val global: Int = 3
 
   class Undefined[T]
 
   class W_Singleton[T <: Int](w: Witness.Aux[T]) {
 
-    type _Info = Singleton[T]
+    type _Info = Only[T]
 
     type _InfoWFallback = _Info with ClassName[this.type]
   }
@@ -114,7 +114,7 @@ object FormatOvrdSpec {
 
   class W_~~[T <: Int](w: Witness.Aux[T]) {
 
-    type _Info = Singleton[T] ~~ W_Singleton[T]#_Info ~~ T
+    type _Info = Only[T] ~~ W_Singleton[T]#_Info ~~ T
   }
   object W_~~ {
 

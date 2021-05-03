@@ -21,7 +21,8 @@ trait TypeOfs extends TypeVizSystem {
 
     type TT = T
 
-    lazy val typeTree: exe.Tree = Tree(TypeView(tt))
+    lazy val typeView: TypeView = TypeView(tt)
+    lazy val typeTree: exe.Tree = Tree(typeView)
 
     //  def nodeStr: String = tree.nodeStr
     //  def treeStr: String = tree.treeString
