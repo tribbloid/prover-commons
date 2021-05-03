@@ -53,12 +53,17 @@ trait TypeViews extends SymbolViews {
           val mirror = Reflection.Runtime.mirror
 
           val tb = ToolBox(mirror).mkToolBox()
+          val path = onlySym.fullName
 
           try {
-            tb.eval(tb.parse(onlySym.fullName))
+            tb.eval(tb.parse(path))
           } catch {
             case e: Throwable =>
-              throw new InternalError(s"cannot parse or evaluate ${onlySym} : ${onlySym.getClass}", e)
+              throw new UnsupportedOperationException(
+                s"cannot parse or evaluate ${path} : ${onlySym.getClass}" +
+                  "\n\t" + e.toString,
+                e
+              )
           }
       }
     }

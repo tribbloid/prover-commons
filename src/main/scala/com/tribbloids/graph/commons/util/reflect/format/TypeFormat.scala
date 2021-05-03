@@ -8,7 +8,7 @@ trait TypeFormat {
 
   def joinText(v: Seq[String]): String = v.mkString(" ")
 
-  def unsupported(ff: Formatting): Nothing = {
+  def backtrack(ff: Formatting): Nothing = {
     throw new UnsupportedOperationException(
       s"Type ${ff.typeView} is not supported by format $this"
     )
