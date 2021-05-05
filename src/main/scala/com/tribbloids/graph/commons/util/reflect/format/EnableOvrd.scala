@@ -85,7 +85,7 @@ case class EnableOvrd(
 
           val text = companion.joinText(textParts)
 
-          Some(text -> outputs.flatMap(v => v.causes): Output)
+          Some(text -> outputs.flatMap(v => v.parts): Output)
         } catch {
           case e: UnsupportedOperationException =>
             None

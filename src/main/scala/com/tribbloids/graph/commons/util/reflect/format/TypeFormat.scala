@@ -27,20 +27,20 @@ trait TypeFormat {
 
   // TODO: the following should be moved into a view that also contains TypeVizFormat
   //  should make compile-time macro much easier to define
-  object DeAlias extends Factories.DeAlias(this)
+  lazy val DeAlias = DerivedFormats.DeAlias(this)
 
-  object HidePackages extends Factories.HidePackages(this)
+  lazy val HidePackage = DerivedFormats.HidePackage(this)
 
-  object Both
-      extends Factories.Concat(
-        this.DeAlias,
-        this
-      )
+  lazy val HidePackages = DerivedFormats.HidePackages(this)
 
-  object Short
-      extends Factories.HidePackages(
-        DeAlias
-      )
+  lazy val Both = DerivedFormats.Concat(
+    this.DeAlias,
+    this
+  )
+
+  lazy val Short = DerivedFormats.HidePackages(
+    DeAlias
+  )
 }
 
 object TypeFormat {

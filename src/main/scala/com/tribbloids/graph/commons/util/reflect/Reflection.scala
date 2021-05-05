@@ -17,7 +17,8 @@ trait Reflection extends TypeViews {
     lazy val output: Output = format.resolve(this)
 
     def text: String = output.text
-    override lazy val children: Seq[Formatting] = output.causes.collect {
+
+    override lazy val children: Seq[Formatting] = output.parts.collect {
       case v: Formatting => v
     }
 
@@ -29,8 +30,6 @@ trait Reflection extends TypeViews {
 
       copy(format = ff)
     }
-
-    def fullText: String = text
   }
 
   object Formatting {}

@@ -126,7 +126,7 @@ trait TypeOfs extends TypeVizSystem {
 
         val result = node.formattedBy(format.base)
 
-        result.fullText
+        result.text
       }
 
       def refStr: String = {

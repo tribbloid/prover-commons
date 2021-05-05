@@ -1,14 +1,21 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
-import com.tribbloids.graph.commons.util.debug.print_@
 import com.tribbloids.graph.commons.util.reflect.Reflection
 
 object Formats {
 
   trait TypeInfo[T] extends FormatOvrd
   case object TypeInfo extends TypeFormat {
-    override def resolve(ff: Formatting): Output =
-      ff.typeView.self.toString
+    override def resolve(ff: Formatting): Output = {
+
+      val self = ff.typeView.self.toString
+
+      val args = ff.typeView.args
+
+      self -> args.map { arg =>
+        arg.formattedBy(this)
+      }
+    }
   }
 
   trait TypeImpl[T] extends FormatOvrd

@@ -81,28 +81,8 @@ trait TypeViews extends SymbolViews {
     lazy val deAlias: universe.Type = self.dealias
     lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == deAlias)
 
-    object Recursive {
-
-      lazy val collectArgs: Seq[TypeView] = {
-
-        val selfArgs = self.typeArgs
-        val loopEliminated = selfArgs.filterNot(v => v =:= self)
-
-        val transitive = loopEliminated.flatMap { v =>
-          TypeView(v).Recursive.collectArgs
-        }
-
-        val result = selfArgs.map { v =>
-          TypeView(v)
-        } ++ transitive
-
-        result
-      }
-
-      lazy val collectSymbols: List[SymbolView] =
-        (List(TypeView.this) ++ collectArgs).flatMap(v => v.id.symbols).map { v =>
-          SymbolView(v)
-        }
+    lazy val args: List[TypeView] = self.typeArgs.map { arg =>
+      TypeView(arg)
     }
 
     lazy val baseTypes: List[TypeView] = {
@@ -146,6 +126,28 @@ trait TypeViews extends SymbolViews {
     }
 
     //  override def toString: String = show1Line
+
+    object Recursive {
+
+      lazy val collectArgs: Seq[TypeView] = {
+
+        val selfArgs = self.typeArgs
+        val loopEliminated = selfArgs.filterNot(v => v =:= self)
+
+        val transitive = loopEliminated.flatMap { v =>
+          TypeView(v).Recursive.collectArgs
+        }
+
+        val result = args ++ transitive
+
+        result
+      }
+
+      lazy val collectSymbols: List[SymbolView] =
+        (List(TypeView.this) ++ collectArgs).flatMap(v => v.id.symbols).map { v =>
+          SymbolView(v)
+        }
+    }
   }
 
 }

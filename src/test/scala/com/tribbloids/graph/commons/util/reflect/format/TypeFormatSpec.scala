@@ -1,7 +1,7 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
 import com.tribbloids.graph.commons.testlib.BaseSpec
-import com.tribbloids.graph.commons.util.reflect.format.Factories.DeAlias
+import com.tribbloids.graph.commons.util.reflect.format.DerivedFormats.DeAlias
 import com.tribbloids.graph.commons.util.reflect.format.Formats.TypeInfo
 
 class TypeFormatSpec extends BaseSpec {
