@@ -46,6 +46,8 @@ class FormatOvrdSpec extends BaseSpec {
 
     it("3") {
 
+//      viz[Only[global.type]].should_=:=()
+
       viz[Only[global.type]].typeStr.shouldBe(
         "3"
       )
@@ -97,7 +99,7 @@ class FormatOvrdSpec extends BaseSpec {
 
 object FormatOvrdSpec {
 
-  val global: Int = 3
+  final val global: Int = 3
 
   class Undefined[T]
 

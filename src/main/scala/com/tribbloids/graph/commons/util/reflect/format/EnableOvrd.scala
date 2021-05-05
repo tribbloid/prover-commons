@@ -1,6 +1,6 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
-import com.tribbloids.graph.commons.util.reflect.format
+import com.tribbloids.graph.commons.util.reflect.{format, Reflection}
 
 import scala.collection.mutable
 
@@ -8,11 +8,9 @@ case class EnableOvrd(
     lastResort: TypeFormat
 ) extends TypeFormat {
 
-  override def resolve(ff: Formatting): Output = {
-
-    val refl = ff.refl
+  def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
     val u = refl.getUniverse
-    val tt = ff.typeView.self.asInstanceOf[u.Type]
+    val tt = ff.typeView.self
 
 //    lazy val typeInfoName = u.weakTypeOf[HasTypeInfo#_TypeInfo].typeSymbol.name
 
@@ -53,47 +51,49 @@ case class EnableOvrd(
       }
 
     qualified
-      .flatMap { v =>
-        val companion = {
+      .flatMap {
 
-          val cName = v._1.typeSymbol.fullName
+        case (companionType, argTypes) =>
+          val companion = {
+
+            val cName = companionType.typeSymbol.fullName
 
 //          print_@(v._1.typeSymbol.fullName)
 //          print_@(v._1.termSymbol.fullName)
 
-          EnableOvrd.cache.getOrElseUpdate(
-            cName,
-            refl.TypeView(v._1).getOnlyInstance.asInstanceOf[TypeFormat]
-          )
-
-        }
-
-        try {
-          val outputs = v._2.map { arg =>
-            val _ff = refl.Formatting(
-              refl.TypeView(arg),
-              ff.format
+            EnableOvrd.cache.getOrElseUpdate(
+              cName,
+              refl.TypeView(companionType).getOnlyInstance.asInstanceOf[TypeFormat]
             )
-
-            companion.resolve(_ff)
           }
 
-          val textParts = outputs
-            .map { v =>
-              v.text
+          try {
+            val outputs = argTypes.map { arg =>
+              val _ff = refl.Formatting(
+                refl.TypeView(arg),
+                ff.format
+              )
+
+              companion.resolve(refl).apply(_ff)
             }
 
-          val text = companion.joinText(textParts)
+            val textParts = outputs
+              .map { v =>
+                v.text
+              }
 
-          Some(text -> outputs.flatMap(v => v.causes): Output)
-        } catch {
-          case e: UnsupportedOperationException =>
-            None
-        }
+            val text = companion.joinText(textParts)
+
+//            Some(text -> outputs.flatMap(v => v.children): Output)
+            Some(text: Output)
+          } catch {
+            case _: Backtracking =>
+              None
+          }
       }
       .headOption
       .getOrElse {
-        ff.formattedBy(lastResort)
+        ff -> ff.formattedBy(lastResort)
       }
   }
 }

@@ -1,45 +1,62 @@
 package com.tribbloids.graph.commons.util.reflect
 
 trait SymbolViews extends HasUniverse {
+  self: Reflection =>
 
   case class SymbolView(
-      symbol: universe.Symbol
-  ) {
+      self: universe.Symbol
+  ) extends ApiView[universe.Symbol] {
 
     lazy val ownerOpt: Option[universe.Symbol] = {
 
-      val owner = symbol.owner
+      val owner = self.owner
 
       if (owner == universe.NoSymbol) None
       else Some(owner)
     }
 
-    lazy val ownerChain: List[universe.Symbol] = {
+    object Owners extends Breadcrumbs {
 
-      ownerOpt.toList.flatMap { owner =>
-        val v1: List[universe.Symbol] = List(owner)
-        val v2: List[universe.Symbol] = copy(owner).ownerChain
+      lazy val internal: BreadcrumbView = {
 
-        val result = v1 ++ v2
+        val chain = ownerOpt.toList.flatMap { owner =>
+          val v1: List[universe.Symbol] = List(owner)
+          val v2: List[universe.Symbol] = copy(owner).Owners.internal.list
+
+          v1 ++ v2
+        }
+
+        BreadcrumbView(chain)
+      }
+
+      lazy val all: BreadcrumbView = {
+        val chain: List[universe.Symbol] = internal.list.filterNot { owner =>
+          owner.fullName == "<root>"
+        }
+        val result = BreadcrumbView(chain)
+//        result.validate()
         result
       }
-    }
 
-    lazy val noRoot: List[universe.Symbol] = ownerChain.filterNot { owner =>
-      owner.fullName == "<root>"
-    }
+      lazy val packages: BreadcrumbView = {
 
-    lazy val packageChain: List[universe.Symbol] = noRoot.reverse.takeWhile { owner =>
-      owner.isPackage
-    }.reverse
+        val list = all.list.reverse.takeWhile { owner =>
+          owner.isPackage
+        }.reverse
 
-    lazy val packageRepr: String = packageChain
-      .map { ss =>
-        ss.name.encodedName
+        BreadcrumbView(list)
       }
-      .reverse
-      .mkString(".")
 
-    def packagePrefix: String = packageRepr + "."
+      lazy val static: BreadcrumbView = {
+
+        val list = all.list.reverse.takeWhile { owner =>
+          owner.isStatic
+        }.reverse
+
+        BreadcrumbView(list)
+      }
+    }
+
+    override def getCanonicalName(v: universe.Symbol): String = v.fullName
   }
 }

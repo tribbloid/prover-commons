@@ -1,40 +1,17 @@
 package com.tribbloids.graph.commons.util.reflect
 
-import com.tribbloids.graph.commons.util.TreeLike
-import com.tribbloids.graph.commons.util.reflect.format.{Output, TypeFormat}
-
+import scala.language.implicitConversions
 import scala.reflect.{api, macros}
 
-trait Reflection extends TypeViews {
+trait Reflection extends SymbolViews with TypeViews with Formattings {
 
-  case class Formatting(
-      typeView: TypeView,
-      format: TypeFormat
-  ) extends TreeLike {
+  lazy val rootPackageSymbol: universe.Symbol = {
 
-    val refl: Reflection = Reflection.this
+    val tt = universe.typeOf[Reflection.type]
+    val sv = SymbolView(tt.typeSymbol)
 
-    lazy val output: Output = format.resolve(this)
-
-    def text: String = output.text
-    override lazy val children: Seq[Formatting] = output.causes.collect {
-      case v: Formatting => v
-    }
-
-    def selfAndChildren: Seq[Formatting] = Seq(this) ++ children
-
-    override def nodeString: String = text
-
-    final def formattedBy(ff: TypeFormat): Formatting = {
-
-      copy(format = ff)
-    }
-
-    def fullText: String = text
+    sv.Owners.internal.leftOpt.get
   }
-
-  object Formatting {}
-
 }
 
 object Reflection {
@@ -49,7 +26,7 @@ object Reflection {
     // Since we are creating a runtime mirror using the class loader of current thread,
     // we need to use def at here. So, every time we call mirror, it is using the
     // class loader of the current thread.
-    override def mirror: universe.Mirror = {
+    override lazy val mirror: universe.Mirror = {
 
       val result: universe.Mirror = universe
         .runtimeMirror(_classloader)
