@@ -14,7 +14,8 @@ object DerivedFormats {
       val vN = v.copy(self = v.deAlias)
       val ffN = ff.copy(typeView = vN)
 
-      ffN.formattedBy(base)
+      val result = ff -> ffN.formattedBy(base)
+      result
     }
   }
 
@@ -36,17 +37,37 @@ object DerivedFormats {
   ) extends TypeFormat {
 
     def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+      type Formatting = refl.Formatting
+
       val original = ff.formattedBy(base)
-      var out = original.text
 
-      val symbols = original.typeView.Recursive.collectSymbols
+      def doResolve(): String = {
 
-      for (ss <- symbols) {
+        val full = original.text
 
-        out = out.stripPrefix(ss.packagePrefix)
+        val constructor = original.typeView.constructor
+
+        val shorten = if (full.startsWith(constructor.fullString)) {
+          constructor.shortString + full.stripPrefix(constructor.fullString)
+        } else {
+          full
+        }
+
+        shorten
       }
 
-      out -> original.children
+      original.equivalent
+        .map { ee =>
+          if (ee.typeView != ff.typeView) {
+            val newEE = ee.formattedBy(this)
+            ff -> newEE: Output
+          } else {
+            doResolve -> ee.parts: Output
+          }
+        }
+        .getOrElse {
+          doResolve -> original.parts: Output
+        }
     }
   }
 
@@ -61,24 +82,24 @@ object DerivedFormats {
 
       var swapped: String = null
 
-      def swap(before: String, after: String) = {
+      def swap(from: String, to: String): Unit = {
 
         val _swapped = Option(swapped).getOrElse {
-          if (afterOut.text.contains(before)) afterOut.text
+          if (afterOut.text.contains(from)) afterOut.text
           else beforeOut.text
         }
 
-        swapped = _swapped.replace(before, after)
+        swapped = _swapped.replace(from, to)
       }
 
       val children = afterOut.children
       val transformedParts = children.map { part =>
         val result = part.formattedBy(this)
 
-        val before = part.text
-        val after = result.text
+        val from = part.text
+        val to = result.text
 
-        swap(before, after)
+        swap(from, to)
 
         result
       }
@@ -89,5 +110,5 @@ object DerivedFormats {
 
   object TransformUp {}
 
-  def HidePackages(base: TypeFormat) = TransformUp(base, HidePackage(base))
+  def HidePackages(base: TypeFormat): TransformUp = TransformUp(base, HidePackage(base))
 }

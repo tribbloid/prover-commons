@@ -18,26 +18,42 @@ trait Reflection extends TypeViews {
     lazy val output: Output = format.resolve(Reflection.this).apply(this)
 
     def text: String = output.text
+    def parts: Seq[Formatting] = {
+      val result = output.parts.collect {
+        case v: Formatting => v
+      }
 
-    override lazy val children: Seq[Formatting] = output.children.collect {
+      result.foreach { v =>
+        require(text.contains(v.text), s"Part '${v.text}' cannot be found in whole '$text'")
+      }
+
+      result
+    }
+    def equivalent: Option[Formatting] = output.equivalent.collect {
       case v: Formatting => v
     }
 
-    def selfAndChildren: Seq[Formatting] = Seq(this) ++ children
+    override lazy val children: Seq[Formatting] = {
+
+      val result = parts ++ equivalent
+
+      result
+    }
+
+    def selfAndChildren: Seq[Formatting] = Seq(this) ++ this.children
 
     override def nodeString: String = text
 
-    final def formattedBy(ff: TypeFormat): Formatting = {
-
-      copy(format = ff)
-    }
+//    final def formattedBy(ff: TypeFormat): Formatting = {
+//
+//      copy(format = ff)
+//    }
   }
 
   object Formatting {
 
     implicit def asTypeView(v: Formatting): TypeView = v.typeView
   }
-
 }
 
 object Reflection {

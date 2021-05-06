@@ -35,6 +35,21 @@ trait TypeViews extends SymbolViews {
 
     lazy val id: TypeID = TypeID(deAlias)
 
+    lazy val constructor: TypeView = TypeView(self.typeConstructor)
+
+    lazy val symbols = id.symbols.map(v => SymbolView(v))
+
+    lazy val fullString: String = self.toString
+
+    lazy val shortString: String = {
+
+      var str = self.toString
+      for (ss <- symbols) {
+        str = str.stripPrefix(ss.packagePrefixDot)
+      }
+      str
+    }
+
     def getOnlyInstance: Any = {
 
       self.dealias match {
@@ -69,14 +84,14 @@ trait TypeViews extends SymbolViews {
     }
 
     // TODO: useless?
-//    lazy val internal: Option[internalUniverse.Type] = {
-//      self match {
-//        case tt: internalUniverse.Type =>
-//          Some(tt)
-//        case _ =>
-//          None
-//      }
-//    }
+    //    lazy val internal: Option[internalUniverse.Type] = {
+    //      self match {
+    //        case tt: internalUniverse.Type =>
+    //          Some(tt)
+    //        case _ =>
+    //          None
+    //      }
+    //    }
 
     lazy val deAlias: universe.Type = self.dealias
     lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == deAlias)

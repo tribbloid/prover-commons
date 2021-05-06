@@ -3,12 +3,12 @@ package com.tribbloids.graph.commons.util.reflect
 trait SymbolViews extends HasUniverse {
 
   case class SymbolView(
-      symbol: universe.Symbol
+      self: universe.Symbol
   ) {
 
     lazy val ownerOpt: Option[universe.Symbol] = {
 
-      val owner = symbol.owner
+      val owner = self.owner
 
       if (owner == universe.NoSymbol) None
       else Some(owner)
@@ -33,13 +33,17 @@ trait SymbolViews extends HasUniverse {
       owner.isPackage
     }.reverse
 
-    lazy val packageRepr: String = packageChain
+    lazy val packagePrefix: String = packageChain
       .map { ss =>
         ss.name.encodedName
       }
       .reverse
       .mkString(".")
 
-    def packagePrefix: String = packageRepr + "."
+    def packagePrefixDot: String = packagePrefix + "."
+
+    lazy val fullString: String = self.fullName
+
+    override def toString: String = fullString
   }
 }

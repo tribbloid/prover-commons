@@ -25,9 +25,15 @@ trait TypeFormat {
 
   implicit def fromTuple(v: (String, Seq[Formatting])): Output = Output(v._1, v._2)
 
-  implicit def fromFormatting(v: Formatting): Output = {
-    require(v.format != this, "cannot convert Formatting into Output: may trigger dead loop")
-    Output(v.text, Seq(v))
+  implicit def fromEquivalent(v: (Formatting, Formatting)): Output = {
+    val sameFormat = v._2.format == this
+    val sameType = v._1.typeView == v._2.typeView
+
+    require(
+      !(sameFormat && sameType),
+      "cannot convert Formatting into Output: may trigger dead loop"
+    )
+    Output(v._2.text, equivalent = Option(v._2))
   }
 
   def ~(factory: TypeFormat => TypeFormat): TypeFormat = factory(this)

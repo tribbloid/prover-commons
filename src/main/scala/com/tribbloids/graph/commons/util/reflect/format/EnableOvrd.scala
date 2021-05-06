@@ -94,7 +94,7 @@ case class EnableOvrd(
       }
       .headOption
       .getOrElse {
-        ff.formattedBy(lastResort)
+        ff -> ff.formattedBy(lastResort)
       }
   }
 }
