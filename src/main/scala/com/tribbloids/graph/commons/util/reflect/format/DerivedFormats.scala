@@ -1,19 +1,18 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
+import com.tribbloids.graph.commons.util.reflect.Reflection
+
 object DerivedFormats {
 
   case class DeAlias(
       base: TypeFormat
   ) extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
 
-      val refl = ff.refl
-      val _ff = ff.asInstanceOf[refl.Formatting]
-
-      val v = _ff.typeView
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+      val v = ff.typeView
 
       val vN = v.copy(self = v.deAlias)
-      val ffN = _ff.copy(typeView = vN)
+      val ffN = ff.copy(typeView = vN)
 
       ffN.formattedBy(base)
     }
@@ -22,12 +21,13 @@ object DerivedFormats {
   case class Concat(
       bases: TypeFormat*
   ) extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
-      val prevs = bases.map { base =>
+
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+      val previous = bases.map { base =>
         ff.formattedBy(base)
       }
 
-      prevs.map(_.nodeString).distinct.mkString(" ≅ ") -> prevs
+      previous.map(_.text).distinct.mkString(" ≅ ") -> previous
     }
   }
 
@@ -35,8 +35,7 @@ object DerivedFormats {
       base: TypeFormat
   ) extends TypeFormat {
 
-    override def resolve(ff: Formatting): Output = {
-
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
       val original = ff.formattedBy(base)
       var out = original.text
 
@@ -56,28 +55,35 @@ object DerivedFormats {
       after: TypeFormat
   ) extends TypeFormat {
 
-    override def resolve(ff: Formatting): Output = {
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+      lazy val beforeOut = ff.formattedBy(before)
+      lazy val afterOut = ff.formattedBy(after)
 
-      val refl = ff.refl
-      val _ff = ff.asInstanceOf[refl.Formatting]
+      var swapped: String = null
 
-      val parts = _ff.parts
+      def swap(before: String, after: String) = {
 
-      val transformedParts = parts.map { part =>
-        val result = _ff.copy(typeView = part)
+        val _swapped = Option(swapped).getOrElse {
+          if (afterOut.text.contains(before)) afterOut.text
+          else beforeOut.text
+        }
+
+        swapped = _swapped.replace(before, after)
+      }
+
+      val children = afterOut.children
+      val transformedParts = children.map { part =>
+        val result = part.formattedBy(this)
 
         val before = part.text
         val after = result.text
 
-        (result, before, after)
+        swap(before, after)
+
+        result
       }
 
-      var finalText = _ff.text
-
-      transformedParts.foreach {
-        case (r, b, a) =>
-
-      }
+      Option(swapped).getOrElse(afterOut.text) -> transformedParts
     }
   }
 

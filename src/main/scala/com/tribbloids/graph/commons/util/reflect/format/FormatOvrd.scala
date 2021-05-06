@@ -1,5 +1,6 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
+import com.tribbloids.graph.commons.util.reflect.Reflection
 import com.tribbloids.graph.commons.util.reflect.format.Formats.KindName
 
 import scala.annotation.StaticAnnotation
@@ -10,7 +11,8 @@ object FormatOvrd {
 
   trait Only[T] extends FormatOvrd
   case object Only extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
+
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
       val only = ff.typeView.getOnlyInstance
 
       "" + only
@@ -20,8 +22,7 @@ object FormatOvrd {
   trait ~~[A, B] extends FormatOvrd
   case object ~~ extends TypeFormat {
 
-    override def resolve(ff: Formatting): Output = {
-
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
       ff.output
     }
   }
@@ -30,8 +31,7 @@ object FormatOvrd {
 
   trait Prefix extends TypeFormat {
 
-    override def resolve(ff: Formatting): Output = {
-
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
       ff.output
     }
 

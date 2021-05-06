@@ -1,10 +1,17 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
+import com.tribbloids.graph.commons.util.reflect.Reflection
+
 import scala.language.implicitConversions
 
 trait TypeFormat {
 
-  def resolve(ff: Formatting): Output
+  def resolve(refl: Reflection): refl.Formatting => Output
+
+//  def doFormat(v: Formatting): Output = {
+//
+//    resolve(v.refl).apply(v)
+//  }
 
   def joinText(v: Seq[String]): String = v.mkString(" ")
 

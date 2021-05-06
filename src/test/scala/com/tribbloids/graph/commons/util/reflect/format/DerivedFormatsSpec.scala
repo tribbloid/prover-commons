@@ -24,15 +24,25 @@ class DerivedFormatsSpec extends BaseSpec {
 
   describe("HidePackages") {
 
-    val format = Formats.TypeInfo.DeAlias.HidePackages
+    val format = Formats.TypeInfo.HidePackages
+//    val format = Formats.TypeInfo.DeAlias.HidePackages
     val viz = TypeViz.formattedBy(format)
 
     it("on TypeInfo") {
 
-      viz[T1].typeStr.shouldBe()
+      viz[Deep[Deep[DerivedFormatsSpec.type]]].typeStr.shouldBe(
+        "DerivedFormatsSpec.Deep[DerivedFormatsSpec.Deep[DerivedFormatsSpec.type]]"
+      )
     }
 
-    it(" ... with Infix") {}
+    it(" ... with Infix") {
+
+      import shapeless._
+
+      viz[
+        Deep[DerivedFormatsSpec.type] :: Deep[DerivedFormatsSpec.type] :: Deep[DerivedFormatsSpec.type] :: HNil
+      ].typeStr.shouldBe()
+    }
   }
 }
 

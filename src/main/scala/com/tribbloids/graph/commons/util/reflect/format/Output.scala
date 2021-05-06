@@ -4,7 +4,7 @@ import scala.language.implicitConversions
 
 case class Output(
     text: String,
-    parts: Seq[Formatting] = Nil
+    children: Seq[Formatting] = Nil
 ) {}
 
 object Output {}

@@ -6,8 +6,8 @@ object Formats {
 
   trait TypeInfo[T] extends FormatOvrd
   case object TypeInfo extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
 
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
       val self = ff.typeView.self.toString
 
       val args = ff.typeView.args
@@ -20,7 +20,8 @@ object Formats {
 
   trait TypeImpl[T] extends FormatOvrd
   case object TypeImpl extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
+
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
       val tt: Reflection#Type = ff.typeView.self
       tt.toString + ": " + tt.getClass.getSimpleName
     }
@@ -28,15 +29,17 @@ object Formats {
 
   trait KindName[T] extends FormatOvrd
   case object KindName extends TypeFormat {
-    override def resolve(ff: Formatting): Output = {
 
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
       ff.typeView.self.typeConstructor.toString
     }
   }
 
   trait ClassName[T]
   case object ClassName extends TypeFormat {
-    override def resolve(ff: Formatting): Output =
+
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
       ff.typeView.self.typeSymbol.asClass.fullName
+    }
   }
 }

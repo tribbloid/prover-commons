@@ -3,6 +3,7 @@ package com.tribbloids.graph.commons.util.reflect
 import com.tribbloids.graph.commons.util.TreeLike
 import com.tribbloids.graph.commons.util.reflect.format.{Output, TypeFormat}
 
+import scala.language.implicitConversions
 import scala.reflect.{api, macros}
 
 trait Reflection extends TypeViews {
@@ -14,11 +15,11 @@ trait Reflection extends TypeViews {
 
     val refl: Reflection = Reflection.this
 
-    lazy val output: Output = format.resolve(this)
+    lazy val output: Output = format.resolve(Reflection.this).apply(this)
 
     def text: String = output.text
 
-    override lazy val children: Seq[Formatting] = output.parts.collect {
+    override lazy val children: Seq[Formatting] = output.children.collect {
       case v: Formatting => v
     }
 
@@ -32,7 +33,10 @@ trait Reflection extends TypeViews {
     }
   }
 
-  object Formatting {}
+  object Formatting {
+
+    implicit def asTypeView(v: Formatting): TypeView = v.typeView
+  }
 
 }
 
