@@ -72,7 +72,6 @@ object DerivedFormats {
   }
 
   case class TransformUp(
-      before: TypeFormat,
       after: TypeFormat
   ) extends TypeFormat {
 
@@ -139,5 +138,5 @@ object DerivedFormats {
 
   object TransformUp {}
 
-  def HidePackages(base: TypeFormat): TransformUp = TransformUp(base, HidePackage(base))
+  def HidePackages(base: TypeFormat): TransformUp = TransformUp(HidePackage(base))
 }

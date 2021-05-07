@@ -56,7 +56,7 @@ class DerivedFormatsSpec extends BaseSpec {
     val before = Formats.TypeInfo.DeAlias
     val after = EnableOvrd(HidePackage(before))
 
-    val format = TransformUp(before, after)
+    val format = TransformUp(after)
     val viz = TypeViz.formattedBy(format)
 
     it("Parametric") {
