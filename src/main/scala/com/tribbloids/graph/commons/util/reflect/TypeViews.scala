@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 import scala.tools.reflect.ToolBox
 import scala.util.Try
 
-trait TypeViews extends SymbolViews {
+trait TypeViews extends HasUniverse {
   self: Reflection =>
 
   case class TypeID(
@@ -37,9 +37,10 @@ trait TypeViews extends SymbolViews {
 
     lazy val constructor: TypeView = TypeView(self.typeConstructor)
 
-    lazy val symbols = id.symbols.map(v => SymbolView(v))
+    lazy val symbols: Seq[SymbolView] = id.symbols.map(v => SymbolView(v))
 
     lazy val fullString: String = self.toString
+    override def toString: String = fullString
 
     lazy val shortString: String = {
 
@@ -61,7 +62,7 @@ trait TypeViews extends SymbolViews {
             case (_, tt) if tt.isModuleClass => tt
             case _ =>
               throw new UnsupportedOperationException(
-                s"${v} : ${v.getClass} is not a Singleton"
+                s"$v : ${v.getClass} is not a Singleton"
               )
           }
 
@@ -71,11 +72,20 @@ trait TypeViews extends SymbolViews {
           val path = onlySym.fullName
 
           try {
-            tb.eval(tb.parse(path))
+            val result = tb.eval(tb.parse(path))
+
+            if (result == null) {
+              throw new UnsupportedOperationException(
+                s"$path : ${onlySym.getClass} is not initialised yet"
+              )
+            }
+
+            result
+
           } catch {
             case e: Throwable =>
               throw new UnsupportedOperationException(
-                s"cannot parse or evaluate ${path} : ${onlySym.getClass}" +
+                s"cannot parse or evaluate $path : ${onlySym.getClass}" +
                   "\n\t" + e.toString,
                 e
               )

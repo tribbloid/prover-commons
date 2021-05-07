@@ -13,9 +13,14 @@ object FormatOvrd {
   case object Only extends TypeFormat {
 
     def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
-      val only = ff.typeView.getOnlyInstance
+//      ff.typeView.self.dealias match {
+//        case v: refl.universe.ConstantType =>
+//          "" + v.value.value
+//        case v @ _ =>
+//          throw new UnsupportedOperationException(s"$v is not a constant")
+//      }
 
-      "" + only
+      ff.typeView.getOnlyInstance.toString
     }
   }
 

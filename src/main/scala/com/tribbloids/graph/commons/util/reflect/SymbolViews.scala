@@ -1,6 +1,7 @@
 package com.tribbloids.graph.commons.util.reflect
 
 trait SymbolViews extends HasUniverse {
+  self: Reflection =>
 
   case class SymbolView(
       self: universe.Symbol

@@ -6,16 +6,17 @@ import com.tribbloids.graph.commons.util.reflect.format.{Output, TypeFormat}
 import scala.language.implicitConversions
 import scala.reflect.{api, macros}
 
-trait Reflection extends TypeViews {
+trait Formattings extends HasUniverse {
+  self: Reflection =>
 
   case class Formatting(
       typeView: TypeView,
       format: TypeFormat
   ) extends TreeLike {
 
-    val refl: Reflection = Reflection.this
+    val refl: Reflection = self
 
-    lazy val output: Output = format.resolve(Reflection.this).apply(this)
+    lazy val output: Output = format.resolve(self).apply(this)
 
     def text: String = output.text
     def parts: Seq[Formatting] = {
@@ -44,10 +45,10 @@ trait Reflection extends TypeViews {
 
     override def nodeString: String = text
 
-//    final def formattedBy(ff: TypeFormat): Formatting = {
-//
-//      copy(format = ff)
-//    }
+    //    final def formattedBy(ff: TypeFormat): Formatting = {
+    //
+    //      copy(format = ff)
+    //    }
   }
 
   object Formatting {
@@ -55,6 +56,8 @@ trait Reflection extends TypeViews {
     implicit def asTypeView(v: Formatting): TypeView = v.typeView
   }
 }
+
+trait Reflection extends SymbolViews with TypeViews with Formattings {}
 
 object Reflection {
 

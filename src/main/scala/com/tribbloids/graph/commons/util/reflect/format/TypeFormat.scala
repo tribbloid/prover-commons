@@ -33,7 +33,7 @@ trait TypeFormat {
       !(sameFormat && sameType),
       "cannot convert Formatting into Output: may trigger dead loop"
     )
-    Output(v._2.text, equivalent = Option(v._2))
+    Output(v._2.text, parts = v._2.parts, equivalent = Option(v._2))
   }
 
   def ~(factory: TypeFormat => TypeFormat): TypeFormat = factory(this)

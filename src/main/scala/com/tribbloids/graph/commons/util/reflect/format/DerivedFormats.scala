@@ -77,23 +77,26 @@ object DerivedFormats {
   ) extends TypeFormat {
 
     def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
-      lazy val beforeOut = ff.formattedBy(before)
-      lazy val afterOut = ff.formattedBy(after)
+//      val beforeOut = ff.formattedBy(before)
+      val afterOut = ff.formattedBy(after)
 
-      var swapped: String = null
+//      val afterParts = afterOut.parts.map(_.text).toList.distinct
+//      val part_redact = afterParts.zipWithIndex.map {
+//        case (v, i) =>
+//          v -> s"?${i}"
+//      }
+//      val partMap_> = Map(part_redact: _*)
+//      val partMap_< = Map(part_redact.map(v => v.swap): _*)
+
+      var swapped: String = afterOut.text
 
       def swap(from: String, to: String): Unit = {
 
-        val _swapped = Option(swapped).getOrElse {
-          if (afterOut.text.contains(from)) afterOut.text
-          else beforeOut.text
-        }
-
-        swapped = _swapped.replace(from, to)
+        swapped = swapped.replaceFirst(s"\\Q$from\\E", to) // TODO: too slow! switch to aho-corasick
       }
 
-      val children = afterOut.children
-      val transformedParts = children.map { part =>
+      val parts = afterOut.parts
+      val transformedParts = parts.map { part =>
         val result = part.formattedBy(this)
 
         val from = part.text
@@ -106,6 +109,32 @@ object DerivedFormats {
 
       Option(swapped).getOrElse(afterOut.text) -> transformedParts
     }
+
+//    case class Contextual() {
+//
+//      lazy val cache = mutable.Map.empty[String, String]
+//
+//      object TransformImpl extends TypeFormat {
+//
+//        override def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+//          val afterOut = ff.formattedBy(after)
+//
+//          val parts = afterOut.parts
+//          val transformedParts = parts.map { part =>
+//            val result = part.formattedBy(this)
+//
+//            val from = part.text
+//            val to = result.text
+//
+//            cache += from -> to
+//
+//            result
+//          }
+//
+//          afterOut.text -> transformedParts
+//        }
+//      }
+//    }
   }
 
   object TransformUp {}
