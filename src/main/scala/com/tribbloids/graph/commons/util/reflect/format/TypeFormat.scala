@@ -16,7 +16,7 @@ trait TypeFormat {
   def joinText(v: Seq[String]): String = v.mkString(" ")
 
   def backtrack(ff: Formatting): Nothing = {
-    throw new UnsupportedOperationException(
+    throw new Backtracking(
       s"Type ${ff.typeView} is not supported by format $this"
     )
   }
@@ -40,18 +40,18 @@ trait TypeFormat {
 
   // TODO: the following should be moved into a view that also contains TypeVizFormat
   //  should make compile-time macro much easier to define
-  lazy val DeAlias = DerivedFormats.DeAlias(this)
+  lazy val DeAlias = FormatProtos.DeAlias(this)
 
-  lazy val HidePackage = DerivedFormats.HidePackage(this)
+  lazy val HidePackage = FormatProtos.HidePackage(this)
 
-  lazy val HidePackages = DerivedFormats.HidePackages(this)
+  lazy val HidePackages = FormatProtos.HidePackages(this)
 
-  lazy val Both = DerivedFormats.Concat(
+  lazy val Both = FormatProtos.Concat(
     this.DeAlias,
     this
   )
 
-  lazy val Short = DerivedFormats.HidePackages(
+  lazy val Short = FormatProtos.HidePackages(
     DeAlias
   )
 }

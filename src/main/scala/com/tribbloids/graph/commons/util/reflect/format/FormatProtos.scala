@@ -2,7 +2,7 @@ package com.tribbloids.graph.commons.util.reflect.format
 
 import com.tribbloids.graph.commons.util.reflect.Reflection
 
-object DerivedFormats {
+object FormatProtos {
 
   case class DeAlias(
       base: TypeFormat
@@ -29,6 +29,27 @@ object DerivedFormats {
       }
 
       previous.map(_.text).distinct.mkString(" ≅ ") -> previous
+    }
+  }
+
+  case class Trials(
+      bases: TypeFormat*
+  ) extends TypeFormat {
+
+    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+      val trials = bases
+        .to(LazyList)
+        .flatMap { base: TypeFormat =>
+          try {
+            val result = ff.formattedBy(base)
+            Some(result)
+          } catch {
+            case _: Backtracking =>
+              None
+          }
+        }
+
+      ff -> trials.head
     }
   }
 
@@ -62,11 +83,11 @@ object DerivedFormats {
             val newEE = ee.formattedBy(this)
             ff -> newEE: Output
           } else {
-            doResolve -> ee.parts: Output
+            doResolve() -> ee.parts: Output
           }
         }
         .getOrElse {
-          doResolve -> original.parts: Output
+          doResolve() -> original.parts: Output
         }
     }
   }

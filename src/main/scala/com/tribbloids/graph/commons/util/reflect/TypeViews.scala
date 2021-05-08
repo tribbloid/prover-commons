@@ -147,7 +147,9 @@ trait TypeViews extends HasUniverse {
     }
 
     def formattedBy(format: TypeFormat): Formatting = {
-      Formatting(this, format)
+      val result = Formatting(this, format)
+      result.text
+      result
     }
 
     //  override def toString: String = show1Line

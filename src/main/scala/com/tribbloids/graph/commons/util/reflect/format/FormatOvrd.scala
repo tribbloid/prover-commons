@@ -20,7 +20,12 @@ object FormatOvrd {
 //          throw new UnsupportedOperationException(s"$v is not a constant")
 //      }
 
-      ff.typeView.getOnlyInstance.toString
+      try {
+        ff.typeView.getOnlyInstance.toString
+      } catch {
+        case _: UnsupportedOperationException =>
+          backtrack(ff)
+      }
     }
   }
 

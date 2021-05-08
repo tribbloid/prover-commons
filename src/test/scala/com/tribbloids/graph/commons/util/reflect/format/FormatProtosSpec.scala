@@ -1,11 +1,12 @@
 package com.tribbloids.graph.commons.util.reflect.format
 
 import com.tribbloids.graph.commons.testlib.BaseSpec
-import com.tribbloids.graph.commons.util.reflect.format.DerivedFormats.{HidePackage, TransformUp}
+import com.tribbloids.graph.commons.util.reflect.format.FormatOvrd.Only
+import com.tribbloids.graph.commons.util.reflect.format.FormatProtos.{HidePackage, TransformUp, Trials}
 import com.tribbloids.graph.commons.util.viz.TypeViz
 import shapeless.{::, HNil}
 
-class DerivedFormatsSpec extends BaseSpec {
+class FormatProtosSpec extends BaseSpec {
 
   import com.tribbloids.graph.commons.util.reflect.format.beans._
 
@@ -47,6 +48,23 @@ class DerivedFormatsSpec extends BaseSpec {
 
       viz[T2].typeStr.shouldBe(
         "XX[YY.type] :: XX[YY.type] :: XX[YY.type] :: HNil"
+      )
+    }
+  }
+
+  describe(" ... on Trials") {
+
+    val trials = Trials(
+      Only,
+      HidePackage(Formats.TypeInfo.DeAlias)
+    )
+
+    val format = TransformUp(trials)
+    val viz = TypeViz.formattedBy(format)
+
+    it("Parametric") {
+      viz[Ovrd.Ref].typeStr.shouldBe(
+        "XX[XX[3]]"
       )
     }
   }
@@ -99,4 +117,4 @@ class DerivedFormatsSpec extends BaseSpec {
   }
 }
 
-object DerivedFormatsSpec {}
+object FormatProtosSpec {}

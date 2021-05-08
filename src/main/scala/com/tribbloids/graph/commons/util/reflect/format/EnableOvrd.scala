@@ -65,7 +65,6 @@ case class EnableOvrd(
               cName,
               refl.TypeView(companionType).getOnlyInstance.asInstanceOf[TypeFormat]
             )
-
           }
 
           try {
@@ -88,7 +87,7 @@ case class EnableOvrd(
 //            Some(text -> outputs.flatMap(v => v.children): Output)
             Some(text: Output)
           } catch {
-            case e: UnsupportedOperationException =>
+            case _: Backtracking =>
               None
           }
       }
