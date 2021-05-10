@@ -42,18 +42,17 @@ trait TypeFormat {
   //  should make compile-time macro much easier to define
   lazy val DeAlias = FormatProtos.DeAlias(this)
 
-  lazy val HidePackage = FormatProtos.HidePackage(this)
-
-  lazy val HidePackages = FormatProtos.HidePackages(this)
+  lazy val HidePackage = FormatProtos.Hide.Package(this)
+  lazy val HideOwner = FormatProtos.Hide.Static(this)
 
   lazy val Both = FormatProtos.Concat(
     this.DeAlias,
     this
   )
 
-  lazy val Short = FormatProtos.HidePackages(
-    DeAlias
-  )
+//  lazy val Short = FormatProtos.Hide.Package(
+//    DeAlias
+//  )
 }
 
 object TypeFormat {

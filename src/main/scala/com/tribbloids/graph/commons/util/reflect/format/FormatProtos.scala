@@ -4,18 +4,25 @@ import com.tribbloids.graph.commons.util.reflect.Reflection
 
 object FormatProtos {
 
-  case class DeAlias(
-      base: TypeFormat
-  ) extends TypeFormat {
+  trait MapOver extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
-      val v = ff.typeView
+    def base: TypeFormat
 
-      val vN = v.copy(self = v.deAlias)
-      val ffN = ff.copy(typeView = vN)
+    def typeMap(refl: Reflection): refl.Type => refl.Type
 
-      val result = ff -> ffN.formattedBy(base)
-      result
+    final def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+      val mapFn = typeMap(refl)
+
+      val mapped = ff.typeView.copy(self = ff.typeView.self.map(mapFn))
+
+      ff -> mapped.formattedBy(base)
+    }
+  }
+
+  case class DeAlias(base: TypeFormat) extends MapOver {
+
+    override def typeMap(refl: Reflection): refl.Type => refl.Type = { tt =>
+      tt.dealias
     }
   }
 
@@ -53,46 +60,118 @@ object FormatProtos {
     }
   }
 
-  case class HidePackage(
-      base: TypeFormat
-  ) extends TypeFormat {
+  object Hide {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
-      type Formatting = refl.Formatting
+    case class Package(
+        base: TypeFormat
+    ) extends TransformText.CanRecursively {
 
-      val original = ff.formattedBy(base)
+      def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+        type Formatting = refl.Formatting
 
-      def doResolve(): String = {
+        val original = ff.formattedBy(base)
 
-        val full = original.text
+        def resolve: String = {
 
-        val constructor = original.typeView.constructor
+          val full = original.text
 
-        val shorten = if (full.startsWith(constructor.fullString)) {
-          constructor.shortString + full.stripPrefix(constructor.fullString)
-        } else {
-          full
-        }
+          val constructor = original.typeView.constructor
 
-        shorten
-      }
-
-      original.equivalent
-        .map { ee =>
-          if (ee.typeView != ff.typeView) {
-            val newEE = ee.formattedBy(this)
-            ff -> newEE: Output
+          val shorten = if (full.startsWith(constructor.fullString)) {
+            constructor.hidePackageString + full.stripPrefix(constructor.fullString)
           } else {
-            doResolve() -> ee.parts: Output
+            full
           }
+
+          shorten
         }
-        .getOrElse {
-          doResolve() -> original.parts: Output
+
+        original.equivalent
+          .map { ee =>
+            if (ee.typeView != ff.typeView) {
+              val newEE = ee.formattedBy(this)
+              ff -> newEE: Output
+            } else {
+              resolve -> ee.parts: Output
+            }
+          }
+          .getOrElse {
+            resolve -> original.parts: Output
+          }
+      }
+    }
+
+    case class Static(
+        base: TypeFormat
+    ) extends TransformText.CanRecursively {
+
+      def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+        type Formatting = refl.Formatting
+
+        val original = ff.formattedBy(base)
+
+        def resolve: String = {
+
+          val full = original.text
+
+          val constructor = original.typeView.constructor
+
+          val shorten = if (full.startsWith(constructor.fullString)) {
+            constructor.hideStaticString + full.stripPrefix(constructor.fullString)
+          } else {
+            full
+          }
+
+          shorten
         }
+
+        original.equivalent
+          .map { ee =>
+            if (ee.typeView != ff.typeView) {
+              val newEE = ee.formattedBy(this)
+              ff -> newEE: Output
+            } else {
+              resolve -> ee.parts: Output
+            }
+          }
+          .getOrElse {
+            resolve -> original.parts: Output
+          }
+      }
     }
   }
 
-  case class TransformUp(
+//  case class TransformText(
+//      after: TypeFormat
+//  ) extends MapOver {
+//
+//    def base = TypeInfo
+//
+//    override def typeMap(refl: Reflection): refl.Type => refl.Type = { tt =>
+//      val transformed =
+//        try {
+//          val cc = tt.typeConstructor
+//          refl.TypeView(cc).formattedBy(base).text
+//        } catch {
+//          case e: Throwable =>
+//            refl.TypeView(tt).formattedBy(base).text
+//        }
+//
+//      val internal = refl.universe.internal
+//
+//      internal.newFreeType("Abc")
+//
+//      val fakeName = refl.universe.TypeName(transformed + "abc")
+//      val fakeSymbol = internal.newTypeSymbol(refl.rootPackageSymbol, fakeName)
+//
+//      fakeSymbol.toString
+//
+//      val result = internal.typeRef(refl.universe.NoPrefix, fakeSymbol, tt.typeArgs)
+//      result
+//    }
+//  }
+
+  case class TransformText(
       after: TypeFormat
   ) extends TypeFormat {
 
@@ -157,7 +236,11 @@ object FormatProtos {
 //    }
   }
 
-  object TransformUp {}
+  object TransformText {
 
-  def HidePackages(base: TypeFormat): TransformUp = TransformUp(HidePackage(base))
+    trait CanRecursively extends TypeFormat {
+
+      lazy val recursively: TransformText = TransformText(this)
+    }
+  }
 }

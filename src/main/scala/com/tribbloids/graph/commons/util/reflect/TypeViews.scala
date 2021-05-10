@@ -42,13 +42,40 @@ trait TypeViews extends HasUniverse {
     lazy val fullString: String = self.toString
     override def toString: String = fullString
 
-    lazy val shortString: String = {
+    lazy val hidePackageString: String = {
 
       var str = self.toString
       for (ss <- symbols) {
-        str = str.stripPrefix(ss.packagePrefixDot)
+        str = str.stripPrefix(ss.packages.prefix).stripPrefix(".")
       }
       str
+    }
+
+    lazy val hideStaticString: String = {
+
+      var str = self.toString
+
+      for (ss <- symbols) {
+
+        str = str.stripPrefix(ss.statics.prefix).stripPrefix(".").stripPrefix("#")
+      }
+      str
+    }
+
+    lazy val outerOpt: Option[TypeView] = {
+
+      self match {
+        case v: universe.TypeRefApi =>
+          Some(TypeView(v.pre)).filter { v =>
+            val self = v.self
+            val notNone = self != universe.NoPrefix
+            val notSingle = !self.isInstanceOf[universe.SingleType]
+            notNone && notSingle
+          }
+
+        case _ =>
+          None
+      }
     }
 
     def getOnlyInstance: Any = {
@@ -68,11 +95,11 @@ trait TypeViews extends HasUniverse {
 
           val mirror = Reflection.Runtime.mirror
 
-          val tb = ToolBox(mirror).mkToolBox()
+          val tool = ToolBox(mirror).mkToolBox()
           val path = onlySym.fullName
 
           try {
-            val result = tb.eval(tb.parse(path))
+            val result = tool.eval(tool.parse(path))
 
             if (result == null) {
               throw new UnsupportedOperationException(
@@ -108,6 +135,15 @@ trait TypeViews extends HasUniverse {
 
     lazy val args: List[TypeView] = self.typeArgs.map { arg =>
       TypeView(arg)
+    }
+
+    lazy val parts: List[TypeView] = {
+
+      val results = outerOpt.toList.flatMap(_.parts) ++ args
+
+      results.filter { v =>
+        self.toString.contains(v.toString)
+      }
     }
 
     lazy val baseTypes: List[TypeView] = {

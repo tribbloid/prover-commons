@@ -10,9 +10,9 @@ object Formats {
     def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
       val self = ff.typeView.self.toString
 
-      val args = ff.typeView.args
+      val parts = ff.typeView.parts
 
-      self -> args.map { arg =>
+      self -> parts.map { arg =>
         arg.formattedBy(this)
       }
     }
