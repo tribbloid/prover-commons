@@ -77,8 +77,8 @@ object FormatProtos {
 
           val constructor = original.typeView.constructor
 
-          val shorten = if (full.startsWith(constructor.fullString)) {
-            constructor.hidePackageString + full.stripPrefix(constructor.fullString)
+          val shorten = if (full.startsWith(constructor.canonicalName)) {
+            constructor.Prefixes.packages.simpleName + full.stripPrefix(constructor.canonicalName)
           } else {
             full
           }
@@ -116,8 +116,8 @@ object FormatProtos {
 
           val constructor = original.typeView.constructor
 
-          val shorten = if (full.startsWith(constructor.fullString)) {
-            constructor.hideStaticString + full.stripPrefix(constructor.fullString)
+          val shorten = if (full.startsWith(constructor.canonicalName)) {
+            constructor.Prefixes.static.simpleName + full.stripPrefix(constructor.canonicalName)
           } else {
             full
           }
@@ -187,11 +187,11 @@ object FormatProtos {
 //      val partMap_> = Map(part_redact: _*)
 //      val partMap_< = Map(part_redact.map(v => v.swap): _*)
 
-      var swapped: String = afterOut.text
+      var replaced: String = afterOut.text
 
-      def swap(from: String, to: String): Unit = {
+      def doReplace(from: String, to: String): Unit = {
 
-        swapped = swapped.replaceFirst(s"\\Q$from\\E", to) // TODO: too slow! switch to aho-corasick
+        replaced = replaced.replaceFirst(s"\\Q$from\\E", to) // TODO: too slow! switch to aho-corasick
       }
 
       val parts = afterOut.parts
@@ -201,12 +201,12 @@ object FormatProtos {
         val from = part.text
         val to = result.text
 
-        swap(from, to)
+        doReplace(from, to)
 
         result
       }
 
-      Option(swapped).getOrElse(afterOut.text) -> transformedParts
+      Option(replaced).getOrElse(afterOut.text) -> transformedParts
     }
 
 //    case class Contextual() {

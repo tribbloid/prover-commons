@@ -8,10 +8,9 @@ trait Reflection extends SymbolViews with TypeViews with Formattings {
   lazy val rootPackageSymbol: universe.Symbol = {
 
     val tt = universe.typeOf[Reflection.type]
-
     val sv = SymbolView(tt.typeSymbol)
 
-    sv.allOwners.list.last
+    sv.Owners.internal.leftOpt.get
   }
 }
 

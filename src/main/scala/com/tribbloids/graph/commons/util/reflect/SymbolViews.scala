@@ -5,7 +5,7 @@ trait SymbolViews extends HasUniverse {
 
   case class SymbolView(
       self: universe.Symbol
-  ) {
+  ) extends ApiView[universe.Symbol] {
 
     lazy val ownerOpt: Option[universe.Symbol] = {
 
@@ -15,69 +15,48 @@ trait SymbolViews extends HasUniverse {
       else Some(owner)
     }
 
-    case class PrefixChain(list: List[universe.Symbol]) {
+    object Owners extends Breadcrumbs {
 
-      def prefix: String = list.reverse
-        .map { v =>
-          v.name.encodedName
+      lazy val internal: BreadcrumbView = {
+
+        val chain = ownerOpt.toList.flatMap { owner =>
+          val v1: List[universe.Symbol] = List(owner)
+          val v2: List[universe.Symbol] = copy(owner).Owners.internal.list
+
+          v1 ++ v2
         }
-        .mkString(".")
 
-      def shorten: String = self.fullName.stripPrefix(prefix)
-    }
+        BreadcrumbView(chain)
+      }
 
-    lazy val allOwners: PrefixChain = {
-
-      val chain = ownerOpt.toList.flatMap { owner =>
-        val v1: List[universe.Symbol] = List(owner)
-        val v2: List[universe.Symbol] = copy(owner).allOwners.list
-
-        val result = v1 ++ v2
+      lazy val all: BreadcrumbView = {
+        val chain: List[universe.Symbol] = internal.list.filterNot { owner =>
+          owner.fullName == "<root>"
+        }
+        val result = BreadcrumbView(chain)
+//        result.validate()
         result
       }
 
-      PrefixChain(chain)
-    }
+      lazy val packages: BreadcrumbView = {
 
-    lazy val owners: PrefixChain = {
-      val noRoot: List[universe.Symbol] = allOwners.list.filterNot { owner =>
-        owner.fullName == "<root>"
+        val list = all.list.reverse.takeWhile { owner =>
+          owner.isPackage
+        }.reverse
+
+        BreadcrumbView(list)
       }
-      PrefixChain(noRoot)
+
+      lazy val static: BreadcrumbView = {
+
+        val list = all.list.reverse.takeWhile { owner =>
+          owner.isStatic
+        }.reverse
+
+        BreadcrumbView(list)
+      }
     }
 
-    lazy val packages: PrefixChain = {
-
-      val list = owners.list.reverse.takeWhile { owner =>
-        owner.isPackage
-      }.reverse
-
-      PrefixChain(list)
-    }
-
-    lazy val statics: PrefixChain = {
-
-      val list = owners.list.reverse.takeWhile { owner =>
-        owner.isStatic
-      }.reverse
-
-      PrefixChain(list)
-
-    }
-
-    lazy val outerClass: Option[universe.Symbol] = Option(owners.list.reverse.head).filter { v =>
-      v.isClass
-    }
-
-//    lazy val packagePrefix: String = packageChain
-//      .map { ss =>
-//        ss.name.encodedName
-//      }
-//      .reverse
-//      .mkString(".")
-//
-//    def packagePrefixDot: String = packagePrefix + "."
-
-    override def toString: String = self.fullName
+    override def getCanonicalName(v: universe.Symbol): String = v.fullName
   }
 }
