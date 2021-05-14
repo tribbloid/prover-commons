@@ -53,6 +53,7 @@ trait TypeViews extends HasUniverse {
 
     def getOnlyInstance: Any = {
 
+      // TODO: add mnemonic
       self.dealias match {
         case v: universe.ConstantType =>
           v.value.value
