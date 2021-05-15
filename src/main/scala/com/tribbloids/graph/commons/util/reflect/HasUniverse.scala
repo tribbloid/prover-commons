@@ -12,6 +12,7 @@ trait HasUniverse {
   type TypeTag[T] = universe.TypeTag[T]
   type WeakTypeTag[T] = universe.WeakTypeTag[T]
   type Type = universe.Type
+  type Symbol = universe.Symbol
 
   def rootMirror: universe.Mirror = universe.rootMirror
 

@@ -11,10 +11,10 @@ trait TypeViews extends HasUniverse {
   self: Reflection =>
 
   case class TypeID(
-      self: universe.Type
+      self: Type
   ) extends IDMixin {
 
-    lazy val symbols: Seq[universe.Symbol] = Seq(
+    lazy val symbols: Seq[Symbol] = Seq(
       self.typeSymbol,
       self.termSymbol
     ).filter { ss =>
@@ -39,9 +39,9 @@ trait TypeViews extends HasUniverse {
 
     lazy val symbols: Seq[SymbolView] = id.symbols.map(v => SymbolView(v))
 
-    override def getCanonicalName(v: universe.Type): String = v.toString
+    override def getCanonicalName(v: Type): String = v.toString
 
-    lazy val singletonSymbol: Option[universe.Symbol] = {
+    lazy val singletonSymbol: Option[Symbol] = {
 
       (self.termSymbol, self.typeSymbol) match {
         case (termS, _) if termS.isTerm && termS.isStatic => Some(termS)
@@ -51,12 +51,12 @@ trait TypeViews extends HasUniverse {
       }
     }
 
-    def getOnlyInstance: Any = {
+    lazy val getOnlyInstance: Any = {
 
       // TODO: add mnemonic
       self.dealias match {
-        case v: universe.ConstantType =>
-          v.value.value
+        case universe.ConstantType(v) =>
+          v.value
         case v @ _ =>
           val onlySym = TypeView(v).singletonSymbol.getOrElse {
             throw new UnsupportedOperationException(
@@ -92,16 +92,16 @@ trait TypeViews extends HasUniverse {
     }
 
     // TODO: useless?
-    //    lazy val internal: Option[internalUniverse.Type] = {
+    //    lazy val internal: Option[internalType] = {
     //      self match {
-    //        case tt: internalUniverse.Type =>
+    //        case tt: internalType =>
     //          Some(tt)
     //        case _ =>
     //          None
     //      }
     //    }
 
-    lazy val deAlias: universe.Type = self.dealias
+    lazy val deAlias: Type = self.dealias
     lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == deAlias)
 
     lazy val args: List[TypeView] = self.typeArgs.map { arg =>
