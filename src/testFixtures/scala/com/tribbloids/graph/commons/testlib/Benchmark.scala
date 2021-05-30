@@ -1,6 +1,6 @@
-package com.tribbloids.graph.commons.testlib
+package org.shapesafe.graph.commons.testlib
 
-import com.tribbloids.graph.commons.util.benchmark.BenchmarkProfile
+import org.shapesafe.graph.commons.util.benchmark.BenchmarkProfile
 
 trait Benchmark extends BaseSpec {
 

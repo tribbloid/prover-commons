@@ -1,7 +1,7 @@
-package com.tribbloids.graph.commons.testlib
+package org.shapesafe.graph.commons.testlib
 
-import com.tribbloids.graph.commons.util.debug.print_@
-import com.tribbloids.graph.commons.util.diff.StringDiff
+import org.shapesafe.graph.commons.util.debug.print_@
+import org.shapesafe.graph.commons.util.diff.StringDiff
 import org.scalatest.funspec.AnyFunSpec
 import shapeless.test.illTyped
 
