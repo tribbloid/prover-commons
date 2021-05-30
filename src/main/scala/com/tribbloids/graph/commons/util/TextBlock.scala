@@ -56,7 +56,7 @@ case class TextBlock(lines: Seq[String]) {
       TextBlock(block.lines.padTo(maxLines, ""))
     }
 
-    val zipped = expanded(0).rectangular.lines.zip(expanded(1).lines).map { v =>
+    val zipped = expanded.head.rectangular.lines.zip(expanded(1).lines).map { v =>
       v._1 + v._2
     }
 

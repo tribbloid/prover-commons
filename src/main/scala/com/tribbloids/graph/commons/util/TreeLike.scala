@@ -1,8 +1,5 @@
 package com.tribbloids.graph.commons.util
 
-import com.tribbloids.graph.commons.util.TextBlock.Padding
-import com.tribbloids.graph.commons.util.reflect.{Reflection, ScalaReflection}
-
 import scala.reflect.ClassTag
 
 trait TreeLike {
@@ -22,7 +19,7 @@ trait TreeLike {
     }
   }
 
-  def offsprings[T <: TreeLike: ClassTag]: Seq[T] = allOffsprings.collect {
+  def collectOffsprings[T <: TreeLike: ClassTag]: Seq[T] = allOffsprings.collect {
     case v: T => v
   }
 
@@ -63,68 +60,4 @@ trait TreeLike {
   }
 }
 
-object TreeLike {
-
-  trait ProductAsTree extends TreeLike with Product {
-
-    private lazy val argList = this.productIterator.toList
-
-    lazy val constructorString: String = {
-
-      val hasOuter = this.getClass.getDeclaringClass != null
-
-      if (hasOuter) {
-        val list = HasOuter.outerListOf(this)
-
-        val names = list.map { v =>
-          val dec = decodedStrOf(v)
-
-          dec
-        }
-
-        names.reverse.mkString(" ‣ ")
-      } else {
-        decodedStrOf(this)
-      }
-
-    }
-
-    final override lazy val nodeString = {
-
-      val notTree = this.argList
-        .filterNot(v => v.isInstanceOf[TreeLike])
-
-      if (notTree.isEmpty) {
-
-        constructorString
-      } else {
-
-        val _notTree = notTree.map { str =>
-          TextBlock("" + str).padLeft(Padding.argLeftBracket).build
-        }
-
-        TextBlock(constructorString)
-          .zipRight(
-            TextBlock(_notTree.mkString("\n"))
-          )
-          .build
-      }
-    }
-
-    final override lazy val children: List[TreeLike] = {
-
-      this.argList.collect {
-        case v: TreeLike => v
-      }
-    }
-  }
-
-  def decodedStrOf(v: AnyRef): String = {
-    val clz = v.getClass
-    val enc =
-      clz.getCanonicalName.replace(clz.getPackage.getName, "").stripPrefix(".").stripSuffix("$")
-
-    val dec = ScalaReflection.universe.TypeName(enc).decodedName
-    dec.toString
-  }
-}
+object TreeLike {}
