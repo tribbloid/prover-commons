@@ -3,6 +3,7 @@ package com.tribbloids.graph.commons.util.reflect
 import com.tribbloids.graph.commons.util.IDMixin
 import com.tribbloids.graph.commons.util.reflect.format.TypeFormat
 
+import scala.collection.mutable
 import scala.language.{implicitConversions, reflectiveCalls}
 import scala.tools.reflect.ToolBox
 import scala.util.Try
@@ -27,17 +28,17 @@ trait TypeViews extends HasUniverse {
   }
 
   case class TypeView(
-      self: Type,
-      comment: Option[String] = None
+      val self: Type
+//      comment: Option[String] = None // TODO: useless?
   ) extends ApiView[Type] {
 
     final val refl: TypeViews.this.type = TypeViews.this
 
     lazy val id: TypeID = TypeID(deAlias)
 
-    lazy val constructor: TypeView = TypeView(self.typeConstructor)
+    lazy val constructor: TypeView = typeView(self.typeConstructor)
 
-    lazy val symbols: Seq[SymbolView] = id.symbols.map(v => SymbolView(v))
+    lazy val symbols: Seq[SymbolView] = id.symbols.map(v => symbolView(v))
 
     override def getCanonicalName(v: Type): String = v.toString
 
@@ -58,7 +59,7 @@ trait TypeViews extends HasUniverse {
         case universe.ConstantType(v) =>
           v.value
         case v @ _ =>
-          val onlySym = TypeView(v).singletonSymbol.getOrElse {
+          val onlySym = typeView(v).singletonSymbol.getOrElse {
             throw new UnsupportedOperationException(
               s"$v : ${v.getClass} is not a Singleton"
             )
@@ -105,14 +106,14 @@ trait TypeViews extends HasUniverse {
     lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == deAlias)
 
     lazy val args: List[TypeView] = self.typeArgs.map { arg =>
-      TypeView(arg)
+      typeView(arg)
     }
 
     lazy val prefixOpt: Option[TypeView] = {
 
       self match {
         case v: Type { def pre: Type } =>
-          val pre = Try(TypeView(v.pre)).filter { v =>
+          val pre = Try(typeView(v.pre)).filter { v =>
             val self = v.self
             val notNone = self != universe.NoPrefix
             //            val notSingle = !self.isInstanceOf[universe.SingleType]
@@ -133,7 +134,7 @@ trait TypeViews extends HasUniverse {
 
       override def getCanonicalName(v: Type): String = {
 
-        val vv = TypeView(v)
+        val vv = typeView(v)
         val result = if (vv.singletonSymbol.isDefined) {
           v.toString.stripSuffix(".type")
         } else {
@@ -170,7 +171,7 @@ trait TypeViews extends HasUniverse {
       lazy val static: BreadcrumbView = {
 
         val list = all.list.reverse.takeWhile { tt =>
-          TypeView(tt).singletonSymbol.exists { ss =>
+          typeView(tt).singletonSymbol.exists { ss =>
             ss.isStatic
           }
         }.reverse
@@ -181,7 +182,7 @@ trait TypeViews extends HasUniverse {
       lazy val packages: BreadcrumbView = {
 
         val list = all.list.reverse.takeWhile { tt =>
-          TypeView(tt).singletonSymbol.exists { ss =>
+          typeView(tt).singletonSymbol.exists { ss =>
             ss.isPackage
           }
         }.reverse
@@ -221,13 +222,13 @@ trait TypeViews extends HasUniverse {
           val reAligned = withIndices.sortBy(_._2).map(_._1)
 
           reAligned.map { tt =>
-            TypeView(tt)
+            typeView(tt)
           }
         case _ =>
           baseClzSyms.map { clz =>
             val tt = self.baseType(clz)
-            if (tt == universe.NoType) TypeView(tt, Some(clz.toString))
-            else TypeView(tt)
+            if (tt == universe.NoType) typeView(tt)
+            else typeView(tt)
           }
 
       }
@@ -251,7 +252,7 @@ trait TypeViews extends HasUniverse {
         val loopEliminated = selfArgs.filterNot(v => v =:= self)
 
         val transitive = loopEliminated.flatMap { v =>
-          TypeView(v).Recursive.collectArgs
+          typeView(v).Recursive.collectArgs
         }
 
         val result = args ++ transitive
@@ -261,11 +262,17 @@ trait TypeViews extends HasUniverse {
 
       lazy val collectSymbols: List[SymbolView] =
         (List(TypeView.this) ++ collectArgs).flatMap(v => v.id.symbols).map { v =>
-          SymbolView(v)
+          symbolView(v)
         }
     }
   }
 
+  val typeCache = mutable.Map.empty[Type, TypeView]
+
+  def typeView(tt: Type): TypeView = typeCache.getOrElseUpdate(
+    tt,
+    TypeView(tt)
+  )
 }
 
 object TypeViews {

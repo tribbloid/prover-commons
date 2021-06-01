@@ -21,7 +21,7 @@ trait TypeOfs extends TypeVizSystem {
 
     type TT = T
 
-    lazy val typeView: TypeView = TypeView(tt)
+    lazy val typeView: TypeView = reflection.typeView(tt)
     lazy val typeTree: exe.Tree = Tree(typeView)
 
     //  def nodeStr: String = tree.nodeStr
@@ -181,7 +181,7 @@ trait TypeOfs extends TypeVizSystem {
         override lazy val children: List[Tree] = Seq(_tt)
           .flatMap(_.typeArgs)
           .map { tt =>
-            val result = Tree.this.copy(TypeView(tt), visited = newTCache)
+            val result = Tree.this.copy(typeView(tt), visited = newTCache)
 
             result
           }

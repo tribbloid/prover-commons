@@ -1,5 +1,7 @@
 package com.tribbloids.graph.commons.util.reflect
 
+import scala.collection.mutable
+
 trait SymbolViews extends HasUniverse {
   self: Reflection =>
 
@@ -59,4 +61,11 @@ trait SymbolViews extends HasUniverse {
 
     override def getCanonicalName(v: universe.Symbol): String = v.fullName
   }
+
+  val symbolCache = mutable.Map.empty[Symbol, SymbolView]
+
+  def symbolView(ss: Symbol): SymbolView = symbolCache.getOrElseUpdate(
+    ss,
+    SymbolView(ss)
+  )
 }
