@@ -30,7 +30,7 @@ case class EnableOvrd(
     val companions_args = {
 
       val complete = refl
-        .TypeView(infoTT)
+        .typeView(infoTT)
         .baseTypes
         .map { v =>
           v.self
@@ -64,14 +64,14 @@ case class EnableOvrd(
 
             EnableOvrd.cache.getOrElseUpdate(
               cName,
-              refl.TypeView(companionType).getOnlyInstance.asInstanceOf[TypeFormat]
+              refl.typeView(companionType).getOnlyInstance.asInstanceOf[TypeFormat]
             )
           }
 
           try {
             val outputs = argTypes.map { arg =>
               val _ff = refl.Formatting(
-                refl.TypeView(arg),
+                refl.typeView(arg),
                 ff.format
               )
 
