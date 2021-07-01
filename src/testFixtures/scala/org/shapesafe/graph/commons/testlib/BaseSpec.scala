@@ -1,8 +1,8 @@
 package org.shapesafe.graph.commons.testlib
 
+import org.scalatest.funspec.AnyFunSpec
 import org.shapesafe.graph.commons.util.debug.print_@
 import org.shapesafe.graph.commons.util.diff.StringDiff
-import org.scalatest.funspec.AnyFunSpec
 import shapeless.test.illTyped
 
 trait BaseSpec extends AnyFunSpec {
