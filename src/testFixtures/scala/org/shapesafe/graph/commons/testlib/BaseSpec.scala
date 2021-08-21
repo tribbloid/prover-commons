@@ -7,7 +7,7 @@ import shapeless.test.illTyped
 
 trait BaseSpec extends AnyFunSpec {
 
-  @transient implicit class TestStringView(str: String) {
+  @transient implicit class testStringView(str: String) {
 
     val _print = new print_@(
       Seq(
