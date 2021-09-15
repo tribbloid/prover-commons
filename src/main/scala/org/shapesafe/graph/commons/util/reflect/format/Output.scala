@@ -4,8 +4,8 @@ import scala.language.implicitConversions
 
 case class Output(
     text: String,
-    parts: Seq[Formatting] = Nil,
-    equivalent: Option[Formatting] = None
+    parts: Seq[FormattedType] = Nil,
+    simplified: Option[FormattedType] = None
 ) {}
 
 object Output {}

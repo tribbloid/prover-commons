@@ -2,6 +2,7 @@ package org.shapesafe.graph.commons.util.viz
 
 import org.shapesafe.graph.commons.testlib.BaseSpec
 import org.shapesafe.graph.commons.util.reflect.ScalaReflection.WeakTypeTag
+import org.shapesafe.graph.commons.util.reflect.format.Formats0
 import shapeless.{syntax, HNil, Witness}
 
 class TypeVizSpec extends BaseSpec {
@@ -116,6 +117,25 @@ class TypeVizSpec extends BaseSpec {
           | !-+ Int
           |   !-+ AnyVal
           |     !-- Any
+          |""".stripMargin
+      )
+    }
+
+    it("... with Arg") {
+
+      TypeViz[TypeVizSpec.singletonWArg.type].toString.shouldBe(
+        """
+          |-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.singletonWArg.type
+          | !-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Int]
+          |   :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+          |   :       ┃  !-+ Int
+          |   :       ┃    !-+ AnyVal
+          |   :       ┃      !-- Any ............................................................................. [0]
+          |   !-+ java.io.Serializable
+          |   : !-- Any ............................................................................. [0]
+          |   !-+ Product
+          |   : !-- Equals
+          |   !-- Object
           |""".stripMargin
       )
     }
@@ -260,6 +280,89 @@ class TypeVizSpec extends BaseSpec {
     )
   }
 
+  describe("type alias") {
+
+    it("global") {
+
+      TypeViz[Alias].toString.shouldBe(
+        """
+          |-+ Int(3) ≅ org.shapesafe.graph.commons.util.viz.TypeVizSpec.Alias
+          | !-+ Int
+          |   !-+ AnyVal
+          |     !-- Any
+          |""".stripMargin
+      )
+    }
+
+    it("... with Arg") {
+
+      TypeViz[AliasWArg].toString.shouldBe(
+        """
+          |-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double] ≅ org.shapesafe.graph.commons.util.viz.TypeVizSpec.AliasWArg
+          | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+          | :       ┃  !-+ Double
+          | :       ┃    !-+ AnyVal
+          | :       ┃      !-- Any ............................................................................. [0]
+          | !-+ java.io.Serializable
+          | : !-- Any ............................................................................. [0]
+          | !-+ Product
+          | : !-- Equals
+          | !-- Object
+          |""".stripMargin
+      )
+
+    }
+
+    it("... in DeAlias format") {
+
+      val short = {
+
+        val format = Formats0.TypeInfo.DeAlias
+        TypeViz.withFormat(format)
+      }
+
+      short[AliasWArg].toString.shouldBe(
+        """
+          |-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double]
+          | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+          | :       ┃  !-+ Double
+          | :       ┃    !-+ AnyVal
+          | :       ┃      !-- Any ............................................................................. [0]
+          | !-+ java.io.Serializable
+          | : !-- Any ............................................................................. [0]
+          | !-+ Product
+          | : !-- Equals
+          | !-- Object
+          |""".stripMargin
+      )
+    }
+
+    it("... in short format") {
+
+      val short = {
+
+        val format = Formats0.TypeInfo.DeAlias.HidePackage.recursively
+        TypeViz.withFormat(format)
+      }
+
+      short[AliasWArg].toString.shouldBe(
+        """
+          |-+ TypeVizSpec.WArg[Double]
+          | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+          | :       ┃  !-+ Double
+          | :       ┃    !-+ AnyVal
+          | :       ┃      !-- Any ............................................................................. [0]
+          | !-+ Serializable
+          | : !-- Any ............................................................................. [0]
+          | !-+ Product
+          | : !-- Equals
+          | !-- Object
+          |""".stripMargin
+      )
+
+    }
+  }
+
   describe("path-dependent") {
 
     it("with upper bound") {
@@ -342,11 +445,19 @@ class TypeVizSpec extends BaseSpec {
 
 object TypeVizSpec {
 
+  case class WArg[T](v: T)
+
   val singleton = 3
 
   def adhocW = Witness(3)
 
   val singletonW = Witness(3)
+
+  val singletonWArg = WArg(2)
+
+  type Alias = 3
+
+  type AliasWArg = WArg[Double]
 
   class E { type D }
 

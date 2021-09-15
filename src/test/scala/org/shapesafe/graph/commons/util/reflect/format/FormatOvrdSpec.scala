@@ -2,11 +2,9 @@ package org.shapesafe.graph.commons.util.reflect.format
 
 import org.shapesafe.graph.commons.testlib.BaseSpec
 import org.shapesafe.graph.commons.util.reflect.Reflection
-import org.shapesafe.graph.commons.util.reflect.format.FormatOvrd.{~~, Only}
-import org.shapesafe.graph.commons.util.reflect.format.Formats.{ClassName, TypeImpl}
-import org.shapesafe.graph.commons.util.viz.TypeViz
 import org.shapesafe.graph.commons.util.reflect.Reflection.Runtime
-import org.shapesafe.graph.commons.util.reflect.format.Formats.TypeImpl
+import org.shapesafe.graph.commons.util.reflect.format.FormatOvrd.{~~, Only}
+import org.shapesafe.graph.commons.util.reflect.format.Formats0.{ClassName, TypeImpl}
 import org.shapesafe.graph.commons.util.viz.TypeViz
 import shapeless.Witness
 
@@ -16,7 +14,7 @@ class FormatOvrdSpec extends BaseSpec {
 
   val format: TypeFormat = EnableOvrd(TypeImpl.DeAlias)
 
-  val viz: TypeViz[Runtime.type] = TypeViz.formattedBy(format)
+  val viz: TypeViz[Runtime.type] = TypeViz.withFormat(format)
 
   describe("fallback") {
 

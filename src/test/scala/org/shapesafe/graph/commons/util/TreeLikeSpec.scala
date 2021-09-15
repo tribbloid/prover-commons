@@ -6,7 +6,9 @@ abstract class TreeLikeSpec extends BaseSpec {
 
   lazy val format: TreeFormat = TreeFormat.Indent2
 
-  lazy val Demo = format.Demo
+  lazy val formatFixtures = TreeFormatFixtures(format)
+
+  lazy val Demo = formatFixtures.Demo
 
   val tree1 = Demo(
     "aaa",

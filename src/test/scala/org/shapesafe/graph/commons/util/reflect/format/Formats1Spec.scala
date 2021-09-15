@@ -2,12 +2,12 @@ package org.shapesafe.graph.commons.util.reflect.format
 
 import org.shapesafe.graph.commons.testlib.BaseSpec
 import org.shapesafe.graph.commons.util.reflect.format.FormatOvrd.Only
-import org.shapesafe.graph.commons.util.reflect.format.FormatProtos.{Hide, TransformText, Trials}
+import org.shapesafe.graph.commons.util.reflect.format.Formats1.{Hide, RecursiveForm, Trials}
 import org.shapesafe.graph.commons.util.reflect.format.beans.Beans
 import org.shapesafe.graph.commons.util.viz.TypeViz
 import shapeless.{::, HNil}
 
-class FormatProtosSpec extends BaseSpec {
+class Formats1Spec extends BaseSpec {
 
   import org.shapesafe.graph.commons.util.reflect.format.beans.Beans._
 
@@ -15,8 +15,8 @@ class FormatProtosSpec extends BaseSpec {
 
     describe("On HidePackage") {
 
-      val format = Formats.TypeInfo.HidePackage.recursively
-      val viz = TypeViz.formattedBy(format)
+      val format = Formats0.TypeInfo.HidePackage.recursively
+      val viz = TypeViz.withFormat(format)
 
       it("Parametric") {
 
@@ -37,8 +37,8 @@ class FormatProtosSpec extends BaseSpec {
 
     describe(" ... with DeAlias") {
 
-      val format = Formats.TypeInfo.DeAlias.HidePackage.recursively
-      val viz = TypeViz.formattedBy(format)
+      val format = Formats0.TypeInfo.DeAlias.HidePackage.recursively
+      val viz = TypeViz.withFormat(format)
 
       it("Parametric") {
 
@@ -63,14 +63,14 @@ class FormatProtosSpec extends BaseSpec {
 
     describe(" ... with Trials") {
 
-      val before = Formats.TypeInfo.DeAlias
+      val before = Formats0.TypeInfo.DeAlias
       val after = Trials(
         Only,
-        Hide.Package(before)
+        Hide.HidePackage(before)
       )
 
-      val format = TransformText(after)
-      val viz = TypeViz.formattedBy(format)
+      val format = RecursiveForm(after)
+      val viz = TypeViz.withFormat(format)
 
       it("Parametric") {
         viz[Ovrd.Ref].typeStr.shouldBe(
@@ -81,11 +81,11 @@ class FormatProtosSpec extends BaseSpec {
 
     describe(" ... with EnableOvrd") {
 
-      val before = Formats.TypeInfo.DeAlias
-      val after = EnableOvrd(Hide.Package(before))
+      val before = Formats0.TypeInfo.DeAlias
+      val after = EnableOvrd(Hide.HidePackage(before))
 
-      val format = TransformText(after)
-      val viz = TypeViz.formattedBy(format)
+      val format = RecursiveForm(after)
+      val viz = TypeViz.withFormat(format)
 
       it("Parametric") {
 
@@ -128,8 +128,8 @@ class FormatProtosSpec extends BaseSpec {
 
     describe("On HideOwner") {
 
-      val format = Formats.TypeInfo.DeAlias.HideStatic.recursively
-      val viz = TypeViz.formattedBy(format)
+      val format = Formats0.TypeInfo.DeAlias.HideStatic.recursively
+      val viz = TypeViz.withFormat(format)
 
       it("Parametric") {
 
@@ -166,7 +166,7 @@ class FormatProtosSpec extends BaseSpec {
 
 }
 
-object FormatProtosSpec {
+object Formats1Spec {
 
   trait SS {
 

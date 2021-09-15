@@ -2,18 +2,18 @@ package org.shapesafe.graph.commons.util.reflect.format
 
 import org.shapesafe.graph.commons.util.reflect.Reflection
 
-object Formats {
+object Formats0 {
 
   trait TypeInfo[T] extends FormatOvrd
   case object TypeInfo extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       val self = ff.typeView.self.toString
 
-      val parts = ff.typeView.parts
+      val genArgs = ff.typeView.genArgs
 
-      self -> parts.map { arg =>
-        arg.formattedBy(this)
+      self -> genArgs.map { part =>
+        part.formattedBy(this)
       }
     }
   }
@@ -21,7 +21,7 @@ object Formats {
   trait TypeImpl[T] extends FormatOvrd
   case object TypeImpl extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       val tt: Reflection#Type = ff.typeView.self
       tt.toString + ": " + tt.getClass.getSimpleName
     }
@@ -30,7 +30,7 @@ object Formats {
   trait KindName[T] extends FormatOvrd
   case object KindName extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       ff.typeView.self.typeConstructor.toString
     }
   }
@@ -38,7 +38,7 @@ object Formats {
   trait ClassName[T]
   case object ClassName extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       ff.typeView.self.typeSymbol.asClass.fullName
     }
   }

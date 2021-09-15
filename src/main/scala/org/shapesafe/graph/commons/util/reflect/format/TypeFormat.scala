@@ -6,11 +6,11 @@ import scala.language.implicitConversions
 
 trait TypeFormat {
 
-  def resolve(refl: Reflection): refl.Formatting => Output
+  def resolve(refl: Reflection): refl.FormattedType => Output
 
   def joinText(v: Seq[String]): String = v.mkString(" ")
 
-  def backtrack(ff: Formatting): Nothing = {
+  def backtrack(ff: FormattedType): Nothing = {
     throw new Backtracking(
       s"Type ${ff.typeView} is not supported by format $this"
     )
@@ -18,29 +18,18 @@ trait TypeFormat {
 
   implicit def fromText(v: String): Output = Output(v)
 
-  implicit def fromTuple(v: (String, Seq[Formatting])): Output = Output(v._1, v._2)
-
-  implicit def fromEquivalent(v: (Formatting, Formatting)): Output = {
-    val sameFormat = v._2.format == this
-    val sameType = v._1.typeView == v._2.typeView
-
-    require(
-      !(sameFormat && sameType),
-      "cannot convert Formatting into Output: may trigger dead loop"
-    )
-    Output(v._2.text, parts = v._2.parts, equivalent = Option(v._2))
-  }
+  implicit def fromText_Parts(v: (String, Seq[FormattedType])): Output = Output(v._1, v._2)
 
   def ~(factory: TypeFormat => TypeFormat): TypeFormat = factory(this)
 
   // TODO: the following should be moved into a view that also contains TypeVizFormat
   //  should make compile-time macro much easier to define
-  lazy val DeAlias = FormatProtos.DeAlias(this)
+  lazy val DeAlias = Formats1.DeAlias(this)
 
-  lazy val HidePackage = FormatProtos.Hide.Package(this)
-  lazy val HideStatic = FormatProtos.Hide.Static(this)
+  lazy val HidePackage = Formats1.Hide.HidePackage(this)
+  lazy val HideStatic = Formats1.Hide.HideStatic(this)
 
-  lazy val Both = FormatProtos.Concat(
+  lazy val Both = Formats1.Concat(
     this.DeAlias,
     this
   )
@@ -49,5 +38,5 @@ trait TypeFormat {
 
 object TypeFormat {
 
-  val Default: Formats.TypeInfo.Both.type = Formats.TypeInfo.Both
+  val Default: Formats0.TypeInfo.Both.type = Formats0.TypeInfo.Both
 }

@@ -191,13 +191,14 @@ trait TypeViews extends HasUniverse {
       }
     }
 
-    lazy val parts: List[TypeView] = {
+    // generalised arguments, also include arguments of prefixes
+    lazy val genArgs: List[TypeView] = {
 
-      val results = prefixOpt.toList.flatMap(_.parts) ++ args
+      val results = prefixOpt.toList.flatMap(_.genArgs) ++ args
 
       results.filter { v =>
         self.toString.contains(v.toString)
-      }
+      } // TODO: this should be moved to elsewhere
     }
 
     lazy val baseTypes: List[TypeView] = {
@@ -236,8 +237,8 @@ trait TypeViews extends HasUniverse {
       baseNodes
     }
 
-    def formattedBy(format: TypeFormat): Formatting = {
-      val result = Formatting(this, format)
+    def formattedBy(format: TypeFormat): FormattedType = {
+      val result = FormattedType(this, format)
       result.text
       result
     }
@@ -248,11 +249,10 @@ trait TypeViews extends HasUniverse {
 
       lazy val collectArgs: Seq[TypeView] = {
 
-        val selfArgs = self.typeArgs
-        val loopEliminated = selfArgs.filterNot(v => v =:= self)
+        val loopEliminated = args.filterNot(v => v.self =:= self)
 
         val transitive = loopEliminated.flatMap { v =>
-          typeView(v).Recursive.collectArgs
+          v.Recursive.collectArgs
         }
 
         val result = args ++ transitive

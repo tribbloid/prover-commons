@@ -1,6 +1,5 @@
 package org.shapesafe.graph.commons.util.reflect.format
 
-import org.shapesafe.graph.commons.util.reflect.{format, Reflection}
 import org.shapesafe.graph.commons.util.reflect.Reflection
 
 import scala.collection.mutable
@@ -9,7 +8,7 @@ case class EnableOvrd(
     lastResort: TypeFormat
 ) extends TypeFormat {
 
-  def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+  def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
     val u = refl.getUniverse
     val tt = ff.typeView.self
 
@@ -32,12 +31,12 @@ case class EnableOvrd(
       val complete = refl
         .typeView(infoTT)
         .baseTypes
-        .map { v =>
-          v.self
-        }
+//        .map { v =>
+//          v.self
+//        }
 
       complete.to(LazyList).map { v =>
-        v.companion -> v.typeArgs
+        v.self.companion -> v.args
       }
     }
 
@@ -70,8 +69,8 @@ case class EnableOvrd(
 
           try {
             val outputs = argTypes.map { arg =>
-              val _ff = refl.Formatting(
-                refl.typeView(arg),
+              val _ff = refl.FormattedType(
+                refl.typeView(arg.self),
                 ff.format
               )
 
@@ -94,7 +93,7 @@ case class EnableOvrd(
       }
       .headOption
       .getOrElse {
-        ff -> ff.formattedBy(lastResort)
+        ff.withCanonical(ff.formattedBy(lastResort))
       }
   }
 }

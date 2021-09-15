@@ -1,7 +1,7 @@
 package org.shapesafe.graph.commons.util.reflect.format
 
 import org.shapesafe.graph.commons.util.reflect.Reflection
-import org.shapesafe.graph.commons.util.reflect.format.Formats.KindName
+import org.shapesafe.graph.commons.util.reflect.format.Formats0.KindName
 
 import scala.annotation.StaticAnnotation
 
@@ -12,7 +12,7 @@ object FormatOvrd {
   trait Only[T] extends FormatOvrd
   case object Only extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       try {
         ff.typeView.getOnlyInstance.toString
       } catch {
@@ -25,7 +25,7 @@ object FormatOvrd {
   trait ~~[A, B] extends FormatOvrd
   case object ~~ extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       ff.output
     }
   }
@@ -34,7 +34,7 @@ object FormatOvrd {
 
   trait Prefix extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       ff.output
     }
 

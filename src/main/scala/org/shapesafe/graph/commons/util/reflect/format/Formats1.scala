@@ -1,9 +1,8 @@
 package org.shapesafe.graph.commons.util.reflect.format
 
 import org.shapesafe.graph.commons.util.reflect.Reflection
-import org.shapesafe.graph.commons.util.reflect.Reflection
 
-object FormatProtos {
+object Formats1 { //higher-order format constructors
 
   trait MapOver extends TypeFormat {
 
@@ -11,12 +10,12 @@ object FormatProtos {
 
     def typeMap(refl: Reflection): refl.Type => refl.Type
 
-    final def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+    final def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       val mapFn = typeMap(refl)
 
       val mapped = ff.typeView.copy(self = ff.typeView.self.map(mapFn))
 
-      ff -> mapped.formattedBy(base)
+      ff.withCanonical(mapped.formattedBy(base))
     }
   }
 
@@ -31,12 +30,14 @@ object FormatProtos {
       bases: TypeFormat*
   ) extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
-      val previous = bases.map { base =>
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
+      val types = bases.map { base =>
         ff.formattedBy(base)
       }
 
-      previous.map(_.text).distinct.mkString(" ≅ ") -> previous
+      val texts = types.map(_.text)
+
+      texts.distinct.mkString(" ≅ ") -> types
     }
   }
 
@@ -44,7 +45,7 @@ object FormatProtos {
       bases: TypeFormat*
   ) extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       val trials = bases
         .to(LazyList)
         .flatMap { base: TypeFormat =>
@@ -57,18 +58,18 @@ object FormatProtos {
           }
         }
 
-      ff -> trials.head
+      ff.withCanonical(trials.head)
     }
   }
 
   object Hide {
 
-    case class Package(
+    case class HidePackage(
         base: TypeFormat
-    ) extends TransformText.CanRecursively {
+    ) extends RecursiveForm.HasRecursiveForm {
 
-      def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
-        type Formatting = refl.Formatting
+      def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
+        type Formatting = refl.FormattedType
 
         val original = ff.formattedBy(base)
 
@@ -87,11 +88,11 @@ object FormatProtos {
           shorten
         }
 
-        original.equivalent
+        original.simplified
           .map { ee =>
             if (ee.typeView != ff.typeView) {
               val newEE = ee.formattedBy(this)
-              ff -> newEE: Output
+              ff.withCanonical(newEE)
             } else {
               resolve -> ee.parts: Output
             }
@@ -102,12 +103,12 @@ object FormatProtos {
       }
     }
 
-    case class Static(
+    case class HideStatic(
         base: TypeFormat
-    ) extends TransformText.CanRecursively {
+    ) extends RecursiveForm.HasRecursiveForm {
 
-      def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
-        type Formatting = refl.Formatting
+      def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
+        type Formatting = refl.FormattedType
 
         val original = ff.formattedBy(base)
 
@@ -126,11 +127,11 @@ object FormatProtos {
           shorten
         }
 
-        original.equivalent
+        original.simplified
           .map { ee =>
             if (ee.typeView != ff.typeView) {
               val newEE = ee.formattedBy(this)
-              ff -> newEE: Output
+              ff.withCanonical(newEE)
             } else {
               resolve -> ee.parts: Output
             }
@@ -172,27 +173,18 @@ object FormatProtos {
 //    }
 //  }
 
-  case class TransformText(
+  case class RecursiveForm(
       after: TypeFormat
   ) extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.Formatting => Output = { ff =>
-//      val beforeOut = ff.formattedBy(before)
+    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
       val afterOut = ff.formattedBy(after)
-
-//      val afterParts = afterOut.parts.map(_.text).toList.distinct
-//      val part_redact = afterParts.zipWithIndex.map {
-//        case (v, i) =>
-//          v -> s"?${i}"
-//      }
-//      val partMap_> = Map(part_redact: _*)
-//      val partMap_< = Map(part_redact.map(v => v.swap): _*)
 
       var replaced: String = afterOut.text
 
       def doReplace(from: String, to: String): Unit = {
 
-        replaced = replaced.replaceFirst(s"\\Q$from\\E", to) // TODO: too slow! switch to aho-corasick
+        replaced = replaced.replaceFirst(s"\\Q$from\\E", to) // TODO: regex is too slow! switch to aho-corasick
       }
 
       val parts = afterOut.parts
@@ -207,15 +199,19 @@ object FormatProtos {
         result
       }
 
-      Option(replaced).getOrElse(afterOut.text) -> transformedParts
+      Output(
+        Option(replaced).getOrElse(afterOut.text),
+        transformedParts,
+        afterOut.simplified
+      )
     }
   }
 
-  object TransformText {
+  object RecursiveForm {
 
-    trait CanRecursively extends TypeFormat {
+    trait HasRecursiveForm extends TypeFormat {
 
-      lazy val recursively: TransformText = TransformText(this)
+      lazy val recursively: RecursiveForm = RecursiveForm(this)
     }
   }
 }

@@ -3,7 +3,7 @@ package org.shapesafe.graph.commons.util.reflect
 import scala.language.implicitConversions
 import scala.reflect.{api, macros}
 
-trait Reflection extends SymbolViews with TypeViews with Formattings {
+trait Reflection extends SymbolViews with TypeViews with FormattedTypes {
 
   lazy val rootPackageSymbol: universe.Symbol = {
 

@@ -12,13 +12,6 @@ trait TreeFormat {
 
   lazy val DOT = " "
 
-  case class Demo(
-      nodeString: String,
-      override val children: Seq[Demo] = Nil
-  ) extends TreeLike {
-
-    override lazy val treeFormat: TreeFormat = TreeFormat.this
-  }
 }
 
 object TreeFormat {

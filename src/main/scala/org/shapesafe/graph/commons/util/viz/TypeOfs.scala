@@ -22,7 +22,7 @@ trait TypeOfs extends TypeVizSystem {
     type TT = T
 
     lazy val typeView: TypeView = reflection.typeView(tt)
-    lazy val typeTree: exe.Tree = Tree(typeView)
+    lazy val typeTree: exe.TypeTree = TypeTree(typeView)
 
     //  def nodeStr: String = tree.nodeStr
     //  def treeStr: String = tree.treeString
@@ -60,7 +60,7 @@ trait TypeOfs extends TypeVizSystem {
 
     def withFormat(format: TypeFormat) = new WithFormat(format)
 
-    implicit def asTree(v: TypeOf[_]): v.exe.Tree = v.typeTree
+    implicit def asTree(v: TypeOf[_]): v.exe.TypeTree = v.typeTree
 
   }
 
@@ -98,7 +98,7 @@ trait TypeOfs extends TypeVizSystem {
       def apply(id: TypeID): Record = records.getOrElseUpdate(id, Record())
     }
 
-    case class Tree(
+    case class TypeTree(
         node: TypeView,
         visited: mutable.ArrayBuffer[TypeID] = newTCache,
         expanded: Expanded = Expanded()
@@ -120,7 +120,7 @@ trait TypeOfs extends TypeVizSystem {
 
       //    case object Strings {
 
-      lazy val formatting: reflection.Formatting = node.formattedBy(format.base)
+      lazy val formatting: reflection.FormattedType = node.formattedBy(format.base)
 
       lazy val typeStr: String = {
 
@@ -176,12 +176,12 @@ trait TypeOfs extends TypeVizSystem {
         typeStr + refStr + argTreeStr
       }
 
-      case class ArgTree(_tt: Type) extends TreeLike {
+      case class ArgTree(node: TypeView) extends TreeLike {
 
-        override lazy val children: List[Tree] = Seq(_tt)
-          .flatMap(_.typeArgs)
+        override lazy val children: List[TypeTree] = Seq(node)
+          .flatMap(_.args)
           .map { tt =>
-            val result = Tree.this.copy(typeView(tt), visited = newTCache)
+            val result = TypeTree.this.copy(tt, visited = newTCache)
 
             result
           }
@@ -189,7 +189,7 @@ trait TypeOfs extends TypeVizSystem {
 
         override lazy val nodeString: String = {
 
-          val ttStr = _tt.typeConstructor.toString
+          val ttStr = node.self.typeConstructor.toString
 
           val size = children.size
 
@@ -201,17 +201,21 @@ trait TypeOfs extends TypeVizSystem {
 
       lazy val argTrees: Seq[ArgTree] = {
 
-        formatting.selfAndChildren
+        val trees = formatting.forms
           .map { ff =>
-            ff.typeView.self
+            ff.typeView
           }
           .distinct
           .map { v =>
             ArgTree(v)
           }
+
+        val result = trees
           .filter { tree =>
             tree.children.nonEmpty
           }
+
+        result
       }
 
       object Children {
@@ -222,7 +226,7 @@ trait TypeOfs extends TypeVizSystem {
           result
         }
 
-        lazy val expandBaseTrees: List[Tree] = {
+        lazy val expandBaseTrees: List[TypeTree] = {
 
           def list = baseTypes_NoSelf.flatMap { node =>
             if (visited.contains(node.id)) None
