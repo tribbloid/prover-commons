@@ -1,7 +1,5 @@
 package org.shapesafe.graph.commons.util
 
-import org.shapesafe.graph.commons.util.TextBlock.Padding
-
 trait TreeFormat {
 
   lazy val FORK: Padding = Padding("-+", " :")
@@ -11,7 +9,6 @@ trait TreeFormat {
   lazy val SUB_LAST: Padding = SUB.copy(body = SUB.body.map(_ => ' '))
 
   lazy val DOT = " "
-
 }
 
 object TreeFormat {

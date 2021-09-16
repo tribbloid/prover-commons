@@ -1,6 +1,5 @@
 package org.shapesafe.graph.commons.util
 
-import org.shapesafe.graph.commons.util.TextBlock.Padding
 import org.shapesafe.graph.commons.util.reflect.ScalaReflection
 
 // TODO: it should no longer serve as the backbone of ArityConjecture & ShapeConjecture runtime visualisation

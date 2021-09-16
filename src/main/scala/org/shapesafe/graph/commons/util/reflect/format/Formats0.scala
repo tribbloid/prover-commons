@@ -7,12 +7,12 @@ object Formats0 {
   trait TypeInfo[T] extends FormatOvrd
   case object TypeInfo extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-      val self = ff.typeView.self.toString
+    final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+      val self = tt.self.toString
 
-      val genArgs = ff.typeView.genArgs
+      val genArgs = tt.genArgs
 
-      self -> genArgs.map { part =>
+      self <:% genArgs.map { part =>
         part.formattedBy(this)
       }
     }
@@ -21,25 +21,25 @@ object Formats0 {
   trait TypeImpl[T] extends FormatOvrd
   case object TypeImpl extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-      val tt: Reflection#Type = ff.typeView.self
-      tt.toString + ": " + tt.getClass.getSimpleName
+    final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+      val t: Reflection#Type = tt.self
+      t.toString + ": " + t.getClass.getSimpleName
     }
   }
 
   trait KindName[T] extends FormatOvrd
   case object KindName extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-      ff.typeView.self.typeConstructor.toString
+    final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+      tt.self.typeConstructor.toString
     }
   }
 
   trait ClassName[T]
   case object ClassName extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-      ff.typeView.self.typeSymbol.asClass.fullName
+    final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+      tt.self.typeSymbol.asClass.fullName
     }
   }
 }

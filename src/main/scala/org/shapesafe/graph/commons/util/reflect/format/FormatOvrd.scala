@@ -12,9 +12,9 @@ object FormatOvrd {
   trait Only[T] extends FormatOvrd
   case object Only extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
+    def resolve(refl: Reflection): refl.TypeView => IROutput = { ff =>
       try {
-        ff.typeView.getOnlyInstance.toString
+        ff.getOnlyInstance.toString
       } catch {
         case _: UnsupportedOperationException =>
           backtrack(ff)
@@ -23,30 +23,15 @@ object FormatOvrd {
   }
 
   trait ~~[A, B] extends FormatOvrd
-  case object ~~ extends TypeFormat {
+  case object ~~ extends TypeFormat.Constructor {
 
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-      ff.output
+    case class Format(base: TypeFormat) extends TypeFormat {
+      override def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+        val byBase = tt.formattedBy(base)
+        byBase.text <:^ Seq(byBase)
+      }
     }
   }
 
   trait Infix[A, B] extends (A ~~ KindName[this.type] ~~ B)
-
-  trait Prefix extends TypeFormat {
-
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-      ff.output
-    }
-
-    override def joinText(v: Seq[String]): String = {
-
-      v.head + v.slice(1, Int.MaxValue).mkString("(", ", ", ")")
-    }
-  }
-
-  trait Prefix1[S, A]
-  object Prefix1 extends Prefix
-
-  trait Prefix2[S, A, B]
-  object Prefix2 extends Prefix
 }

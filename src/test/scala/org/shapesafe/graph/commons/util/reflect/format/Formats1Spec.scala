@@ -1,8 +1,7 @@
 package org.shapesafe.graph.commons.util.reflect.format
 
 import org.shapesafe.graph.commons.testlib.BaseSpec
-import org.shapesafe.graph.commons.util.reflect.format.FormatOvrd.Only
-import org.shapesafe.graph.commons.util.reflect.format.Formats1.{Hide, RecursiveForm, Trials}
+import org.shapesafe.graph.commons.util.reflect.format.Formats1.{DeAlias, RecursiveForm, Trials}
 import org.shapesafe.graph.commons.util.reflect.format.beans.Beans
 import org.shapesafe.graph.commons.util.viz.TypeViz
 import shapeless.{::, HNil}
@@ -11,7 +10,7 @@ class Formats1Spec extends BaseSpec {
 
   import org.shapesafe.graph.commons.util.reflect.format.beans.Beans._
 
-  describe("TransformText") {
+  describe("Transform text recursively") {
 
     describe("On HidePackage") {
 
@@ -37,7 +36,7 @@ class Formats1Spec extends BaseSpec {
 
     describe(" ... with DeAlias") {
 
-      val format = Formats0.TypeInfo.DeAlias.HidePackage.recursively
+      val format = Formats0.TypeInfo.HidePackage.recursively.DeAlias
       val viz = TypeViz.withFormat(format)
 
       it("Parametric") {
@@ -63,28 +62,43 @@ class Formats1Spec extends BaseSpec {
 
     describe(" ... with Trials") {
 
-      val before = Formats0.TypeInfo.DeAlias
-      val after = Trials(
-        Only,
-        Hide.HidePackage(before)
-      )
+      val base = Formats0.TypeInfo
 
-      val format = RecursiveForm(after)
+      val transformer = { v: TypeFormat =>
+        val firstTrial = BacktrackingDummy
+        val secondTrial = v.HidePackage.DeAlias
+        Trials(
+          firstTrial,
+          secondTrial
+        )
+      }
+
+      val format = RecursiveForm(base, transformer)
+
       val viz = TypeViz.withFormat(format)
 
       it("Parametric") {
         viz[Ovrd.Ref].typeStr.shouldBe(
-          "Beans.XX[Beans.XX[3]]"
+          "Beans.XX[Beans.XX[Int(3)]]"
         )
       }
     }
 
     describe(" ... with EnableOvrd") {
 
-      val before = Formats0.TypeInfo.DeAlias
-      val after = EnableOvrd(Hide.HidePackage(before))
+      val base = Formats0.TypeInfo
 
-      val format = RecursiveForm(after)
+      val transformer = { v: TypeFormat =>
+        val firstTrial = BacktrackingDummy
+        val secondTrial = EnableOvrd(v.HidePackage.DeAlias)
+        Trials(
+          firstTrial,
+          secondTrial
+        )
+      }
+
+      val format = RecursiveForm(base, transformer)
+
       val viz = TypeViz.withFormat(format)
 
       it("Parametric") {
@@ -126,9 +140,9 @@ class Formats1Spec extends BaseSpec {
       }
     }
 
-    describe("On HideOwner") {
+    describe("On HideStatic") {
 
-      val format = Formats0.TypeInfo.DeAlias.HideStatic.recursively
+      val format = Formats0.TypeInfo.HideStatic.recursively.DeAlias
       val viz = TypeViz.withFormat(format)
 
       it("Parametric") {

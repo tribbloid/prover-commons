@@ -5,35 +5,20 @@ import org.shapesafe.graph.commons.util.reflect.Reflection
 import scala.collection.mutable
 
 case class EnableOvrd(
-    lastResort: TypeFormat
-) extends TypeFormat {
+    base: TypeFormat
+) extends Formats1.HasBase {
 
-  def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
+  final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
     val u = refl.getUniverse
-    val tt = ff.typeView.self
+    val t = tt.self
 
-//    lazy val typeInfoName = u.weakTypeOf[HasTypeInfo#_TypeInfo].typeSymbol.name
-
-//    val infoTT: u.Type = {
-//      if (tt <:< u.weakTypeOf[HasTypeInfo]) {
-//        tt.member(typeInfoName).typeSignatureIn(tt)
-//      } else {
-//        tt
-//      }
-//    }
-
-    val infoTT = tt
-
-    //    val companionTs = Stream(infoT.companion)
+    val infoTT = t
 
     val companions_args = {
 
       val complete = refl
         .typeView(infoTT)
         .baseTypes
-//        .map { v =>
-//          v.self
-//        }
 
       complete.to(LazyList).map { v =>
         v.self.companion -> v.args
@@ -42,39 +27,46 @@ case class EnableOvrd(
 
     val qualified = companions_args
       .filter { v =>
-        val hasFormat = v._1 <:< u.typeOf[TypeFormat]
+        val isFormat = v._1 <:< u.typeOf[TypeFormat]
+        val isFormatConstructor = v._1 <:< u.typeOf[TypeFormat.Constructor]
 
-        if (hasFormat && v._2.isEmpty) {
-          throw new IllegalArgumentException(s"not applicable to type with TypeFormat ${v._1} and no argument")
+        if (isFormat || isFormatConstructor) {
+          if (v._2.isEmpty) {
+            throw new IllegalArgumentException(s"not applicable to type with TypeFormat ${v._1} and no argument")
+          }
+          true
+        } else {
+          false
         }
-        hasFormat
       }
 
     qualified
       .flatMap {
 
         case (companionType, argTypes) =>
-          val companion = {
-
+          val cached = {
             val cName = companionType.typeSymbol.fullName
-
-//          print_@(v._1.typeSymbol.fullName)
-//          print_@(v._1.termSymbol.fullName)
 
             EnableOvrd.cache.getOrElseUpdate(
               cName,
-              refl.typeView(companionType).getOnlyInstance.asInstanceOf[TypeFormat]
+              refl.typeView(companionType).getOnlyInstance
             )
+          }
+
+          val companion: TypeFormat = {
+            cached match {
+              case v: TypeFormat => v
+              case v: TypeFormat.Constructor => v.apply(this)
+              case _ =>
+                throw new UnsupportedOperationException(
+                  s"expecting TypeFormat or TypeFormat.Constructor, get ${cached.getClass.getCanonicalName}"
+                )
+            }
           }
 
           try {
             val outputs = argTypes.map { arg =>
-              val _ff = refl.FormattedType(
-                refl.typeView(arg.self),
-                ff.format
-              )
-
-              companion.resolve(refl).apply(_ff)
+              companion.resolve(refl).apply(refl.typeView(arg.self))
             }
 
             val textParts = outputs
@@ -84,8 +76,7 @@ case class EnableOvrd(
 
             val text = companion.joinText(textParts)
 
-//            Some(text -> outputs.flatMap(v => v.children): Output)
-            Some(text: Output)
+            Some(text: IROutput)
           } catch {
             case _: Backtracking =>
               None
@@ -93,22 +84,16 @@ case class EnableOvrd(
       }
       .headOption
       .getOrElse {
-        ff.withCanonical(ff.formattedBy(lastResort))
+
+        val byBase = tt.formattedBy(base)
+        byBase.text <:^ Seq(byBase)
       }
   }
 }
 
 object EnableOvrd extends EnableOvrd(TypeFormat.Default) {
 
-  val cache: mutable.HashMap[String, TypeFormat] = {
-
-//    val list = Seq(Singleton, ~~).map { v =>
-//      v.getClass.getCanonicalName.stripSuffix("$") -> v
-//    }
-//
-//    mutable.HashMap(
-//      list: _*
-//    )
+  val cache: mutable.HashMap[String, Any] = {
 
     mutable.HashMap.empty
   }

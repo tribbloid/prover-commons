@@ -4,40 +4,52 @@ import org.shapesafe.graph.commons.util.reflect.Reflection
 
 object Formats1 { //higher-order format constructors
 
-  trait MapOver extends TypeFormat {
+  trait HasBase extends TypeFormat {
 
     def base: TypeFormat
+  }
 
-    def typeMap(refl: Reflection): refl.Type => refl.Type
+  trait MapBefore extends HasBase {
 
-    final def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-      val mapFn = typeMap(refl)
+    def before(refl: Reflection): refl.Type => refl.Type
 
-      val mapped = ff.typeView.copy(self = ff.typeView.self.map(mapFn))
+    final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+      val beforeFn = before(refl)
+      val mapped = tt.copy(self = tt.self.map(beforeFn))
 
-      ff.withCanonical(mapped.formattedBy(base))
+      val mapped_formatted = mapped.formattedBy(base)
+
+      mapped_formatted.text <:^ Seq(mapped_formatted)
     }
   }
 
-  case class DeAlias(base: TypeFormat) extends MapOver {
+  /**
+    * T -> DeAlias +> base
+    */
+  case class DeAlias(base: TypeFormat) extends MapBefore {
 
-    override def typeMap(refl: Reflection): refl.Type => refl.Type = { tt =>
+    override def before(refl: Reflection): refl.Type => refl.Type = { tt =>
       tt.dealias
     }
   }
 
+  /**
+    * T -> base1
+    *   -> base2
+    *   -> ...   +> concat
+    */
   case class Concat(
       bases: TypeFormat*
   ) extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-      val types = bases.map { base =>
-        ff.formattedBy(base)
+    final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+      val byBases = bases.map { base =>
+        tt.formattedBy(base)
       }
 
-      val texts = types.map(_.text)
+      val texts = byBases.map(_.text)
 
-      texts.distinct.mkString(" ≅ ") -> types
+      texts.distinct.mkString(" ≅ ") <:^ byBases
     }
   }
 
@@ -45,12 +57,12 @@ object Formats1 { //higher-order format constructors
       bases: TypeFormat*
   ) extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
+    final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
       val trials = bases
         .to(LazyList)
         .flatMap { base: TypeFormat =>
           try {
-            val result = ff.formattedBy(base)
+            val result = tt.formattedBy(base)
             Some(result)
           } catch {
             case _: Backtracking =>
@@ -58,138 +70,106 @@ object Formats1 { //higher-order format constructors
           }
         }
 
-      ff.withCanonical(trials.head)
+      val chosen = trials.head
+
+      chosen.text <:^ Seq(chosen)
     }
   }
 
+  trait UseDelegate extends HasBase {}
+
   object Hide {
 
+    /**
+      * T -> base +> HidePackage
+      */
     case class HidePackage(
         base: TypeFormat
     ) extends RecursiveForm.HasRecursiveForm {
 
-      def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-        type Formatting = refl.FormattedType
+      override def constructor: TypeFormat => TypeFormat = Hide.HidePackage
 
-        val original = ff.formattedBy(base)
+      final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+        val byBase = tt.formattedBy(base)
 
-        def resolve: String = {
+        val full = byBase.text
 
-          val full = original.text
+        val constructor = byBase.typeView.constructor
 
-          val constructor = original.typeView.constructor
-
-          val shorten = if (full.startsWith(constructor.canonicalName)) {
-            constructor.Prefixes.packages.simpleName + full.stripPrefix(constructor.canonicalName)
-          } else {
-            full
-          }
-
-          shorten
+        val shorten = if (full.startsWith(constructor.canonicalName)) {
+          constructor.Prefixes.packages.simpleName + full.stripPrefix(constructor.canonicalName)
+        } else {
+          full
         }
 
-        original.simplified
-          .map { ee =>
-            if (ee.typeView != ff.typeView) {
-              val newEE = ee.formattedBy(this)
-              ff.withCanonical(newEE)
-            } else {
-              resolve -> ee.parts: Output
-            }
-          }
-          .getOrElse {
-            resolve -> original.parts: Output
-          }
+        shorten <:^ Seq(byBase)
       }
     }
 
+    /**
+      * T -> base +> HideStatic
+      */
     case class HideStatic(
         base: TypeFormat
     ) extends RecursiveForm.HasRecursiveForm {
 
-      def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-        type Formatting = refl.FormattedType
+      override def constructor: TypeFormat => TypeFormat = Hide.HideStatic
 
-        val original = ff.formattedBy(base)
+      final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+        type Formatting = refl.TypeIR
 
-        def resolve: String = {
+        val byBase = tt.formattedBy(base)
 
-          val full = original.text
+        val full = byBase.text
 
-          val constructor = original.typeView.constructor
+        val constructor = byBase.typeView.constructor
 
-          val shorten = if (full.startsWith(constructor.canonicalName)) {
-            constructor.Prefixes.static.simpleName + full.stripPrefix(constructor.canonicalName)
-          } else {
-            full
-          }
-
-          shorten
+        val shorten = if (full.startsWith(constructor.canonicalName)) {
+          constructor.Prefixes.static.simpleName + full.stripPrefix(constructor.canonicalName)
+        } else {
+          full
         }
 
-        original.simplified
-          .map { ee =>
-            if (ee.typeView != ff.typeView) {
-              val newEE = ee.formattedBy(this)
-              ff.withCanonical(newEE)
-            } else {
-              resolve -> ee.parts: Output
-            }
-          }
-          .getOrElse {
-            resolve -> original.parts: Output
-          }
+        shorten <:^ Seq(byBase)
       }
     }
   }
 
-//  case class TransformText(
-//      after: TypeFormat
-//  ) extends MapOver {
-//
-//    def base = TypeInfo
-//
-//    override def typeMap(refl: Reflection): refl.Type => refl.Type = { tt =>
-//      val transformed =
-//        try {
-//          val cc = tt.typeConstructor
-//          refl.TypeView(cc).formattedBy(base).text
-//        } catch {
-//          case e: Throwable =>
-//            refl.TypeView(tt).formattedBy(base).text
-//        }
-//
-//      val internal = refl.universe.internal
-//
-//      internal.newFreeType("Abc")
-//
-//      val fakeName = refl.universe.TypeName(transformed + "abc")
-//      val fakeSymbol = internal.newTypeSymbol(refl.rootPackageSymbol, fakeName)
-//
-//      fakeSymbol.toString
-//
-//      val result = internal.typeRef(refl.universe.NoPrefix, fakeSymbol, tt.typeArgs)
-//      result
-//    }
-//  }
+  trait TransformDown extends HasBase {}
 
+  /**
+    * T -> base +> (T#Args -> base) +> replace
+    */
   case class RecursiveForm(
-      after: TypeFormat
-  ) extends TypeFormat {
+      base: TypeFormat,
+      transformer: TypeFormat => TypeFormat
+  ) extends TransformDown {
 
-    def resolve(refl: Reflection): refl.FormattedType => Output = { ff =>
-      val afterOut = ff.formattedBy(after)
+    final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
+      val transformedBase = transformer(base)
 
-      var replaced: String = afterOut.text
+      val byBase = tt.formattedBy(transformedBase)
+
+      var replacedText: String = byBase.text
 
       def doReplace(from: String, to: String): Unit = {
 
-        replaced = replaced.replaceFirst(s"\\Q$from\\E", to) // TODO: regex is too slow! switch to aho-corasick
+        replacedText = replacedText.replaceFirst(s"\\Q$from\\E", to) // TODO: regex is too slow! switch to aho-corasick
       }
 
-      val parts = afterOut.parts
-      val transformedParts = parts.map { part =>
-        val result = part.formattedBy(this)
+      val annotations = byBase.annotations
+      val transformedAnnotations = annotations.map { part =>
+        {
+          val sanity = part.derivedFrom.isEmpty
+          require(
+            sanity,
+            s"${this.getClass.getSimpleName} cannot be applied to derived format"
+          )
+        }
+
+        val subFormat = RecursiveForm(part.format, transformer)
+
+        val result = part.formattedBy(subFormat)
 
         val from = part.text
         val to = result.text
@@ -199,19 +179,21 @@ object Formats1 { //higher-order format constructors
         result
       }
 
-      Output(
-        Option(replaced).getOrElse(afterOut.text),
-        transformedParts,
-        afterOut.simplified
+      IROutput(
+        replacedText,
+        transformedAnnotations,
+        derivedFrom = Seq(byBase)
       )
     }
   }
 
   object RecursiveForm {
 
-    trait HasRecursiveForm extends TypeFormat {
+    trait HasRecursiveForm extends HasBase {
 
-      lazy val recursively: RecursiveForm = RecursiveForm(this)
+      def constructor: TypeFormat => TypeFormat
+
+      lazy val recursively: RecursiveForm = RecursiveForm(base, constructor)
     }
   }
 }

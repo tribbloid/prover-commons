@@ -294,72 +294,131 @@ class TypeVizSpec extends BaseSpec {
       )
     }
 
-    it("... with Arg") {
+    describe("generic") {
 
-      TypeViz[AliasWArg].toString.shouldBe(
-        """
-          |-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double] ≅ org.shapesafe.graph.commons.util.viz.TypeVizSpec.AliasWArg
-          | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
-          | :       ┃  !-+ Double
-          | :       ┃    !-+ AnyVal
-          | :       ┃      !-- Any ............................................................................. [0]
-          | !-+ java.io.Serializable
-          | : !-- Any ............................................................................. [0]
-          | !-+ Product
-          | : !-- Equals
-          | !-- Object
-          |""".stripMargin
-      )
-
-    }
-
-    it("... in DeAlias format") {
-
-      val short = {
-
-        val format = Formats0.TypeInfo.DeAlias
-        TypeViz.withFormat(format)
+      it("Default") {
+        TypeViz[AliasWArg].toString.shouldBe(
+          """
+            |-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double] ≅ org.shapesafe.graph.commons.util.viz.TypeVizSpec.AliasWArg
+            | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            | :       ┃  !-+ Double
+            | :       ┃    !-+ AnyVal
+            | :       ┃      !-- Any ............................................................................. [0]
+            | !-+ java.io.Serializable
+            | : !-- Any ............................................................................. [0]
+            | !-+ Product
+            | : !-- Equals
+            | !-- Object
+            |""".stripMargin
+        )
       }
 
-      short[AliasWArg].toString.shouldBe(
-        """
-          |-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double]
-          | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
-          | :       ┃  !-+ Double
-          | :       ┃    !-+ AnyVal
-          | :       ┃      !-- Any ............................................................................. [0]
-          | !-+ java.io.Serializable
-          | : !-- Any ............................................................................. [0]
-          | !-+ Product
-          | : !-- Equals
-          | !-- Object
-          |""".stripMargin
-      )
-    }
+      it("DeAlias") {
 
-    it("... in short format") {
-
-      val short = {
-
-        val format = Formats0.TypeInfo.DeAlias.HidePackage.recursively
-        TypeViz.withFormat(format)
+        TypeVizDeAlias[AliasWArg].toString.shouldBe(
+          """
+            |-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double]
+            | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            | :       ┃  !-+ Double
+            | :       ┃    !-+ AnyVal
+            | :       ┃      !-- Any ............................................................................. [0]
+            | !-+ java.io.Serializable
+            | : !-- Any ............................................................................. [0]
+            | !-+ Product
+            | : !-- Equals
+            | !-- Object
+            |""".stripMargin
+        )
       }
 
-      short[AliasWArg].toString.shouldBe(
-        """
-          |-+ TypeVizSpec.WArg[Double]
-          | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
-          | :       ┃  !-+ Double
-          | :       ┃    !-+ AnyVal
-          | :       ┃      !-- Any ............................................................................. [0]
-          | !-+ Serializable
-          | : !-- Any ............................................................................. [0]
-          | !-+ Product
-          | : !-- Equals
-          | !-- Object
-          |""".stripMargin
-      )
+      it("Short") {
 
+        TypeVizShort[AliasWArg].toString.shouldBe(
+          """
+            |-+ TypeVizSpec.WArg[Double]
+            | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            | :       ┃  !-+ Double
+            | :       ┃    !-+ AnyVal
+            | :       ┃      !-- Any ............................................................................. [0]
+            | !-+ Serializable
+            | : !-- Any ............................................................................. [0]
+            | !-+ Product
+            | : !-- Equals
+            | !-- Object
+            |""".stripMargin
+        )
+      }
+    }
+
+    describe("generic of generic") {
+
+      it("Default") {
+        TypeViz[AliasWArg2].toString.shouldBe(
+          """
+            |-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double]] ≅ org.shapesafe.graph.commons.util.viz.TypeVizSpec.AliasWArg2
+            | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            | :       ┃  !-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double]
+            | :       ┃    :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            | :       ┃    :       ┃  !-+ Double
+            | :       ┃    :       ┃    !-+ AnyVal
+            | :       ┃    :       ┃      !-- Any ............................................................................. [0]
+            | :       ┃    !-- java.io.Serializable ............................................................ [1]
+            | :       ┃    !-- Product ......................................................................... [2]
+            | :       ┃    !-- Object .......................................................................... [3]
+            | !-+ java.io.Serializable ............................................................ [1]
+            | : !-- Any ............................................................................. [0]
+            | !-+ Product ......................................................................... [2]
+            | : !-- Equals
+            | !-- Object .......................................................................... [3]
+            |""".stripMargin
+        )
+      }
+
+      it("DeAlias") {
+
+        TypeVizDeAlias[AliasWArg2].toString.shouldBe(
+          """
+            |-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double]]
+            | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            | :       ┃  !-+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg[Double]
+            | :       ┃    :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            | :       ┃    :       ┃  !-+ Double
+            | :       ┃    :       ┃    !-+ AnyVal
+            | :       ┃    :       ┃      !-- Any ............................................................................. [0]
+            | :       ┃    !-- java.io.Serializable ............................................................ [1]
+            | :       ┃    !-- Product ......................................................................... [2]
+            | :       ┃    !-- Object .......................................................................... [3]
+            | !-+ java.io.Serializable ............................................................ [1]
+            | : !-- Any ............................................................................. [0]
+            | !-+ Product ......................................................................... [2]
+            | : !-- Equals
+            | !-- Object .......................................................................... [3]
+            |""".stripMargin
+        )
+      }
+
+      it("Short") {
+
+        TypeVizShort[AliasWArg2].toString.shouldBe(
+          """
+            |-+ TypeVizSpec.WArg[TypeVizSpec.WArg[Double]]
+            | :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            | :       ┃  !-+ TypeVizSpec.WArg[Double]
+            | :       ┃    :       ┏ -+ org.shapesafe.graph.commons.util.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            | :       ┃    :       ┃  !-+ Double
+            | :       ┃    :       ┃    !-+ AnyVal
+            | :       ┃    :       ┃      !-- Any ............................................................................. [0]
+            | :       ┃    !-- Serializable .................................................................... [1]
+            | :       ┃    !-- Product ......................................................................... [2]
+            | :       ┃    !-- Object .......................................................................... [3]
+            | !-+ Serializable .................................................................... [1]
+            | : !-- Any ............................................................................. [0]
+            | !-+ Product ......................................................................... [2]
+            | : !-- Equals
+            | !-- Object .......................................................................... [3]
+            |""".stripMargin
+        )
+      }
     }
   }
 
@@ -455,9 +514,13 @@ object TypeVizSpec {
 
   val singletonWArg = WArg(2)
 
+  val singletonWArg2 = WArg(WArg(2))
+
   type Alias = 3
 
   type AliasWArg = WArg[Double]
+
+  type AliasWArg2 = WArg[WArg[Double]]
 
   class E { type D }
 
@@ -469,4 +532,16 @@ object TypeVizSpec {
   }
 
   object EE extends EE
+
+  val TypeVizDeAlias = {
+
+    val format = Formats0.TypeInfo.DeAlias
+    TypeViz.withFormat(format)
+  }
+
+  val TypeVizShort = {
+
+    val format = Formats0.TypeInfo.HidePackage.recursively.DeAlias
+    TypeViz.withFormat(format)
+  }
 }

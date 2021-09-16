@@ -84,7 +84,7 @@ class FormatOvrdSpec extends BaseSpec {
     }
   }
 
-  describe(~~.toString) {
+  describe("~~") {
 
     it("1") {
       viz[W_~~[3]#_Info].typeStr.shouldBe("3 3 Int(3): UniqueConstantType")

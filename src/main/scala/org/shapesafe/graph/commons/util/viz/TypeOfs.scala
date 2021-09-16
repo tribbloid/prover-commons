@@ -1,9 +1,8 @@
 package org.shapesafe.graph.commons.util.viz
 
-import org.shapesafe.graph.commons.util.TextBlock.Padding
 import org.shapesafe.graph.commons.util.diff.StringDiff
 import org.shapesafe.graph.commons.util.reflect.format.TypeFormat
-import org.shapesafe.graph.commons.util.{TextBlock, TreeFormat, TreeLike}
+import org.shapesafe.graph.commons.util.{Padding, TextBlock, TreeFormat, TreeLike}
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
@@ -22,7 +21,7 @@ trait TypeOfs extends TypeVizSystem {
     type TT = T
 
     lazy val typeView: TypeView = reflection.typeView(tt)
-    lazy val typeTree: exe.TypeTree = TypeTree(typeView)
+    lazy val typeTree: exe.TypeVizTree = TypeVizTree(typeView)
 
     //  def nodeStr: String = tree.nodeStr
     //  def treeStr: String = tree.treeString
@@ -60,7 +59,7 @@ trait TypeOfs extends TypeVizSystem {
 
     def withFormat(format: TypeFormat) = new WithFormat(format)
 
-    implicit def asTree(v: TypeOf[_]): v.exe.TypeTree = v.typeTree
+    implicit def asTree(v: TypeOf[_]): v.exe.TypeVizTree = v.typeTree
 
   }
 
@@ -98,7 +97,7 @@ trait TypeOfs extends TypeVizSystem {
       def apply(id: TypeID): Record = records.getOrElseUpdate(id, Record())
     }
 
-    case class TypeTree(
+    case class TypeVizTree(
         node: TypeView,
         visited: mutable.ArrayBuffer[TypeID] = newTCache,
         expanded: Expanded = Expanded()
@@ -120,7 +119,7 @@ trait TypeOfs extends TypeVizSystem {
 
       //    case object Strings {
 
-      lazy val formatting: reflection.FormattedType = node.formattedBy(format.base)
+      lazy val formatting: reflection.TypeIR = node.formattedBy(format.base)
 
       lazy val typeStr: String = {
 
@@ -178,10 +177,10 @@ trait TypeOfs extends TypeVizSystem {
 
       case class ArgTree(node: TypeView) extends TreeLike {
 
-        override lazy val children: List[TypeTree] = Seq(node)
+        override lazy val children: List[TypeVizTree] = Seq(node)
           .flatMap(_.args)
           .map { tt =>
-            val result = TypeTree.this.copy(tt, visited = newTCache)
+            val result = TypeVizTree.this.copy(tt, visited = newTCache)
 
             result
           }
@@ -201,7 +200,9 @@ trait TypeOfs extends TypeVizSystem {
 
       lazy val argTrees: Seq[ArgTree] = {
 
-        val trees = formatting.forms
+        val forms = formatting.EquivalentTypes.recursively
+
+        val trees = forms
           .map { ff =>
             ff.typeView
           }
@@ -226,7 +227,7 @@ trait TypeOfs extends TypeVizSystem {
           result
         }
 
-        lazy val expandBaseTrees: List[TypeTree] = {
+        lazy val expandBaseTrees: List[TypeVizTree] = {
 
           def list = baseTypes_NoSelf.flatMap { node =>
             if (visited.contains(node.id)) None

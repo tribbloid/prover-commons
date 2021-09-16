@@ -237,8 +237,8 @@ trait TypeViews extends HasUniverse {
       baseNodes
     }
 
-    def formattedBy(format: TypeFormat): FormattedType = {
-      val result = FormattedType(this, format)
+    def formattedBy(format: TypeFormat): TypeIR = {
+      val result = TypeIR(this, format)
       result.text
       result
     }

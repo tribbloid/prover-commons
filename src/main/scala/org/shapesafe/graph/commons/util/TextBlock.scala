@@ -2,8 +2,6 @@ package org.shapesafe.graph.commons.util
 
 case class TextBlock(lines: Seq[String]) {
 
-  import TextBlock._
-
   lazy val build: String = lines.mkString("\n")
 
   def indent(ss: String): TextBlock = {
@@ -67,32 +65,5 @@ case class TextBlock(lines: Seq[String]) {
 object TextBlock {
 
   def apply(tt: String) = new TextBlock(tt.split('\n').toIndexedSeq)
-
-  case class Padding(
-      head: String,
-      body: String
-  ) {
-
-    {
-      Seq(head, body).foreach { s =>
-        require(s.split('\n').length == 1, "cannot use string with multiple lines")
-      }
-
-      require(
-        head.length == body.length,
-        s"cannot use 2 strings with different lengths:" +
-          s"\t`$head`" +
-          s"\t`$body`"
-      )
-    }
-  }
-
-  object Padding {
-
-    val argLeftBracket: Padding = Padding(
-      "┏ ",
-      "┃ "
-    )
-  }
 
 }

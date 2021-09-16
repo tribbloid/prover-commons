@@ -6,19 +6,19 @@ import scala.language.implicitConversions
 
 trait TypeFormat {
 
-  def resolve(refl: Reflection): refl.FormattedType => Output
+  def resolve(refl: Reflection): refl.TypeView => IROutput
 
   def joinText(v: Seq[String]): String = v.mkString(" ")
 
-  def backtrack(ff: FormattedType): Nothing = {
+  def backtrack(tt: TypeView): Nothing = {
     throw new Backtracking(
-      s"Type ${ff.typeView} is not supported by format $this"
+      s"Type $tt is not supported by format $this"
     )
   }
 
-  implicit def fromText(v: String): Output = Output(v)
+  implicit def fromText(v: String): IROutput = IROutput(v)
 
-  implicit def fromText_Parts(v: (String, Seq[FormattedType])): Output = Output(v._1, v._2)
+//  implicit def fromText_Parts(v: (String, Seq[FormattedType])): IROutput = IROutput(v._1, v._2)
 
   def ~(factory: TypeFormat => TypeFormat): TypeFormat = factory(this)
 
@@ -39,4 +39,11 @@ trait TypeFormat {
 object TypeFormat {
 
   val Default: Formats0.TypeInfo.Both.type = Formats0.TypeInfo.Both
+
+  trait Constructor extends (TypeFormat => TypeFormat) {
+
+    def Format: TypeFormat => TypeFormat
+
+    final def apply(v: TypeFormat) = Format(v)
+  }
 }
