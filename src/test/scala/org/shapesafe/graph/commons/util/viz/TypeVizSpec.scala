@@ -2,10 +2,9 @@ package org.shapesafe.graph.commons.util.viz
 
 import org.shapesafe.graph.commons.testlib.BaseSpec
 import org.shapesafe.graph.commons.util.reflect.ScalaReflection.WeakTypeTag
-import org.shapesafe.graph.commons.util.reflect.format.Formats0
 import shapeless.{syntax, HNil, Witness}
 
-class TypeVizSpec extends BaseSpec {
+class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
 
   import TypeVizSpec._
 
