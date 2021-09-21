@@ -533,15 +533,4 @@ object TypeVizSpec {
 
   object EE extends EE
 
-  val TypeVizDeAlias = {
-
-    val format = Formats0.TypeInfo.DeAlias
-    TypeViz.withFormat(format)
-  }
-
-  val TypeVizShort = {
-
-    val format = Formats0.TypeInfo.HidePackage.recursively.DeAlias
-    TypeViz.withFormat(format)
-  }
 }

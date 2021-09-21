@@ -1,7 +1,7 @@
 package org.shapesafe.graph.commons.util.reflect.format
 
 import org.shapesafe.graph.commons.testlib.BaseSpec
-import org.shapesafe.graph.commons.util.reflect.format.Formats1.{DeAlias, RecursiveForm, Trials}
+import org.shapesafe.graph.commons.util.reflect.format.Formats1.{RecursiveForm, Trials}
 import org.shapesafe.graph.commons.util.reflect.format.beans.Beans
 import org.shapesafe.graph.commons.util.viz.TypeViz
 import shapeless.{::, HNil}
