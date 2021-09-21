@@ -15,7 +15,12 @@ object Formats1 { //higher-order format constructors
 
     final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
       val beforeFn = before(refl)
-      val mapped = tt.copy(self = tt.self.map(beforeFn))
+
+      val oldT = tt.self
+      val transformRoot = beforeFn(oldT)
+      val transformBranches = transformRoot.map(beforeFn)
+
+      val mapped = tt.copy(self = transformBranches)
 
       val mapped_formatted = mapped.formattedBy(base)
 
@@ -179,11 +184,12 @@ object Formats1 { //higher-order format constructors
         result
       }
 
-      IROutput(
+      val result = IROutput(
         replacedText,
         transformedAnnotations,
         derivedFrom = Seq(byBase)
       )
+      result
     }
   }
 

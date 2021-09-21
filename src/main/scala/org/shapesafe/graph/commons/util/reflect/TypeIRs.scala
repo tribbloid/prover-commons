@@ -28,7 +28,7 @@ trait TypeIRs extends HasUniverse {
     lazy val output: IROutput = format.resolve(self).apply(this)
 
     def text: String = output.text
-    protected def directAnnotations: Seq[TypeIR] = {
+    lazy val annotations: Seq[TypeIR] = {
 
       val result = output.annotations.collect {
         case v: TypeIR => v
@@ -36,7 +36,6 @@ trait TypeIRs extends HasUniverse {
 
       result
     }
-    lazy val annotations: Seq[TypeIR] = directAnnotations
 
     def derivedFrom: Seq[TypeIR] = output.derivedFrom.collect {
       case v: TypeIR => v

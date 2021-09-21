@@ -6,7 +6,7 @@ import org.shapesafe.graph.commons.util.reflect.format.Formats1.DeAlias
 
 class TypeFormatSpec extends BaseSpec {
 
-  it("+>") {
+  it("~") {
 
     val v1 = TypeInfo.DeAlias
 
