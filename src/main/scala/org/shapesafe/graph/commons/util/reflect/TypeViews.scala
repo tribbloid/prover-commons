@@ -4,7 +4,6 @@ import org.shapesafe.graph.commons.util.IDMixin
 import org.shapesafe.graph.commons.util.reflect.format.TypeFormat
 
 import scala.collection.mutable
-import scala.language.{implicitConversions, reflectiveCalls}
 import scala.tools.reflect.ToolBox
 import scala.util.Try
 

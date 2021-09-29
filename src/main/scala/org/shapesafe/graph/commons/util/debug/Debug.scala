@@ -1,7 +1,5 @@
 package org.shapesafe.graph.commons.util.debug
 
-import scala.util.Try
-
 object Debug {
 
   //  def cartesianProductSet[T](xss: Seq[Set[T]]): Set[List[T]] = xss match {
