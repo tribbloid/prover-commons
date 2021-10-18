@@ -27,7 +27,7 @@ trait TypeViews extends HasUniverse {
   }
 
   case class TypeView(
-      val self: Type
+      self: Type
 //      comment: Option[String] = None // TODO: useless?
   ) extends ApiView[Type] {
 
