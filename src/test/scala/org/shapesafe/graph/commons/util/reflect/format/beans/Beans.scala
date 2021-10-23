@@ -1,7 +1,6 @@
 package org.shapesafe.graph.commons.util.reflect.format.beans
 
 import org.shapesafe.graph.commons.util.reflect.format.FormatOvrd.Only
-import org.shapesafe.graph.commons.util.reflect.format.FormatOvrd.Only
 import shapeless.{::, HNil}
 
 trait Beans {
