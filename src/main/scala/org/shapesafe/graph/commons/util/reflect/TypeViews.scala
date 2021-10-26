@@ -110,6 +110,8 @@ trait TypeViews extends HasUniverse {
 
     lazy val prefixOpt: Option[TypeView] = {
 
+      import scala.language.reflectiveCalls
+
       self match {
         case v: Type { def pre: Type } =>
           val pre = Try(typeView(v.pre)).filter { v =>

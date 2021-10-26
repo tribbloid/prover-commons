@@ -14,7 +14,7 @@ case class IROutput(
       require(
         isSane,
         s"""Annotation
-           |  '${v.text}'
+           |$v
            |cannot be found in text
            |  '$text'""".stripMargin
       )
@@ -29,7 +29,7 @@ case class IROutput(
 
     val transitiveAnnotations = derivedFrom.flatMap { v =>
       v.annotations
-    }.distinct
+    }
 
     this.copy(annotations = transitiveAnnotations, derivedFrom = derivedFrom)
   }

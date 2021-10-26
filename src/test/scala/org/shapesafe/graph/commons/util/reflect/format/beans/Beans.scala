@@ -8,6 +8,8 @@ trait Beans {
 
     trait ZZ[TT]
   }
+
+  trait YY[T1, T2] {}
 //  object XX
 
   object YY
@@ -21,6 +23,8 @@ trait Beans {
   object Ovrd {
 
     type Plain = XX[XX[Only[3]]]
+
+    type Plain2 = XX[YY[Only[3], Only[3]]]
 
     type Ref = XX[XX[3]]
 

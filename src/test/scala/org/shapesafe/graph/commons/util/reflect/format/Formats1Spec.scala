@@ -32,6 +32,7 @@ class Formats1Spec extends BaseSpec {
           "Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: HNil"
         )
       }
+
     }
 
     describe(" ... with DeAlias") {
@@ -105,6 +106,10 @@ class Formats1Spec extends BaseSpec {
 
         viz[Ovrd.Plain].typeStr.shouldBe(
           "Beans.XX[Beans.XX[3]]"
+        )
+
+        viz[Ovrd.Plain2].typeStr.shouldBe(
+          "Beans.XX[Beans.YY[3,3]]"
         )
       }
 
