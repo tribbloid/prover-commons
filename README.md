@@ -1,2 +1,5 @@
 # graph-commons
-gradle submodule of graph utilities, can only be compiled if attached to another gradle project
+
+This is a utility project that provides abstractions for graph, tree, poset & type.
+
+It can be compiled both independently or as a gradle submodule attaching to other projects, notably shapesafe and spookystuff
