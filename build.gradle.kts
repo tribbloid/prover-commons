@@ -23,7 +23,7 @@ plugins {
 //    `maven-publish`
 //    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 
-    id("com.github.ben-manes.versions") version "0.39.0"
+    id("com.github.ben-manes.versions") version "0.40.0"
 }
 
 group = vs.projectGroup
@@ -69,7 +69,7 @@ allprojects {
 
         val scalaTestV = "3.2.3"
         testImplementation("org.scalatest:scalatest_${vs.scalaBinaryV}:${scalaTestV}")
-        testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 
         testRuntimeOnly("co.helmethair:scalatest-junit-runner:0.1.10")
     }
