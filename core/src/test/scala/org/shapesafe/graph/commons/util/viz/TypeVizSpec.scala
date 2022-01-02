@@ -1,6 +1,7 @@
 package org.shapesafe.graph.commons.util.viz
 
 import org.shapesafe.graph.commons.testlib.BaseSpec
+import org.shapesafe.graph.commons.util.diff.StringDiff
 import org.shapesafe.graph.commons.util.reflect.ScalaReflection.WeakTypeTag
 import shapeless.{syntax, HNil, Witness}
 
@@ -89,20 +90,8 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
           | :       ┃  : : :       ┃  !-+ String("author")
           | :       ┃  : : :       ┃  : !-- String .......................................................................... [0]
           | :       ┃  : : :       ┃  !-- String .......................................................................... [0]
-          | :       ┃  : : !-- Object .......................................................................... [1]
-          | :       ┃  : !-+ String .......................................................................... [0]
-          | :       ┃  :   !-- CharSequence
-          | :       ┃  :   !-- Comparable[String]
-          | :       ┃  :   !-- java.io.Serializable ............................................................ [2]
-          | :       ┃  !-+ shapeless.HNil
-          | :       ┃    !-- shapeless.HList ................................................................. [3]
-          | !-+ shapeless.HList ................................................................. [3]
-          |   !-+ java.io.Serializable ............................................................ [2]
-          |   : !-- Any
-          |   !-+ Product
-          |   : !-- Equals
-          |   !-- Object .......................................................................... [1]
-          |""".stripMargin.trim
+          |""".stripMargin.trim,
+        mode = StringDiff.SuperSet
       )
   }
 
