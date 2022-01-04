@@ -16,6 +16,8 @@ trait HasUniverse {
 
   def rootMirror: universe.Mirror = universe.rootMirror
 
+  def mirror: universe.Mirror = rootMirror
+
   trait ApiView[T] {
 
     def self: T

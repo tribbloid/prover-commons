@@ -64,7 +64,7 @@ trait TypeViews extends HasUniverse {
             )
           }
 
-          val mirror = Reflection.Runtime.rootMirror
+          val mirror = Reflection.Runtime.mirror
 
           val tool = ToolBox(mirror).mkToolBox()
           val path = onlySym.fullName
