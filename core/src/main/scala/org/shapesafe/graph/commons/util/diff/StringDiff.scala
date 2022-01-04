@@ -56,12 +56,13 @@ case class StringDiff(
 
   lazy val errorStr: String = {
 
-    val result = "\n" + s"""
-                           |"
-                           |${Left.info}
-                           |" did not equal "
-                           |${Right.info}
-                           |"
+    val result =
+      s"""
+         |"
+         |${Left.info}
+         |" did not equal "
+         |${Right.info}
+         |"
       """.stripMargin.trim
 
     result
