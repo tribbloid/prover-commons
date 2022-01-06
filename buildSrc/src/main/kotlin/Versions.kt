@@ -3,7 +3,7 @@ import org.gradle.api.Project
 class Versions(self: Project) {
 
     // TODO : how to group them?
-    val projectGroup = "com.tribbloids"
+    val projectGroup = "ai.acyclic"
     val projectRootID = "graph-commons"
 
     val projectVMajor = "1.0.0"
