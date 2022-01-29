@@ -21,15 +21,14 @@ trait HasUniverse {
   trait ApiView[T] {
 
     def self: T
+    def _copy(self: T): ApiView[T]
 
-    def getCanonicalName(v: T): String
-
-    final lazy val canonicalName = getCanonicalName(self)
+    def canonicalName: String
     override def toString: String = canonicalName
 
     trait Breadcrumbs {
 
-      def getCanonicalName(v: T): String = ApiView.this.getCanonicalName(v)
+      def getCanonicalName(v: T): String = ApiView.this._copy(v).canonicalName
 
       case class BreadcrumbView(
           list: List[T]

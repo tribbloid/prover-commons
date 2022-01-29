@@ -31,8 +31,13 @@ class Formats1Spec extends BaseSpec {
         ].typeStr.shouldBe(
           "Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: HNil"
         )
-      }
 
+        viz[
+          XX[YY.type] :: XX[YY.type] :: (T1 :: T2 :: HNil) :: HNil
+        ].typeStr.shouldBe(
+          "Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: (Beans.T1 :: Beans.T2 :: HNil) :: HNil"
+        )
+      }
     }
 
     describe(" ... with DeAlias") {

@@ -1,6 +1,7 @@
 package ai.acyclic.graph.commons.benchmark
 
 import ai.acyclic.graph.commons.debug.Debug.CallStackRef
+import ai.acyclic.graph.commons.debug.print_@
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
@@ -29,7 +30,7 @@ case class BenchmarkResults[T](
 
 //    LoggerFactory.getLogger(this.getClass).info(info)
 
-    println(info)
+    print_@(info)
   }
 }
 

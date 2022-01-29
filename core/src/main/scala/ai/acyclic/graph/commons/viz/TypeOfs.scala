@@ -108,14 +108,14 @@ trait TypeOfs extends TypeVizSystem {
       import node._
 
       {
-        visited += node.id
+        visited += node.reference
       }
 
-      val baseTypes_NoSelf: List[TypeView] = baseTypes.filterNot(tt => tt.id == node.id)
+      val baseTypes_NoSelf: List[TypeView] = baseTypes.filterNot(tt => tt.reference == node.reference)
 
       // all eager execution ends here
 
-      def expansionHistory: expanded.Record = expanded.apply(node.id)
+      def expansionHistory: expanded.Record = expanded.apply(node.reference)
 
       //    case object Strings {
 
@@ -230,7 +230,7 @@ trait TypeOfs extends TypeVizSystem {
         lazy val expandBaseTrees: List[TypeVizTree] = {
 
           def list = baseTypes_NoSelf.flatMap { node =>
-            if (visited.contains(node.id)) None
+            if (visited.contains(node.reference)) None
             else {
               val tree = copy(node)
 

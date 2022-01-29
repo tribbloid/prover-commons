@@ -14,16 +14,28 @@ trait TypeViews extends HasUniverse {
       self: Type
   ) extends IDMixin {
 
-    lazy val symbols: Seq[Symbol] = Seq(
-      self.typeSymbol,
-      self.termSymbol
-    ).filter { ss =>
-      ss != universe.NoSymbol
+    lazy val allSymbols: Seq[Symbol] = {
+
+      val sym = self match {
+        case v: universe.ThisTypeApi => Some(v.sym)
+        case v: universe.SingleTypeApi => Some(v.sym)
+        case v: universe.TypeRefApi => Some(v.sym)
+        case _ => None
+      }
+
+      val proto = sym.toSeq ++ Seq(
+        self.typeSymbol,
+        self.termSymbol
+      )
+
+      proto.filter { ss =>
+        ss != universe.NoSymbol
+      }.distinct
     }
 
     lazy val showStr: String = self.toString
 
-    override protected def _id: Any = symbols -> showStr
+    override protected def _id: Any = allSymbols -> showStr
   }
 
   case class TypeView(
@@ -33,13 +45,21 @@ trait TypeViews extends HasUniverse {
 
     final val refl: TypeViews.this.type = TypeViews.this
 
-    lazy val id: TypeID = TypeID(deAlias)
+    lazy val _deAlias: Type = self.dealias
+
+    lazy val id: TypeID = {
+      TypeID(self)
+    }
+
+    lazy val reference: TypeID = {
+      TypeID(_deAlias)
+    }
 
     lazy val constructor: TypeView = typeView(self.typeConstructor)
 
-    lazy val symbols: Seq[SymbolView] = id.symbols.map(v => symbolView(v))
+    lazy val allSymbols: Seq[SymbolView] = id.allSymbols.map(v => symbolView(v))
 
-    override def getCanonicalName(v: Type): String = v.toString
+    override lazy val canonicalName: String = self.toString
 
     lazy val singletonSymbol: Option[Symbol] = {
 
@@ -54,7 +74,7 @@ trait TypeViews extends HasUniverse {
     lazy val getOnlyInstance: Any = {
 
       // TODO: add mnemonic
-      self.dealias match {
+      _deAlias match {
         case universe.ConstantType(v) =>
           v.value
         case v @ _ =>
@@ -101,8 +121,7 @@ trait TypeViews extends HasUniverse {
     //      }
     //    }
 
-    lazy val deAlias: Type = self.dealias
-    lazy val aliasOpt: Option[Type] = Option(self).filterNot(v => v == deAlias)
+    lazy val _aliasOpt: Option[Type] = Option(self).filterNot(v => v == _deAlias)
 
     lazy val args: List[TypeView] = self.typeArgs.map { arg =>
       typeView(arg)
@@ -112,7 +131,8 @@ trait TypeViews extends HasUniverse {
 
       import scala.language.reflectiveCalls
 
-      self match {
+      constructor.self match {
+
         case v: Type { def pre: Type } =>
           val pre = Try(typeView(v.pre)).filter { v =>
             val self = v.self
@@ -262,10 +282,12 @@ trait TypeViews extends HasUniverse {
       }
 
       lazy val collectSymbols: List[SymbolView] =
-        (List(TypeView.this) ++ collectArgs).flatMap(v => v.id.symbols).map { v =>
+        (List(TypeView.this) ++ collectArgs).flatMap(v => v.id.allSymbols).map { v =>
           symbolView(v)
         }
     }
+
+    override def _copy(self: Type) = copy(self)
   }
 
   val typeCache = mutable.Map.empty[Type, TypeView]

@@ -59,7 +59,9 @@ trait SymbolViews extends HasUniverse {
       }
     }
 
-    override def getCanonicalName(v: universe.Symbol): String = v.fullName
+    override lazy val canonicalName: String = self.fullName
+
+    override def _copy(self: universe.Symbol) = copy(self)
   }
 
   val symbolCache = mutable.Map.empty[Symbol, SymbolView]
