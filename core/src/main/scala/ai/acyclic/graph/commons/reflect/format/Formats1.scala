@@ -2,6 +2,8 @@ package ai.acyclic.graph.commons.reflect.format
 
 import ai.acyclic.graph.commons.reflect.Reflection
 
+import java.util.regex.Matcher
+
 object Formats1 { //higher-order format constructors
 
   trait HasBase extends TypeFormat {
@@ -162,7 +164,10 @@ object Formats1 { //higher-order format constructors
 
       def doReplace(from: String, to: String): Unit = {
 
-        replacedText = replacedText.replaceFirst(s"\\Q$from\\E", to) // TODO: regex is too slow! switch to aho-corasick
+        replacedText = replacedText.replaceFirst(
+          s"\\Q$from\\E",
+          Matcher.quoteReplacement(to)
+        ) // TODO: regex is too slow! switch to aho-corasick
       }
 
       val annotations = byBase.annotations
