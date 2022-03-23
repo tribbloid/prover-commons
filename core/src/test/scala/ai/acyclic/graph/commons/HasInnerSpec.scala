@@ -41,7 +41,7 @@ object HasInnerSpec {
 
     case class Magnet(v: Int) extends Inner {
 
-      type Self = outer.Magnet
+      type This = outer.Magnet
     }
 
     object Magnet {

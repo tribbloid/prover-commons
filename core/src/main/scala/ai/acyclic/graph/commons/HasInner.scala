@@ -6,9 +6,9 @@ trait HasInner {
 
     final val outer: HasInner.this.type = HasInner.this
 
-    type Self <: outer.Inner
+    type This <: outer.Inner
 
-    final val inner: Self = this.asInstanceOf[Self]
+    final val inner: This = this.asInstanceOf[This]
   }
 }
 
