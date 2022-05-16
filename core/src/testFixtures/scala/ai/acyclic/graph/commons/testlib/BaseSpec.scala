@@ -1,11 +1,14 @@
 package ai.acyclic.graph.commons.testlib
 
-import org.scalatest.funspec.AnyFunSpec
 import ai.acyclic.graph.commons.debug.print_@
 import ai.acyclic.graph.commons.diff.StringDiff
-import shapeless.test.illTyped
+import org.scalatest.funspec.AnyFunSpec
+import splain.test.TryCompile
 
-trait BaseSpec extends AnyFunSpec {
+import java.util.regex.Pattern
+import scala.util.matching.Regex
+
+trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
 
   @transient implicit class testStringView(str: String) {
 
@@ -48,7 +51,45 @@ trait BaseSpec extends AnyFunSpec {
     * & doesn't perform literal check
     * if the code compiles successfully, the project compilation will fail
     */
-  val shouldNotCompile: illTyped.type = illTyped
+//  val shouldNotCompile: illTyped.type = illTyped
+
+  // renamed to "shouldNotType"
+  def shouldNotCompile(
+      tryCompile: TryCompile,
+      pattern: String = null
+  ): Unit = {
+
+    tryCompile match {
+
+      case v: TryCompile.TypingError =>
+        Option(pattern).foreach { pp =>
+          val errorMsg = v.Error.filteredIssues.map(ii => ii.msg).mkString("\n").trim
+
+          val _pp = Pattern.compile(pp, Pattern.DOTALL)
+          val fit = _pp.matcher(errorMsg).matches()
+
+          errorMsg.matches(pp)
+          assert(
+            fit,
+            s"""
+                 |expecting type error with pattern:
+                 |$pp
+                 |
+                 |but get:
+                 |$errorMsg
+                 |""".stripMargin
+          )
+        }
+
+      case v @ _ =>
+        throw new AssertionError(
+          s"""
+             |expecting type error, but get:
+             |$v
+             |""".stripMargin.trim
+        )
+    }
+  }
 }
 
 object BaseSpec {}
