@@ -6,7 +6,6 @@ import org.scalatest.funspec.AnyFunSpec
 import splain.test.TryCompile
 
 import java.util.regex.Pattern
-import scala.util.matching.Regex
 
 trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
 
