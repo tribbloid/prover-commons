@@ -27,13 +27,12 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
       """
         |-+ String .......................................................................... [0]
         | !-+ CharSequence
-        | : !-+ Object
-        | :   !-- Any
         | !-- Comparable[String]
         | :         ┏ -+ Comparable [ 1 ARG ] :
         | :         ┃  !-- String .......................................................................... [0]
         | !-- java.io.Serializable
-        |""".stripMargin.trim
+        |""".stripMargin.trim,
+      mode = SuperSet
     )
   }
 
@@ -51,7 +50,6 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
         | :       ┏ -+ shapeless.:: [ 2 ARGS ] :
         | :       ┃  !-+ String .......................................................................... [0]
         | :       ┃  : !-+ CharSequence
-        | :       ┃  : : !-- Object .......................................................................... [1]
         | :       ┃  : !-- Comparable[String]
         | :       ┃  : :         ┏ -+ Comparable [ 1 ARG ] :
         | :       ┃  : :         ┃  !-- String .......................................................................... [0]
@@ -67,8 +65,8 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
         |   : !-- Any
         |   !-+ Product
         |   : !-- Equals
-        |   !-- Object .......................................................................... [1]
-        |""".stripMargin.trim
+        |""".stripMargin.trim,
+        mode = SuperSet
       )
   }
 
