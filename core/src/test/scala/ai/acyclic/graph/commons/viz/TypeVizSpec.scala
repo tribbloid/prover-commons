@@ -26,7 +26,6 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
     TypeViz[String].toString.shouldBe(
       """
         |-+ String .......................................................................... [0]
-        | !-+ CharSequence
         | !-- Comparable[String]
         | :         ┏ -+ Comparable [ 1 ARG ] :
         | :         ┃  !-- String .......................................................................... [0]
@@ -49,7 +48,6 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
         |-+ String :: String :: shapeless.HNil
         | :       ┏ -+ shapeless.:: [ 2 ARGS ] :
         | :       ┃  !-+ String .......................................................................... [0]
-        | :       ┃  : !-+ CharSequence
         | :       ┃  : !-- Comparable[String]
         | :       ┃  : :         ┏ -+ Comparable [ 1 ARG ] :
         | :       ┃  : :         ┃  !-- String .......................................................................... [0]

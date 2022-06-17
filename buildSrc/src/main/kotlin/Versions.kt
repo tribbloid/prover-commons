@@ -18,5 +18,7 @@ class Versions(self: Project) {
     val scalaBinaryV: String = scalaVParts.subList(0, 2).joinToString(".")
     val scalaMinorV: String = scalaVParts[2]
 
-    val scalaTestV = "3.2.3"
+    val scalaTestV: String = "3.2.12"
+
+    val splainV: String = self.properties.get("splainVersion")?.toString() ?: ""
 }
