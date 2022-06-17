@@ -71,9 +71,26 @@ trait TypeViews extends HasUniverse {
       }
     }
 
-    lazy val getOnlyInstance: Any = {
+    lazy val singletonName: String = {
 
-      // TODO: add mnemonic
+      _deAlias match {
+        case universe.ConstantType(v) =>
+          "" + v.value
+        case v @ _ =>
+          val onlySym = typeView(v).singletonSymbol.getOrElse {
+            throw new UnsupportedOperationException(
+              s"$v : ${v.getClass} is not a Singleton"
+            )
+          }
+
+          onlySym.fullName
+      }
+    }
+
+    // TODO: this should be removed as the only instance may not be exposed at compile time
+    //  use singletonValue if possible
+    lazy val onlyInstance: Any = {
+
       _deAlias match {
         case universe.ConstantType(v) =>
           v.value
@@ -89,12 +106,14 @@ trait TypeViews extends HasUniverse {
           val tool = ToolBox(mirror).mkToolBox()
           val path = onlySym.fullName
 
+          lazy val pathInfo = s"$path : ${onlySym.getClass}"
+
           try {
             val result = tool.eval(tool.parse(path))
 
             if (result == null) {
               throw new UnsupportedOperationException(
-                s"$path : ${onlySym.getClass} is not initialised yet"
+                s"$pathInfo is not initialised yet"
               )
             }
 
@@ -103,23 +122,13 @@ trait TypeViews extends HasUniverse {
           } catch {
             case e: Throwable =>
               throw new UnsupportedOperationException(
-                s"cannot parse or evaluate $path : ${onlySym.getClass}" +
+                s"cannot evaluate $pathInfo, it may be undefined in this compilation stage" +
                   "\n\t" + e.toString,
                 e
               )
           }
       }
     }
-
-    // TODO: useless?
-    //    lazy val internal: Option[internalType] = {
-    //      self match {
-    //        case tt: internalType =>
-    //          Some(tt)
-    //        case _ =>
-    //          None
-    //      }
-    //    }
 
     lazy val _aliasOpt: Option[Type] = Option(self).filterNot(v => v == _deAlias)
 

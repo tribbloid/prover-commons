@@ -1,6 +1,6 @@
 package ai.acyclic.graph.commons.reflect.format.beans
 
-import ai.acyclic.graph.commons.reflect.format.FormatOvrd.Only
+import ai.acyclic.graph.commons.reflect.format.FormatOvrd.SingletonName
 import shapeless.{::, HNil}
 
 trait Beans {
@@ -22,16 +22,16 @@ trait Beans {
 
   object Ovrd {
 
-    type Plain = XX[XX[Only[3]]]
+    type Plain = XX[XX[SingletonName[3]]]
 
-    type Plain2 = XX[YY[Only[3], Only[3]]]
+    type Plain2 = XX[YY[SingletonName[3], SingletonName[3]]]
 
     type Ref = XX[XX[3]]
 
-    type T1 = XX[Only[3]] :: XX[Only[3]] :: HNil
-    type T2 = XX[Only[3]] :: XX[3] :: HNil
-    type T3 = XX[Only[3]] :: XX[Only[3]] :: XX[3] :: HNil
-    type T4 = XX[Only[3]] :: XX[Only[3]] :: XX[Only[3]] :: XX[3] :: HNil
+    type T1 = XX[SingletonName[3]] :: XX[SingletonName[3]] :: HNil
+    type T2 = XX[SingletonName[3]] :: XX[3] :: HNil
+    type T3 = XX[SingletonName[3]] :: XX[SingletonName[3]] :: XX[3] :: HNil
+    type T4 = XX[SingletonName[3]] :: XX[SingletonName[3]] :: XX[SingletonName[3]] :: XX[3] :: HNil
   }
 
 }

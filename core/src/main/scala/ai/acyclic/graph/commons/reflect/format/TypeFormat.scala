@@ -33,7 +33,6 @@ trait TypeFormat {
     this.DeAlias,
     this
   )
-
 }
 
 object TypeFormat {

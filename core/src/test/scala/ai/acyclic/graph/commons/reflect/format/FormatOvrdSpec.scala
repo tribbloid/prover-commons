@@ -2,7 +2,7 @@ package ai.acyclic.graph.commons.reflect.format
 
 import ai.acyclic.graph.commons.reflect.Reflection
 import ai.acyclic.graph.commons.reflect.Reflection.Runtime
-import ai.acyclic.graph.commons.reflect.format.FormatOvrd.{~~, Only}
+import ai.acyclic.graph.commons.reflect.format.FormatOvrd.{~~, SingletonName}
 import ai.acyclic.graph.commons.reflect.format.Formats0.{ClassName, TypeImpl}
 import ai.acyclic.graph.commons.testlib.BaseSpec
 import ai.acyclic.graph.commons.viz.TypeViz
@@ -32,11 +32,11 @@ class FormatOvrdSpec extends BaseSpec {
     }
   }
 
-  describe(Only.toString) {
+  describe(SingletonName.toString) {
 
     it("1") {
 
-      viz[Only[3]].typeStr.shouldBe("3")
+      viz[SingletonName[3]].typeStr.shouldBe("3")
     }
 
     it("2") {
@@ -49,14 +49,14 @@ class FormatOvrdSpec extends BaseSpec {
 
 //      viz[Only[global.type]].should_=:=()
 
-      viz[Only[global.type]].typeStr.shouldBe(
+      viz[SingletonName[global.type]].typeStr.shouldBe(
         "3"
       )
     }
 
     it("4") {
 
-      val o3 = W_Singleton(global)
+      val o3: W_Singleton[3] = W_Singleton(global)
 
       viz[o3._Info].typeStr
         .shouldBe(
@@ -71,11 +71,11 @@ class FormatOvrdSpec extends BaseSpec {
 
       viz[o2._Info].typeStr
         .shouldBe(
-          "ai.acyclic.graph.commons.reflect.format.FormatOvrd.Only[local.type]: ClassArgsTypeRef"
+          s"${classOf[SingletonName[_]].getCanonicalName}[local.type]: ClassArgsTypeRef"
         )
 
       viz[W_Singleton[Int]#_Info].typeStr.shouldBe(
-        s"ai.acyclic.graph.commons.reflect.format.FormatOvrd.Only[Int]: ClassArgsTypeRef"
+        s"${classOf[SingletonName[_]].getCanonicalName}[Int]: ClassArgsTypeRef"
       )
 
       viz[W_Singleton[Int]#_InfoWFallback].typeStr.shouldBe(
@@ -100,13 +100,13 @@ class FormatOvrdSpec extends BaseSpec {
 
 object FormatOvrdSpec {
 
-  final val global: Int = 3
+  final val global = 3
 
   class Undefined[T]
 
   class W_Singleton[T <: Int](w: Witness.Aux[T]) {
 
-    type _Info = Only[T]
+    type _Info = SingletonName[T]
 
     type _InfoWFallback = _Info with ClassName[this.type]
   }
@@ -117,7 +117,7 @@ object FormatOvrdSpec {
 
   class W_~~[T <: Int](w: Witness.Aux[T]) {
 
-    type _Info = Only[T] ~~ W_Singleton[T]#_Info ~~ T
+    type _Info = SingletonName[T] ~~ W_Singleton[T]#_Info ~~ T
   }
   object W_~~ {
 

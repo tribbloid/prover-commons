@@ -9,12 +9,12 @@ trait FormatOvrd extends StaticAnnotation
 
 object FormatOvrd {
 
-  trait Only[T] extends FormatOvrd
-  case object Only extends TypeFormat {
+  trait SingletonName[T] extends FormatOvrd
+  case object SingletonName extends TypeFormat {
 
     def resolve(refl: Reflection): refl.TypeView => IROutput = { ff =>
       try {
-        ff.getOnlyInstance.toString
+        ff.singletonName
       } catch {
         case _: UnsupportedOperationException =>
           backtrack(ff)

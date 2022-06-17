@@ -49,7 +49,7 @@ case class EnableOvrd(
 
             EnableOvrd.cache.getOrElseUpdate(
               cName,
-              refl.typeView(companionType).getOnlyInstance
+              refl.typeView(companionType).onlyInstance
             )
           }
 
