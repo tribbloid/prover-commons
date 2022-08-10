@@ -28,7 +28,7 @@ class HasInnerSpec extends BaseSpec {
     val ff = new Family
     val mm = ff.Magnet(1): Family#Magnet
 
-//    VizType.infer(mm.inner).shouldBe()
+//    TypeViz.infer(mm.inner).shouldBe()
     implicitly[TypeCls[mm.inner.type]]
   }
 }
