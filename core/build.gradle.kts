@@ -7,7 +7,7 @@ val splainVFallback: String = run {
 }
 
 dependencies {
-    testFixturesApi("com.chuusai:shapeless_${vs.scalaBinaryV}:2.3.7")
+    testFixturesApi("com.chuusai:shapeless_${vs.scalaBinaryV}:2.3.9")
 
     testFixturesApi("org.scalatest:scalatest_${vs.scalaBinaryV}:${vs.scalaTestV}")
 
