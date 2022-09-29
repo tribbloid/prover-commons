@@ -13,7 +13,7 @@ object HasID {
   def _idCompose(id: Any): Any = {
     val result = id match {
       case aa: Array[_] => aa.toList
-      case _ => id
+      case _            => id
     }
     result
   }

@@ -6,7 +6,7 @@ trait IDMixin extends HasID {
   override def equals(v: Any): Boolean = {
     if (v == null) false
     else if (v.isInstanceOf[AnyRef] && this.eq(v.asInstanceOf[AnyRef])) true
-    else if (v.isInstanceOf[IDMixin]) { //TODO: should subclass be allowed to == this?
+    else if (v.isInstanceOf[IDMixin]) { // TODO: should subclass be allowed to == this?
       v.asInstanceOf[IDMixin].id == this.id
     } else false
   }

@@ -17,10 +17,10 @@ trait TypeViews extends HasUniverse {
     lazy val allSymbols: Seq[Symbol] = {
 
       val sym = self match {
-        case v: universe.ThisTypeApi => Some(v.sym)
+        case v: universe.ThisTypeApi   => Some(v.sym)
         case v: universe.SingleTypeApi => Some(v.sym)
-        case v: universe.TypeRefApi => Some(v.sym)
-        case _ => None
+        case v: universe.TypeRefApi    => Some(v.sym)
+        case _                         => None
       }
 
       val proto = sym.toSeq ++ Seq(
@@ -65,7 +65,7 @@ trait TypeViews extends HasUniverse {
 
       (self.termSymbol, self.typeSymbol) match {
         case (termS, _) if termS.isTerm && termS.isStatic => Some(termS)
-        case (_, typeS) if typeS.isModuleClass => Some(typeS)
+        case (_, typeS) if typeS.isModuleClass            => Some(typeS)
         case _ =>
           None
       }
@@ -238,7 +238,7 @@ trait TypeViews extends HasUniverse {
       val baseNodes = self match {
         case v: Type with scala.reflect.internal.Types#Type =>
           val list = v.baseTypeSeq.toList.map { v =>
-            v.asInstanceOf[Type] //https://github.com/scala/bug/issues/9837
+            v.asInstanceOf[Type] // https://github.com/scala/bug/issues/9837
           }
 
           val withIndices = list.map { tt =>

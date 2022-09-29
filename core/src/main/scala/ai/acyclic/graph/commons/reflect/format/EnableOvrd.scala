@@ -55,7 +55,7 @@ case class EnableOvrd(
 
           val companion: TypeFormat = {
             cached match {
-              case v: TypeFormat => v
+              case v: TypeFormat             => v
               case v: TypeFormat.Constructor => v.apply(this)
               case _ =>
                 throw new UnsupportedOperationException(

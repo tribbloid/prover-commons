@@ -9,11 +9,11 @@ import scala.language.implicitConversions
   * types of elements of a formatted type expression:
   *
   * SubExpr
-  * - Reference
-  * - GenArg
-  *   - Arg
-  *   - PrefixArg
-  *   - ...
+  *   - Reference
+  *   - GenArg
+  *     - Arg
+  *     - PrefixArg
+  *     - ...
   */
 trait TypeIRs extends HasUniverse {
   self: Reflection =>

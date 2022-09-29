@@ -4,7 +4,7 @@ import ai.acyclic.graph.commons.reflect.Reflection
 
 import java.util.regex.Matcher
 
-object Formats1 { //higher-order format constructors
+object Formats1 { // higher-order format constructors
 
   trait HasBase extends TypeFormat {
 
@@ -42,8 +42,8 @@ object Formats1 { //higher-order format constructors
 
   /**
     * T -> base1
-    *   -> base2
-    *   -> ...   +> concat
+    * -> base2
+    * -> ... +> concat
     */
   case class Concat(
       bases: TypeFormat*

@@ -17,7 +17,7 @@ trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
       )
     )
 
-    //TODO: use reflection to figure out test name and annotate
+    // TODO: use reflection to figure out test name and annotate
     def shouldBe(
         groundTruth: String = null,
         sort: Boolean = false,
@@ -46,9 +46,8 @@ trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
   }
 
   /**
-    * ScalaTest assertDoesNotCompile sometimes malfunction (due to unwashed execution order?)
-    * & doesn't perform literal check
-    * if the code compiles successfully, the project compilation will fail
+    * ScalaTest assertDoesNotCompile sometimes malfunction (due to unwashed execution order?) & doesn't perform literal
+    * check if the code compiles successfully, the project compilation will fail
     */
 //  val shouldNotCompile: illTyped.type = illTyped
 

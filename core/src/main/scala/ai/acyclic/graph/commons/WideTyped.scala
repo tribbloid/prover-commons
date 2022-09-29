@@ -6,8 +6,10 @@ import ai.acyclic.graph.commons.viz.TypeViz
 import scala.language.implicitConversions
 
 /**
-  * @param value use compiler's type inference feature to discover the non-singleton type of the value
-  * @tparam TT the wide type
+  * @param value
+  *   use compiler's type inference feature to discover the non-singleton type of the value
+  * @tparam TT
+  *   the wide type
   */
 case class WideTyped[TT](value: TT) {
 
