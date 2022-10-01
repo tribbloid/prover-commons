@@ -5,10 +5,6 @@ buildscript {
         // Add here whatever repositories you're already using
         mavenCentral()
     }
-
-    dependencies {
-        classpath("ch.epfl.scala:gradle-bloop_2.12:1.4.11") // suffix is always 2.12, weird
-    }
 }
 
 plugins {
@@ -69,9 +65,9 @@ allprojects {
 
         val scalaTestV = "3.2.3"
         testImplementation("org.scalatest:scalatest_${vs.scalaBinaryV}:${scalaTestV}")
-        testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
 
-        testRuntimeOnly("co.helmethair:scalatest-junit-runner:0.1.10")
+        testRuntimeOnly("co.helmethair:scalatest-junit-runner:0.2.0")
     }
 
     //TODO: find more comprehensive solution

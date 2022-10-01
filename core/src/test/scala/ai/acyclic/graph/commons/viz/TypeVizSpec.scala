@@ -150,7 +150,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
             |""".stripMargin
         )
 
-      infer(adhocW.value)
+      infer[3](adhocW.value)
         .shouldBe(
           """
             |-+ Int(3)
