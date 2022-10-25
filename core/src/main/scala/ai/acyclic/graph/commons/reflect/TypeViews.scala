@@ -1,6 +1,6 @@
 package ai.acyclic.graph.commons.reflect
 
-import ai.acyclic.graph.commons.IDMixin
+import ai.acyclic.graph.commons.EqualBy
 import ai.acyclic.graph.commons.reflect.format.TypeFormat
 
 import scala.collection.mutable
@@ -12,7 +12,7 @@ trait TypeViews extends HasUniverse {
 
   case class TypeID(
       self: Type
-  ) extends IDMixin {
+  ) extends EqualBy {
 
     lazy val allSymbols: Seq[Symbol] = {
 
