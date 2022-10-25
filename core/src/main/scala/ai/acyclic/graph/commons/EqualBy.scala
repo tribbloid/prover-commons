@@ -32,7 +32,7 @@ object EqualBy {
 
   trait Fields extends FieldsWithTolerance {
 
-    def truncateToTolerance(v: Any): Any = identity _
+    def truncateToTolerance(v: Any): Any = v
   }
 
   def rectify(id: Any): Any = {

@@ -35,7 +35,7 @@ trait TypeViews extends HasUniverse {
 
     lazy val showStr: String = self.toString
 
-    override protected def _id: Any = allSymbols -> showStr
+    override protected def _equalBy: Any = allSymbols -> showStr
   }
 
   case class TypeView(
