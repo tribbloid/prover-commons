@@ -13,7 +13,7 @@ class Indent2MinimalSpec extends TreeLikeSpec {
           | ‣ bbb
           | :  ‣ ddd
           | ‣ ccc
-          |""".stripMargin.trim
+          |""".stripMargin
 
     }
 
@@ -30,7 +30,7 @@ class Indent2MinimalSpec extends TreeLikeSpec {
           | :    %%%%%
           | ‣ ccc
           |   %%%%%
-          |""".stripMargin.trim
+          |""".stripMargin
     }
   }
 }

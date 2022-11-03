@@ -7,7 +7,8 @@ case class StringDiff(
     right: Option[String],
     classes: Seq[Class[_]] = Nil,
     sort: Boolean = false,
-    ignoreCase: Boolean = false
+    ignoreCase: Boolean = false,
+    trim: Boolean = true
 ) {
 
   import StringDiff._
@@ -26,7 +27,11 @@ case class StringDiff(
 
     def isDefined: Boolean = raw.isDefined
 
-    val rows: List[String] = raw.toList.flatMap { raw =>
+    val trimmed: Option[String] =
+      if (trim) raw.map(_.trim)
+      else raw
+
+    val rows: List[String] = trimmed.toList.flatMap { raw =>
       raw
         .split("\n")
         .toList
@@ -35,7 +40,7 @@ case class StringDiff(
     val effective: List[String] = {
 
       var a = rows
-        .filterNot(_.replace(" ", "").isEmpty)
+        .filterNot(_.trim.isEmpty)
         .map(v => ("|" + v).trim.stripPrefix("|"))
 
       if (sort) a = a.sorted

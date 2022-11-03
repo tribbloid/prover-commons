@@ -100,7 +100,7 @@ trait TypeIRs extends HasUniverse {
            |$text
            |$formatBlock
            |${typeView.toString}
-           |""".trim.stripMargin
+           |""".stripMargin.trim
     }
 
     override def toString: String = treeString

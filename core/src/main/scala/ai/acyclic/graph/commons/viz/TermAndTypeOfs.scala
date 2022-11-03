@@ -14,7 +14,7 @@ trait TermAndTypeOfs extends TypeOfs {
     //       |$value
     //       |
     //       |${tree.treeString}
-    //       |""".trim.stripMargin
+    //       |""".stripMargin.trim
     //  }
 
     def ===!(that: TermAndTypeOf[_] = null): Unit = {

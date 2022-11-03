@@ -22,10 +22,18 @@ trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
         groundTruth: String = null,
         sort: Boolean = false,
         ignoreCase: Boolean = false,
+        trim: Boolean = true,
         mode: StringDiff.ComparisonMode = StringDiff.Equal
     ): Unit = {
 
-      StringDiff(Option(str), Option(groundTruth), Seq(this.getClass), sort, ignoreCase).assert(mode)
+      StringDiff(
+        left = Option(str),
+        right = Option(groundTruth),
+        classes = Seq(this.getClass),
+        sort = sort,
+        ignoreCase = ignoreCase,
+        trim = trim
+      ).assert(mode)
     }
 
     def rowsShouldBe(

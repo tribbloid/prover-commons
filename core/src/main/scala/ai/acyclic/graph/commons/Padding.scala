@@ -16,7 +16,7 @@ case class Padding(
          |cannot use 2 strings with different lengths:
          |  `$head` - length=${head.length}
          |  `$body` - length=${body.length}
-         |""".trim.stripMargin
+         |""".stripMargin.trim
     )
   }
 }

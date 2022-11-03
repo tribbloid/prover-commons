@@ -30,7 +30,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
         | :         ┏ -+ Comparable [ 1 ARG ] :
         | :         ┃  !-- String .......................................................................... [0]
         | !-- java.io.Serializable
-        |""".stripMargin.trim,
+        |""".stripMargin,
       mode = SuperSet
     )
   }
@@ -63,7 +63,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
         |   : !-- Any
         |   !-+ Product
         |   : !-- Equals
-        |""".stripMargin.trim,
+        |""".stripMargin,
         mode = SuperSet
       )
   }
@@ -86,7 +86,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
           | :       ┃  : : :       ┃  !-+ String("author")
           | :       ┃  : : :       ┃  : !-- String .......................................................................... [0]
           | :       ┃  : : :       ┃  !-- String .......................................................................... [0]
-          |""".stripMargin.trim,
+          |""".stripMargin,
         mode = SuperSet
       )
   }
@@ -204,7 +204,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.Fixtures {
             |     !-+ java.io.Serializable
             |     : !-- Any ............................................................................. [0]
             |     !-- Object
-            |""".stripMargin.trim
+            |""".stripMargin
         )
 
       infer(singletonW).shouldBe(adhocTree)
