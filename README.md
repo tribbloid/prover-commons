@@ -1,4 +1,4 @@
-# graph-commons
+# prover-commons
 
 This is a utility project that provides abstractions for graph, tree, poset & type.
 

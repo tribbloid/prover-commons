@@ -4,7 +4,7 @@ class Versions(self: Project) {
 
     // TODO : how to group them?
     val projectGroup = "ai.acyclic"
-    val projectRootID = "graph-commons"
+    val projectRootID = "prover-commons"
 
     val projectVMajor = "1.0.0"
     val projectV = projectVMajor + "-SNAPSHOT"
