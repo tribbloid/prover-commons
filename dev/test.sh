@@ -7,4 +7,5 @@ FWDIR="$(
 
 ${FWDIR}/gradlew test "${@}"
 
-cat **/build/test-results/**/*.xml| grep -5 "<failure"
+cat **/build/test-results/**/*.xml| grep -5 "<failure" || \
+  echo "No test failure found"
