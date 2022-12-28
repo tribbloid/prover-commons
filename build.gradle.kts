@@ -159,6 +159,9 @@ allprojects {
                     events("passed", "skipped", "failed")
                 }
             }
+
+            reports.junitXml.required.set(true)
+            reports.junitXml.outputLocation.set(File("build/reports/tests/test-xml"))
         }
     }
 
