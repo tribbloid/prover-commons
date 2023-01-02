@@ -1,14 +1,16 @@
-package ai.acyclic.prover.commons
+package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.reflect.ScalaReflection
+import ai.acyclic.prover.commons.{HasOuter, Padding, TextBlock}
 
 // TODO: it should no longer serve as the backbone of ArityConjecture & ShapeConjecture runtime visualisation
 //  which should be consistent with compile-time visualisation
-trait ProductTree extends TreeLike with Product {
+trait ProductDiscoveryMixin extends Product {
+  self: Semilattice.Upper.Node =>
 
-  import ProductTree._
+  import ProductDiscoveryMixin._
 
-  private lazy val argList = this.productIterator.toList
+  protected lazy val argList = this.productIterator.toList
 
   lazy val constructorString: String = {
 
@@ -30,10 +32,10 @@ trait ProductTree extends TreeLike with Product {
 
   }
 
-  final override lazy val nodeString = {
+  final override lazy val nodeText = {
 
     val notTree = this.argList
-      .filterNot(v => v.isInstanceOf[TreeLike])
+      .filterNot(v => v.isInstanceOf[Semilattice.Upper.Node])
 
     if (notTree.isEmpty) {
 
@@ -52,15 +54,16 @@ trait ProductTree extends TreeLike with Product {
     }
   }
 
-  final override lazy val children: List[TreeLike] = {
+  final override lazy val outbound: Seq[Arrow.`~>`.Of[Semilattice.Upper.Node]] = {
 
-    this.argList.collect {
-      case v: TreeLike => v
+    val result = this.argList.collect {
+      case v: Semilattice.Upper.Node => v
     }
+    result
   }
 }
 
-object ProductTree {
+object ProductDiscoveryMixin {
 
   def decodedStrOf(v: AnyRef): String = {
     val clz = v.getClass

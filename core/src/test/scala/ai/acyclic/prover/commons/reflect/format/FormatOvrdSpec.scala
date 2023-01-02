@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.reflect.format
 
 import ai.acyclic.prover.commons.reflect.Reflection
-import ai.acyclic.prover.commons.reflect.Reflection.Runtime
 import ai.acyclic.prover.commons.reflect.format.FormatOvrd.{~~, SingletonName}
 import ai.acyclic.prover.commons.reflect.format.Formats0.{ClassName, TypeImpl}
 import ai.acyclic.prover.commons.testlib.BaseSpec
@@ -14,7 +13,7 @@ class FormatOvrdSpec extends BaseSpec {
 
   val format: TypeFormat = EnableOvrd(TypeImpl.DeAlias)
 
-  val viz: TypeViz[Runtime.type] = TypeViz.withFormat(format)
+  val viz: TypeViz[Reflection.Runtime.type] = TypeViz.withFormat(format)
 
   describe("fallback") {
 

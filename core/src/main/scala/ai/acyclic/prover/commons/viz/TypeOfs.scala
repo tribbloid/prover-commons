@@ -1,7 +1,9 @@
 package ai.acyclic.prover.commons.viz
 
+import ai.acyclic.prover.commons.{Padding, TextBlock}
 import ai.acyclic.prover.commons.diff.StringDiff
-import ai.acyclic.prover.commons.{Padding, TextBlock, TreeFormat, TreeLike}
+import ai.acyclic.prover.commons.graph.{Arrow, Tree}
+import ai.acyclic.prover.commons.reflect.format.TypeFormat
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
@@ -20,17 +22,17 @@ trait TypeOfs extends TypeVizSystem {
     type TT = T
 
     lazy val typeView: TypeView = reflection.typeView(tt)
-    lazy val typeTree: exe.TypeVizTree = TypeVizTree(typeView)
+    lazy val treeViz = SubtypeTree(typeView).showHierarchy
 
     override def toString: String = {
 
-      typeTree.treeString
+      treeViz.treeString
     }
 
     def should_=:=(that: TypeOf[_] = null): Unit = {
 
       val Seq(s1, s2) = Seq(this, that).map { v =>
-        Option(v).map(_.typeTree.treeString)
+        Option(v).map(_.treeViz.treeString)
       }
 
       val diff = StringDiff(s1, s2, Seq(this.getClass))
@@ -53,12 +55,13 @@ trait TypeOfs extends TypeVizSystem {
 
   object TypeOf {
 
-    implicit def asTree(v: TypeOf[_]): v.exe.TypeVizTree = v.typeTree
+    implicit def asTree(v: TypeOf[_]) = v.treeViz.node
+    implicit def asViz(v: TypeOf[_]) = v.treeViz
   }
 
   case class Execution() {
 
-    def newTCache: mutable.ArrayBuffer[TypeID] = mutable.ArrayBuffer.empty
+    def newVisitedCache: mutable.ArrayBuffer[TypeID] = mutable.ArrayBuffer.empty
 
     case class Expanded() {
 
@@ -90,13 +93,12 @@ trait TypeOfs extends TypeVizSystem {
       def apply(id: TypeID): Record = records.getOrElseUpdate(id, Record())
     }
 
-    case class TypeVizTree(
+    case class SubtypeTree(
         node: TypeView,
-        visited: mutable.ArrayBuffer[TypeID] = newTCache,
+        visited: mutable.ArrayBuffer[TypeID] = newVisitedCache,
         expanded: Expanded = Expanded()
-    ) extends TreeLike {
-
-      override lazy val treeFormat: TreeFormat = format.treeFormat
+    ) extends Tree.Node
+        with Tree.OpsOf[SubtypeTree] {
 
       import node._
 
@@ -140,13 +142,13 @@ trait TypeOfs extends TypeVizSystem {
 
       def argTreeStr: String = {
 
-        if (!format.showArgTree) {
+        if (!format.showArgs) {
           ""
         } else {
 
           val raw = Children.expandArgs
             .map { tree =>
-              tree.treeString
+              tree.showHierarchy.treeString
             }
 
           val indented = raw.map { tt =>
@@ -159,31 +161,31 @@ trait TypeOfs extends TypeVizSystem {
           indented.mkString("\n")
         }
       }
-      //    }
 
-      override def nodeString: String = {
+      override def nodeText: String = {
 
         Children.expandAll
 
         typeStr + refStr + argTreeStr
       }
 
-      case class ArgTree(node: TypeView) extends TreeLike {
+      // Technically not a tree due to cyclic references
+      case class ArgTree(node: TypeView) extends Tree.Node with Tree.OpsOf[SubtypeTree] {
 
-        override lazy val children: List[TypeVizTree] = Seq(node)
+        override lazy val outbound: Seq[Arrow.`~>`.Of[SubtypeTree]] = Seq(node)
           .flatMap(_.args)
           .map { tt =>
-            val result = TypeVizTree.this.copy(tt, visited = newTCache)
+            val result = SubtypeTree.this.copy(tt, visited = newVisitedCache)
 
             result
           }
           .toList
 
-        override lazy val nodeString: String = {
+        override lazy val nodeText: String = {
 
           val ttStr = node.self.typeConstructor.toString
 
-          val size = children.size
+          val size = outbound.size
 
           if (size == 1) s"$ttStr [ $size ARG ] :"
           else if (size == 0) s"$ttStr [ No ARG ]"
@@ -206,7 +208,7 @@ trait TypeOfs extends TypeVizSystem {
 
         val result = trees
           .filter { tree =>
-            tree.children.nonEmpty
+            tree.outbound.nonEmpty
           }
 
         result
@@ -220,14 +222,14 @@ trait TypeOfs extends TypeVizSystem {
           result
         }
 
-        lazy val expandBaseTrees: List[TypeVizTree] = {
+        lazy val expandTypeTrees: List[SubtypeTree] = {
 
           def list = baseTypes_NoSelf.flatMap { node =>
             if (visited.contains(node.reference)) None
             else {
               val tree = copy(node)
 
-              tree.Children.expandBaseTrees
+              tree.Children.expandTypeTrees
 
               Some(tree)
             }
@@ -250,16 +252,16 @@ trait TypeOfs extends TypeVizSystem {
           if (history.count >= 2) {
             Nil
           } else {
-            for (args <- argTrees; tree <- args.children) {
+            for (args <- argTrees; (child: SubtypeTree) <- args.children) {
 
-              tree.Children.expandAll
+              child.Children.expandAll
             }
 
             argTrees
           }
 
         lazy val expandAll: Unit = {
-          expandBaseTrees
+          expandTypeTrees
           expandArgs
 
           //        for (args <- expandArgs; tree <- args.children) {
@@ -267,15 +269,15 @@ trait TypeOfs extends TypeVizSystem {
           //          tree.Children.expandAll
           //        }
 
-          expandBaseTrees.foreach { tree =>
+          expandTypeTrees.foreach { tree =>
             tree.Children.expandAll
           }
         }
       }
 
-      override lazy val children: List[TreeLike] = {
+      override lazy val outbound = {
 
-        val result = Children.expandBaseTrees
+        val result = Children.expandTypeTrees
 
         result
       }

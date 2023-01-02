@@ -1,15 +1,15 @@
 package ai.acyclic.prover.commons.viz
 
-import ai.acyclic.prover.commons.TreeFormat
+import ai.acyclic.prover.commons.graph.viz.Hierarchy
 import ai.acyclic.prover.commons.reflect.format.TypeFormat
 
 import scala.language.implicitConversions
 
-// TODO: this should be broken into type format and tree format
+// TODO: should be TypeSemilatticeFormat
 case class TypeVizFormat(
     base: TypeFormat,
-    showArgTree: Boolean = true,
-    treeFormat: TreeFormat = TreeFormat.Indent2
+    showArgs: Boolean = true,
+    treeFormat: Hierarchy = Hierarchy.Indent2
 ) {}
 
 object TypeVizFormat {
