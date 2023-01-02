@@ -3,14 +3,14 @@ package ai.acyclic.prover.commons.reflect
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
 
-class TypeViewsSpec extends BaseSpec {
+class TypeViewMixinSpec extends BaseSpec {
 
   describe("getOnlyInstance on") {
 
     it("object") {
 
-      val v = TypeViz[TypeViewsSpec.type].typeView
-      assert(v.onlyInstance == TypeViewsSpec)
+      val v = TypeViz[TypeViewMixinSpec.type].typeView
+      assert(v.onlyInstance == TypeViewMixinSpec)
     }
 
     it("constant") {
@@ -21,7 +21,7 @@ class TypeViewsSpec extends BaseSpec {
 
     it("unique value") {
 
-      val v = TypeViz[TypeViewsSpec.a.type].typeView
+      val v = TypeViz[TypeViewMixinSpec.a.type].typeView
       assert(v.onlyInstance == 3)
     }
 
@@ -45,7 +45,7 @@ class TypeViewsSpec extends BaseSpec {
   }
 }
 
-object TypeViewsSpec {
+object TypeViewMixinSpec {
 
   val a = 3
 

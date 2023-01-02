@@ -1,33 +1,44 @@
 package ai.acyclic.prover.commons.viz
 
+import ai.acyclic.prover.commons.reflect.Reflection
 import ai.acyclic.prover.commons.reflect.format.Formats0
-import ai.acyclic.prover.commons.reflect.{Reflection, ScalaReflection}
 
-class TypeViz[R <: Reflection](
-    override val reflection: R,
-    override val format: TypeVizFormat
-) extends TypeVizLike {
+import scala.language.implicitConversions
 
-  override type TTag[T] = universe.WeakTypeTag[T]
+trait TypeViz[R <: Reflection] extends TermAndTypeOfMixin {
 
-  object Strong extends TypeVizLike {
+  override val reflection: R
 
-    override type TTag[T] = TypeTag[T]
-    override val reflection: Reflection = ScalaReflection
+  type TTag[T] <: WeakTypeTag[T]
 
-    override val format: TypeVizFormat = TypeViz.this.format
+  def of(tt: Type) = new TypeOf[Any](tt)
+
+  def apply[T](
+      implicit
+      ev: TTag[T]
+  ): TypeOf[T] = {
+    new TypeOf[T](ev.tpe)
   }
 
-  def withFormat(format: TypeVizFormat = TypeVizFormat.Default) = new TypeViz[R](reflection, format)
+  def infer[T](v: T)(
+      implicit
+      ev: TTag[T]
+  ): TermAndTypeOf[T] = new TermAndTypeOf(v, ev.tpe)
+
+  def narrow[T](v: T)(
+      implicit
+      ev: TTag[v.type]
+  ): TermAndTypeOf[v.type] = new TermAndTypeOf(v, ev.tpe)
 }
 
-object TypeViz extends TypeViz(ScalaReflection, TypeVizFormat.Default) {
+object TypeViz {
 
-  def apply[R <: Reflection](reflection: R) = new TypeViz[R](reflection, TypeVizFormat.Default)
+  def default[R <: Reflection](reflection: R) =
+    new TypeVizBuilder[R](reflection, TypeHierarchy.Default).Weak
 
-  trait Fixtures {
+  trait TestFixtures {
 
-    val TypeViz = ai.acyclic.prover.commons.viz.TypeViz
+    val TypeViz = TypeViz.this
 
     val TypeVizShort = {
 
@@ -41,4 +52,7 @@ object TypeViz extends TypeViz(ScalaReflection, TypeVizFormat.Default) {
       TypeViz.withFormat(format)
     }
   }
+
+  implicit def asRuntimeDefault(self: TypeViz.type): TypeVizBuilder.RuntimeDefault.Weak.type =
+    TypeVizBuilder.RuntimeDefault.Weak
 }

@@ -4,14 +4,17 @@ import scala.reflect.api.Universe
 
 trait HasUniverse {
 
-  val universe: Universe
+  lazy val universe: Universe with Singleton = ???
 
-  final type UU = Universe with universe.type
-  final lazy val getUniverse: UU = universe
+  final type UU = Universe with Singleton with universe.type
+  final def getUniverse: UU = universe
+
+  type Mirror = universe.Mirror
 
   type TypeTag[T] = universe.TypeTag[T]
   type WeakTypeTag[T] = universe.WeakTypeTag[T]
   type Type = universe.Type
+
   type Symbol = universe.Symbol
 
   def rootMirror: universe.Mirror = universe.rootMirror
@@ -63,7 +66,67 @@ trait HasUniverse {
 //        }
       }
     }
-
   }
+}
 
+object HasUniverse {
+
+  trait Runtime extends HasUniverse {
+
+    override lazy val universe: RuntimeUniverse = RuntimeUniverse
+
+    // TODO: useless? what's the difference
+    // Since we are creating a runtime mirror using the class loader of current thread,
+    // we need to use def at here. So, every time we call mirror, it is using the
+    // class loader of the current thread.
+    override lazy val mirror: universe.Mirror = {
+
+      val _classloader: ClassLoader = getClass.getClassLoader
+
+      val result: universe.Mirror = universe
+        .runtimeMirror(_classloader)
+
+      result
+    }
+
+    case class CreateTypeTag[T](
+        tpe: Type,
+        mirror: Mirror
+    ) {
+
+      import CreateTypeTag._
+
+      // TODO: TypeCreator is not in Developer's API and usage is not recommended
+      def fast: TypeTag[T] = {
+        universe.TypeTag.apply(
+          mirror,
+          NaiveTypeCreator(tpe)
+        )
+      }
+
+      // TODO: this needs improvement due to:
+      // https://stackoverflow.com/questions/59473734/in-scala-2-12-why-none-of-the-typetag-created-in-runtime-is-serializable
+      def slowButSerializable: TypeTag[T] = {
+
+        val toolbox = scala.tools.reflect.ToolBox(mirror).mkToolBox()
+
+        val tree = toolbox.parse(s"scala.reflect.runtime.universe.typeTag[$tpe]")
+        val result = toolbox.eval(tree).asInstanceOf[TypeTag[T]]
+
+        result
+      }
+
+    }
+
+    object CreateTypeTag {
+
+      case class NaiveTypeCreator(tpe: Type) extends reflect.api.TypeCreator {
+
+        def apply[U <: reflect.api.Universe with Singleton](m: reflect.api.Mirror[U]): U#Type = {
+          //          assert(m eq mirror, s"TypeTag[$tpe] defined in $mirror cannot be migrated to $m.")
+          tpe.asInstanceOf[U#Type]
+        }
+      }
+    }
+  }
 }

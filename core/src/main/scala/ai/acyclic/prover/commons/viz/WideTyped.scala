@@ -1,7 +1,6 @@
-package ai.acyclic.prover.commons
+package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.reflect.ScalaReflection
-import ai.acyclic.prover.commons.viz.TypeViz
 
 import scala.language.implicitConversions
 
@@ -18,7 +17,7 @@ case class WideTyped[TT](value: TT) {
   def viz(
       implicit
       ttag: ScalaReflection.TypeTag[TT]
-  ) = TypeViz[TT]
+  ) = TypeViz.apply[TT]
 }
 
 object WideTyped {

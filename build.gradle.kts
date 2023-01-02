@@ -36,6 +36,7 @@ allprojects {
     // Cannot add extension with name 'bloop', as there is an extension already registered with that name
 
     apply(plugin = "scala")
+
     apply(plugin = "idea")
 
     apply(plugin = "signing")
@@ -51,20 +52,18 @@ allprojects {
     dependencies {
 
         // see https://github.com/gradle/gradle/issues/13067
-        fun both(constraintNotation: Any) {
-            implementation(constraintNotation)
-            testFixturesImplementation(constraintNotation)
-        }
+//        fun both(constraintNotation: Any) {
+//            implementation(constraintNotation)
+//            testFixturesImplementation(constraintNotation)
+//        }
 
-        constraints {
-
-            both("${vs.scalaGroup}:scala-compiler:${vs.scalaV}")
-            both("${vs.scalaGroup}:scala-library:${vs.scalaV}")
-        }
+        implementation("${vs.scalaGroup}:scala-compiler:${vs.scalaV}")
+        implementation("${vs.scalaGroup}:scala-library:${vs.scalaV}")
+        implementation("${vs.scalaGroup}:scala-reflect:${vs.scalaV}")
 
         val scalaTestV = "3.2.3"
         testImplementation("org.scalatest:scalatest_${vs.scalaBinaryV}:${scalaTestV}")
-        testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
         testRuntimeOnly("co.helmethair:scalatest-junit-runner:0.2.0")
     }
@@ -95,11 +94,8 @@ allprojects {
     }
 
     tasks {
-        val jvmTarget = JavaVersion.VERSION_1_8.toString()
 
         withType<ScalaCompile> {
-
-            targetCompatibility = jvmTarget
 
             scalaCompileOptions.apply {
 
@@ -111,17 +107,14 @@ allprojects {
 
                     mutableListOf(
                         "-encoding", "UTF-8",
+                        "-unchecked", "-deprecation", "-feature",
 
-                        "-deprecation",
-                        "-unchecked",
-                        "-feature",
                         "-language:higherKinds",
-                        "-language:existentials",
-                        "-Ywarn-value-discard",
-                        "-Ywarn-unused:imports",
-                        "-Ywarn-unused:implicits",
-                        "-Ywarn-unused:params",
-                        "-Ywarn-unused:patvars",
+
+                        "-Xlint:poly-implicit-overload", "-Xlint:option-implicit", "-Wunused:imports",
+
+                        "-g:vars",
+
                     )
 
                 additionalParameters = compilerOptions

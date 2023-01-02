@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.diff
 
 import ai.acyclic.prover.commons.debug.print_@
+import ai.acyclic.prover.commons.viz.text.TextBlock
 
 case class StringDiff(
     left: Option[String],
@@ -8,7 +9,7 @@ case class StringDiff(
     classes: Seq[Class[_]] = Nil,
     sort: Boolean = false,
     ignoreCase: Boolean = false,
-    trim: Boolean = true
+    trim: TextBlock => TextBlock = StringDiff.defaultTrim
 ) {
 
   import StringDiff._
@@ -27,21 +28,15 @@ case class StringDiff(
 
     def isDefined: Boolean = raw.isDefined
 
-    val trimmed: Option[String] =
-      if (trim) raw.map(_.trim)
-      else raw
+    val trimmed = raw.map(v => trim(TextBlock(v)))
 
     val rows: List[String] = trimmed.toList.flatMap { raw =>
-      raw
-        .split("\n")
-        .toList
+      raw.lines
     }
 
     val effective: List[String] = {
 
-      var a = rows
-        .filterNot(_.trim.isEmpty)
-        .map(v => ("|" + v).trim.stripPrefix("|"))
+      var a = rows.map(v => ("|" + v).trim.stripPrefix("|"))
 
       if (sort) a = a.sorted
       if (ignoreCase) a = a.map(_.toLowerCase)
@@ -138,7 +133,6 @@ case class StringDiff(
 
           case Equal =>
             assertEqual(Left.effective, Right.effective)
-
         }
 
       case _ =>
@@ -153,4 +147,8 @@ object StringDiff {
   object Equal extends ComparisonMode
   object SuperSet extends ComparisonMode
   object SubSet extends ComparisonMode
+
+  lazy val defaultTrim = { v: TextBlock =>
+    v.Trim.top_bottom
+  }
 }

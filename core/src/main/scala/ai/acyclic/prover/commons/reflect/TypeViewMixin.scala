@@ -7,7 +7,7 @@ import scala.collection.mutable
 import scala.tools.reflect.ToolBox
 import scala.util.Try
 
-trait TypeViews extends HasUniverse {
+trait TypeViewMixin extends HasUniverse {
   self: Reflection =>
 
   case class TypeID(
@@ -43,7 +43,7 @@ trait TypeViews extends HasUniverse {
 //      comment: Option[String] = None // TODO: useless?
   ) extends ApiView[Type] {
 
-    final val refl: TypeViews.this.type = TypeViews.this
+    final val refl: TypeViewMixin.this.type = TypeViewMixin.this
 
     lazy val _deAlias: Type = self.dealias
 
@@ -61,7 +61,7 @@ trait TypeViews extends HasUniverse {
 
     override lazy val canonicalName: String = self.toString
 
-    lazy val singletonSymbol: Option[Symbol] = {
+    lazy val singletonSymbolOpt: Option[Symbol] = {
 
       (self.termSymbol, self.typeSymbol) match {
         case (termS, _) if termS.isTerm && termS.isStatic => Some(termS)
@@ -71,17 +71,19 @@ trait TypeViews extends HasUniverse {
       }
     }
 
+    def singletonSymbol: Symbol = singletonSymbolOpt.getOrElse {
+      throw new UnsupportedOperationException(
+        s"$self : ${self.getClass} is not a Singleton"
+      )
+    }
+
     lazy val singletonName: String = {
 
       _deAlias match {
-        case universe.ConstantType(v) =>
-          "" + v.value
+        case v: universe.ConstantType @unchecked =>
+          "" + v.value.value
         case v @ _ =>
-          val onlySym = typeView(v).singletonSymbol.getOrElse {
-            throw new UnsupportedOperationException(
-              s"$v : ${v.getClass} is not a Singleton"
-            )
-          }
+          val onlySym = typeView(v).singletonSymbol
 
           onlySym.fullName
       }
@@ -92,14 +94,10 @@ trait TypeViews extends HasUniverse {
     lazy val onlyInstance: Any = {
 
       _deAlias match {
-        case universe.ConstantType(v) =>
-          v.value
+        case v: universe.ConstantType @unchecked =>
+          v.value.value
         case v @ _ =>
-          val onlySym = typeView(v).singletonSymbol.getOrElse {
-            throw new UnsupportedOperationException(
-              s"$v : ${v.getClass} is not a Singleton"
-            )
-          }
+          val onlySym = typeView(v).singletonSymbol
 
           val mirror = Reflection.Runtime.mirror
 
@@ -142,7 +140,7 @@ trait TypeViews extends HasUniverse {
 
       constructor.self match {
 
-        case v: Type { def pre: Type } =>
+        case v: (Type { def pre: Type }) @unchecked =>
           val pre = Try(typeView(v.pre)).filter { v =>
             val self = v.self
             val notNone = self != universe.NoPrefix
@@ -165,7 +163,7 @@ trait TypeViews extends HasUniverse {
       override def getCanonicalName(v: Type): String = {
 
         val vv = typeView(v)
-        val result = if (vv.singletonSymbol.isDefined) {
+        val result = if (vv.singletonSymbolOpt.isDefined) {
           v.toString.stripSuffix(".type")
         } else {
           v.toString
@@ -201,7 +199,7 @@ trait TypeViews extends HasUniverse {
       lazy val static: BreadcrumbView = {
 
         val list = all.list.reverse.takeWhile { tt =>
-          typeView(tt).singletonSymbol.exists { ss =>
+          typeView(tt).singletonSymbolOpt.exists { ss =>
             ss.isStatic
           }
         }.reverse
@@ -212,7 +210,7 @@ trait TypeViews extends HasUniverse {
       lazy val packages: BreadcrumbView = {
 
         val list = all.list.reverse.takeWhile { tt =>
-          typeView(tt).singletonSymbol.exists { ss =>
+          typeView(tt).singletonSymbolOpt.exists { ss =>
             ss.isPackage
           }
         }.reverse
@@ -236,7 +234,7 @@ trait TypeViews extends HasUniverse {
       val baseClzSyms = self.baseClasses
 
       val baseNodes = self match {
-        case v: Type with scala.reflect.internal.Types#Type =>
+        case v: (Type with scala.reflect.internal.Types#Type) @unchecked =>
           val list = v.baseTypeSeq.toList.map { v =>
             v.asInstanceOf[Type] // https://github.com/scala/bug/issues/9837
           }
@@ -266,6 +264,9 @@ trait TypeViews extends HasUniverse {
 
       baseNodes
     }
+
+    lazy val superTypes: List[TypeView] = baseTypes
+      .filterNot(tt => tt.reference == this.reference)
 
     def formattedBy(format: TypeFormat): TypeIR = {
       val result = TypeIR(this, format)
@@ -307,7 +308,7 @@ trait TypeViews extends HasUniverse {
   )
 }
 
-object TypeViews {
+object TypeViewMixin {
 
   val ALIAS_SPLITTER = " ≅ "
 }

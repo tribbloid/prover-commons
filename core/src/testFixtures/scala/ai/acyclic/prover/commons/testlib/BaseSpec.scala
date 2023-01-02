@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.testlib
 
 import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.diff.StringDiff
+import ai.acyclic.prover.commons.viz.text.TextBlock
 import org.scalatest.funspec.AnyFunSpec
 import splain.test.TryCompile
 
@@ -22,7 +23,7 @@ trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
         groundTruth: String = null,
         sort: Boolean = false,
         ignoreCase: Boolean = false,
-        trim: Boolean = true,
+        trim: TextBlock => TextBlock = StringDiff.defaultTrim,
         mode: StringDiff.ComparisonMode = StringDiff.Equal
     ): Unit = {
 

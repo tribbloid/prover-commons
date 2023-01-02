@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.reflect
 
 import ai.acyclic.prover.commons.reflect.format.{IROutput, TypeFormat}
-import ai.acyclic.prover.commons.{Padding, TextBlock, TreeLike}
+import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
 
 import scala.language.implicitConversions
 
@@ -15,13 +15,18 @@ import scala.language.implicitConversions
   *     - PrefixArg
   *     - ...
   */
-trait TypeIRs extends HasUniverse {
+trait TypeIRMixin extends HasUniverse {
   self: Reflection =>
+
+  trait IRLike {
+
+    val children: Seq[IRLike]
+  }
 
   case class TypeIR(
       typeView: TypeView,
       format: TypeFormat
-  ) extends TreeLike {
+  ) extends IRLike {
 
     val refl: Reflection = self
 
@@ -75,18 +80,17 @@ trait TypeIRs extends HasUniverse {
 //      ff.forms
 //    }
 
-    override lazy val children: Seq[TreeLike] = {
+    lazy val children = {
 
-      annotations ++
+      val both = annotations ++
         Seq(
           GroupTag("(derivedFrom)", derivedFrom)
         )
-          .filter(v => !v.isEmpty)
+
+      both.filter(v => v.children.nonEmpty)
     }
 
-    override def nodeString: String = {
-
-//      s"$text <<-[ $format ]-< ${typeView.toString}"
+    lazy val nodeText: String = {
 
       val formatBlock = TextBlock(
         s"""
@@ -103,7 +107,7 @@ trait TypeIRs extends HasUniverse {
            |""".stripMargin.trim
     }
 
-    override def toString: String = treeString
+    override def toString: String = nodeText
 
 //    def withDelegate(v: TypeIR): Output = {
 //      val sameFormat = v.format == this.format
@@ -126,9 +130,9 @@ trait TypeIRs extends HasUniverse {
   }
 
   case class GroupTag(
-      nodeString: String,
-      override val children: Seq[TypeIR]
-  ) extends TreeLike {
+      nodeText: String,
+      children: Seq[TypeIR]
+  ) extends IRLike {
 
     def isEmpty: Boolean = children.isEmpty
   }
