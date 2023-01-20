@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff
-import ai.acyclic.prover.commons.reflect.format.TypeFormat
 import ai.acyclic.prover.commons.{Padding, TextBlock, TreeFormat, TreeLike}
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -22,9 +21,6 @@ trait TypeOfs extends TypeVizSystem {
 
     lazy val typeView: TypeView = reflection.typeView(tt)
     lazy val typeTree: exe.TypeVizTree = TypeVizTree(typeView)
-
-    //  def nodeStr: String = tree.nodeStr
-    //  def treeStr: String = tree.treeString
 
     override def toString: String = {
 
@@ -57,10 +53,7 @@ trait TypeOfs extends TypeVizSystem {
 
   object TypeOf {
 
-    def withFormat(format: TypeFormat) = new WithFormat(format)
-
     implicit def asTree(v: TypeOf[_]): v.exe.TypeVizTree = v.typeTree
-
   }
 
   case class Execution() {
