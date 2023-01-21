@@ -64,7 +64,7 @@ allprojects {
 
         val scalaTestV = "3.2.3"
         testImplementation("org.scalatest:scalatest_${vs.scalaBinaryV}:${scalaTestV}")
-        testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
         testRuntimeOnly("co.helmethair:scalatest-junit-runner:0.2.0")
     }
