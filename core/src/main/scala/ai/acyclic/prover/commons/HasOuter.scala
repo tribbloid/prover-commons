@@ -7,7 +7,7 @@ trait HasOuter {
 
 object HasOuter {
 
-  def outerListOf(v: AnyRef): List[AnyRef] = {
+  def outerListOf(v: Any): List[Any] = {
 
     val self = List(v)
 

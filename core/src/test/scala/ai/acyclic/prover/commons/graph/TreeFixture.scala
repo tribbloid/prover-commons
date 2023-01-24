@@ -1,15 +1,16 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.graph.local.Tree
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 abstract class TreeFixture extends BaseSpec {
 
+  import TreeFixture._
+
   implicit lazy val treeFormat: Hierarchy = Hierarchy.Indent2
 
-  import TreeFixture.TDemo
-
-  val tree1 = TDemo(
+  val tree1: TreeFixture._Tree = TDemo(
     "aaa",
     Seq(
       TDemo(
@@ -22,9 +23,9 @@ abstract class TreeFixture extends BaseSpec {
         "ccc"
       )
     )
-  )
+  ).tree
 
-  val tree2 = TDemo( // TODO: simplify this with graph TransformPlan
+  val tree2: TreeFixture._Tree = TDemo( // TODO: simplify this with graph Transform
     "aaa\n%%%%%",
     Seq(
       TDemo(
@@ -37,13 +38,26 @@ abstract class TreeFixture extends BaseSpec {
         "ccc\n%%%%%"
       )
     )
-  )
+  ).tree
 }
 
 object TreeFixture {
 
   case class TDemo(
-      nodeText: String,
-      override val outbound: Seq[Arrow.`~>`.Of[TDemo]] = Nil
-  ) extends Tree.Node {}
+      text: String,
+      children: Seq[TDemo] = Nil
+  ) {
+
+    def tree: _Tree = _Tree(this)
+  }
+
+  case class _Tree(root: TDemo) extends Tree[TDemo] {
+
+    case class Ops(node: TDemo) extends UpperNOps {
+
+      override protected def getNodeText = node.text
+
+      override protected def getInduction: Seq[Arrow.`~>`.Of[TDemo]] = node.children
+    }
+  }
 }

@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.reflect
 
 import scala.collection.mutable
 
-trait SymbolViews extends HasUniverse {
+trait SymbolViewMixin extends HasUniverse {
   self: Reflection =>
 
   case class SymbolView(

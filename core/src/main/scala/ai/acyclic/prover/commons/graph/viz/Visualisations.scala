@@ -7,29 +7,28 @@ import scala.language.implicitConversions
 
 trait Visualisations {
 
-  val graphSys: GraphSystem
+  type UB[N] <: GraphSystem.GraphK[N]
 
   trait Format {
 
-    lazy val printNodeFn: graphSys.Node => String = { v =>
-      v.nodeText
+    trait TextViz[N] extends _TextViz[N] {
+
+      final val outer = Format.this
     }
   }
 
-  trait TextViz[N <: graphSys.Node] extends HasOuter {
+  trait _TextViz[N] extends HasOuter {
 
     val outer: Format
 
-    def node: N
-
-    lazy val nodeString: String = outer.printNodeFn(node)
+    val graph: UB[N]
 
     def treeString: String
   }
 
-  object TextViz {
+  object _TextViz {
 
-    implicit def unbox[N <: graphSys.Node](v: TextViz[N]): N = v.node
+    implicit def unbox[N](v: _TextViz[N]): UB[N] = v.graph
   }
 
 }

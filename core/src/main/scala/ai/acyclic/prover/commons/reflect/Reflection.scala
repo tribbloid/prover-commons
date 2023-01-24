@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.reflect
 
 import scala.reflect.{api, macros}
 
-trait Reflection extends SymbolViews with TypeViews with TypeIRs {
+trait Reflection extends SymbolViewMixin with TypeViewMixin with TypeIRMixin {
 
   lazy val rootPackageSymbol: universe.Symbol = {
 

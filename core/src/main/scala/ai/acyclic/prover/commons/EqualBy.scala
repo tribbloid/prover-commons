@@ -42,4 +42,8 @@ object EqualBy {
     }
     result
   }
+
+  case class MemoryHash[T](v: T) extends EqualBy {
+    override protected def _equalBy: Int = System.identityHashCode(v)
+  }
 }

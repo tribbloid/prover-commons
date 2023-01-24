@@ -7,6 +7,8 @@ val splainVFallback: String = run {
 }
 
 dependencies {
+//    api("org.typelevel:cats-effect_${vs.scalaBinaryV}:3.4.5")
+
     testFixturesApi("com.chuusai:shapeless_${vs.scalaBinaryV}:2.3.9")
 
     testFixturesApi("org.scalatest:scalatest_${vs.scalaBinaryV}:${vs.scalaTestV}")

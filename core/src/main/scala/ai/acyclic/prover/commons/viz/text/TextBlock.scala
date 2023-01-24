@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons
+package ai.acyclic.prover.commons.viz.text
 
 case class TextBlock(lines: Seq[String]) {
 
@@ -59,6 +59,20 @@ case class TextBlock(lines: Seq[String]) {
     }
 
     TextBlock(zipped)
+  }
+
+  def appendPerLine(
+      that: TextBlock
+  ): TextBlock = {
+
+    val lines = this.lines
+      .zipAll(that.lines, "", "")
+      .map {
+        case (a, b) =>
+          a + b
+      }
+
+    TextBlock(lines)
   }
 }
 

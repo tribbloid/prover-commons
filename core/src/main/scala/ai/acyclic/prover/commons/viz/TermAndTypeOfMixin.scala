@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff
 
-trait TermAndTypeOfs extends TypeOfs {
+trait TermAndTypeOfMixin extends TypeOfMixin {
 
   class TermAndTypeOf[T](
       val rtValue: T,

@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.{viz, Semilattice}
-import ai.acyclic.prover.commons.{Padding, TextBlock}
+import ai.acyclic.prover.commons.graph.local.Semilattice
+import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
 
 object Hierarchy extends Visualisations {
 
-  override val graphSys: Semilattice.Upper.type = Semilattice.Upper
+  type UB[N] = Semilattice.Upper[N]
 
   implicit lazy val default: Hierarchy.Indent2.type = Hierarchy.Indent2
 
@@ -25,6 +25,8 @@ object Hierarchy extends Visualisations {
 
 trait Hierarchy extends Hierarchy.Format {
 
+  import Hierarchy._
+
   lazy val FORK: Padding = Padding("-+", " :")
   lazy val LEAF: Padding = Padding("--", "  ")
 
@@ -33,47 +35,53 @@ trait Hierarchy extends Hierarchy.Format {
 
   lazy val DOT = " "
 
-  def apply[N <: Semilattice.Upper.Node](node: N): Viz[N] = Viz(node)
+  def apply[N](s: UB[N]): Viz[N] = Viz(s)
 
-  case class Viz[N <: Semilattice.Upper.Node](node: N) extends Hierarchy.TextViz[N] {
-    val outer: viz.Hierarchy.Format = Hierarchy.this
+  case class Viz[N](override val graph: UB[N]) extends TextViz[N] {
 
-    lazy val treeString: String = {
+    case class SubViz(first: N) {
 
-      val wText = TextBlock(nodeString).indent(DOT)
+      lazy val firstOps: graph.UpperNOps = graph.nodeOps(first)
 
-      if (node.isLeaf) {
+      lazy val treeString: String = {
 
-        wText.padLeft(LEAF).build
+        val wText = TextBlock(firstOps.nodeText).indent(DOT)
 
-      } else {
+        if (firstOps.isLeaf) {
 
-        val selfT = wText.padLeft(FORK)
+          wText.padLeft(LEAF).build
 
-        val children: Seq[Semilattice.Upper.Node] = (node: Semilattice.Upper.Node).children
+        } else {
 
-        val childrenTProtos: Seq[TextBlock] = children.map { child: Semilattice.Upper.Node =>
-          val childViz = this.copy(child)
-          TextBlock(childViz.treeString)
-        }
+          val selfT = wText.padLeft(FORK)
 
-        val childrenTMid = childrenTProtos.dropRight(1).map { tt =>
-          tt.padLeft(SUB)
-        }
+          val children = firstOps.children
 
-        val childrenTLast = childrenTProtos.lastOption.map { tt =>
-          tt.padLeft(SUB_LAST)
-        }.toSeq
-
-        val result = (Seq(selfT) ++ childrenTMid ++ childrenTLast)
-          .map { v =>
-            v.build
+          val childrenTProtos: Seq[TextBlock] = children.map { child =>
+            val childViz = this.copy(child)
+            TextBlock(childViz.treeString)
           }
-          .mkString("\n")
 
-        result
+          val childrenTMid = childrenTProtos.dropRight(1).map { tt =>
+            tt.padLeft(SUB)
+          }
+
+          val childrenTLast = childrenTProtos.lastOption.map { tt =>
+            tt.padLeft(SUB_LAST)
+          }.toSeq
+
+          val result = (Seq(selfT) ++ childrenTMid ++ childrenTLast)
+            .map { v =>
+              v.build
+            }
+            .mkString("\n")
+
+          result
+        }
       }
     }
+
+    override def treeString: String = SubViz(graph.root).treeString
   }
 
 }

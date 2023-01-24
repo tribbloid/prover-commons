@@ -7,7 +7,7 @@ import scala.collection.mutable
 import scala.tools.reflect.ToolBox
 import scala.util.Try
 
-trait TypeViews extends HasUniverse {
+trait TypeViewMixin extends HasUniverse {
   self: Reflection =>
 
   case class TypeID(
@@ -43,7 +43,7 @@ trait TypeViews extends HasUniverse {
 //      comment: Option[String] = None // TODO: useless?
   ) extends ApiView[Type] {
 
-    final val refl: TypeViews.this.type = TypeViews.this
+    final val refl: TypeViewMixin.this.type = TypeViewMixin.this
 
     lazy val _deAlias: Type = self.dealias
 
@@ -267,6 +267,9 @@ trait TypeViews extends HasUniverse {
       baseNodes
     }
 
+    lazy val superTypes: List[TypeView] = baseTypes
+      .filterNot(tt => tt.reference == this.reference)
+
     def formattedBy(format: TypeFormat): TypeIR = {
       val result = TypeIR(this, format)
       result.text
@@ -307,7 +310,7 @@ trait TypeViews extends HasUniverse {
   )
 }
 
-object TypeViews {
+object TypeViewMixin {
 
   val ALIAS_SPLITTER = " ≅ "
 }

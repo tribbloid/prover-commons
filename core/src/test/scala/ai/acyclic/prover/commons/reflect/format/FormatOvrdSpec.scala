@@ -13,7 +13,7 @@ class FormatOvrdSpec extends BaseSpec {
 
   val format: TypeFormat = EnableOvrd(TypeImpl.DeAlias)
 
-  val viz: TypeViz[Reflection.Runtime.type] = TypeViz.withFormat(format)
+  val viz = TypeViz.withFormat(format)
 
   describe("fallback") {
 

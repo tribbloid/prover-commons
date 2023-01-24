@@ -1,11 +1,14 @@
 package ai.acyclic.prover.commons.graph
 
+import scala.collection.Factory
+import scala.language.implicitConversions
+
 // TODO: should this be within a System to enable family polymorphism?
 trait Arrow {
 
   import Arrow._
 
-  val target: Graph._Node
+  val target: Any
 
   val arrowType: ArrowType
 
@@ -14,45 +17,38 @@ trait Arrow {
 
 object Arrow {
 
-  trait CanUpdate[THIS <: Arrow, THAT <: Arrow, N <: Graph._Node] {
+  trait Of[+N] extends Arrow {
 
-    trait ThisOps {
-
-      def updateTarget(n: N): THAT
-    }
-
-    type Ops <: ThisOps
-    def Ops: THIS => Ops
+    override val target: N
   }
 
-  trait Of[+T <: Graph._Node] extends Arrow {
-
-    override val target: T
-  }
+  trait NoInfoLike extends Arrow
 
   trait ArrowType extends Product {
 
-    trait Of[+T <: Graph._Node] extends Arrow.Of[T] {
+    trait Of[+N] extends Arrow.Of[N] {
 
       override val arrowType: ArrowType.this.type = ArrowType.this
     }
 
-    case class NoInfo[T <: Graph._Node](override val target: T) extends Of[T] {}
+    object Of {
 
-    object NoInfo {
+      implicit def defaultsTo[N](v: N): NoInfo[N] = NoInfo[N](v)
 
-      case class _CanUpdate[A <: Graph._Node, B <: Graph._Node]() extends CanUpdate[NoInfo[A], NoInfo[B], B] {
-
-        case class Ops(arrow: NoInfo[A]) extends ThisOps {
-
-          override def updateTarget(n: B): NoInfo[B] = {
-            arrow.copy(n)
-          }
+      implicit def defaultToMany[F[T] <: Iterable[T], N](vs: F[N])(
+          implicit
+          toF: Factory[NoInfo[N], F[NoInfo[N]]]
+      ): F[NoInfo[N]] = {
+        val mapped: Iterable[NoInfo[N]] = vs.map { v =>
+          defaultsTo(v)
         }
+        toF.fromSpecific(mapped)
       }
-
-      implicit def updater[A <: Graph._Node, B <: Graph._Node]: _CanUpdate[A, B] = _CanUpdate()
     }
+
+    case class NoInfo[N](override val target: N) extends Of[N] with NoInfoLike {}
+
+    object NoInfo {}
   }
 
   abstract class Edge extends ArrowType {}

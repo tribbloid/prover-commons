@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.reflect.format
 
-import ai.acyclic.prover.commons.reflect.Reflection
+import ai.acyclic.prover.commons.reflect.{Reflection, TypeViewMixin}
 
 import java.util.regex.Matcher
 
@@ -56,7 +56,7 @@ object Formats1 { // higher-order format constructors
 
       val texts = byBases.map(_.text)
 
-      texts.distinct.mkString(" ≅ ") <:^ byBases
+      texts.distinct.mkString(TypeViewMixin.ALIAS_SPLITTER) <:^ byBases
     }
   }
 
@@ -151,8 +151,8 @@ object Formats1 { // higher-order format constructors
     * T -> base +> (T#Args -> base) +> replace
     */
   case class RecursiveForm(
-      base: TypeFormat,
-      transformer: TypeFormat => TypeFormat
+                            base: TypeFormat,
+                            transformer: TypeFormat => TypeFormat
   ) extends TransformDown {
 
     final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>
