@@ -6,18 +6,11 @@ import ai.acyclic.prover.commons.graph.local.Graph
 
 import scala.collection.mutable
 
+import scala.language.existentials
+
 case class GraphPlans[N](g: Graph[N]) {
 
   import GraphPlans._
-
-  trait TraverseArgs {
-
-    def maxDepth: Int = Int.MaxValue
-
-    def down: N => Unit = { _: N => {} }
-
-    def up: N => Unit = { _: N => {} }
-  }
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
@@ -94,7 +87,7 @@ case class GraphPlans[N](g: Graph[N]) {
     }
   }
 
-  case class TransformNode[N2](
+  case class Transform[N2](
       maxDepth: Int = Int.MaxValue,
       down: N => Unit = { _: N => {} },
       up: N => Unit = { _: N => {} }

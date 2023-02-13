@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.reflect
 
-import scala.reflect.{api, macros}
+import scala.reflect.macros
 
 trait Reflection extends SymbolViewMixin with TypeViewMixin with TypeIRMixin {
 
@@ -15,28 +15,14 @@ trait Reflection extends SymbolViewMixin with TypeViewMixin with TypeIRMixin {
 
 object Reflection {
 
-  object Runtime extends Reflection {
+  object Runtime extends Reflection with HasUniverse.Runtime {}
 
-    final val universe: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
+  case class CompileTime[U <: macros.Universe with Singleton](_universe: U) extends Reflection {
 
-    val _classloader: ClassLoader = Reflection.getClass.getClassLoader
-
-    // TODO: useless? what's the difference
-    // Since we are creating a runtime mirror using the class loader of current thread,
-    // we need to use def at here. So, every time we call mirror, it is using the
-    // class loader of the current thread.
-    override lazy val mirror: universe.Mirror = {
-
-      val result: universe.Mirror = universe
-        .runtimeMirror(_classloader)
-
-      result
-    }
+    final override lazy val universe = _universe
   }
 
-  case class CompileTime[U <: macros.Universe](universe: U) extends Reflection {}
-
-  class General[U <: api.Universe](val universe: U) extends Reflection {}
-
-  def General(universe: api.Universe) = new General[universe.type](universe)
+//  class General[U <: api.Universe with Singleton](val universe: U) extends Reflection {}
+//
+//  def General(universe: api.Universe with Singleton) = new General[universe.type](universe)
 }
