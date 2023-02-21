@@ -16,6 +16,10 @@ case class TextBlock(lines: Seq[String]) {
     TextBlock(withSpace)
   }
 
+  def foldEmptyLines: TextBlock = TextBlock(
+    lines.filter(ll => ll.nonEmpty)
+  )
+
   object Trim {
 
     lazy val perLine: TextBlock = {
