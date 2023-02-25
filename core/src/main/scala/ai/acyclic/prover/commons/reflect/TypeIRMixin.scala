@@ -96,9 +96,7 @@ trait TypeIRMixin extends HasUniverse {
         s"""
            |$format
            """.stripMargin
-      )
-        .padLeft(Padding.leftArrowUp)
-        .build
+      ).pad.left(Padding.leftArrowUp).build
 
       s"""
            |$text

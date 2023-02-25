@@ -22,7 +22,7 @@ class TextBlockSpec extends BaseSpec {
 
     it("horizontally") {
 
-      untrimmed.Trim.left_right.toString.shouldBe(
+      untrimmed.trim.left_right.toString.shouldBe(
         """
           |
           |
@@ -37,7 +37,7 @@ class TextBlockSpec extends BaseSpec {
 
     it("vertically") {
 
-      untrimmed.Trim.top_bottom.toString.shouldBe(
+      untrimmed.trim.top_bottom.toString.shouldBe(
         """       /---\
           |      /  |  \
           |     /   |   \
@@ -49,7 +49,7 @@ class TextBlockSpec extends BaseSpec {
 
     it("block") {
 
-      untrimmed.Trim.block.toString.shouldBe(
+      untrimmed.trim.block.toString.shouldBe(
         """   /---\
           |  /  |  \
           | /   |   \

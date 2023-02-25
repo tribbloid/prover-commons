@@ -14,9 +14,9 @@ object Hierarchy extends Visualisations {
 
   trait Indent2Minimal extends Hierarchy {
 
-    override lazy val FORK: Padding = Padding("", "")
-    override lazy val LEAF: Padding = Padding("", "")
-    override lazy val SUB: Padding = Padding(" ‣ ", " : ")
+    override lazy val FORK: Padding = Padding.ofHead("", "")
+    override lazy val LEAF: Padding = Padding.ofHead("", "")
+    override lazy val SUB: Padding = Padding.ofHead(" ‣ ", " : ")
 
     override lazy val DOT = ""
   }
@@ -29,11 +29,13 @@ trait Hierarchy extends Hierarchy.Format {
 
   lazy val maxDepth: Int = 20
 
-  lazy val FORK: Padding = Padding("-+", " :")
-  lazy val LEAF: Padding = Padding("--", "  ")
+  lazy val FORK: Padding = Padding.ofHead("-+", " :")
+  lazy val LEAF: Padding = Padding.ofHead("--", "  ")
 
-  lazy val SUB: Padding = Padding(" !", " :")
-  lazy val SUB_LAST: Padding = SUB.copy(body = SUB.body.map(_ => ' '))
+  lazy val SUB: Padding = Padding.ofHead(" !", " :")
+  lazy val SUB_LAST: Padding = SUB.keepHead(
+    SUB.body.map(_ => ' ')
+  )
 
   lazy val DOT = " "
 
@@ -51,11 +53,11 @@ trait Hierarchy extends Hierarchy.Format {
 
         if (headOps.isLeaf || depth <= 0) {
 
-          wText.padLeft(LEAF).build
+          wText.pad.left(LEAF).build
 
         } else {
 
-          val selfT = wText.padLeft(FORK)
+          val selfT = wText.pad.left(FORK)
 
           val children = headOps.children
 
@@ -65,11 +67,11 @@ trait Hierarchy extends Hierarchy.Format {
           }
 
           val childrenTMid = childrenTProtos.dropRight(1).map { tt =>
-            tt.padLeft(SUB)
+            tt.pad.left(SUB)
           }
 
           val childrenTLast = childrenTProtos.lastOption.map { tt =>
-            tt.padLeft(SUB_LAST)
+            tt.pad.left(SUB_LAST)
           }.toSeq
 
           val result = (Seq(selfT) ++ childrenTMid ++ childrenTLast)
@@ -85,5 +87,4 @@ trait Hierarchy extends Hierarchy.Format {
 
     override def treeString: String = SubViz(graph.root).treeString
   }
-
 }

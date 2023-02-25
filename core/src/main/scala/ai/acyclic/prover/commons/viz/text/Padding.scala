@@ -2,7 +2,9 @@ package ai.acyclic.prover.commons.viz.text
 
 case class Padding(
     head: String,
-    body: String
+    body: String,
+    last: String,
+    oneRow: String
 ) {
 
   {
@@ -19,17 +21,43 @@ case class Padding(
          |""".stripMargin.trim
     )
   }
+
+  def keepHead(line: String): Padding = copy(body = line, last = line)
+
+  def keepLast(line: String): Padding = copy(head = line, body = line)
 }
 
 object Padding {
 
-  val argLeftBracket: Padding = Padding(
+  def ofHead(
+      head: String,
+      body: String
+  ): Padding = Padding(head, body, body, head)
+
+  def ofLast(
+      body: String,
+      last: String
+  ): Padding = Padding(body, body, last, last)
+
+  val argLeftBracket: Padding = ofHead(
     "┏ ",
     "┃ "
   )
 
-  val leftArrowUp: Padding = Padding(
+  val leftParenthesis: Padding = Padding(
+    "⎛ ",
+    "┃ ",
+    "⎝ ",
+    "( "
+  )
+
+  val leftArrowUp: Padding = ofHead(
     "▲ ",
     "┃ "
+  )
+
+  val leftArrowDown: Padding = ofLast(
+    "┃ ",
+    "▼ "
   )
 }

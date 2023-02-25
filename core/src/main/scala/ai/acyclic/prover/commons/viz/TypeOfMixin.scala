@@ -126,7 +126,7 @@ trait TypeOfMixin extends HasReflection {
 
           val indentedArgText =
             TextBlock(argText)
-              .padLeft(Padding.argLeftBracket)
+              .pad.left(Padding.argLeftBracket)
               .indent("      ")
               .build
 

@@ -81,7 +81,7 @@ abstract class ProductDiscovery[Include](
       } else {
 
         val _notTree = _args.map { str =>
-          TextBlock("" + str).padLeft(Padding.argLeftBracket).build
+          TextBlock("" + str).pad.left(Padding.argLeftBracket).build
         }
 
         TextBlock(constructorString)

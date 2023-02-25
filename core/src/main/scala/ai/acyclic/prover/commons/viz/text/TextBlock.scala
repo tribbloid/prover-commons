@@ -6,7 +6,7 @@ case class TextBlock(lines: Seq[String]) {
 
   def indent(ss: String): TextBlock = {
 
-    padLeft(Padding(ss, ss))
+    pad.left(Padding.ofHead(ss, ss))
   }
 
   lazy val rectangular: TextBlock = {
@@ -20,7 +20,7 @@ case class TextBlock(lines: Seq[String]) {
     lines.filter(ll => ll.nonEmpty)
   )
 
-  object Trim {
+  object trim {
 
     lazy val perLine: TextBlock = {
       TextBlock(lines.map(_.trim))
@@ -48,36 +48,54 @@ case class TextBlock(lines: Seq[String]) {
       TextBlock(result)
     }
 
-    lazy val block: TextBlock = Trim.top_bottom.Trim.left_right
+    lazy val block: TextBlock = trim.top_bottom.trim.left_right
   }
 
-  def padLeft(
-      pad: Padding
-  ): TextBlock = {
+  object pad {
 
-    val line1 = lines.headOption.map { head =>
-      pad.head + head
-    }.toSeq
+    private def process(
+                         pad: Padding,
+                         forEachLine: (String, String) => String
+    ): TextBlock = {
 
-    val remainder = lines.slice(1, Int.MaxValue).map { line =>
-      pad.body + line
+      if (lines.length <= 1) TextBlock(lines.map { ll =>
+        forEachLine(pad.oneRow, ll)
+      })
+      else {
+
+        val firstLine = lines.headOption.map { ll =>
+          forEachLine(pad.head, ll)
+        }.toSeq
+
+        val lastLine = lines.lastOption.map { ll =>
+          forEachLine(pad.last, ll)
+        }
+
+        val inBetween = lines.slice(1, lines.size - 1).map { ll =>
+          forEachLine(pad.body, ll)
+        }
+
+        new TextBlock(firstLine ++ inBetween ++ lastLine)
+      }
     }
 
-    new TextBlock(line1 ++ remainder)
-  }
+    def left(pad: Padding) = process(pad, (vv, ll) => vv + ll)
 
-  def padRight(
-      pad: Padding
-  ): TextBlock = {
-    val line1 = rectangular.lines.headOption.map { head =>
-      head + pad.head
-    }.toSeq
+    def right(pad: Padding) = process(pad, (vv, ll) => ll + vv)
 
-    val remainder = rectangular.lines.slice(1, Int.MaxValue).map { line =>
-      line + pad.body
-    }
-
-    new TextBlock(line1 ++ remainder)
+//    def right(
+//        pad: Padding
+//    ): TextBlock = {
+//      val line1 = rectangular.lines.headOption.map { head =>
+//        head + pad.head
+//      }.toSeq
+//
+//      val remainder = rectangular.lines.slice(1, Int.MaxValue).map { line =>
+//        line + pad.body
+//      }
+//
+//      new TextBlock(line1 ++ remainder)
+//    }
   }
 
   def zipRight(

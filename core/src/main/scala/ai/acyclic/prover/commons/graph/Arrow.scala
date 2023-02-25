@@ -12,7 +12,8 @@ trait Arrow {
 
   val arrowType: ArrowType
 
-  lazy val arrowText: Option[String] = None
+  def getArrowText: Option[String] = None
+  final lazy val arrowText: Option[String] = getArrowText
 }
 
 object Arrow {
