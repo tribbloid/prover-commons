@@ -8,16 +8,17 @@ case class Padding(
 ) {
 
   {
-    Seq(head, body).foreach { s =>
+    Seq(head, body, last).foreach { s =>
       require(s.split('\n').length == 1, "cannot use string with multiple lines")
     }
 
     require(
-      head.length == body.length,
+      Seq(head, body, last).map(_.length).distinct.length == 1,
       s"""
          |cannot use 2 strings with different lengths:
          |  `$head` - length=${head.length}
          |  `$body` - length=${body.length}
+         |  `$last` - length=${last.length}
          |""".stripMargin.trim
     )
   }
@@ -44,11 +45,32 @@ object Padding {
     "┃ "
   )
 
-  val leftParenthesis: Padding = Padding(
+  val leftCurved: Padding = Padding(
     "⎛ ",
     "┃ ",
     "⎝ ",
     "( "
+  )
+
+  val rightCurved: Padding = Padding(
+    " ⎫",
+    " ┃",
+    " ⎭",
+    " )"
+  )
+
+  val leftSquare: Padding = Padding(
+    "┏ ",
+    "┃ ",
+    "┗ ",
+    "[ "
+  )
+
+  val rightSquare: Padding = Padding(
+    " ┓",
+    " ┃",
+    " ┛",
+    " ]"
   )
 
   val leftArrowUp: Padding = ofHead(

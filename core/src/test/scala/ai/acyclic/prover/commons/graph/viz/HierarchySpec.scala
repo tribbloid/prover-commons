@@ -10,101 +10,137 @@ class HierarchySpec extends TreeFixture {
     describe("treeString") {
 
       describe("finite tree") {
-        it("each node has 1 line text") {
+        it("each node has 1 line of text") {
 
-          tree1.showHierarchy.treeString shouldBe
+          tn1.tree.showHierarchy.treeString shouldBe
             """
-              |-+ aaa
-              | !-+ bbb
-              | : !-- ddd
-              | !-- ccc
+              |+ aaa
+              |!-+ bbb
+              |: !-- ddd
+              |!-- ccc
               |""".stripMargin
         }
 
-        it("... or not") {
+        it("... with arrow texts") {
 
-          // TODO: this is wrong! second line is not flushed
-          tree2.showHierarchy.treeString shouldBe
+          tn1.treeWithArrowTexts.showHierarchy.treeString shouldBe
             """
-              |-+ aaa
-              | : %%%%%
-              | !-+ bbb
-              | : : %%%%%
-              | : !-- ddd
-              | :     %%%%%
-              | !-- ccc
-              |     %%%%%
+              |+ aaa
+              |!-: [ aaa |> bbb ]
+              |: + bbb
+              |: !-: [ bbb |> ddd ]
+              |:   - ddd
+              |!-: [ aaa |> ccc ]
+              |  - ccc
               |""".stripMargin
+        }
 
+        it("each node has multiple lines of text") {
+
+          tn2.tree.showHierarchy.treeString shouldBe
+            """
+              |+ aaa
+              |: %%%%%
+              |!-+ bbb
+              |: : %%%%%
+              |: !-- ddd
+              |:     %%%%%
+              |!-- ccc
+              |    %%%%%
+              |""".stripMargin
+        }
+
+        it(".... with arrow texts") {
+
+          tn2.treeWithArrowTexts.showHierarchy.treeString shouldBe
+            """
+              |+ aaa
+              |: %%%%%
+              |!-: ┏ aaa          ┓
+              |: : ┃ %%%%% |> bbb ┃
+              |: : ┗ %%%%%        ┛
+              |: + bbb
+              |: : %%%%%
+              |: !-: ┏ bbb          ┓
+              |:   : ┃ %%%%% |> ddd ┃
+              |:   : ┗ %%%%%        ┛
+              |:   - ddd
+              |:     %%%%%
+              |!-: ┏ aaa          ┓
+              |  : ┃ %%%%% |> ccc ┃
+              |  : ┗ %%%%%        ┛
+              |  - ccc
+              |    %%%%%
+              |""".stripMargin
         }
       }
 
       it("infinite tree") {
-        treeInf.showHierarchy.treeString shouldBe
+        treeInf.tree.showHierarchy.treeString shouldBe
           """
-            |-+ abcdefgh
-            | !-+ abcdefg
-            | : !-+ abcdef
-            | : : !-+ abcde
-            | : : : !-+ abcd
-            | : : : : !-- abc
-            | : : : : !-- bcd
-            | : : : !-+ bcde
-            | : : :   !-- bcd
-            | : : :   !-- cde
-            | : : !-+ bcdef
-            | : :   !-+ bcde
-            | : :   : !-- bcd
-            | : :   : !-- cde
-            | : :   !-+ cdef
-            | : :     !-- cde
-            | : :     !-- def
-            | : !-+ bcdefg
-            | :   !-+ bcdef
-            | :   : !-+ bcde
-            | :   : : !-- bcd
-            | :   : : !-- cde
-            | :   : !-+ cdef
-            | :   :   !-- cde
-            | :   :   !-- def
-            | :   !-+ cdefg
-            | :     !-+ cdef
-            | :     : !-- cde
-            | :     : !-- def
-            | :     !-+ defg
-            | :       !-- def
-            | :       !-- efg
-            | !-+ bcdefgh
-            |   !-+ bcdefg
-            |   : !-+ bcdef
-            |   : : !-+ bcde
-            |   : : : !-- bcd
-            |   : : : !-- cde
-            |   : : !-+ cdef
-            |   : :   !-- cde
-            |   : :   !-- def
-            |   : !-+ cdefg
-            |   :   !-+ cdef
-            |   :   : !-- cde
-            |   :   : !-- def
-            |   :   !-+ defg
-            |   :     !-- def
-            |   :     !-- efg
-            |   !-+ cdefgh
-            |     !-+ cdefg
-            |     : !-+ cdef
-            |     : : !-- cde
-            |     : : !-- def
-            |     : !-+ defg
-            |     :   !-- def
-            |     :   !-- efg
-            |     !-+ defgh
-            |       !-+ defg
-            |       : !-- def
-            |       : !-- efg
-            |       !-+ efgh
-            |         !-- efg
-            |         !-- fgh
+            |+ abcdefgh
+            |!-+ abcdefg
+            |: !-+ abcdef
+            |: : !-+ abcde
+            |: : : !-+ abcd
+            |: : : : !-- abc
+            |: : : : !-- bcd
+            |: : : !-+ bcde
+            |: : :   !-- bcd
+            |: : :   !-- cde
+            |: : !-+ bcdef
+            |: :   !-+ bcde
+            |: :   : !-- bcd
+            |: :   : !-- cde
+            |: :   !-+ cdef
+            |: :     !-- cde
+            |: :     !-- def
+            |: !-+ bcdefg
+            |:   !-+ bcdef
+            |:   : !-+ bcde
+            |:   : : !-- bcd
+            |:   : : !-- cde
+            |:   : !-+ cdef
+            |:   :   !-- cde
+            |:   :   !-- def
+            |:   !-+ cdefg
+            |:     !-+ cdef
+            |:     : !-- cde
+            |:     : !-- def
+            |:     !-+ defg
+            |:       !-- def
+            |:       !-- efg
+            |!-+ bcdefgh
+            |  !-+ bcdefg
+            |  : !-+ bcdef
+            |  : : !-+ bcde
+            |  : : : !-- bcd
+            |  : : : !-- cde
+            |  : : !-+ cdef
+            |  : :   !-- cde
+            |  : :   !-- def
+            |  : !-+ cdefg
+            |  :   !-+ cdef
+            |  :   : !-- cde
+            |  :   : !-- def
+            |  :   !-+ defg
+            |  :     !-- def
+            |  :     !-- efg
+            |  !-+ cdefgh
+            |    !-+ cdefg
+            |    : !-+ cdef
+            |    : : !-- cde
+            |    : : !-- def
+            |    : !-+ defg
+            |    :   !-- def
+            |    :   !-- efg
+            |    !-+ defgh
+            |      !-+ defg
+            |      : !-- def
+            |      : !-- efg
+            |      !-+ efgh
+            |        !-- efg
+            |        !-- fgh
             |""".stripMargin
       }
     }
@@ -116,7 +152,7 @@ class HierarchySpec extends TreeFixture {
     describe("treeString") {
       it("supports nodes each with 1 line str") {
 
-        tree1.showHierarchy.treeString shouldBe
+        tn1.tree.showHierarchy.treeString shouldBe
           """
             |aaa
             | ‣ bbb
@@ -129,7 +165,7 @@ class HierarchySpec extends TreeFixture {
       it("... or not") {
 
         // TODO: this is wrong! second line is not flushed
-        tree2.showHierarchy.treeString shouldBe
+        tn2.tree.showHierarchy.treeString shouldBe
           """
             |aaa
             |%%%%%

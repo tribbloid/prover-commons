@@ -53,9 +53,9 @@ case class TextBlock(lines: Seq[String]) {
 
   object pad {
 
-    private def process(
-                         pad: Padding,
-                         forEachLine: (String, String) => String
+    private def processRectangular(
+        pad: Padding,
+        forEachLine: (String, String) => String
     ): TextBlock = {
 
       if (lines.length <= 1) TextBlock(lines.map { ll =>
@@ -79,23 +79,23 @@ case class TextBlock(lines: Seq[String]) {
       }
     }
 
+    private def process(
+        pad: Padding,
+        forEachLine: (String, String) => String
+    ): TextBlock = {
+      rectangular.pad.processRectangular(pad, forEachLine)
+    }
+
     def left(pad: Padding) = process(pad, (vv, ll) => vv + ll)
 
     def right(pad: Padding) = process(pad, (vv, ll) => ll + vv)
+  }
 
-//    def right(
-//        pad: Padding
-//    ): TextBlock = {
-//      val line1 = rectangular.lines.headOption.map { head =>
-//        head + pad.head
-//      }.toSeq
-//
-//      val remainder = rectangular.lines.slice(1, Int.MaxValue).map { line =>
-//        line + pad.body
-//      }
-//
-//      new TextBlock(line1 ++ remainder)
-//    }
+  object encloseIn {
+
+    def parenthesis: TextBlock = pad.left(Padding.leftCurved).pad.right(Padding.rightCurved)
+
+    def squareBracket: TextBlock = pad.left(Padding.leftSquare).pad.right(Padding.rightSquare)
   }
 
   def zipRight(
@@ -112,6 +112,13 @@ case class TextBlock(lines: Seq[String]) {
     }
 
     TextBlock(zipped)
+  }
+
+  def zipBottom(
+      that: TextBlock
+  ): TextBlock = {
+
+    copy(lines ++ that.lines)
   }
 
   def appendPerLine(

@@ -14,7 +14,7 @@ abstract class TreeFixture extends BaseSpec {
 
   implicit lazy val treeFormat: Hierarchy = Top5
 
-  val tree1: TreeFixture._Tree = TN(
+  val tn1 = TN(
     "aaa",
     Seq(
       TN(
@@ -27,9 +27,9 @@ abstract class TreeFixture extends BaseSpec {
         "ccc"
       )
     )
-  ).tree
+  )
 
-  val tree2: TreeFixture._Tree = TN( // TODO: simplify this with graph Transform
+  val tn2 = TN( // TODO: simplify this with graph Transform
     "aaa\n%%%%%",
     Seq(
       TN(
@@ -42,9 +42,9 @@ abstract class TreeFixture extends BaseSpec {
         "ccc\n%%%%%"
       )
     )
-  ).tree
+  )
 
-  val treeInf = TInf("abcdefgh").tree
+  val treeInf = TInf("abcdefgh")
 }
 
 object TreeFixture {
@@ -55,6 +55,8 @@ object TreeFixture {
     def children: Seq[Demo]
 
     def tree: _Tree = _Tree(this)
+
+    def treeWithArrowTexts: _TreeWithArrowTexts = _TreeWithArrowTexts(this)
   }
 
   case class TN(
@@ -85,6 +87,23 @@ object TreeFixture {
       override protected def getNodeText = node.text
 
       override protected def getInduction: Seq[Arrow.`~>`.Of[Demo]] = node.children
+    }
+  }
+
+  case class _TreeWithArrowTexts(root: Demo) extends Tree[Demo] {
+
+    case class Ops(node: Demo) extends UpperNOps {
+
+      override protected def getNodeText = node.text
+
+      override protected def getInduction: Seq[Arrow.`~>`.Of[Demo]] = {
+
+        val children = node.children
+        val result = children.map { child =>
+          Arrow.`~>`.NoInfo[Demo](child, Some(s"${node.text} |> ${child.text}"))
+        }
+        result
+      }
     }
   }
 }

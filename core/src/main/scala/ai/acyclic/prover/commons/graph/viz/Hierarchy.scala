@@ -18,7 +18,7 @@ object Hierarchy extends Visualisations {
     override lazy val LEAF: Padding = Padding.ofHead("", "")
     override lazy val SUB: Padding = Padding.ofHead(" ‣ ", " : ")
 
-    override lazy val DOT = ""
+    override lazy val SPACE = ""
   }
   case object Indent2Minimal extends Indent2Minimal
 }
@@ -29,15 +29,17 @@ trait Hierarchy extends Hierarchy.Format {
 
   lazy val maxDepth: Int = 20
 
-  lazy val FORK: Padding = Padding.ofHead("-+", " :")
-  lazy val LEAF: Padding = Padding.ofHead("--", "  ")
+  lazy val FORK: Padding = Padding.ofHead("+", ":")
+  lazy val LEAF: Padding = Padding.ofHead("-", " ")
 
-  lazy val SUB: Padding = Padding.ofHead(" !", " :")
+  lazy val SUB: Padding = Padding.ofHead("!", ":")
   lazy val SUB_LAST: Padding = SUB.keepHead(
     SUB.body.map(_ => ' ')
   )
 
-  lazy val DOT = " "
+  lazy val ARROW: Padding = Padding.ofHead(": ", ": ")
+
+  lazy val SPACE = " "
 
   def apply[N](s: UB[N]): Viz[N] = Viz(s)
 
@@ -49,7 +51,7 @@ trait Hierarchy extends Hierarchy.Format {
 
       lazy val treeString: String = {
 
-        val wText = TextBlock(headOps.nodeText).indent(DOT)
+        val wText = TextBlock(headOps.nodeText).indent(SPACE)
 
         if (headOps.isLeaf || depth <= 0) {
 
@@ -59,11 +61,29 @@ trait Hierarchy extends Hierarchy.Format {
 
           val selfT = wText.pad.left(FORK)
 
-          val children = headOps.children
+          val arrows = headOps.induction
+          val target2Arrow = arrows
+            .groupBy { v =>
+              v.target
+            }
 
-          val childrenTProtos: Seq[TextBlock] = children.map { child =>
+          val children = arrows.map(_.target).distinct
+
+          val childrenTProtos: Seq[TextBlock] = children.toList.map { child =>
+            val _arrows = target2Arrow(child)
+            val arrowBlocksOpt = _arrows
+              .flatMap { arrow =>
+                arrow.arrowText.map { text =>
+                  TextBlock(text).encloseIn.squareBracket.pad.left(ARROW)
+                }
+              }
+              .reduceOption((x, y) => x.zipBottom(y))
+
             val childViz = this.copy(child, depth - 1)
-            TextBlock(childViz.treeString)
+            val childBlock = TextBlock(childViz.treeString)
+
+            val all: TextBlock = arrowBlocksOpt.map(v => v.zipBottom(childBlock)).getOrElse(childBlock)
+            all.pad.left(LEAF)
           }
 
           val childrenTMid = childrenTProtos.dropRight(1).map { tt =>

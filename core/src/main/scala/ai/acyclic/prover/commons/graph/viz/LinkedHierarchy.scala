@@ -150,7 +150,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             } else {
 
               val result = originalOps.induction.map { arrow =>
-                Arrow.`~>`.NoInfo(RefNode(arrow.target)) // this discard info from arrows
+                Arrow.`~>`.NoInfo(RefNode(arrow.target), arrow.arrowText) // this discard arrow info
               }
 
               result

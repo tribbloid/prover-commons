@@ -22,11 +22,16 @@ trait Graph[N] extends GraphSystem.GraphK[N] {
 
   def isEmpty: Boolean = roots.isEmpty
 
-  trait GraphNOps extends Graph._NodeOps[N] with HasOuter {
+  trait HasInduction[+A <: Arrow] {
+
+    protected def getInduction: Seq[A]
+
+    final lazy val induction: Many[A] = sys.toMany(getInduction)
+  }
+
+  trait GraphNOps extends Graph.HasNode[N] with HasInduction[Arrow.Of[N]] with HasOuter {
 
     def outer = Graph.this
-
-    final lazy val induction: Many[Arrow.Of[N]] = sys.toMany(getInduction)
 
     final lazy val directEdges = induction.collect {
       case v if v.arrowType.isInstanceOf[Arrow.Edge] => v
@@ -40,10 +45,12 @@ trait Graph[N] extends GraphSystem.GraphK[N] {
 
 object Graph extends Local._GraphType {
 
+  type ArrowUBK[N] = Arrow.Of[N]
+
   trait Outbound[N] extends Graph[N] {
     override val outer: Local._GraphType = Outbound
 
-    trait OutboundNOps extends GraphNOps {
+    trait OutboundNOps extends GraphNOps with HasInduction[Arrow.`~>`.Of[N]] {
 
       protected def getInduction: Seq[Arrow.`~>`.Of[N]] = Nil
 
@@ -69,21 +76,19 @@ object Graph extends Local._GraphType {
 
   object Outbound extends Local._GraphType {
 
-    type ArrowUBK[+N] = Arrow.`~>`.Of[N]
+    override type ArrowUBK[+N] = Arrow.`~>`.Of[N]
   }
 
-  trait _NodeOps[N] {
+  trait HasNode[+N] {
 
     val node: N
-
-    protected def getInduction: Seq[Arrow.Of[N]]
 
     protected def getNodeText: String = node.toString
     final lazy val nodeText: String = getNodeText
   }
+  object HasNode {
 
-  object _NodeOps {
-
-    implicit def unbox[N](ops: _NodeOps[N]): N = ops.node
+    implicit def unbox[N](ops: HasNode[N]): N = ops.node
   }
+
 }

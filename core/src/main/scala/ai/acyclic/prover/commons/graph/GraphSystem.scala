@@ -14,6 +14,8 @@ trait GraphSystem {
 
   trait _GraphType extends GraphType {
 
+    type ArrowUBK[N] <: Arrow.Of[N]
+
     final override val outer: GraphSystem.this.type = GraphSystem.this
 
     // a controversial scala feature prevents this trait from being useful, oops

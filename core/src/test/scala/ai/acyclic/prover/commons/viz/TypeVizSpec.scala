@@ -25,11 +25,11 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
     TypeViz[String].toString.shouldBe(
       """
-        |-+ String .......................................................................... [0]
-        | !-- Comparable[String]
-        | :         ┏ -+ Comparable [ 1 ARG ] :
-        | :         ┃  !-- String .......................................................................... [0]
-        | !-- java.io.Serializable
+        |+ String .......................................................................... [0]
+        |!-- Comparable[String]
+        |:         ┏ + Comparable [ 1 ARG ] :
+        |:         ┃ !-- String .......................................................................... [0]
+        |!-- java.io.Serializable
         |""".stripMargin,
       mode = SuperSet
     )
@@ -45,24 +45,24 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
     infer(book)
       .shouldBe(
         """
-        |-+ String :: String :: shapeless.HNil
-        | :       ┏ -+ shapeless.:: [ 2 ARGS ] :
-        | :       ┃  !-+ String .......................................................................... [3]
-        | :       ┃  : !-- Comparable[String]
-        | :       ┃  : :         ┏ -+ Comparable [ 1 ARG ] :
-        | :       ┃  : :         ┃  !-- String .......................................................................... [3]
-        | :       ┃  : !-- java.io.Serializable ............................................................ [0]
-        | :       ┃  !-+ String :: shapeless.HNil
-        | :       ┃    :       ┏ -+ shapeless.:: [ 2 ARGS ] :
-        | :       ┃    :       ┃  !-- String .......................................................................... [3]
-        | :       ┃    :       ┃  !-+ shapeless.HNil
-        | :       ┃    :       ┃    !-- shapeless.HList ................................................................. [2]
-        | :       ┃    !-- shapeless.HList ................................................................. [2]
-        | !-+ shapeless.HList ................................................................. [2]
-        |   !-+ java.io.Serializable ............................................................ [0]
-        |   : !-- Any
-        |   !-+ Product
-        |   : !-- Equals
+        |+ String :: String :: shapeless.HNil
+        |:       ┏ + shapeless.:: [ 2 ARGS ] :
+        |:       ┃ !-+ String .......................................................................... [3]
+        |:       ┃ : !-- Comparable[String]
+        |:       ┃ : :         ┏ + Comparable [ 1 ARG ] :
+        |:       ┃ : :         ┃ !-- String .......................................................................... [3]
+        |:       ┃ : !-- java.io.Serializable ............................................................ [0]
+        |:       ┃ !-+ String :: shapeless.HNil
+        |:       ┃   :       ┏ + shapeless.:: [ 2 ARGS ] :
+        |:       ┃   :       ┃ !-- String .......................................................................... [3]
+        |:       ┃   :       ┃ !-+ shapeless.HNil
+        |:       ┃   :       ┃   !-- shapeless.HList ................................................................. [2]
+        |:       ┃   !-- shapeless.HList ................................................................. [2]
+        |!-+ shapeless.HList ................................................................. [2]
+        |  !-+ java.io.Serializable ............................................................ [0]
+        |  : !-- Any
+        |  !-+ Product
+        |  : !-- Equals
         |""".stripMargin,
         mode = SuperSet
       )
@@ -78,14 +78,14 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
     infer(book)
       .shouldBe(
         """
-          |-+ String with shapeless.labelled.KeyTag[String("author"),String] :: shapeless.HNil
-          | :       ┏ -+ shapeless.:: [ 2 ARGS ] :
-          | :       ┃  !-+ String with shapeless.labelled.KeyTag[String("author"),String]
-          | :       ┃  : !-+ shapeless.labelled.KeyTag[String("author"),String]
-          | :       ┃  : : :       ┏ -+ shapeless.labelled.KeyTag [ 2 ARGS ] :
-          | :       ┃  : : :       ┃  !-+ String("author")
-          | :       ┃  : : :       ┃  : !-- String .......................................................................... [4]
-          | :       ┃  : : :       ┃  !-- String .......................................................................... [4]
+          |+ String with shapeless.labelled.KeyTag[String("author"),String] :: shapeless.HNil
+          |:       ┏ + shapeless.:: [ 2 ARGS ] :
+          |:       ┃ !-+ String with shapeless.labelled.KeyTag[String("author"),String]
+          |:       ┃ : !-+ shapeless.labelled.KeyTag[String("author"),String]
+          |:       ┃ : : :       ┏ + shapeless.labelled.KeyTag [ 2 ARGS ] :
+          |:       ┃ : : :       ┃ !-+ String("author")
+          |:       ┃ : : :       ┃ : !-- String .......................................................................... [4]
+          |:       ┃ : : :       ┃ !-- String .......................................................................... [4]
           |""".stripMargin,
         mode = SuperSet
       )
@@ -97,10 +97,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
       TypeViz[TypeVizSpec.singleton.type].toString.shouldBe(
         """
-          |-+ ai.acyclic.prover.commons.viz.TypeVizSpec.singleton.type
-          | !-+ Int
-          |   !-+ AnyVal
-          |     !-- Any
+          |+ ai.acyclic.prover.commons.viz.TypeVizSpec.singleton.type
+          |!-+ Int
+          |  !-+ AnyVal
+          |    !-- Any
           |""".stripMargin
       )
     }
@@ -109,17 +109,17 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
       TypeViz[TypeVizSpec.singletonWArg.type].toString.shouldBe(
         """
-          |-+ ai.acyclic.prover.commons.viz.TypeVizSpec.singletonWArg.type
-          | !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Int]
-          |   :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-          |   :       ┃  !-+ Int
-          |   :       ┃    !-+ AnyVal
-          |   :       ┃      !-- Any ............................................................................. [0]
-          |   !-+ java.io.Serializable
-          |   : !-- Any ............................................................................. [0]
-          |   !-+ Product
-          |   : !-- Equals
-          |   !-- Object
+          |+ ai.acyclic.prover.commons.viz.TypeVizSpec.singletonWArg.type
+          |!-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Int]
+          |  :       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+          |  :       ┃ !-+ Int
+          |  :       ┃   !-+ AnyVal
+          |  :       ┃     !-- Any ............................................................................. [0]
+          |  !-+ java.io.Serializable
+          |  : !-- Any ............................................................................. [0]
+          |  !-+ Product
+          |  : !-- Equals
+          |  !-- Object
           |""".stripMargin
       )
     }
@@ -130,10 +130,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
       TypeViz[w.type].toString.shouldBe(
         """
-          |-+ w.type
-          | !-+ Int
-          |   !-+ AnyVal
-          |     !-- Any
+          |+ w.type
+          |!-+ Int
+          |  !-+ AnyVal
+          |    !-- Any
           |""".stripMargin
       )
     }
@@ -143,20 +143,20 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       infer(singletonW.value)
         .shouldBe(
           """
-            |-+ ai.acyclic.prover.commons.viz.TypeVizSpec.singletonW.T
-            | !-+ Int
-            |   !-+ AnyVal
-            |     !-- Any
+            |+ ai.acyclic.prover.commons.viz.TypeVizSpec.singletonW.T
+            |!-+ Int
+            |  !-+ AnyVal
+            |    !-- Any
             |""".stripMargin
         )
 
       infer[3](adhocW.value)
         .shouldBe(
           """
-            |-+ Int(3)
-            | !-+ Int
-            |   !-+ AnyVal
-            |     !-- Any
+            |+ Int(3)
+            |!-+ Int
+            |  !-+ AnyVal
+            |    !-- Any
             |""".stripMargin
         )
 
@@ -193,17 +193,17 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       adhocTree
         .shouldBe(
           """
-            |-+ shapeless.Witness{type T = Int(3)} ≅ shapeless.Witness.Aux[Int(3)]
-            | :       ┏ -+ shapeless.Witness.Aux [ 1 ARG ] :
-            | :       ┃  !-+ Int(3)
-            | :       ┃    !-+ Int
-            | :       ┃      !-+ AnyVal
-            | :       ┃        !-- Any ............................................................................. [0]
-            | !-+ shapeless.Witness{type T = T0}
-            |   !-+ shapeless.Witness
-            |     !-+ java.io.Serializable
-            |     : !-- Any ............................................................................. [0]
-            |     !-- Object
+            |+ shapeless.Witness{type T = Int(3)} ≅ shapeless.Witness.Aux[Int(3)]
+            |:       ┏ + shapeless.Witness.Aux [ 1 ARG ] :
+            |:       ┃ !-+ Int(3)
+            |:       ┃   !-+ Int
+            |:       ┃     !-+ AnyVal
+            |:       ┃       !-- Any ............................................................................. [0]
+            |!-+ shapeless.Witness{type T = T0}
+            |  !-+ shapeless.Witness
+            |    !-+ java.io.Serializable
+            |    : !-- Any ............................................................................. [0]
+            |    !-- Object
             |""".stripMargin
         )
 
@@ -218,10 +218,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       infer(ww.value)
         .shouldBe(
           """
-            |-+ ww.T
-            | !-+ Int
-            |   !-+ AnyVal
-            |     !-- Any
+            |+ ww.T
+            |!-+ Int
+            |  !-+ AnyVal
+            |    !-- Any
             |""".stripMargin
         )
 
@@ -230,16 +230,16 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       infer(wwErased)
         .shouldBe(
           """
-            |-+ shapeless.Witness{type T <: Int} ≅ shapeless.Witness.Lt[Int]
-            | :       ┏ -+ shapeless.Witness.Lt [ 1 ARG ] :
-            | :       ┃  !-+ Int
-            | :       ┃    !-+ AnyVal
-            | :       ┃      !-- Any ............................................................................. [0]
-            | !-+ shapeless.Witness{type T <: Lub}
-            |   !-+ shapeless.Witness
-            |     !-+ java.io.Serializable
-            |     : !-- Any ............................................................................. [0]
-            |     !-- Object
+            |+ shapeless.Witness{type T <: Int} ≅ shapeless.Witness.Lt[Int]
+            |:       ┏ + shapeless.Witness.Lt [ 1 ARG ] :
+            |:       ┃ !-+ Int
+            |:       ┃   !-+ AnyVal
+            |:       ┃     !-- Any ............................................................................. [0]
+            |!-+ shapeless.Witness{type T <: Lub}
+            |  !-+ shapeless.Witness
+            |    !-+ java.io.Serializable
+            |    : !-- Any ............................................................................. [0]
+            |    !-- Object
             |""".stripMargin
         )
     }
@@ -250,16 +250,16 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
     val v = TypeViz[Witness.Aux[Int]]
     v.toString.shouldBe(
       """
-        |-+ shapeless.Witness{type T = Int} ≅ shapeless.Witness.Aux[Int]
-        | :       ┏ -+ shapeless.Witness.Aux [ 1 ARG ] :
-        | :       ┃  !-+ Int
-        | :       ┃    !-+ AnyVal
-        | :       ┃      !-- Any ............................................................................. [0]
-        | !-+ shapeless.Witness{type T = T0}
-        |   !-+ shapeless.Witness
-        |     !-+ java.io.Serializable
-        |     : !-- Any ............................................................................. [0]
-        |     !-- Object
+        |+ shapeless.Witness{type T = Int} ≅ shapeless.Witness.Aux[Int]
+        |:       ┏ + shapeless.Witness.Aux [ 1 ARG ] :
+        |:       ┃ !-+ Int
+        |:       ┃   !-+ AnyVal
+        |:       ┃     !-- Any ............................................................................. [0]
+        |!-+ shapeless.Witness{type T = T0}
+        |  !-+ shapeless.Witness
+        |    !-+ java.io.Serializable
+        |    : !-- Any ............................................................................. [0]
+        |    !-- Object
         |""".stripMargin
     )
   }
@@ -270,10 +270,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
       TypeViz[Alias].toString.shouldBe(
         """
-          |-+ Int(3) ≅ ai.acyclic.prover.commons.viz.TypeVizSpec.Alias
-          | !-+ Int
-          |   !-+ AnyVal
-          |     !-- Any
+          |+ Int(3) ≅ ai.acyclic.prover.commons.viz.TypeVizSpec.Alias
+          |!-+ Int
+          |  !-+ AnyVal
+          |    !-- Any
           |""".stripMargin
       )
     }
@@ -283,16 +283,16 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       it("Default") {
         TypeViz[AliasWArg].toString.shouldBe(
           """
-            |-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double] ≅ ai.acyclic.prover.commons.viz.TypeVizSpec.AliasWArg
-            | :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-            | :       ┃  !-+ Double
-            | :       ┃    !-+ AnyVal
-            | :       ┃      !-- Any ............................................................................. [0]
-            | !-+ java.io.Serializable
-            | : !-- Any ............................................................................. [0]
-            | !-+ Product
-            | : !-- Equals
-            | !-- Object
+            |+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double] ≅ ai.acyclic.prover.commons.viz.TypeVizSpec.AliasWArg
+            |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            |:       ┃ !-+ Double
+            |:       ┃   !-+ AnyVal
+            |:       ┃     !-- Any ............................................................................. [0]
+            |!-+ java.io.Serializable
+            |: !-- Any ............................................................................. [0]
+            |!-+ Product
+            |: !-- Equals
+            |!-- Object
             |""".stripMargin
         )
       }
@@ -301,16 +301,16 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
         TypeVizDeAlias[AliasWArg].toString.shouldBe(
           """
-            |-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]
-            | :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-            | :       ┃  !-+ Double
-            | :       ┃    !-+ AnyVal
-            | :       ┃      !-- Any ............................................................................. [0]
-            | !-+ java.io.Serializable
-            | : !-- Any ............................................................................. [0]
-            | !-+ Product
-            | : !-- Equals
-            | !-- Object
+            |+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]
+            |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            |:       ┃ !-+ Double
+            |:       ┃   !-+ AnyVal
+            |:       ┃     !-- Any ............................................................................. [0]
+            |!-+ java.io.Serializable
+            |: !-- Any ............................................................................. [0]
+            |!-+ Product
+            |: !-- Equals
+            |!-- Object
             |""".stripMargin
         )
       }
@@ -319,16 +319,16 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
         TypeVizShort[AliasWArg].toString.shouldBe(
           """
-            |-+ TypeVizSpec.WArg[Double]
-            | :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-            | :       ┃  !-+ Double
-            | :       ┃    !-+ AnyVal
-            | :       ┃      !-- Any ............................................................................. [0]
-            | !-+ Serializable
-            | : !-- Any ............................................................................. [0]
-            | !-+ Product
-            | : !-- Equals
-            | !-- Object
+            |+ TypeVizSpec.WArg[Double]
+            |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            |:       ┃ !-+ Double
+            |:       ┃   !-+ AnyVal
+            |:       ┃     !-- Any ............................................................................. [0]
+            |!-+ Serializable
+            |: !-- Any ............................................................................. [0]
+            |!-+ Product
+            |: !-- Equals
+            |!-- Object
             |""".stripMargin
         )
       }
@@ -339,21 +339,21 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       it("Default") {
         TypeViz[AliasWArg2].toString.shouldBe(
           """
-            |-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]] ≅ ai.acyclic.prover.commons.viz.TypeVizSpec.AliasWArg2
-            | :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-            | :       ┃  !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]
-            | :       ┃    :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-            | :       ┃    :       ┃  !-+ Double
-            | :       ┃    :       ┃    !-+ AnyVal
-            | :       ┃    :       ┃      !-- Any ............................................................................. [3]
-            | :       ┃    !-- java.io.Serializable ............................................................ [0]
-            | :       ┃    !-- Product ......................................................................... [1]
-            | :       ┃    !-- Object .......................................................................... [2]
-            | !-+ java.io.Serializable ............................................................ [0]
-            | : !-- Any ............................................................................. [3]
-            | !-+ Product ......................................................................... [1]
-            | : !-- Equals
-            | !-- Object .......................................................................... [2]
+            |+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]] ≅ ai.acyclic.prover.commons.viz.TypeVizSpec.AliasWArg2
+            |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            |:       ┃ !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]
+            |:       ┃   :       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            |:       ┃   :       ┃ !-+ Double
+            |:       ┃   :       ┃   !-+ AnyVal
+            |:       ┃   :       ┃     !-- Any ............................................................................. [3]
+            |:       ┃   !-- java.io.Serializable ............................................................ [0]
+            |:       ┃   !-- Product ......................................................................... [1]
+            |:       ┃   !-- Object .......................................................................... [2]
+            |!-+ java.io.Serializable ............................................................ [0]
+            |: !-- Any ............................................................................. [3]
+            |!-+ Product ......................................................................... [1]
+            |: !-- Equals
+            |!-- Object .......................................................................... [2]
             |""".stripMargin
         )
       }
@@ -362,21 +362,21 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
         TypeVizDeAlias[AliasWArg2].toString.shouldBe(
           """
-            |-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]]
-            | :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-            | :       ┃  !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]
-            | :       ┃    :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-            | :       ┃    :       ┃  !-+ Double
-            | :       ┃    :       ┃    !-+ AnyVal
-            | :       ┃    :       ┃      !-- Any ............................................................................. [3]
-            | :       ┃    !-- java.io.Serializable ............................................................ [0]
-            | :       ┃    !-- Product ......................................................................... [1]
-            | :       ┃    !-- Object .......................................................................... [2]
-            | !-+ java.io.Serializable ............................................................ [0]
-            | : !-- Any ............................................................................. [3]
-            | !-+ Product ......................................................................... [1]
-            | : !-- Equals
-            | !-- Object .......................................................................... [2]
+            |+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]]
+            |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            |:       ┃ !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg[Double]
+            |:       ┃   :       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            |:       ┃   :       ┃ !-+ Double
+            |:       ┃   :       ┃   !-+ AnyVal
+            |:       ┃   :       ┃     !-- Any ............................................................................. [3]
+            |:       ┃   !-- java.io.Serializable ............................................................ [0]
+            |:       ┃   !-- Product ......................................................................... [1]
+            |:       ┃   !-- Object .......................................................................... [2]
+            |!-+ java.io.Serializable ............................................................ [0]
+            |: !-- Any ............................................................................. [3]
+            |!-+ Product ......................................................................... [1]
+            |: !-- Equals
+            |!-- Object .......................................................................... [2]
             |""".stripMargin
         )
       }
@@ -385,21 +385,21 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
         TypeVizShort[AliasWArg2].toString.shouldBe(
           """
-            |-+ TypeVizSpec.WArg[TypeVizSpec.WArg[Double]]
-            | :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-            | :       ┃  !-+ TypeVizSpec.WArg[Double]
-            | :       ┃    :       ┏ -+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
-            | :       ┃    :       ┃  !-+ Double
-            | :       ┃    :       ┃    !-+ AnyVal
-            | :       ┃    :       ┃      !-- Any ............................................................................. [3]
-            | :       ┃    !-- Serializable .................................................................... [0]
-            | :       ┃    !-- Product ......................................................................... [1]
-            | :       ┃    !-- Object .......................................................................... [2]
-            | !-+ Serializable .................................................................... [0]
-            | : !-- Any ............................................................................. [3]
-            | !-+ Product ......................................................................... [1]
-            | : !-- Equals
-            | !-- Object .......................................................................... [2]
+            |+ TypeVizSpec.WArg[TypeVizSpec.WArg[Double]]
+            |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            |:       ┃ !-+ TypeVizSpec.WArg[Double]
+            |:       ┃   :       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
+            |:       ┃   :       ┃ !-+ Double
+            |:       ┃   :       ┃   !-+ AnyVal
+            |:       ┃   :       ┃     !-- Any ............................................................................. [3]
+            |:       ┃   !-- Serializable .................................................................... [0]
+            |:       ┃   !-- Product ......................................................................... [1]
+            |:       ┃   !-- Object .......................................................................... [2]
+            |!-+ Serializable .................................................................... [0]
+            |: !-- Any ............................................................................. [3]
+            |!-+ Product ......................................................................... [1]
+            |: !-- Equals
+            |!-- Object .......................................................................... [2]
             |""".stripMargin
         )
       }
@@ -413,10 +413,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       val e = new E { type D <: Int }
       TypeViz[e.D].toString.shouldBe(
         """
-          |-+ e.D
-          | !-+ Int
-          |   !-+ AnyVal
-          |     !-- Any
+          |+ e.D
+          |!-+ Int
+          |  !-+ AnyVal
+          |    !-- Any
           |""".stripMargin
       )
     }
@@ -426,10 +426,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       val e = new E { type D >: String <: CharSequence }
       TypeViz[e.D].toString.shouldBe(
         """
-          |-+ e.D
-          | !-+ CharSequence
-          |   !-+ Object
-          |     !-- Any
+          |+ e.D
+          |!-+ CharSequence
+          |  !-+ Object
+          |    !-- Any
           |""".stripMargin
       )
     }
@@ -440,10 +440,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
       TypeViz[e.D].toString.shouldBe(
         """
-          |-+ e.D
-          | !-+ Int
-          |   !-+ AnyVal
-          |     !-- Any
+          |+ e.D
+          |!-+ Int
+          |  !-+ AnyVal
+          |    !-- Any
           |""".stripMargin
       )
     }
@@ -452,18 +452,18 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
       TypeViz[EE.D].toString.shouldBe(
         """
-          |-+ Int ≅ ai.acyclic.prover.commons.viz.TypeVizSpec.EE.D
-          | !-+ AnyVal
-          |   !-- Any
+          |+ Int ≅ ai.acyclic.prover.commons.viz.TypeVizSpec.EE.D
+          |!-+ AnyVal
+          |  !-- Any
           |""".stripMargin
       )
 
       val e = new EE
       TypeViz[e.D].toString.shouldBe(
         """
-          |-+ Int ≅ e.D
-          | !-+ AnyVal
-          |   !-- Any
+          |+ Int ≅ e.D
+          |!-+ AnyVal
+          |  !-- Any
           |""".stripMargin
       )
 
@@ -476,11 +476,11 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
     val e = new EE
     TypeViz[e.THIS].toString.shouldBe(
       """
-        |-+ e.type ≅ e.THIS
-        | !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.EE
-        |   !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.E
-        |     !-+ Object
-        |       !-- Any
+        |+ e.type ≅ e.THIS
+        |!-+ ai.acyclic.prover.commons.viz.TypeVizSpec.EE
+        |  !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.E
+        |    !-+ Object
+        |      !-- Any
         |""".stripMargin
     )
   }
