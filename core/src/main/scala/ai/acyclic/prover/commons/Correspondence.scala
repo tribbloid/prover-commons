@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons
 
 import scala.collection.concurrent.TrieMap
+import scala.collection.mutable
 
 case class Correspondence[K, V](fn: K => V) extends (K => V) {
 
@@ -9,14 +10,23 @@ case class Correspondence[K, V](fn: K => V) extends (K => V) {
     lazy val value: V = fn(key)
   }
 
-  val cache: TrieMap[Int, Wrapper] = TrieMap.empty[Int, Wrapper]
+  val lookup: TrieMap[Int, Wrapper] = TrieMap.empty[Int, Wrapper]
+  val collection: mutable.Buffer[Wrapper] = mutable.Buffer.empty
+
+  def values: Seq[V] = collection.map(_.value).toSeq
 
   final def getOrElseUpdate(key: K): V = {
 
     val inMemoryId = System.identityHashCode(key)
     val w = this.synchronized {
 
-      cache.getOrElseUpdate(inMemoryId, Wrapper(key)) // should be fast
+      lookup.getOrElseUpdate(
+        inMemoryId, {
+          val created = Wrapper(key)
+          collection += created
+          created
+        }
+      ) // should be fast
     }
     w.value
   }

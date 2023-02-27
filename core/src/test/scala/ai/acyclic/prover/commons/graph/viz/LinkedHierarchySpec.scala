@@ -10,7 +10,7 @@ class LinkedHierarchySpec extends GraphFixture {
     describe("treeString") {
       it("cyclic graph") {
 
-        cyclic.showLinkedHierarchy.treeString shouldBe
+        cyclic.graph.showLinkedHierarchy.treeString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-+ bbb
@@ -18,11 +18,24 @@ class LinkedHierarchySpec extends GraphFixture {
             |  : !-- aaa ............................................................................. [0]
             |  !-- ddd
             |""".stripMargin
+
+        cyclic.graphWithArrowText.showLinkedHierarchy.treeString shouldBe
+          """
+            |+ aaa ............................................................................. [0]
+            |!-: [ aaa |> bbb ]
+            |  + bbb
+            |  !-: [ bbb |> ccc ]
+            |  : + ccc
+            |  : !-: [ ccc |> aaa ]
+            |  :   - aaa ............................................................................. [0]
+            |  !-: [ bbb |> ddd ]
+            |    - ddd
+            |""".stripMargin
       }
 
       it(" ... with multiple lines") {
 
-        cyclic2.showLinkedHierarchy.treeString shouldBe
+        cyclic2.graph.showLinkedHierarchy.treeString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -35,12 +48,38 @@ class LinkedHierarchySpec extends GraphFixture {
             |  !-- ddd
             |      %%%%
             |""".stripMargin
+
+        cyclic2.graphWithArrowText.showLinkedHierarchy.treeString shouldBe
+          """
+            |+ aaa ............................................................................. [0]
+            |: %%%%
+            |!-: ┏ aaa         ┓
+            |  : ┃ %%%% |> bbb ┃
+            |  : ┗ %%%%        ┛
+            |  + bbb
+            |  : %%%%
+            |  !-: ┏ bbb         ┓
+            |  : : ┃ %%%% |> ccc ┃
+            |  : : ┗ %%%%        ┛
+            |  : + ccc
+            |  : : %%%%
+            |  : !-: ┏ ccc         ┓
+            |  :   : ┃ %%%% |> aaa ┃
+            |  :   : ┗ %%%%        ┛
+            |  :   - aaa ............................................................................. [0]
+            |  :     %%%%
+            |  !-: ┏ bbb         ┓
+            |    : ┃ %%%% |> ddd ┃
+            |    : ┗ %%%%        ┛
+            |    - ddd
+            |      %%%%
+            |""".stripMargin
       }
 
       it("diamond semilattice") {
 
         // TODO: this is wrong! second line is not flushed
-        diamond.showLinkedHierarchy.treeString shouldBe
+        diamond.graph.showLinkedHierarchy.treeString shouldBe
           """
             |+ aaa
             |!-+ bbb

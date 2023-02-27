@@ -100,7 +100,7 @@ object TreeFixture {
 
         val children = node.children
         val result = children.map { child =>
-          Arrow.`~>`.NoInfo[Demo](child, Some(s"${node.text} |> ${child.text}"))
+          Arrow.`~>`.NoInfo(child, Some(s"${node.text} |> ${child.text}"))
         }
         result
       }

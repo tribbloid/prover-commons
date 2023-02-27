@@ -8,7 +8,7 @@ class HasseSpec extends GraphFixture {
 
     it("cyclic graph") {
 
-      cyclic.showHasseDiagram.treeString shouldBe
+      cyclic.graph.showHasseDiagram.treeString shouldBe
         """
           |  ┌───────┐
           |  │  bbb  │
@@ -26,11 +26,32 @@ class HasseSpec extends GraphFixture {
           | │ aaa │ │ddd│
           | └─────┘ └───┘
           |""".stripMargin
+
+      cyclic.graphWithArrowText.showHasseDiagram.treeString shouldBe
+        """
+          |         ┌──────────────┐
+          |         │[ aaa |> bbb ]│
+          |         │     bbb      │
+          |         └─┬──────────┬─┘
+          |           │         ^│
+          |           │         │└────┐
+          |           v         │     │
+          |   ┌──────────────┐  │     │
+          |   │[ bbb |> ccc ]│  │     │
+          |   │     ccc      │  │     │
+          |   └──┬───────────┘  │     │
+          |      │     ┌────────┘     │
+          |      v     │              v
+          | ┌──────────┴───┐ ┌──────────────┐
+          | │[ ccc |> aaa ]│ │[ bbb |> ddd ]│
+          | │     aaa      │ │     ddd      │
+          | └──────────────┘ └──────────────┘
+          |""".stripMargin
     }
 
     it("diamond graph") {
 
-      diamond.showHasseDiagram.treeString shouldBe
+      diamond.graph.showHasseDiagram.treeString shouldBe
         """
           |  ┌─────┐
           |  │ aaa │
@@ -40,7 +61,7 @@ class HasseSpec extends GraphFixture {
           |   │     │
           |   v     v
           | ┌───┐ ┌───┐
-          | │ccc│ │bbb│
+          | │bbb│ │ccc│
           | └──┬┘ └─┬─┘
           |    │    │
           |    │ ┌──┘
@@ -54,6 +75,33 @@ class HasseSpec extends GraphFixture {
           |   ┌───┐
           |   │eee│
           |   └───┘
+          |""".stripMargin
+
+      diamond.graphWithArrowText.showHasseDiagram.treeString shouldBe
+        """
+          |              ┌─────┐
+          |              │ aaa │
+          |              └─┬─┬─┘
+          |                │ │
+          |         ┌──────┘ └───────┐
+          |         │                │
+          |         v                v
+          | ┌──────────────┐ ┌──────────────┐
+          | │[ aaa |> bbb ]│ │[ aaa |> ccc ]│
+          | │   bbb [0]    │ │   ccc [1]    │
+          | └──────────┬───┘ └────┬─────────┘
+          |            │          │
+          |            v          v
+          | ┌────────────────────────────────┐
+          | │[ 0 bbb |> ddd ][ 1 ccc |> ddd ]│
+          | │              ddd               │
+          | └───────────────┬────────────────┘
+          |                 │
+          |                 v
+          |         ┌──────────────┐
+          |         │[ ddd |> eee ]│
+          |         │     eee      │
+          |         └──────────────┘
           |""".stripMargin
     }
   }

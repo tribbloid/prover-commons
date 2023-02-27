@@ -62,7 +62,7 @@ object Arrow {
 
   case object `<~` extends Edge
 
-  case object `~~` extends Edge // undirected
+//  case object `~~` extends Edge // undirected
 
   // used to expand a graph without introducing new edge
   // e.g. expanding a semilattice into a poset

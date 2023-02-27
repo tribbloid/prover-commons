@@ -16,7 +16,7 @@ class GraphPlansSpec extends AnyFunSpec with GraphFixture {
     val down = mutable.Buffer.empty[GN]
     val up = mutable.Buffer.empty[GN]
 
-    GraphPlans(cyclic)
+    GraphPlans(cyclic.graph)
       .Traverse(
         5,
         v => down += v,
@@ -61,7 +61,7 @@ class GraphPlansSpec extends AnyFunSpec with GraphFixture {
     val down = mutable.Buffer.empty[GN]
     val up = mutable.Buffer.empty[GN]
 
-    GraphPlans(cyclic)
+    GraphPlans(cyclic.graph)
       .Traverse(
         5,
         v => down += v,

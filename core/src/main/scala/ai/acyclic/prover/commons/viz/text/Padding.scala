@@ -82,4 +82,9 @@ object Padding {
     "┃ ",
     "▼ "
   )
+
+  val vertical: Padding = ofHead(
+    "|",
+    "|"
+  )
 }
