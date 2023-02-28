@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.Correspondence
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Graph
 import ai.acyclic.prover.commons.graph.processing.GraphPlans
-import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
+import ai.acyclic.prover.commons.viz.text.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
 import org.scalameta.ascii.layout.prefs.{LayoutPrefs, LayoutPrefsImpl}
@@ -23,7 +23,7 @@ object Hasse extends Visualisations {
   }
   object Default extends Default {}
 
-  implicit lazy val default = Default
+  implicit lazy val default: Default.type = Default
 
 }
 
@@ -74,15 +74,20 @@ trait Hasse extends Hasse.Format {
         val arrowBlocks = arrowReprs.flatMap {
           case (from, textOpt) =>
             textOpt.map { text =>
+              val textBlock =
+                TextBlock(text).encloseIn.squareBracket
+
               val zipped = from.bindingOpt
                 .map { binding =>
-                  s"$binding $text"
+                  TextBlock(s"[$binding]").zipBottom(
+                    textBlock
+                  )
                 }
                 .getOrElse {
-                  text
+                  textBlock
                 }
 
-              TextBlock(zipped).encloseIn.squareBracket
+              zipped
             }
         }
 
@@ -103,42 +108,42 @@ trait Hasse extends Hasse.Format {
             arrowText.zipBottom(nodeText)
           }
           .getOrElse(nodeText)
-        result.build
+        result.build // TODO: may have alignment problem if not converted to rectangular block
       }
     }
 
-    lazy val nodeBuffer: Correspondence[N, NodeWrapper] =
-      Correspondence[N, NodeWrapper](v => NodeWrapper(v))
+    lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-    lazy val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
+      val nodeBuffer: Correspondence[N, NodeWrapper] =
+        Correspondence[N, NodeWrapper](v => NodeWrapper(v))
 
-    lazy val buildBuffers = GraphPlans(graph)
-      .Traverse(
-        maxDepth = Hasse.this.maxDepth,
-        down = { node =>
-          val wrapper = nodeBuffer.getOrElseUpdate(node)
+      val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
-          val newRelations = wrapper.nOps.induction.flatMap { arrow =>
-            arrow.arrowType match {
-              case Arrow.`~>` =>
-                val to = nodeBuffer.getOrElseUpdate(arrow.target)
-                to.arrowReprs += wrapper -> arrow.arrowText
-                Some(wrapper -> to)
-              case Arrow.`<~` =>
-                val from = nodeBuffer.getOrElseUpdate(arrow.target)
-                wrapper.arrowReprs += from -> arrow.arrowText
-                Some(from -> wrapper)
-              case _ =>
-                None
+      val buildBuffers = GraphPlans(graph)
+        .Traverse(
+          maxDepth = Hasse.this.maxDepth,
+          down = { node =>
+            val wrapper = nodeBuffer.getOrElseUpdate(node)
+
+            val newRelations = wrapper.nOps.induction.flatMap { arrow =>
+              arrow.arrowType match {
+                case Arrow.`~>` =>
+                  val to = nodeBuffer.getOrElseUpdate(arrow.target)
+                  to.arrowReprs += wrapper -> arrow.arrowText
+                  Some(wrapper -> to)
+                case Arrow.`<~` =>
+                  val from = nodeBuffer.getOrElseUpdate(arrow.target)
+                  wrapper.arrowReprs += from -> arrow.arrowText
+                  Some(from -> wrapper)
+                case _ =>
+                  None
+              }
             }
+
+            relationBuffer ++= newRelations
           }
-
-          relationBuffer ++= newRelations
-        }
-      )
-      .DepthFirst_ForEach
-
-    lazy val asciiDiagram = {
+        )
+        .DepthFirst_ForEach
 
       buildBuffers.exeOnce
 

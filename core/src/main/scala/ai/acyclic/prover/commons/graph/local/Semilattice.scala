@@ -29,7 +29,7 @@ object Semilattice {
 
     type Ops <: UpperNOps
 
-    def showHierarchy(
+    def diagram_hierarchy(
         implicit
         format: Hierarchy
     ): format.Viz[N] = format.Viz(this)

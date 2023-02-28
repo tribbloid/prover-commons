@@ -10,7 +10,7 @@ class LinkedHierarchySpec extends GraphFixture {
     describe("treeString") {
       it("cyclic graph") {
 
-        cyclic.graph.showLinkedHierarchy.treeString shouldBe
+        cyclic.graph.diagram_linkedHierarchy.treeString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-+ bbb
@@ -19,7 +19,7 @@ class LinkedHierarchySpec extends GraphFixture {
             |  !-- ddd
             |""".stripMargin
 
-        cyclic.graphWithArrowText.showLinkedHierarchy.treeString shouldBe
+        cyclic.graphWithArrowText.diagram_linkedHierarchy.treeString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-: [ aaa |> bbb ]
@@ -35,7 +35,7 @@ class LinkedHierarchySpec extends GraphFixture {
 
       it(" ... with multiple lines") {
 
-        cyclic2.graph.showLinkedHierarchy.treeString shouldBe
+        cyclic2.graph.diagram_linkedHierarchy.treeString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -49,7 +49,7 @@ class LinkedHierarchySpec extends GraphFixture {
             |      %%%%
             |""".stripMargin
 
-        cyclic2.graphWithArrowText.showLinkedHierarchy.treeString shouldBe
+        cyclic2.graphWithArrowText.diagram_linkedHierarchy.treeString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -79,7 +79,7 @@ class LinkedHierarchySpec extends GraphFixture {
       it("diamond semilattice") {
 
         // TODO: this is wrong! second line is not flushed
-        diamond.graph.showLinkedHierarchy.treeString shouldBe
+        diamond.graph.diagram_linkedHierarchy.treeString shouldBe
           """
             |+ aaa
             |!-+ bbb

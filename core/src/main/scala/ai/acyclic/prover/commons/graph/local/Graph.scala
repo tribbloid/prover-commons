@@ -41,6 +41,11 @@ trait Graph[N] extends GraphSystem.GraphK[N] {
   }
 
   final val nodeOps = Correspondence((v: N) => Ops(v))
+
+  def diagram_Hasse(
+      implicit
+      format: Hasse
+  ): format.Viz[N] = format.Viz(this)
 }
 
 object Graph extends Local._GraphType {
@@ -63,15 +68,10 @@ object Graph extends Local._GraphType {
 
     type Ops <: OutboundNOps
 
-    def showLinkedHierarchy(
+    def diagram_linkedHierarchy(
         implicit
         group: LinkedHierarchy#Group
     ): group.Viz[N] = group.Viz(this)
-
-    def showHasseDiagram(
-        implicit
-        format: Hasse
-    ): format.Viz[N] = format.Viz(this)
   }
 
   object Outbound extends Local._GraphType {

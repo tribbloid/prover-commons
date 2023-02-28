@@ -12,7 +12,7 @@ class HierarchySpec extends TreeFixture {
       describe("finite tree") {
         it("each node has 1 line of text") {
 
-          tn1.tree.showHierarchy.treeString shouldBe
+          tn1.tree.diagram_hierarchy.treeString shouldBe
             """
               |+ aaa
               |!-+ bbb
@@ -23,7 +23,7 @@ class HierarchySpec extends TreeFixture {
 
         it("... with arrow texts") {
 
-          tn1.treeWithArrowTexts.showHierarchy.treeString shouldBe
+          tn1.treeWithArrowTexts.diagram_hierarchy.treeString shouldBe
             """
               |+ aaa
               |!-: [ aaa |> bbb ]
@@ -37,7 +37,7 @@ class HierarchySpec extends TreeFixture {
 
         it("each node has multiple lines of text") {
 
-          tn2.tree.showHierarchy.treeString shouldBe
+          tn2.tree.diagram_hierarchy.treeString shouldBe
             """
               |+ aaa
               |: %%%%%
@@ -52,7 +52,7 @@ class HierarchySpec extends TreeFixture {
 
         it(".... with arrow texts") {
 
-          tn2.treeWithArrowTexts.showHierarchy.treeString shouldBe
+          tn2.treeWithArrowTexts.diagram_hierarchy.treeString shouldBe
             """
               |+ aaa
               |: %%%%%
@@ -76,7 +76,7 @@ class HierarchySpec extends TreeFixture {
       }
 
       it("infinite tree") {
-        treeInf.tree.showHierarchy.treeString shouldBe
+        treeInf.tree.diagram_hierarchy.treeString shouldBe
           """
             |+ abcdefgh
             |!-+ abcdefg
@@ -152,7 +152,7 @@ class HierarchySpec extends TreeFixture {
     describe("treeString") {
       it("supports nodes each with 1 line str") {
 
-        tn1.tree.showHierarchy.treeString shouldBe
+        tn1.tree.diagram_hierarchy.treeString shouldBe
           """
             |aaa
             | ‣ bbb
@@ -165,7 +165,7 @@ class HierarchySpec extends TreeFixture {
       it("... or not") {
 
         // TODO: this is wrong! second line is not flushed
-        tn2.tree.showHierarchy.treeString shouldBe
+        tn2.tree.diagram_hierarchy.treeString shouldBe
           """
             |aaa
             |%%%%%

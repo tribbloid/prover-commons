@@ -28,7 +28,7 @@ trait TypeOfMixin extends HasReflection {
     lazy val nodes: selfGroup.Nodes = selfGroup.Nodes(typeView.formattedBy(format.typeFormat))
     lazy val showHierarchy: format.GraphFormat.Group#Viz[VNode] = selfGroup
       .GraphRepr(Seq(nodes.SuperTypeNode))
-      .showLinkedHierarchy(selfGroup.delegateGroup)
+      .diagram_linkedHierarchy(selfGroup.delegateGroup)
 
     lazy val typeStr: String = nodes.typeText
 

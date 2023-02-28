@@ -8,7 +8,7 @@ class HasseSpec extends GraphFixture {
 
     it("cyclic graph") {
 
-      cyclic.graph.showHasseDiagram.treeString shouldBe
+      cyclic.graph.diagram_Hasse.treeString shouldBe
         """
           |  ┌───────┐
           |  │  bbb  │
@@ -27,7 +27,7 @@ class HasseSpec extends GraphFixture {
           | └─────┘ └───┘
           |""".stripMargin
 
-      cyclic.graphWithArrowText.showHasseDiagram.treeString shouldBe
+      cyclic.graphWithArrowText.diagram_Hasse.treeString shouldBe
         """
           |         ┌──────────────┐
           |         │[ aaa |> bbb ]│
@@ -51,7 +51,7 @@ class HasseSpec extends GraphFixture {
 
     it("diamond graph") {
 
-      diamond.graph.showHasseDiagram.treeString shouldBe
+      diamond.graph.diagram_Hasse.treeString shouldBe
         """
           |  ┌─────┐
           |  │ aaa │
@@ -77,25 +77,26 @@ class HasseSpec extends GraphFixture {
           |   └───┘
           |""".stripMargin
 
-      diamond.graphWithArrowText.showHasseDiagram.treeString shouldBe
+      diamond.graphWithArrowText.diagram_Hasse.treeString shouldBe
         """
-          |              ┌─────┐
-          |              │ aaa │
-          |              └─┬─┬─┘
-          |                │ │
-          |         ┌──────┘ └───────┐
-          |         │                │
-          |         v                v
+          |             ┌─────┐
+          |             │ aaa │
+          |             └─┬─┬─┘
+          |               │ │
+          |               │ └────────┐
+          |               │          │
+          |               v          v
           | ┌──────────────┐ ┌──────────────┐
           | │[ aaa |> bbb ]│ │[ aaa |> ccc ]│
           | │   bbb [0]    │ │   ccc [1]    │
-          | └──────────┬───┘ └────┬─────────┘
-          |            │          │
-          |            v          v
-          | ┌────────────────────────────────┐
-          | │[ 0 bbb |> ddd ][ 1 ccc |> ddd ]│
-          | │              ddd               │
-          | └───────────────┬────────────────┘
+          | └──────────┬───┘ └───┬──────────┘
+          |            │         │
+          |            v         v
+          |  ┌────────────────────────────┐
+          |  │     [0]           [1]      │
+          |  │[ bbb |> ddd ][ ccc |> ddd ]│
+          |  │            ddd             │
+          |  └──────────────┬─────────────┘
           |                 │
           |                 v
           |         ┌──────────────┐
