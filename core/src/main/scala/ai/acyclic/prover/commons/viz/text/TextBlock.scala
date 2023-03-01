@@ -9,10 +9,16 @@ case class TextBlock(lines: Seq[String]) {
     pad.left(Padding.ofHead(ss, ss))
   }
 
+  object numberOf {
+
+    lazy val rows = lines.size
+
+    lazy val columns = lines.map(_.length).max
+  }
+
   lazy val rectangular: TextBlock = {
 
-    val longest = lines.map(_.length).max
-    val withSpace = lines.map(v => v + (0 until (longest - v.length)).map(_ => ' ').mkString(""))
+    val withSpace = lines.map(v => v + (0 until (numberOf.columns - v.length)).map(_ => ' ').mkString(""))
     TextBlock(withSpace)
   }
 
@@ -89,6 +95,18 @@ case class TextBlock(lines: Seq[String]) {
     def left(pad: Padding) = process(pad, (vv, ll) => vv + ll)
 
     def right(pad: Padding) = process(pad, (vv, ll) => ll + vv)
+
+    def top(char: Char): TextBlock = {
+      TextBlock(
+        Seq(char.toString * numberOf.columns) ++ lines
+      )
+    }
+
+    def bottom(char: Char): TextBlock = {
+      TextBlock(
+        lines :+ (char.toString * numberOf.columns)
+      )
+    }
   }
 
   object encloseIn {

@@ -53,15 +53,15 @@ trait Hasse extends Hasse.Format {
         binding = bindingIndices.getAndIncrement().toString
       }
 
-      val arrowReprs: mutable.Buffer[(NodeWrapper, Option[String])] = mutable.Buffer.empty
+      val arrowsFrom: mutable.Buffer[(NodeWrapper, Option[String])] = mutable.Buffer.empty
 
       def bindInboundArrows(): Unit = {
 
-        val numArrowInboundWithText = arrowReprs.count(v => v._2.nonEmpty)
+        val numArrowInboundWithText = arrowsFrom.count(v => v._2.nonEmpty)
 
         if (numArrowInboundWithText >= 2) {
 
-          arrowReprs.foreach {
+          arrowsFrom.foreach {
             case (v, Some(_)) => v.bind()
             case _            =>
           }
@@ -71,44 +71,52 @@ trait Hasse extends Hasse.Format {
       lazy val nOps: graph.Ops = graph.nodeOps(node)
       final override lazy val toString = {
 
-        val arrowBlocks = arrowReprs.flatMap {
-          case (from, textOpt) =>
-            textOpt.map { text =>
-              val textBlock =
-                TextBlock(text).encloseIn.squareBracket
+        val showBinding = arrowsFrom.size >= 2
 
-              val zipped = from.bindingOpt
-                .map { binding =>
-                  TextBlock(s"[$binding]").zipBottom(
+        val arrowBlocks = arrowsFrom
+          .flatMap {
+            case (from, textOpt) =>
+              textOpt.map { text =>
+                val textBlock =
+                  TextBlock(text)
+
+                val zipped = from.bindingOpt
+                  .filter(_ => showBinding)
+                  .map { binding =>
+                    TextBlock(s"from [$binding]").zipBottom(
+                      textBlock
+                    )
+                  }
+                  .getOrElse {
                     textBlock
-                  )
-                }
-                .getOrElse {
-                  textBlock
-                }
+                  }
 
-              zipped
-            }
-        }
+                zipped.encloseIn.parenthesis
+              }
+          }
 
-        val arrowTextOpt = arrowBlocks.reduceOption { (x, y) =>
-          x.zipRight(y)
-        }
+        val arrowTextOpt = arrowBlocks
+          .reduceOption { (x, y) =>
+            x.zipRight(y)
+          }
+          .map(_.rectangular)
 
         val nodeText = {
           val ss = bindingOpt
             .map { binding =>
-              s"${nOps.nodeText} [$binding]"
+              s"${nOps.nodeText}\n[$binding]"
             }
             .getOrElse(nOps.nodeText)
-          TextBlock(ss)
+          TextBlock(ss).rectangular
         }
         val result = arrowTextOpt
           .map { arrowText =>
-            arrowText.zipBottom(nodeText)
+            arrowText.pad
+              .bottom('─')
+              .zipBottom(nodeText)
           }
           .getOrElse(nodeText)
-        result.build // TODO: may have alignment problem if not converted to rectangular block
+        result.build
       }
     }
 
@@ -129,11 +137,11 @@ trait Hasse extends Hasse.Format {
               arrow.arrowType match {
                 case Arrow.`~>` =>
                   val to = nodeBuffer.getOrElseUpdate(arrow.target)
-                  to.arrowReprs += wrapper -> arrow.arrowText
+                  to.arrowsFrom += wrapper -> arrow.arrowText
                   Some(wrapper -> to)
                 case Arrow.`<~` =>
                   val from = nodeBuffer.getOrElseUpdate(arrow.target)
-                  wrapper.arrowReprs += from -> arrow.arrowText
+                  wrapper.arrowsFrom += from -> arrow.arrowText
                   Some(from -> wrapper)
                 case _ =>
                   None

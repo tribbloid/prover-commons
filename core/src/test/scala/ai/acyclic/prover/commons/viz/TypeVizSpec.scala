@@ -28,7 +28,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |+ String .......................................................................... [0]
         |!-- Comparable[String]
         |:         ┏ + Comparable [ 1 ARG ] :
-        |:         ┃ !-- String .......................................................................... [0]
+        |:         ┃ !-- String ... (see [0])
         |!-- java.io.Serializable
         |""".stripMargin,
       mode = SuperSet
@@ -50,14 +50,14 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |:       ┃ !-+ String .......................................................................... [3]
         |:       ┃ : !-- Comparable[String]
         |:       ┃ : :         ┏ + Comparable [ 1 ARG ] :
-        |:       ┃ : :         ┃ !-- String .......................................................................... [3]
-        |:       ┃ : !-- java.io.Serializable ............................................................ [0]
+        |:       ┃ : :         ┃ !-- String ... (see [3])
+        |:       ┃ : !-- java.io.Serializable ... (see [0])
         |:       ┃ !-+ String :: shapeless.HNil
         |:       ┃   :       ┏ + shapeless.:: [ 2 ARGS ] :
-        |:       ┃   :       ┃ !-- String .......................................................................... [3]
+        |:       ┃   :       ┃ !-- String ... (see [3])
         |:       ┃   :       ┃ !-+ shapeless.HNil
-        |:       ┃   :       ┃   !-- shapeless.HList ................................................................. [2]
-        |:       ┃   !-- shapeless.HList ................................................................. [2]
+        |:       ┃   :       ┃   !-- shapeless.HList ... (see [2])
+        |:       ┃   !-- shapeless.HList ... (see [2])
         |!-+ shapeless.HList ................................................................. [2]
         |  !-+ java.io.Serializable ............................................................ [0]
         |  : !-- Any
@@ -84,8 +84,8 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
           |:       ┃ : !-+ shapeless.labelled.KeyTag[String("author"),String]
           |:       ┃ : : :       ┏ + shapeless.labelled.KeyTag [ 2 ARGS ] :
           |:       ┃ : : :       ┃ !-+ String("author")
-          |:       ┃ : : :       ┃ : !-- String .......................................................................... [4]
-          |:       ┃ : : :       ┃ !-- String .......................................................................... [4]
+          |:       ┃ : : :       ┃ : !-- String ... (see [4])
+          |:       ┃ : : :       ┃ !-- String ... (see [4])
           |""".stripMargin,
         mode = SuperSet
       )
@@ -114,7 +114,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
           |  :       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
           |  :       ┃ !-+ Int
           |  :       ┃   !-+ AnyVal
-          |  :       ┃     !-- Any ............................................................................. [0]
+          |  :       ┃     !-- Any ... (see [0])
           |  !-+ java.io.Serializable
           |  : !-- Any ............................................................................. [0]
           |  !-+ Product
@@ -198,7 +198,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
             |:       ┃ !-+ Int(3)
             |:       ┃   !-+ Int
             |:       ┃     !-+ AnyVal
-            |:       ┃       !-- Any ............................................................................. [0]
+            |:       ┃       !-- Any ... (see [0])
             |!-+ shapeless.Witness{type T = T0}
             |  !-+ shapeless.Witness
             |    !-+ java.io.Serializable
@@ -234,7 +234,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
             |:       ┏ + shapeless.Witness.Lt [ 1 ARG ] :
             |:       ┃ !-+ Int
             |:       ┃   !-+ AnyVal
-            |:       ┃     !-- Any ............................................................................. [0]
+            |:       ┃     !-- Any ... (see [0])
             |!-+ shapeless.Witness{type T <: Lub}
             |  !-+ shapeless.Witness
             |    !-+ java.io.Serializable
@@ -254,7 +254,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |:       ┏ + shapeless.Witness.Aux [ 1 ARG ] :
         |:       ┃ !-+ Int
         |:       ┃   !-+ AnyVal
-        |:       ┃     !-- Any ............................................................................. [0]
+        |:       ┃     !-- Any ... (see [0])
         |!-+ shapeless.Witness{type T = T0}
         |  !-+ shapeless.Witness
         |    !-+ java.io.Serializable
@@ -287,7 +287,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
             |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
             |:       ┃ !-+ Double
             |:       ┃   !-+ AnyVal
-            |:       ┃     !-- Any ............................................................................. [0]
+            |:       ┃     !-- Any ... (see [0])
             |!-+ java.io.Serializable
             |: !-- Any ............................................................................. [0]
             |!-+ Product
@@ -305,7 +305,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
             |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
             |:       ┃ !-+ Double
             |:       ┃   !-+ AnyVal
-            |:       ┃     !-- Any ............................................................................. [0]
+            |:       ┃     !-- Any ... (see [0])
             |!-+ java.io.Serializable
             |: !-- Any ............................................................................. [0]
             |!-+ Product
@@ -323,7 +323,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
             |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
             |:       ┃ !-+ Double
             |:       ┃   !-+ AnyVal
-            |:       ┃     !-- Any ............................................................................. [0]
+            |:       ┃     !-- Any ... (see [0])
             |!-+ Serializable
             |: !-- Any ............................................................................. [0]
             |!-+ Product
@@ -345,10 +345,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
             |:       ┃   :       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
             |:       ┃   :       ┃ !-+ Double
             |:       ┃   :       ┃   !-+ AnyVal
-            |:       ┃   :       ┃     !-- Any ............................................................................. [3]
-            |:       ┃   !-- java.io.Serializable ............................................................ [0]
-            |:       ┃   !-- Product ......................................................................... [1]
-            |:       ┃   !-- Object .......................................................................... [2]
+            |:       ┃   :       ┃     !-- Any ... (see [3])
+            |:       ┃   !-- java.io.Serializable ... (see [0])
+            |:       ┃   !-- Product ... (see [1])
+            |:       ┃   !-- Object ... (see [2])
             |!-+ java.io.Serializable ............................................................ [0]
             |: !-- Any ............................................................................. [3]
             |!-+ Product ......................................................................... [1]
@@ -368,10 +368,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
             |:       ┃   :       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
             |:       ┃   :       ┃ !-+ Double
             |:       ┃   :       ┃   !-+ AnyVal
-            |:       ┃   :       ┃     !-- Any ............................................................................. [3]
-            |:       ┃   !-- java.io.Serializable ............................................................ [0]
-            |:       ┃   !-- Product ......................................................................... [1]
-            |:       ┃   !-- Object .......................................................................... [2]
+            |:       ┃   :       ┃     !-- Any ... (see [3])
+            |:       ┃   !-- java.io.Serializable ... (see [0])
+            |:       ┃   !-- Product ... (see [1])
+            |:       ┃   !-- Object ... (see [2])
             |!-+ java.io.Serializable ............................................................ [0]
             |: !-- Any ............................................................................. [3]
             |!-+ Product ......................................................................... [1]
@@ -391,10 +391,10 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
             |:       ┃   :       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.WArg [ 1 ARG ] :
             |:       ┃   :       ┃ !-+ Double
             |:       ┃   :       ┃   !-+ AnyVal
-            |:       ┃   :       ┃     !-- Any ............................................................................. [3]
-            |:       ┃   !-- Serializable .................................................................... [0]
-            |:       ┃   !-- Product ......................................................................... [1]
-            |:       ┃   !-- Object .......................................................................... [2]
+            |:       ┃   :       ┃     !-- Any ... (see [3])
+            |:       ┃   !-- Serializable ... (see [0])
+            |:       ┃   !-- Product ... (see [1])
+            |:       ┃   !-- Object ... (see [2])
             |!-+ Serializable .................................................................... [0]
             |: !-- Any ............................................................................. [3]
             |!-+ Product ......................................................................... [1]

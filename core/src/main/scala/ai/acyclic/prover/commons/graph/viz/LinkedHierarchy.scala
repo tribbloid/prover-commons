@@ -11,7 +11,7 @@ import scala.collection.mutable
 
 object LinkedHierarchy extends Visualisations {
 
-  def addAnnotation(body: String, binding: String): String = {
+  def addSrcAnnotation(body: String, binding: String): String = {
 
     if (body.isEmpty) return body
 
@@ -20,6 +20,20 @@ object LinkedHierarchy extends Visualisations {
     val ll = block.lines.head.length
     val ellipseLL = 80 - ll
     val annotations = " " + String.valueOf((1 to ellipseLL).map(_ => '.').toArray) + s" [$binding]"
+
+    block
+      .appendPerLine(TextBlock(annotations))
+      .build
+  }
+
+  def addRefAnnotation(body: String, binding: String): String = {
+
+    if (body.isEmpty) return body
+
+    val block = TextBlock(body)
+
+    val ellipseLL = 3
+    val annotations = " " + String.valueOf((1 to ellipseLL).map(_ => '.').toArray) + s" (see [$binding])"
 
     block
       .appendPerLine(TextBlock(annotations))
@@ -163,7 +177,8 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
             node.bindingOpt
               .map { binding =>
-                addAnnotation(originalText, binding)
+                if (node.shouldExpand) addSrcAnnotation(originalText, binding)
+                else addRefAnnotation(originalText, binding)
               }
               .getOrElse(originalText)
           }

@@ -74,7 +74,7 @@ trait Hierarchy extends Hierarchy.Format {
             val arrowBlocksOpt = _arrows
               .flatMap { arrow =>
                 arrow.arrowText.map { text =>
-                  TextBlock(text).encloseIn.squareBracket.pad.left(ARROW)
+                  TextBlock(text).encloseIn.parenthesis.pad.left(ARROW)
                 }
               }
               .reduceOption((x, y) => x.zipBottom(y))

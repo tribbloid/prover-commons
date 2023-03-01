@@ -19,18 +19,15 @@ class HierarchySpec extends TreeFixture {
               |: !-- ddd
               |!-- ccc
               |""".stripMargin
-        }
-
-        it("... with arrow texts") {
 
           tn1.treeWithArrowTexts.diagram_hierarchy.treeString shouldBe
             """
               |+ aaa
-              |!-: [ aaa |> bbb ]
+              |!-: ( aaa |> bbb )
               |: + bbb
-              |: !-: [ bbb |> ddd ]
+              |: !-: ( bbb |> ddd )
               |:   - ddd
-              |!-: [ aaa |> ccc ]
+              |!-: ( aaa |> ccc )
               |  - ccc
               |""".stripMargin
         }
@@ -48,27 +45,24 @@ class HierarchySpec extends TreeFixture {
               |!-- ccc
               |    %%%%%
               |""".stripMargin
-        }
-
-        it(".... with arrow texts") {
 
           tn2.treeWithArrowTexts.diagram_hierarchy.treeString shouldBe
             """
               |+ aaa
               |: %%%%%
-              |!-: ┏ aaa          ┓
-              |: : ┃ %%%%% |> bbb ┃
-              |: : ┗ %%%%%        ┛
+              |!-: ⎛ aaa          ⎫
+              |: : │ %%%%% |> bbb │
+              |: : ⎝ %%%%%        ⎭
               |: + bbb
               |: : %%%%%
-              |: !-: ┏ bbb          ┓
-              |:   : ┃ %%%%% |> ddd ┃
-              |:   : ┗ %%%%%        ┛
+              |: !-: ⎛ bbb          ⎫
+              |:   : │ %%%%% |> ddd │
+              |:   : ⎝ %%%%%        ⎭
               |:   - ddd
               |:     %%%%%
-              |!-: ┏ aaa          ┓
-              |  : ┃ %%%%% |> ccc ┃
-              |  : ┗ %%%%%        ┛
+              |!-: ⎛ aaa          ⎫
+              |  : │ %%%%% |> ccc │
+              |  : ⎝ %%%%%        ⎭
               |  - ccc
               |    %%%%%
               |""".stripMargin

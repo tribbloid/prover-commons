@@ -47,14 +47,14 @@ object Padding {
 
   val leftCurved: Padding = Padding(
     "⎛ ",
-    "┃ ",
+    "│ ",
     "⎝ ",
     "( "
   )
 
   val rightCurved: Padding = Padding(
     " ⎫",
-    " ┃",
+    " │",
     " ⎭",
     " )"
   )
@@ -63,14 +63,14 @@ object Padding {
     "┏ ",
     "┃ ",
     "┗ ",
-    "[ "
+    "⟦ "
   )
 
   val rightSquare: Padding = Padding(
     " ┓",
     " ┃",
     " ┛",
-    " ]"
+    " ⟧"
   )
 
   val leftArrowUp: Padding = ofHead(
