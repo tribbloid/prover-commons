@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.notebook
 
 import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.graph.local.Graph
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 import scala.collection.mutable
@@ -11,25 +11,34 @@ object PathToDOT {
 
   case class Forward(text: String) {
 
-    val arrowBuffer = mutable.Buffer.empty[Arrow.`~>`.Of[Forward]]
+    val arrowBuffer = mutable.Buffer.empty[(Arrow.`~>`.^, Forward)]
 
     def from(fromNode: Forward, msg: String): this.type = {
 
-      fromNode.arrowBuffer += Arrow.`~>`.NoInfo(this, Option(msg).filter(_.nonEmpty))
+      fromNode.arrowBuffer += Arrow.`~>`.NoInfo(Option(msg).filter(_.nonEmpty)) -> this
       this
     }
   }
 
-  case class G(roots: Seq[Forward]) extends Graph.Outbound[Forward] {
+  object G {
 
-    case class Ops(node: Forward) extends OutboundNOps {
+    case class Ops(value: Forward) extends Local.Semilattice.Upper.NodeImpl[Forward] {
 
-      override protected def getNodeText: String = node.text
+      override protected def inductionC: Seq[(_A, Ops)] = {
 
-      override protected def getInduction = {
-        node.arrowBuffer.toSeq
+        value.arrowBuffer.toSeq.map { v =>
+          v._1 -> Ops(v._2)
+        }
       }
+
+      override def nodeTextC: String = value.text
     }
+
+    def apply(rootValues: Seq[Forward]) = Local.AnyGraph(
+      rootValues.map { v =>
+        Ops(v)
+      }: _*
+    )
   }
 
   trait LambdaCube {
@@ -115,17 +124,17 @@ class PathToDOT extends BaseSpec {
 
     val g = G(Seq(LambdaCube.f))
 
-    print_@(g.diagram_Hasse.treeString)
+    print_@(g.diagram_Flow.toString)
 
-    print_@(g.diagram_linkedHierarchy.treeString)
+    print_@(g.diagram_linkedHierarchy.toString)
   }
 
   it("DOT") {
 
     val g = G(Seq(ToDOT.f))
 
-    print_@(g.diagram_Hasse.treeString)
+    print_@(g.diagram_Flow.toString)
 
-    print_@(g.diagram_linkedHierarchy.treeString)
+    print_@(g.diagram_linkedHierarchy.toString)
   }
 }

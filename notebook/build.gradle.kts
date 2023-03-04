@@ -7,7 +7,7 @@ val splainVFallback: String = run {
 }
 
 dependencies {
-    api(project(":core"))
+    api(project(":prover-commons:core"))
 
-    testFixturesApi(testFixtures(project(":core")))
+    testFixturesApi(testFixtures(project(":prover-commons:core")))
 }

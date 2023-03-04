@@ -9,9 +9,11 @@ buildscript {
 
 plugins {
     java
+    `java-library`
     `java-test-fixtures`
 
     scala
+    id("io.github.cosmicsilence.scalafix") version "0.1.14"
 
     idea
 
@@ -21,9 +23,6 @@ plugins {
 
     id("com.github.ben-manes.versions") version "0.44.0"
 }
-
-group = vs.projectGroup
-version = vs.projectV
 
 allprojects {
 
@@ -36,11 +35,14 @@ allprojects {
     // Cannot add extension with name 'bloop', as there is an extension already registered with that name
 
     apply(plugin = "scala")
+    apply(plugin = "io.github.cosmicsilence.scalafix")
 
     apply(plugin = "idea")
 
     apply(plugin = "signing")
     apply(plugin = "maven-publish")
+
+    version = vs.projectV
 
     repositories {
         mavenLocal()
@@ -57,36 +59,14 @@ allprojects {
 //            testFixturesImplementation(constraintNotation)
 //        }
 
-        implementation("${vs.scalaGroup}:scala-compiler:${vs.scalaV}")
-        implementation("${vs.scalaGroup}:scala-library:${vs.scalaV}")
-        implementation("${vs.scalaGroup}:scala-reflect:${vs.scalaV}")
+        implementation("${vs.scala.group}:scala-library:${vs.scala.v}")
 
         val scalaTestV = "3.2.3"
-        testImplementation("org.scalatest:scalatest_${vs.scalaBinaryV}:${scalaTestV}")
+        testImplementation("org.scalatest:scalatest_${vs.scala.binaryV}:${scalaTestV}")
         testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
         testRuntimeOnly("co.helmethair:scalatest-junit-runner:0.2.0")
     }
-
-    //TODO: find more comprehensive solution
-//    sourceSets {
-//        main {
-//            scala {
-//                val vn = VersionNumber.parse(vs.scalaV)
-//
-//                val supportedPatchVs = listOf(6, 7)
-//
-//                for (from in supportedPatchVs) {
-//                    if (vn.micro >= from)
-//                        setSrcDirs(srcDirs + listOf("src/main/scala-2.13.${from}+/latest"))
-//                    for (to in supportedPatchVs) {
-//                        if (vn.micro <= to)
-//                            setSrcDirs(srcDirs + listOf("src/main/scala-2.13.${from}+/2.13.${to}"))
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     task("dependencyTree") {
 
@@ -115,7 +95,7 @@ allprojects {
 
                         "-g:vars",
 
-                    )
+                        )
 
                 additionalParameters = compilerOptions
 
@@ -159,9 +139,39 @@ allprojects {
         withSourcesJar()
         withJavadocJar()
     }
+
+
+    idea {
+
+        module {
+
+            excludeDirs = excludeDirs + files(
+
+                "target",
+                "out",
+
+                ".idea",
+                ".vscode",
+                ".bloop",
+                ".bsp",
+                ".metals",
+                "bin",
+
+                ".ammonite",
+
+                "logs",
+
+                )
+
+            isDownloadJavadoc = true
+            isDownloadSources = true
+        }
+    }
 }
 
-subprojects {}
+//subprojects {
+//
+//}
 
 idea {
 
@@ -171,24 +181,7 @@ idea {
 
         excludeDirs = excludeDirs + listOf(
             file(".gradle"),
-//            file(".github"),
-
-            file("target"),
-//                        file ("out"),
-
-            file(".idea"),
-            file(".vscode"),
-            file(".bloop"),
-            file(".bsp"),
-            file(".metals"),
-            file(".ammonite"),
-
-            file("logs"),
-
-            file("spike"),
+            file("gradle")
         )
-
-        isDownloadJavadoc = true
-        isDownloadSources = true
     }
 }
