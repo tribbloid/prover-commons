@@ -9,9 +9,11 @@ buildscript {
 
 plugins {
     java
+    `java-library`
     `java-test-fixtures`
 
     scala
+    id("io.github.cosmicsilence.scalafix") version "0.1.14"
 
     idea
 
@@ -21,9 +23,6 @@ plugins {
 
     id("com.github.ben-manes.versions") version "0.44.0"
 }
-
-group = vs.projectGroup
-version = vs.projectV
 
 allprojects {
 
@@ -41,6 +40,9 @@ allprojects {
 
     apply(plugin = "signing")
     apply(plugin = "maven-publish")
+
+    group = vs.projectGroup
+    version = vs.projectV
 
     repositories {
         mavenLocal()
@@ -159,9 +161,39 @@ allprojects {
         withSourcesJar()
         withJavadocJar()
     }
+
+
+    idea {
+
+        module {
+
+            excludeDirs = excludeDirs + files(
+
+                "target",
+                "out",
+
+                ".idea",
+                ".vscode",
+                ".bloop",
+                ".bsp",
+                ".metals",
+                "bin",
+
+                ".ammonite",
+
+                "logs",
+
+                )
+
+            isDownloadJavadoc = true
+            isDownloadSources = true
+        }
+    }
 }
 
-subprojects {}
+subprojects {
+
+}
 
 idea {
 
@@ -170,25 +202,7 @@ idea {
     module {
 
         excludeDirs = excludeDirs + listOf(
-            file(".gradle"),
-//            file(".github"),
-
-            file("target"),
-//                        file ("out"),
-
-            file(".idea"),
-            file(".vscode"),
-            file(".bloop"),
-            file(".bsp"),
-            file(".metals"),
-            file(".ammonite"),
-
-            file("logs"),
-
-            file("spike"),
+            file(".gradle")
         )
-
-        isDownloadJavadoc = true
-        isDownloadSources = true
     }
 }
