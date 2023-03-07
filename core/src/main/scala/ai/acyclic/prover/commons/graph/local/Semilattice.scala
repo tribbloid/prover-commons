@@ -13,8 +13,6 @@ object Semilattice {
 
   trait Upper[N] extends Abstract[N] with Graph.Outbound[N] {
 
-    override val outer: Local._GraphType = Upper
-
     trait UpperNOps extends OutboundNOps {
 
       lazy val allOffsprings: Seq[N] = {
@@ -35,5 +33,5 @@ object Semilattice {
     ): format.Viz[N] = format.Viz(this)
   }
 
-  object Upper extends Local._GraphType {}
+  object Upper {}
 }

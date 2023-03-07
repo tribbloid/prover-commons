@@ -1,6 +1,8 @@
-package ai.acyclic.prover.commons.graph.processing
+package ai.acyclic.prover.commons.graph.plan
 
 import ai.acyclic.prover.commons.graph.GraphFixture
+import ai.acyclic.prover.commons.graph.local.Graph
+import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import org.scalatest.funspec.AnyFunSpec
 
 import scala.collection.mutable
@@ -9,14 +11,12 @@ class GraphPlansSpec extends AnyFunSpec with GraphFixture {
 
   import GraphFixture._
 
-  describe(classOf[GraphPlans[Any]#Traverse].toString) {}
-
   it("DepthFirst") {
 
     val down = mutable.Buffer.empty[GN]
     val up = mutable.Buffer.empty[GN]
 
-    GraphPlans(cyclic.graph)
+    GraphUnary(cyclic.graph)
       .Traverse(
         5,
         v => down += v,
@@ -61,7 +61,7 @@ class GraphPlansSpec extends AnyFunSpec with GraphFixture {
     val down = mutable.Buffer.empty[GN]
     val up = mutable.Buffer.empty[GN]
 
-    GraphPlans(cyclic.graph)
+    GraphUnary(cyclic.graph)
       .Traverse(
         5,
         v => down += v,

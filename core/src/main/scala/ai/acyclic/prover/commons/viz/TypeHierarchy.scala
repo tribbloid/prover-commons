@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.graph.local.Tree
-import ai.acyclic.prover.commons.graph.processing.GraphPlans
+import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy._RefNode
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
 import ai.acyclic.prover.commons.reflect.format.TypeFormat
@@ -33,7 +33,7 @@ case class TypeHierarchy(
 
       def argDryRun(): Unit = {
 
-        GraphPlans(g)
+        GraphUnary(g)
           .Traverse(
             down = { v: N =>
               v.node match {

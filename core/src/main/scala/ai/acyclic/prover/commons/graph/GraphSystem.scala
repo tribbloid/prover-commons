@@ -1,10 +1,10 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.HasOuter
+import ai.acyclic.prover.commons.{Correspondence, HasOuter}
+
+import scala.language.implicitConversions
 
 trait GraphSystem {
-
-  import GraphSystem._
 
   type Dataset[T]
   def parallelize[T](seq: Seq[T]): Dataset[T]
@@ -12,38 +12,77 @@ trait GraphSystem {
   type Many[+T] = IndexedSeq[T]
   final def toMany[T](seq: Seq[T]): IndexedSeq[T] = IndexedSeq(seq: _*)
 
-  trait _GraphType extends GraphType {
-
-    type ArrowUBK[N] <: Arrow.Of[N]
-
-    final override val outer: GraphSystem.this.type = GraphSystem.this
-
-    // a controversial scala feature prevents this trait from being useful, oops
-    private trait _Graph[N] extends GraphK[N] {
-      final override val outer: _GraphType.this.type = _GraphType.this
-    }
-  }
+//  trait _GraphType extends GraphType {
+//
+////    type ArrowUBK[N] <: Arrow.Of[N]
+//
+//    final override val outer: GraphSystem.this.type = GraphSystem.this
+//
+//    // a controversial scala feature prevents this trait from being useful, oops
+//    @Deprecated
+//    private trait _Graph[N] extends GraphK[N] {
+//      final override val graphType: _GraphType.this.type = _GraphType.this
+//    }
+//  }
 }
 
 object GraphSystem {
 
-  trait GraphType extends HasOuter {
-
-    val outer: GraphSystem
-
-//    type ArrowUB[+N] <: Arrow.Of[N]
-  }
+//  trait GraphType extends HasOuter {
+//
+//    val outer: GraphSystem
+//
+////    type ArrowUB[+N] <: Arrow.Of[N]
+//  }
 
   trait _Graph extends HasOuter {
 
-    val outer: GraphType
+    type NodeType
 
-    lazy val sys: outer.outer.type = outer.outer
+    val sys: GraphSystem
+
+    final def outer: GraphSystem = sys
 
     type Many[+T] = sys.Many[T]
 
     type Rows[T] = sys.Dataset[T]
   }
 
-  trait GraphK[N] extends _Graph {}
+  trait HasNode[+N] {
+
+    val node: N
+
+    protected def getNodeText: String = node.toString
+
+    final lazy val nodeText: String = getNodeText
+  }
+
+  object HasNode {
+
+    implicit def unbox[N](ops: HasNode[N]): N = ops.node
+  }
+
+  trait GraphK[N] extends _Graph {
+
+    final type NodeType = N
+
+    trait NodeOps extends Inductive[Arrow.Of[N]] with HasOuter {
+
+      def outer = GraphK.this
+    }
+
+    def roots: Rows[N]
+
+    type Ops <: NodeOps
+    protected val Ops: N => Ops
+
+    final val nodeOps = Correspondence((v: N) => Ops(v))
+
+    trait Inductive[+A <: Arrow] {
+
+      protected def getInduction: Seq[A]
+
+      final lazy val induction: Many[A] = sys.toMany(getInduction)
+    }
+  }
 }

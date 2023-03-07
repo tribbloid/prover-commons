@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.viz
 import ai.acyclic.prover.commons.Correspondence
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Graph
-import ai.acyclic.prover.commons.graph.processing.GraphPlans
+import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import ai.acyclic.prover.commons.viz.text.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
@@ -127,7 +127,7 @@ trait Hasse extends Hasse.Format {
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
-      val buildBuffers = GraphPlans(graph)
+      val buildBuffers = GraphUnary(graph)
         .Traverse(
           maxDepth = Hasse.this.maxDepth,
           down = { node =>
@@ -153,7 +153,7 @@ trait Hasse extends Hasse.Format {
         )
         .DepthFirst_ForEach
 
-      buildBuffers.exeOnce
+      buildBuffers.resolve
 
       val nodeSet: Set[NodeWrapper] = nodeBuffer.values
         .map { nodeWrapper =>

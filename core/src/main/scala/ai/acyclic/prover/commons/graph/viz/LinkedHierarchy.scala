@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.{Graph, Tree}
-import ai.acyclic.prover.commons.graph.processing.GraphPlans
+import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import ai.acyclic.prover.commons.viz.text.TextBlock
 
 import java.util.UUID
@@ -53,7 +53,7 @@ object LinkedHierarchy extends Visualisations {
     override def sameRefBy(node: Any): Option[Any] = Some(node)
 
     override def dryRun[N <: _RefNode](tree: Tree[N]): Unit = {
-      GraphPlans(tree)
+      GraphUnary(tree)
         .Traverse(
           maxDepth = backbone.maxDepth,
           down = { v =>
