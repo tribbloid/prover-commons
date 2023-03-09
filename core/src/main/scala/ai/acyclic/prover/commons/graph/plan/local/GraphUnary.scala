@@ -20,11 +20,13 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
 
   lazy val inputGraph: IG = arg.exeOnce
 
-  case class Upcast[N2 >: N]() extends Expr[Graph[N2]] {
+  case class UpcastNode[N2 >: N]() extends Expr[Graph[N2]] {
 
     object Upcasted extends Graph[N2] {
 
       case class Ops(node: N2) extends GraphNOps {
+
+        override protected def getNodeText: String = inputGraph.nodeOps(node.asInstanceOf[N]).nodeText
 
         override protected def getInduction: Seq[Arrow.Of[N2]] = {
           inputGraph.nodeOps(node.asInstanceOf[N]).induction
@@ -85,6 +87,8 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
       }
 
       case class Ops(node: N) extends GraphNOps {
+        override protected def getNodeText: String = inputGraph.nodeOps(node).nodeText
+
         override protected def getInduction: Seq[Arrow.Of[N]] = inputGraph.nodeOps(node).induction
       }
     }
@@ -133,6 +137,38 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
       }
     }
   }
+
+  object TransformLinear {
+    def apply(
+        rewriter: Rewriter[N],
+        maxDepth: Int = Int.MaxValue,
+        down: N => N = v => v,
+        pruning: N => Boolean = _ => true,
+        up: N => N = v => v
+    ): Transform = Transform(
+      rewriter,
+      maxDepth,
+      v => Seq(down(v)),
+      pruning,
+      v => Seq(up(v))
+    )
+  }
+
+//  {
+//
+//    val delegate: Transform = Transform(
+//      rewriter,
+//      maxDepth,
+//      v => Seq(down(v)),
+//      pruning,
+//      v => Seq(up(v))
+//    )
+//  }
+//
+//  object TransformLinear {
+//
+//    implicit def asTransform(v: TransformLinear): Transform = v.delegate
+//  }
 
   trait TraverseLike extends Expr[IG] {}
 

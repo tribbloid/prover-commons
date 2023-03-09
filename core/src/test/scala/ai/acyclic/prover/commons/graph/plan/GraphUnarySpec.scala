@@ -4,11 +4,22 @@ import ai.acyclic.prover.commons.graph.GraphFixture
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import org.scalatest.funspec.AnyFunSpec
 
+import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 
 class GraphUnarySpec extends AnyFunSpec with GraphFixture {
 
   import GraphFixture._
+
+  it("Upcast") {
+    val result = GraphUnary(cyclic.graph)
+      .UpcastNode[Any]()
+      .exe
+
+    result.diagram_Hasse.treeString.shouldBe(
+      cyclic.graph.diagram_Hasse.treeString
+    )
+  }
 
   describe("Traverse") {
 
@@ -93,9 +104,46 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
 
   describe("Transform") {
 
-    it("down") {}
+    it("down") {
 
-    it("up") {}
+      val inc = new AtomicInteger(0)
+      val transformed = GraphUnary(cyclic.graph)
+        .TransformLinear(
+          GNRewriter,
+          5,
+          down = { v =>
+            val result = v.copy(text = v.text + inc.getAndIncrement())
+            result.children ++= v.children
+            result
+          }
+        )
+        .DepthFirst_Once
+        .exe
+
+      transformed.diagram_Hasse.treeString.shouldBe(
+      )
+
+    }
+
+    it("up") {
+
+      val inc = new AtomicInteger(0)
+      val transformed = GraphUnary(cyclic.graph)
+        .TransformLinear(
+          GNRewriter,
+          5,
+          up = { v =>
+            val result = v.copy(text = v.text + inc.getAndIncrement())
+            result.children ++= v.children
+            result
+          }
+        )
+        .DepthFirst_Once
+        .exe
+
+      transformed.diagram_Hasse.treeString.shouldBe(
+      )
+    }
   }
 
 }
