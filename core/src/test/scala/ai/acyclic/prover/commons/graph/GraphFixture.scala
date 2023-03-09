@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.local.Graph
+import ai.acyclic.prover.commons.graph.local.Rewriter.WithNewSuccessor
+import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 import scala.collection.mutable.ArrayBuffer
@@ -65,6 +66,15 @@ object GraphFixture {
     def graph: _OGraph = _OGraph(Seq(this))
 
     def graphWithArrowText: _OGraphWithArrowText = _OGraphWithArrowText(Seq(this))
+  }
+
+  object GNRewriter extends Rewriter[GN] {
+
+    override def apply(gn: GN): WithNewSuccessor[GN] = { ss: Seq[GN] =>
+      val result = gn.copy()
+      result.children.addAll(ss)
+      result
+    }
   }
 
   case class _OGraph(override val roots: Seq[GN]) extends Graph.Outbound[GN] {

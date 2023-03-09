@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.plan.local
 import ai.acyclic.prover.commons.EqualBy
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.GraphSystem._Graph
-import ai.acyclic.prover.commons.graph.local.Graph
+import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
 import ai.acyclic.prover.commons.graph.plan.{GraphExpr, PlanGroup}
 import shapeless.Sized
 
@@ -18,7 +18,121 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
 
   final override lazy val args = Sized(arg)
 
-  lazy val input: IG = arg.resolve
+  lazy val inputGraph: IG = arg.exeOnce
+
+  case class Upcast[N2 >: N]() extends Expr[Graph[N2]] {
+
+    object Upcasted extends Graph[N2] {
+
+      case class Ops(node: N2) extends GraphNOps {
+
+        override protected def getInduction: Seq[Arrow.Of[N2]] = {
+          inputGraph.nodeOps(node.asInstanceOf[N]).induction
+        }
+      }
+
+      override def roots: Rows[N2] = inputGraph.roots.map(v => v: N2)
+    }
+
+    override def exe: Graph[N2] = {
+
+      Upcasted
+    }
+  }
+
+  trait TransformLike extends Expr[Graph[N]]
+
+  // TODO:
+  //  need to cross NodeType
+  //  need to transcribe to a different graph type
+  case class Transform(
+      rewriter: Rewriter[N],
+      maxDepth: Int = Int.MaxValue,
+      down: N => Seq[N] = v => Seq(v),
+      pruning: N => Boolean = _ => true,
+      up: N => Seq[N] = v => Seq(v)
+  ) {
+
+    trait LazyResultGraph extends Graph[N] {
+
+      private def transformInternal(node: N, depth: Int = maxDepth): Seq[N] = {
+
+        if (pruning(node) && depth > 0) {
+          val downTs: Seq[N] = down(node)
+
+          val inductionTs: Seq[N] =
+            downTs.map { n =>
+              val successors = inputGraph.nodeOps(n).successors
+              val successorsTransformed = successors.flatMap { nn =>
+                transformInternal(nn, depth - 1)
+              }
+              val rewritten = rewriter.VerifiedOn(inputGraph).apply(n)(successorsTransformed)
+              rewritten
+            }
+
+          val results = inductionTs.flatMap { n =>
+            up(n)
+          }
+
+          results
+        } else {
+          Seq(node)
+        }
+      }
+
+      override lazy val roots: Seq[N] = {
+        inputGraph.roots.flatMap(n => transformInternal(n))
+      }
+
+      case class Ops(node: N) extends GraphNOps {
+        override protected def getInduction: Seq[Arrow.Of[N]] = inputGraph.nodeOps(node).induction
+      }
+    }
+    object LazyResultGraph extends LazyResultGraph // TODO: this should be exposed
+
+    object ResultGraph extends LazyResultGraph {
+
+      {
+        roots
+      }
+    }
+
+    object DepthFirst extends TransformLike {
+
+      override def exe: Graph[N] = {
+        ResultGraph
+      }
+    }
+
+    object DepthFirst_Once extends TransformLike {
+
+      private val delegate = {
+
+        val seen = mutable.Map.empty[EqualBy.MemoryHash[N], N]
+
+        Transform(
+          rewriter,
+          maxDepth,
+          down,
+          { node =>
+            var isPruned = false
+            seen.getOrElseUpdate(
+              EqualBy.MemoryHash(node), {
+                isPruned = true
+                node
+              }
+            )
+            isPruned
+          },
+          up
+        )
+      }
+
+      override def exe: Graph[N] = {
+        delegate.DepthFirst.exe
+      }
+    }
+  }
 
   trait TraverseLike extends Expr[IG] {}
 
@@ -29,166 +143,70 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
       up: N => Unit = { _: N => {} }
   ) {
 
+    private val delegate = Transform(
+      rewriter = Rewriter.DoNotRewrite[N](),
+      maxDepth,
+      down = { v => down(v); Seq(v) },
+      up = { v => up(v); Seq(v) }
+    )
+
     object DepthFirst extends TraverseLike {
 
       override def exe: IG = {
 
-        def exeInternal(node: N, maxDepth: Int): Unit = {
-
-          down(node)
-
-          val arrows: Seq[Arrow.Of[N]] =
-            if (maxDepth == 0) Nil
-            else input.nodeOps(node).induction
-
-          arrows.foreach { arrow =>
-            val target = arrow.target
-            exeInternal(target, maxDepth - 1)
-          // TODO: may incur high overhead
-          }
-
-          up(node)
-        }
-
-        input.roots.foreach { ii =>
-          exeInternal(ii, maxDepth)
-        }
-
-        input
+        delegate.DepthFirst.exe
+        inputGraph
       }
     }
 
     object DepthFirst_ForEach extends TraverseLike {
 
-      private val _down = down
-      private val _up = up
+//      private val _down = down
+//      private val _up = up
 
       override def exe: IG = {
 
-        val visitedDown = mutable.Map.empty[EqualBy.MemoryHash[N], N]
-        val visitedUp = mutable.Map.empty[EqualBy.MemoryHash[N], N]
-
-        lazy val delegate = {
-          val tt = Traverse(
-            maxDepth,
-            down = { node =>
-              visitedDown.getOrElseUpdate(
-                EqualBy.MemoryHash(node), {
-                  _down(node)
-                  node
-                }
-              )
-            },
-            up = { node =>
-              visitedUp.getOrElseUpdate(
-                EqualBy.MemoryHash(node), {
-                  _up(node)
-                  node
-                }
-              )
-            }
-          )
-          tt.DepthFirst
-        }
-
-        delegate.exe
+        delegate.DepthFirst_Once.exe
+        inputGraph
       }
     }
   }
 
-  case class Upcast[N2 >: N]() extends Expr[Graph[N2]] {
+  // TODO: delete the following example, note sure if map or monadic flatMap can be supported
+  //  case class TransformNode[G1 <: Graph[Int], G2 <: Graph[String]](original: G1) {
+  //
+  //    // just a carbon copy:
+  //    lazy val g1: G1 = ???
+  //
+  //    lazy val rewriter: Transcriber[String, G2] = ???
+  //
+  //    def mapNodeFn: (Int => String) = _.toString
+  //
+  //    lazy val compile: G2 = {
+  //
+  //      def _internal(oldNode: Int): String = {
+  //        val oldInductions: Seq[Arrow.Of[Int]] = g1.nodeOps(oldNode).induction
+  //
+  //        val mappedNode: String = mapNodeFn(oldNode)
+  ////        val mappedInductions: String =
+  //
+  //        val rewrittenInductions = oldInductions.map { arrow =>
+  //          val target = _internal(arrow.target)
+  //          val newArrow = rewriter.rewriteArrow(arrow).setTarget(target)
+  //          newArrow
+  //        }
+  //
+  //        val newNode: String = rewriter.rewriteNode(mappedNode).setInductions(rewrittenInductions)
+  //
+  //        newNode
+  //      }
+  //
+  //      val newRoots = original.roots.map { root =>
+  //        _internal(root)
+  //      }
+  //
+  //      rewriter.build(newRoots)
+  //    }
+  //  }
 
-    object Upcasted extends Graph[N2] {
-
-      case class Ops(node: N2) extends GraphNOps {
-
-        override protected def getInduction: Seq[Arrow.Of[N2]] = {
-          node match {
-            case v: N => input.nodeOps(v).induction
-            case _    => ???
-          }
-        }
-      }
-
-      override def roots: Rows[N2] = input.roots.map(v => v: N2)
-    }
-
-    override def exe: Graph[N2] = {
-
-      Upcasted
-    }
-  }
-
-//  case class Rewritten[G1 <: Graph[Int], G2 <: Graph[String]](original: G1) {
-//
-//    // just a carbon copy:
-//    lazy val g1: G1 = ???
-//
-//    lazy val rewriter: Transcriber[String, G2] = ???
-//
-//    def mapNodeFn: (Int => String) = _.toString
-//
-//    lazy val compile: G2 = {
-//
-//      def _internal(oldNode: Int): String = {
-//        val oldInductions: Seq[Arrow.Of[Int]] = g1.nodeOps(oldNode).induction
-//
-//        val mappedNode: String = mapNodeFn(oldNode)
-////        val mappedInductions: String =
-//
-//        val rewrittenInductions = oldInductions.map { arrow =>
-//          val target = _internal(arrow.target)
-//          val newArrow = rewriter.rewriteArrow(arrow).setTarget(target)
-//          newArrow
-//        }
-//
-//        val newNode: String = rewriter.rewriteNode(mappedNode).setInductions(rewrittenInductions)
-//
-//        newNode
-//      }
-//
-//      val newRoots = original.roots.map { root =>
-//        _internal(root)
-//      }
-//
-//      rewriter.build(newRoots)
-//    }
-//  }
-//
-//  case class Rewrite[G2 <: Graph[N]](
-//      rewriter: Transcriber[N, G2]
-//  ) {
-//
-//    // how to cross GraphType & NodeType?
-//    // if this is the optimising phase of a compiler: how to ensure that there is no information loss?
-//    // how to ensure that graph AFTER transformation can be traced back to BEFORE transformation?
-//    // all important questions ...
-//    case class Transform(
-//        maxDepth: Int = Int.MaxValue,
-//        down: N => N = identity[N],
-//        up: N => N = identity[N]
-//    ) {
-//
-//      object DepthFirst extends _Transform[N] {
-//
-//        override def exe: G2 = {
-//
-//          val g2BeforeT = rewriter.build(input.roots)
-//
-//          val newRoots: Seq[N] = g2BeforeT.roots.map { node =>
-//            val downT = down(node)
-//
-//            input.nodeOps(downT)
-//          }
-//
-//          def subExeOn(node: N, maxDepth: Int): Unit = {
-//
-//            ???
-//          }
-//
-//          ???
-//        }
-//      }
-//    }
-//  }
 }

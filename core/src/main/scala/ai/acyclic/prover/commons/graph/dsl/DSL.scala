@@ -1,12 +1,10 @@
 package ai.acyclic.prover.commons.graph.dsl
 
-import ai.acyclic.prover.commons.graph.local.{Graph, Transcriber}
+import ai.acyclic.prover.commons.graph.local.Graph
 
 trait DSL[N, G[a] <: Graph[a]] {
 
   def graph: G[N]
-
-  def rewriter: Transcriber[N, G[N]]
 
   def tagToNodes: Map[Tag, Seq[N]]
 

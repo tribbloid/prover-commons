@@ -78,11 +78,13 @@ object GraphSystem {
 
     final val nodeOps = Correspondence((v: N) => Ops(v))
 
-    trait Inductive[+A <: Arrow] {
+    trait Inductive[+A <: Arrow.Of[N]] {
 
       protected def getInduction: Seq[A]
 
       final lazy val induction: Many[A] = sys.toMany(getInduction)
+
+      final lazy val successors: Many[N] = sys.toMany(induction.map(_.target))
     }
   }
 }

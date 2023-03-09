@@ -153,7 +153,7 @@ trait Hasse extends Hasse.Format {
         )
         .DepthFirst_ForEach
 
-      buildBuffers.resolve
+      buildBuffers.exeOnce
 
       val nodeSet: Set[NodeWrapper] = nodeBuffer.values
         .map { nodeWrapper =>

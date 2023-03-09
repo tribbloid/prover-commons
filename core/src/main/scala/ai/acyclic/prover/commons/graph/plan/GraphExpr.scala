@@ -6,11 +6,11 @@ import scala.language.implicitConversions
 
 trait GraphExpr[OG <: GraphSystem._Graph] {
 
-  protected def exe: OG
+  def exe: OG
 
-  final lazy val resolve: OG = exe
+  final lazy val exeOnce: OG = exe
 
-  type NodeType = resolve.NodeType
+  type NodeType = exeOnce.NodeType
 }
 
 object GraphExpr {
