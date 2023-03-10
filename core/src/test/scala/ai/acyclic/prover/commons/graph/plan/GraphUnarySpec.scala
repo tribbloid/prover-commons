@@ -64,7 +64,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
         )
     }
 
-    it(" ... _ForEach") {
+    it(" ... Once") {
 
       val down = mutable.Buffer.empty[GN]
       val up = mutable.Buffer.empty[GN]
@@ -75,7 +75,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
           v => down += v,
           v => up += v
         )
-        .DepthFirst_ForEach
+        .DepthFirst_Once
         .exe
 
       down
@@ -117,12 +117,11 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
             result
           }
         )
-        .DepthFirst_Once
+        .DepthFirst
         .exe
 
       transformed.diagram_Hasse.treeString.shouldBe(
       )
-
     }
 
     it("up") {
@@ -138,7 +137,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
             result
           }
         )
-        .DepthFirst_Once
+        .DepthFirst
         .exe
 
       transformed.diagram_Hasse.treeString.shouldBe(

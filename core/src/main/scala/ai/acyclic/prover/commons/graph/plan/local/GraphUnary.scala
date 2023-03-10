@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.plan.local
 
-import ai.acyclic.prover.commons.EqualBy
+import ai.acyclic.prover.commons.{Correspondence, EqualBy}
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.GraphSystem._Graph
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
@@ -8,7 +8,6 @@ import ai.acyclic.prover.commons.graph.plan.{GraphExpr, PlanGroup}
 import shapeless.Sized
 
 import scala.collection.mutable
-import scala.language.existentials
 
 case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
     implicit
@@ -57,8 +56,12 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
 
     trait LazyResultGraph extends Graph[N] {
 
-      private def transformInternal(node: N, depth: Int = maxDepth): Seq[N] = {
+      private lazy val transformCache = Correspondence[N, Seq[N]]()
 
+      private def transformInternal(node: N, depth: Int = maxDepth): Seq[N] = {
+//        transformCache.getOrElseUpdate(
+//          node,
+//          { () =>
         if (pruning(node) && depth > 0) {
           val downTs: Seq[N] = down(node)
 
@@ -80,10 +83,12 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
         } else {
           Seq(node)
         }
+//          }
+//        )
       }
 
       override lazy val roots: Seq[N] = {
-        inputGraph.roots.flatMap(n => transformInternal(n))
+        inputGraph.roots.flatMap(n => transformInternal(n, maxDepth))
       }
 
       case class Ops(node: N) extends GraphNOps {
@@ -195,7 +200,7 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
       }
     }
 
-    object DepthFirst_ForEach extends TraverseLike {
+    object DepthFirst_Once extends TraverseLike {
 
 //      private val _down = down
 //      private val _up = up

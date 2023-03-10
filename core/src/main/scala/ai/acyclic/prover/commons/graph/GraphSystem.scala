@@ -76,7 +76,7 @@ object GraphSystem {
     type Ops <: NodeOps
     protected val Ops: N => Ops
 
-    final val nodeOps = Correspondence((v: N) => Ops(v))
+    final val nodeOps = Correspondence().Memoize((v: N) => Ops(v))
 
     trait Inductive[+A <: Arrow.Of[N]] {
 

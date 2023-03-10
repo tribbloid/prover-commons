@@ -122,8 +122,7 @@ trait Hasse extends Hasse.Format {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeBuffer: Correspondence[N, NodeWrapper] =
-        Correspondence[N, NodeWrapper](v => NodeWrapper(v))
+      val nodeMemoize = Correspondence[N, NodeWrapper].Memoize(v => NodeWrapper(v))
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
@@ -131,16 +130,16 @@ trait Hasse extends Hasse.Format {
         .Traverse(
           maxDepth = Hasse.this.maxDepth,
           down = { node =>
-            val wrapper = nodeBuffer.getOrElseUpdate(node)
+            val wrapper = nodeMemoize.apply(node)
 
             val newRelations = wrapper.nOps.induction.flatMap { arrow =>
               arrow.arrowType match {
                 case Arrow.`~>` =>
-                  val to = nodeBuffer.getOrElseUpdate(arrow.target)
+                  val to = nodeMemoize.apply(arrow.target)
                   to.arrowsFrom += wrapper -> arrow.arrowText
                   Some(wrapper -> to)
                 case Arrow.`<~` =>
-                  val from = nodeBuffer.getOrElseUpdate(arrow.target)
+                  val from = nodeMemoize.apply(arrow.target)
                   wrapper.arrowsFrom += from -> arrow.arrowText
                   Some(from -> wrapper)
                 case _ =>
@@ -151,11 +150,11 @@ trait Hasse extends Hasse.Format {
             relationBuffer ++= newRelations
           }
         )
-        .DepthFirst_ForEach
+        .DepthFirst_Once
 
       buildBuffers.exeOnce
 
-      val nodeSet: Set[NodeWrapper] = nodeBuffer.values
+      val nodeSet: Set[NodeWrapper] = nodeMemoize.outer.values
         .map { nodeWrapper =>
           nodeWrapper.bindInboundArrows()
           nodeWrapper
