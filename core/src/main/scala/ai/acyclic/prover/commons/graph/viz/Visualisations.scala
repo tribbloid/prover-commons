@@ -23,7 +23,7 @@ trait Visualisations {
 
     val graph: UB[N]
 
-    def treeString: String
+    lazy val treeString: String = "[MISSING]"
   }
 
   object _TextViz {

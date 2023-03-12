@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.graph.GraphSystem
 
 import scala.language.implicitConversions
 
-trait GraphExpr[OG <: GraphSystem._Graph] {
+trait PlanExpr[OG <: GraphSystem._Graph] {
 
   def exe: OG
 
@@ -13,9 +13,9 @@ trait GraphExpr[OG <: GraphSystem._Graph] {
   type NodeType = exeOnce.NodeType
 }
 
-object GraphExpr {
+object PlanExpr {
 
-  case class Leaf[OG <: GraphSystem._Graph](override val exe: OG) extends GraphExpr[OG]
+  case class Leaf[OG <: GraphSystem._Graph](override val exe: OG) extends PlanExpr[OG]
 
   implicit def asLeaf[OG <: GraphSystem._Graph](g: OG): Leaf[OG] = Leaf(g)
 }

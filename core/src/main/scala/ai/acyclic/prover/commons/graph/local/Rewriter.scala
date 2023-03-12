@@ -11,8 +11,8 @@ trait Rewriter[N] extends (N => WithNewSuccessor[N]) {
       def apply(newSuccessors: Seq[N]): N = {
         val result = Rewriter.this.apply(node).apply(newSuccessors)
 
-        val actualSuccessors = graph.nodeOps(result).successors
-        require(actualSuccessors == newSuccessors)
+        val actualDiscover = graph.nodeOps(result).canDiscover
+        require(actualDiscover == newSuccessors)
 
         result
       }

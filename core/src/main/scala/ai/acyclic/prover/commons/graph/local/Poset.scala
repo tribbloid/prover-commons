@@ -4,4 +4,7 @@ package ai.acyclic.prover.commons.graph.local
 //  TODO: ... in compile-time
 trait Poset[N] extends Graph[N] {}
 
-object Poset
+object Poset {
+
+  trait Upper[N] extends Poset[N] with Graph.Outbound[N]
+}

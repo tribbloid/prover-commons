@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons
+package ai.acyclic.prover.commons.unused
 
 trait SingletonSummoner {
 

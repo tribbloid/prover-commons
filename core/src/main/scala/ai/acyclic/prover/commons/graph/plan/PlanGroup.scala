@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.plan
 
 import ai.acyclic.prover.commons.graph.GraphSystem
-import shapeless.{nat, Nat, Sized}
+import shapeless.{Nat, Sized}
 
 trait PlanGroup {
 
@@ -9,9 +9,9 @@ trait PlanGroup {
 
   trait Expressions[IG <: GraphSystem._Graph] {
 
-    def args: Sized[Seq[GraphExpr[IG]], Arity]
+    def args: Sized[Seq[PlanExpr[IG]], Arity]
 
-    trait Expr[OG <: GraphSystem._Graph] extends GraphExpr[OG]
+    trait Expr[OG <: GraphSystem._Graph] extends PlanExpr[OG]
   }
 }
 

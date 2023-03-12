@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.Correspondence
+import ai.acyclic.prover.commons.Sameness
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Graph
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
@@ -122,7 +122,7 @@ trait Hasse extends Hasse.Format {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeMemoize = Correspondence[N, NodeWrapper].Memoize(v => NodeWrapper(v))
+      val nodeBuffer = Sameness.ByConstruction.Memoize[N, NodeWrapper](v => NodeWrapper(v))
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
@@ -130,16 +130,16 @@ trait Hasse extends Hasse.Format {
         .Traverse(
           maxDepth = Hasse.this.maxDepth,
           down = { node =>
-            val wrapper = nodeMemoize.apply(node)
+            val wrapper = nodeBuffer.apply(node)
 
             val newRelations = wrapper.nOps.induction.flatMap { arrow =>
               arrow.arrowType match {
                 case Arrow.`~>` =>
-                  val to = nodeMemoize.apply(arrow.target)
+                  val to = nodeBuffer.apply(arrow.target)
                   to.arrowsFrom += wrapper -> arrow.arrowText
                   Some(wrapper -> to)
                 case Arrow.`<~` =>
-                  val from = nodeMemoize.apply(arrow.target)
+                  val from = nodeBuffer.apply(arrow.target)
                   wrapper.arrowsFrom += from -> arrow.arrowText
                   Some(from -> wrapper)
                 case _ =>
@@ -154,7 +154,7 @@ trait Hasse extends Hasse.Format {
 
       buildBuffers.exeOnce
 
-      val nodeSet: Set[NodeWrapper] = nodeMemoize.outer.values
+      val nodeSet: Set[NodeWrapper] = nodeBuffer.outer.values
         .map { nodeWrapper =>
           nodeWrapper.bindInboundArrows()
           nodeWrapper
@@ -164,7 +164,7 @@ trait Hasse extends Hasse.Format {
       ascii.graph.Graph(nodeSet, relationBuffer.toList)
     }
 
-    override def treeString: String = {
+    override lazy val treeString: String = {
 
       GraphLayout.renderGraph(asciiDiagram, layoutPrefs = _layoutPreferences)
     }

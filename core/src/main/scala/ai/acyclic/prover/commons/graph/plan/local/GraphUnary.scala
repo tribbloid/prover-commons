@@ -1,15 +1,13 @@
 package ai.acyclic.prover.commons.graph.plan.local
 
-import ai.acyclic.prover.commons.{Correspondence, EqualBy}
+import ai.acyclic.prover.commons.Sameness
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.GraphSystem._Graph
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
-import ai.acyclic.prover.commons.graph.plan.{GraphExpr, PlanGroup}
+import ai.acyclic.prover.commons.graph.plan.{PlanExpr, PlanGroup}
 import shapeless.Sized
 
-import scala.collection.mutable
-
-case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
+case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
     implicit
     ev: IG <:< Graph[N]
     // see https://stackoverflow.com/questions/16291313/scala-inferred-type-arguments-type-bounds-inferring-to-nothing
@@ -49,42 +47,38 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
   case class Transform(
       rewriter: Rewriter[N],
       maxDepth: Int = Int.MaxValue,
+      pruning: N => Option[Seq[N]] = _ => None,
       down: N => Seq[N] = v => Seq(v),
-      pruning: N => Boolean = _ => true,
       up: N => Seq[N] = v => Seq(v)
   ) {
 
     trait LazyResultGraph extends Graph[N] {
 
-      private lazy val transformCache = Correspondence[N, Seq[N]]()
-
       private def transformInternal(node: N, depth: Int = maxDepth): Seq[N] = {
-//        transformCache.getOrElseUpdate(
-//          node,
-//          { () =>
-        if (pruning(node) && depth > 0) {
-          val downTs: Seq[N] = down(node)
+        if (depth > 0) {
+          pruning(node).getOrElse {
+            val downTs: Seq[N] = down(node)
 
-          val inductionTs: Seq[N] =
-            downTs.map { n =>
-              val successors = inputGraph.nodeOps(n).successors
-              val successorsTransformed = successors.flatMap { nn =>
-                transformInternal(nn, depth - 1)
+            val inductionTs: Seq[N] =
+              downTs.map { n =>
+                val successors = inputGraph.nodeOps(n).canDiscover
+                val successorsTransformed = successors.flatMap { nn =>
+                  transformInternal(nn, depth - 1)
+                }
+                val rewritten = rewriter.VerifiedOn(inputGraph).apply(n)(successorsTransformed)
+                rewritten
               }
-              val rewritten = rewriter.VerifiedOn(inputGraph).apply(n)(successorsTransformed)
-              rewritten
+
+            val results = inductionTs.flatMap { n =>
+              up(n)
             }
 
-          val results = inductionTs.flatMap { n =>
-            up(n)
+            results
           }
-
-          results
         } else {
           Seq(node)
         }
-//          }
-//        )
+
       }
 
       override lazy val roots: Seq[N] = {
@@ -117,30 +111,60 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
 
       private val delegate = {
 
-        val seen = mutable.Map.empty[EqualBy.MemoryHash[N], N]
+        val seen = Sameness.ByConstruction.Correspondence[N, N]()
 
         Transform(
           rewriter,
           maxDepth,
-          down,
-          { node =>
-            var isPruned = false
-            seen.getOrElseUpdate(
-              EqualBy.MemoryHash(node), {
-                isPruned = true
-                node
-              }
-            )
-            isPruned
+          pruning = { node =>
+            val result = seen.get(node) match {
+              case Some(n) =>
+                Some(Seq(n))
+              case None =>
+                seen.getOrElseUpdate(node, () => node)
+                None
+            }
+
+            result
           },
+          down,
           up
-        )
+        ).DepthFirst
       }
 
       override def exe: Graph[N] = {
-        delegate.DepthFirst.exe
+        delegate.exe
       }
     }
+
+    object DepthFirst_Cached extends TransformLike {
+
+      private val delegate = {
+
+        val seen = Sameness.ByConstruction.Correspondence[N, N]()
+
+        Transform(
+          rewriter,
+          maxDepth,
+          pruning = { node =>
+            val result = seen.get(node) match {
+              case Some(n) =>
+                Some(Seq(n))
+              case None =>
+                seen.getOrElseUpdate(node, () => node)
+                None
+            }
+
+            result
+          },
+          down,
+          up
+        ).DepthFirst
+      }
+
+      override def exe: Graph[N] = ???
+    }
+
   }
 
   object TransformLinear {
@@ -148,32 +172,16 @@ case class GraphUnary[IG <: _Graph, N](arg: GraphExpr[IG])(
         rewriter: Rewriter[N],
         maxDepth: Int = Int.MaxValue,
         down: N => N = v => v,
-        pruning: N => Boolean = _ => true,
+        pruning: N => Option[Seq[N]] = _ => None,
         up: N => N = v => v
     ): Transform = Transform(
       rewriter,
       maxDepth,
-      v => Seq(down(v)),
       pruning,
+      v => Seq(down(v)),
       v => Seq(up(v))
     )
   }
-
-//  {
-//
-//    val delegate: Transform = Transform(
-//      rewriter,
-//      maxDepth,
-//      v => Seq(down(v)),
-//      pruning,
-//      v => Seq(up(v))
-//    )
-//  }
-//
-//  object TransformLinear {
-//
-//    implicit def asTransform(v: TransformLinear): Transform = v.delegate
-//  }
 
   trait TraverseLike extends Expr[IG] {}
 

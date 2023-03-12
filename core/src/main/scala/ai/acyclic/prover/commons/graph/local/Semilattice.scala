@@ -2,16 +2,16 @@ package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 
+trait Semilattice[N] extends Poset[N] {
+
+  def root: N
+
+  final lazy val roots: Rows[N] = sys.parallelize(Seq(root))
+}
+
 object Semilattice {
 
-  trait Abstract[N] extends Poset[N] {
-
-    def root: N
-
-    final lazy val roots: Rows[N] = sys.parallelize(Seq(root))
-  }
-
-  trait Upper[N] extends Abstract[N] with Graph.Outbound[N] {
+  trait Upper[N] extends Semilattice[N] with Poset.Upper[N] {
 
     trait UpperNOps extends OutboundNOps {
 

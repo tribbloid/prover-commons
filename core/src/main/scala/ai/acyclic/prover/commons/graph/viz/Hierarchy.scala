@@ -105,6 +105,6 @@ trait Hierarchy extends Hierarchy.Format {
       }
     }
 
-    override def treeString: String = SubViz(graph.root).treeString
+    override lazy val treeString: String = SubViz(graph.root).treeString
   }
 }

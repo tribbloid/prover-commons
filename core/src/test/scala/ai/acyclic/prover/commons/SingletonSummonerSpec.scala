@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.unused.SingletonSummoner
 
 class SingletonSummonerSpec extends BaseSpec {
 

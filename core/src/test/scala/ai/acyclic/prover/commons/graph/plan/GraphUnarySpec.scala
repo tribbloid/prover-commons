@@ -110,7 +110,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
       val transformed = GraphUnary(cyclic.graph)
         .TransformLinear(
           GNRewriter,
-          5,
+          3,
           down = { v =>
             val result = v.copy(text = v.text + inc.getAndIncrement())
             result.children ++= v.children
@@ -121,6 +121,45 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
         .exe
 
       transformed.diagram_Hasse.treeString.shouldBe(
+        """
+          |       ┌────┐
+          |       │aaa0│
+          |       └──┬─┘
+          |          │
+          |          v
+          |       ┌─────┐
+          |       │bbb1 │
+          |       └─┬─┬─┘
+          |         │ │
+          |       ┌─┘ └───┐
+          |       │       │
+          |       v       │
+          |    ┌────┐     │
+          |    │ccc2│     │
+          |    └──┬─┘     │
+          |       │       │
+          |       v       │
+          |    ┌────┐     │
+          |    │aaa3│     │
+          |    └──┬─┘     │
+          |       │       │
+          |       v       │
+          |   ┌───────┐   │
+          |   │  bbb  │   │
+          |   └┬────┬─┘   │
+          |    │    │^    │
+          |    v    ││    │
+          |  ┌───┐  ││    │
+          |  │ccc│  ││    │
+          |  └┬──┘  ││    │
+          |   │ ┌───┼┘    │
+          |   │ │   └─┐   └──┐
+          |   │ │     │      │
+          |   v │     v      v
+          | ┌───┴─┐ ┌───┐ ┌────┐
+          | │ aaa │ │ddd│ │ddd4│
+          | └─────┘ └───┘ └────┘
+          |""".stripMargin
       )
     }
 
@@ -130,7 +169,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
       val transformed = GraphUnary(cyclic.graph)
         .TransformLinear(
           GNRewriter,
-          5,
+          3,
           up = { v =>
             val result = v.copy(text = v.text + inc.getAndIncrement())
             result.children ++= v.children
@@ -141,6 +180,45 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
         .exe
 
       transformed.diagram_Hasse.treeString.shouldBe(
+        """
+          |       ┌────┐
+          |       │aaa4│
+          |       └──┬─┘
+          |          │
+          |          v
+          |       ┌─────┐
+          |       │bbb3 │
+          |       └─┬─┬─┘
+          |         │ │
+          |       ┌─┘ └───┐
+          |       │       │
+          |       v       │
+          |    ┌────┐     │
+          |    │ccc1│     │
+          |    └──┬─┘     │
+          |       │       │
+          |       v       │
+          |    ┌────┐     │
+          |    │aaa0│     │
+          |    └──┬─┘     │
+          |       │       │
+          |       v       │
+          |   ┌───────┐   │
+          |   │  bbb  │   │
+          |   └┬────┬─┘   │
+          |    │    │^    │
+          |    v    ││    │
+          |  ┌───┐  ││    │
+          |  │ccc│  ││    │
+          |  └┬──┘  ││    │
+          |   │ ┌───┼┘    │
+          |   │ │   └─┐   └──┐
+          |   │ │     │      │
+          |   v │     v      v
+          | ┌───┴─┐ ┌───┐ ┌────┐
+          | │ aaa │ │ddd│ │ddd2│
+          | └─────┘ └───┘ └────┘
+          |""".stripMargin
       )
     }
   }

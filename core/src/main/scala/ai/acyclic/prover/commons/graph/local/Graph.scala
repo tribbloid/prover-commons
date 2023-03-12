@@ -3,8 +3,6 @@ package ai.acyclic.prover.commons.graph.local
 import ai.acyclic.prover.commons.graph.viz.{Hasse, LinkedHierarchy}
 import ai.acyclic.prover.commons.graph.{Arrow, GraphSystem}
 
-import scala.language.implicitConversions
-
 // this is untyped, should always leave the possibility to add dependent type information.
 // See project Matryoshka
 // OR this article for a possible start:
@@ -37,7 +35,7 @@ object Graph {
 
   trait Outbound[N] extends Graph[N] {
 
-    trait OutboundNOps extends GraphNOps with Inductive[Arrow.`~>`.Of[N]] {
+    trait OutboundNOps extends GraphNOps with InductionBy[Arrow.`~>`.Of[N]] {
 
       protected def getInduction: Seq[Arrow.`~>`.Of[N]] = Nil
 

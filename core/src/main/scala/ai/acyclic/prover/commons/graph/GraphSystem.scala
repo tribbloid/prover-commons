@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.{Correspondence, HasOuter}
+import ai.acyclic.prover.commons.{HasOuter, Sameness}
 
 import scala.language.implicitConversions
 
@@ -66,7 +66,7 @@ object GraphSystem {
 
     final type NodeType = N
 
-    trait NodeOps extends Inductive[Arrow.Of[N]] with HasOuter {
+    trait NodeOps extends InductionBy[Arrow.Of[N]] with HasOuter {
 
       def outer = GraphK.this
     }
@@ -76,15 +76,15 @@ object GraphSystem {
     type Ops <: NodeOps
     protected val Ops: N => Ops
 
-    final val nodeOps = Correspondence().Memoize((v: N) => Ops(v))
+    final val nodeOps = Sameness.ByConstruction.Memoize((v: N) => Ops(v))
 
-    trait Inductive[+A <: Arrow.Of[N]] {
+    trait InductionBy[+A <: Arrow.Of[N]] {
 
       protected def getInduction: Seq[A]
 
       final lazy val induction: Many[A] = sys.toMany(getInduction)
 
-      final lazy val successors: Many[N] = sys.toMany(induction.map(_.target))
+      final lazy val canDiscover: Many[N] = sys.toMany(induction.map(_.target))
     }
   }
 }
