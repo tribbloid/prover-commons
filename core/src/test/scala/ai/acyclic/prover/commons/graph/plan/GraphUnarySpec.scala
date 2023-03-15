@@ -104,120 +104,114 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
 
   describe("Transform") {
 
-    it("down") {
-
+    def proto = {
       val inc = new AtomicInteger(0)
-      val transformed = GraphUnary(cyclic.graph)
+      val result = GraphUnary(diamond.graph)
         .TransformLinear(
           GNRewriter,
-          3,
+          4,
           down = { v =>
-            val result = v.copy(text = v.text + inc.getAndIncrement())
+            val result = v.copy(text = v.text + "+" + inc.getAndIncrement())
+            result.children ++= v.children
+            result
+          },
+          up = { v =>
+            val result = v.copy(text = v.text + "-" + inc.getAndIncrement())
             result.children ++= v.children
             result
           }
         )
-        .DepthFirst
-        .exe
+      result
+    }
 
-      transformed.diagram_Hasse.treeString.shouldBe(
+    it("DepthFirst") {
+
+      val tt = proto.DepthFirst.exe
+
+      tt.diagram_Hasse.treeString.shouldBe(
         """
-          |       ┌────┐
-          |       │aaa0│
-          |       └──┬─┘
-          |          │
-          |          v
-          |       ┌─────┐
-          |       │bbb1 │
-          |       └─┬─┬─┘
-          |         │ │
-          |       ┌─┘ └───┐
-          |       │       │
-          |       v       │
-          |    ┌────┐     │
-          |    │ccc2│     │
-          |    └──┬─┘     │
-          |       │       │
-          |       v       │
-          |    ┌────┐     │
-          |    │aaa3│     │
-          |    └──┬─┘     │
-          |       │       │
-          |       v       │
-          |   ┌───────┐   │
-          |   │  bbb  │   │
-          |   └┬────┬─┘   │
-          |    │    │^    │
-          |    v    ││    │
-          |  ┌───┐  ││    │
-          |  │ccc│  ││    │
-          |  └┬──┘  ││    │
-          |   │ ┌───┼┘    │
-          |   │ │   └─┐   └──┐
-          |   │ │     │      │
-          |   v │     v      v
-          | ┌───┴─┐ ┌───┐ ┌────┐
-          | │ aaa │ │ddd│ │ddd4│
-          | └─────┘ └───┘ └────┘
+          |     ┌────────┐
+          |     │aaa+0-13│
+          |     └──┬──┬──┘
+          |        │  │
+          |        │  └────┐
+          |        │       │
+          |        v       v
+          | ┌───────┐ ┌────────┐
+          | │bbb+1-6│ │ccc+7-12│
+          | └───┬───┘ └────┬───┘
+          |     │          │
+          |     v          v
+          | ┌───────┐ ┌────────┐
+          | │ddd+2-5│ │ddd+8-11│
+          | └───┬───┘ └────┬───┘
+          |     │          │
+          |     v          v
+          | ┌───────┐ ┌────────┐
+          | │eee+3-4│ │eee+9-10│
+          | └───────┘ └────────┘
           |""".stripMargin
       )
     }
 
-    it("up") {
+    it("DepthFirst_Once") {
 
-      val inc = new AtomicInteger(0)
-      val transformed = GraphUnary(cyclic.graph)
-        .TransformLinear(
-          GNRewriter,
-          3,
-          up = { v =>
-            val result = v.copy(text = v.text + inc.getAndIncrement())
-            result.children ++= v.children
-            result
-          }
-        )
-        .DepthFirst
-        .exe
+      val tt = proto.DepthFirst_Once.exe
 
-      transformed.diagram_Hasse.treeString.shouldBe(
+      tt.diagram_Hasse.treeString.shouldBe(
         """
-          |       ┌────┐
-          |       │aaa4│
-          |       └──┬─┘
-          |          │
-          |          v
-          |       ┌─────┐
-          |       │bbb3 │
-          |       └─┬─┬─┘
-          |         │ │
-          |       ┌─┘ └───┐
-          |       │       │
-          |       v       │
-          |    ┌────┐     │
-          |    │ccc1│     │
-          |    └──┬─┘     │
-          |       │       │
-          |       v       │
-          |    ┌────┐     │
-          |    │aaa0│     │
-          |    └──┬─┘     │
-          |       │       │
-          |       v       │
-          |   ┌───────┐   │
-          |   │  bbb  │   │
-          |   └┬────┬─┘   │
-          |    │    │^    │
-          |    v    ││    │
-          |  ┌───┐  ││    │
-          |  │ccc│  ││    │
-          |  └┬──┘  ││    │
-          |   │ ┌───┼┘    │
-          |   │ │   └─┐   └──┐
-          |   │ │     │      │
-          |   v │     v      v
-          | ┌───┴─┐ ┌───┐ ┌────┐
-          | │ aaa │ │ddd│ │ddd2│
-          | └─────┘ └───┘ └────┘
+          |     ┌───────┐
+          |     │aaa+0-9│
+          |     └──┬──┬─┘
+          |        │  │
+          |        │  └───┐
+          |        │      │
+          |        v      v
+          | ┌───────┐ ┌───────┐
+          | │bbb+1-6│ │ccc+7-8│
+          | └───┬───┘ └─┬─────┘
+          |     │       │
+          |     v       v
+          | ┌───────┐ ┌───┐
+          | │ddd+2-5│ │ddd│
+          | └───┬───┘ └─┬─┘
+          |     │       │
+          |     v       v
+          | ┌───────┐ ┌───┐
+          | │eee+3-4│ │eee│
+          | └───────┘ └───┘
+          |""".stripMargin
+      )
+    }
+
+    it("DepthFirst_Cached") {
+
+      val tt = proto.DepthFirst_Cached.exe
+
+      tt.diagram_Hasse.treeString.shouldBe(
+        """
+          |     ┌───────┐
+          |     │aaa+0-9│
+          |     └──┬──┬─┘
+          |        │  │
+          |        │  └───┐
+          |        │      │
+          |        v      v
+          | ┌───────┐ ┌───────┐
+          | │bbb+1-6│ │ccc+7-8│
+          | └──────┬┘ └───┬───┘
+          |        │      │
+          |        │  ┌───┘
+          |        │  │
+          |        v  v
+          |     ┌───────┐
+          |     │ddd+2-5│
+          |     └───┬───┘
+          |         │
+          |         v
+          |     ┌───────┐
+          |     │eee+3-4│
+          |     └───────┘
           |""".stripMargin
       )
     }
