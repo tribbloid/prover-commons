@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.{Graph, Tree}
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
+import ai.acyclic.prover.commons.graph.{Arrow, GraphK}
 import ai.acyclic.prover.commons.viz.text.TextBlock
 
 import java.util.UUID
@@ -105,14 +105,14 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
       case class RefNode(node: N, id: UUID = UUID.randomUUID()) extends _RefNode {
 
         {
-          sameRefs
+          sameRefs_shouldExpand
         }
 
         lazy val refKeyOpt: Option[Any] = sameRefBy(node)
 
-        lazy val (sameRefs: SameRefs, shouldExpand: Boolean) = {
+        lazy val sameRefs_shouldExpand = {
 
-          refKeyOpt
+          val existing = refKeyOpt
             .map { refKey =>
               val result = expanded
                 .get(refKey)
@@ -135,10 +135,16 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
                 }
               result
             }
+
+          val result = existing
             .getOrElse {
               SameRefs() -> true
             }
+
+          result
         }
+        def sameRefs = sameRefs_shouldExpand._1
+        def shouldExpand = sameRefs_shouldExpand._2
 
         lazy val bindingOpt: Option[String] = {
 
@@ -149,13 +155,13 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
       }
 
-      case class RefTree(node: N) extends Tree[RefNode] {
+      case class RefTree(node: N) extends Tree[RefNode] with GraphK.Immutable[RefNode] {
 
         override lazy val root: RefNode = RefNode(node)
 
         case class Ops(override val node: RefNode) extends UpperNOps {
 
-          lazy val originalOps: graph.OutboundNOps = graph.nodeOps(node.node)
+          def originalOps: graph.OutboundNOps = graph.nodeOps(node.node)
 
           override protected def getInduction: Seq[Arrow.`~>`.NoInfo[RefNode]] = {
 

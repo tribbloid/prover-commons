@@ -3,14 +3,14 @@ package ai.acyclic.prover.commons
 import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
 
-trait Sameness[T] {
+trait Same[T] {
 
-  def samenessEvidence: Sameness.Evidence
+  def samenessDefinition: Same.Definition
 }
 
-object Sameness {
+object Same {
 
-  def rectify(id: Any): Any = {
+  protected def rectify(id: Any): Any = {
     val result = id match {
       case aa: Array[_] => aa.toList
       case _            => id
@@ -18,12 +18,12 @@ object Sameness {
     result
   }
 
-  trait Evidence {
+  trait Definition {
 
-    protected def getIDInternal(v1: Any): Any
+    protected def _getID(v1: Any): Any
 
     @transient final def getID(v1: Any): Any = {
-      getIDInternal(rectify(v1))
+      _getID(rectify(v1))
     }
 
     protected def proveNonTrivial(v1: Any, v2: Any): Boolean = getID(v1) == getID(v2)
@@ -52,12 +52,13 @@ object Sameness {
 
       val result = prove(v1, v2)
       val swapped = prove(v2, v1)
-      require(result == swapped)
+      require(result == swapped, "sameness should be symmetric")
+      if (result) require(getID(v1) == getID(v2), "if two objects are the same, their IDs should be identical")
       result
     }
 
-    trait ForAll[T] extends Sameness[T] {
-      final override def samenessEvidence: Evidence = Evidence.this
+    trait ForAll[T] extends Same[T] {
+      final override def samenessDefinition: Definition = Definition.this
     }
 
     trait EqualByMixin {
@@ -65,17 +66,19 @@ object Sameness {
       override def hashCode: Int = getID(this).##
 
       override def equals(that: Any): Boolean = {
-        Evidence.this.prove(this, that)
+        Definition.this.proveSafely(this, that)
       }
     }
 
     case class Wrapper[T](v: T) {
 
+      final override def toString: String = "" + v
+
       final override def hashCode: Int = getID(v).##
 
       final override def equals(that: Any): Boolean = {
         that match {
-          case Wrapper(thatV) => Evidence.this.prove(v, thatV)
+          case Wrapper(thatV) => Definition.this.proveSafely(v, thatV)
           case _              => false
         }
       }
@@ -97,15 +100,15 @@ object Sameness {
 
         val inMemoryId = Wrapper(key)
         val w =
-          //      this.synchronized {
-          lookup.getOrElseUpdate(
-            inMemoryId, {
-              val created = Thunk(getValue)
-              collection += created
-              created
-            }
-          ) // should be fast
-        //      }
+          this.synchronized {
+            lookup.getOrElseUpdate(
+              inMemoryId, {
+                val created = Thunk(getValue)
+                collection += created
+                created
+              }
+            ) // should be fast
+          }
         w.value
         // TODO: this may cause stackoverflow
         //  if [[getOrElseUpdate]] is called again within the thunk
@@ -129,39 +132,43 @@ object Sameness {
     }
   }
 
-  object ByConstruction extends Evidence {
+  object ByConstruction extends Definition {
 
-    override def getIDInternal(v1: Any): Any = util.constructionID[Any](v1)
+    override def _getID(v1: Any): Any = util.constructionID[Any](v1)
 
     override def proveNonTrivial(v1: Any, v2: Any): Boolean = {
       (v1, v2) match {
         case (_v1: AnyRef, _v2: AnyRef) => _v1.eq(_v2)
-        case _                          => getIDInternal(v1) == getIDInternal(v2)
+        case _                          => _getID(v1) == _getID(v2)
       }
     }
   }
 
-  object ByEquality extends Evidence {
-    override def getIDInternal(v1: Any): Any = v1
+  object ByEquality extends Definition {
+    override def _getID(v1: Any): Any = v1
   }
 
-  trait ByFieldsWithTolerance extends Evidence {
+  trait ByProductWithTolerance extends Definition {
 
-    override def getIDInternal(v1: Any): Any = {
+    override def _getID(v1: Any): Any = {
 
-      v1 match {
-        case v: Product =>
-          v.productPrefix -> v.productIterator.map(truncateToTolerance).toList
-        case _ =>
-          v1
+      truncateToTolerance(v1) match {
+        case Some(r) => r
+        case None =>
+          v1 match {
+            case v: Product =>
+              v.productPrefix -> v.productIterator.map(_getID).toList
+            case _ =>
+              v1
+          }
       }
     }
 
-    def truncateToTolerance(v: Any): Any
+    def truncateToTolerance(v: Any): Option[Any]
   }
 
-  object ByFields extends ByFieldsWithTolerance {
+  object ByProduct extends ByProductWithTolerance {
 
-    def truncateToTolerance(v: Any): Any = v
+    def truncateToTolerance(v: Any): Option[Any] = None
   }
 }

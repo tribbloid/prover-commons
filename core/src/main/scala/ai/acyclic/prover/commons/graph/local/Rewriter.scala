@@ -8,18 +8,22 @@ trait Rewriter[N] extends (N => WithNewSuccessor[N]) {
 
     case class Applied(node: N) extends WithNewSuccessor[N] {
 
-      def apply(newSuccessors: Seq[N]): N = {
-        val result = Rewriter.this.apply(node).apply(newSuccessors)
+      def apply(newDiscover: Seq[N]): N = {
+        val result = Rewriter.this.apply(node).apply(newDiscover)
 
         val actualDiscover = graph.nodeOps(result).canDiscover
-        require(actualDiscover == newSuccessors)
+        require(
+          actualDiscover == newDiscover,
+          s"""Incompatible rewriter?
+             |Rewrite result should be [${newDiscover.mkString(", ")}]
+             |but it is actually [${actualDiscover.mkString(", ")}]""".stripMargin
+        )
 
         result
       }
     }
 
     final override def apply(node: N): Applied = Applied(node)
-
   }
 }
 

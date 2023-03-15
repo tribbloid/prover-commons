@@ -1,13 +1,13 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.HasOuter
-import ai.acyclic.prover.commons.graph.GraphSystem
+import ai.acyclic.prover.commons.graph.GraphK
 
 import scala.language.implicitConversions
 
 trait Visualisations {
 
-  type UB[N] <: GraphSystem.GraphK[N]
+  type UB[N] <: GraphK[N]
 
   trait Format {
 

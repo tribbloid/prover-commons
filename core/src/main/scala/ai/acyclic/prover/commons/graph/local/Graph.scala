@@ -1,13 +1,13 @@
 package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.viz.{Hasse, LinkedHierarchy}
-import ai.acyclic.prover.commons.graph.{Arrow, GraphSystem}
+import ai.acyclic.prover.commons.graph.{Arrow, GraphK, GraphSystem}
 
 // this is untyped, should always leave the possibility to add dependent type information.
 // See project Matryoshka
 // OR this article for a possible start:
 //  https://macsphere.mcmaster.ca/bitstream/11375/18494/2/thesis.pdf
-trait Graph[N] extends GraphSystem.GraphK[N] {
+trait Graph[N] extends GraphK[N] {
 
   final val sys: Local.type = Local
 

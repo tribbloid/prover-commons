@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.Sameness
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Graph
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
@@ -122,7 +121,7 @@ trait Hasse extends Hasse.Format {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeBuffer = Sameness.ByConstruction.Memoize[N, NodeWrapper](v => NodeWrapper(v))
+      val nodeBuffer = graph.samenessEv.Memoize[N, NodeWrapper](v => NodeWrapper(v))
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 

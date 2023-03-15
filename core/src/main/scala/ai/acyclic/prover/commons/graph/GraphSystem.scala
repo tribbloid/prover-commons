@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.{HasOuter, Sameness}
+import ai.acyclic.prover.commons.HasOuter
 
 import scala.language.implicitConversions
 
@@ -62,29 +62,5 @@ object GraphSystem {
     implicit def unbox[N](ops: HasNode[N]): N = ops.node
   }
 
-  trait GraphK[N] extends _Graph {
 
-    final type NodeType = N
-
-    trait NodeOps extends InductionBy[Arrow.Of[N]] with HasOuter {
-
-      def outer = GraphK.this
-    }
-
-    def roots: Rows[N]
-
-    type Ops <: NodeOps
-    protected val Ops: N => Ops
-
-    final val nodeOps = Sameness.ByConstruction.Memoize((v: N) => Ops(v))
-
-    trait InductionBy[+A <: Arrow.Of[N]] {
-
-      protected def getInduction: Seq[A]
-
-      final lazy val induction: Many[A] = sys.toMany(getInduction)
-
-      final lazy val canDiscover: Many[N] = sys.toMany(induction.map(_.target))
-    }
-  }
 }

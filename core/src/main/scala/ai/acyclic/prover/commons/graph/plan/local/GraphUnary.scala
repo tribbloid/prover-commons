@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.graph.plan.local
 
-import ai.acyclic.prover.commons.Sameness
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.GraphSystem._Graph
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
@@ -12,6 +11,8 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
     ev: IG <:< Graph[N]
     // see https://stackoverflow.com/questions/16291313/scala-inferred-type-arguments-type-bounds-inferring-to-nothing
 ) extends PlanGroup.Unary.Expressions[IG] {
+
+  import GraphUnary._
 
   final override lazy val args = Sized(arg)
 
@@ -47,7 +48,7 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
   case class Transform(
       rewriter: Rewriter[N],
       maxDepth: Int = Int.MaxValue,
-      pruning: N => Option[Seq[N]] = _ => None,
+      pruning: Pruning[N] = identity,
       down: N => Seq[N] = v => Seq(v),
       up: N => Seq[N] = v => Seq(v)
   ) {
@@ -56,7 +57,8 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
 
       private def transformInternal(node: N, depth: Int = maxDepth): Seq[N] = {
         if (depth > 0) {
-          pruning(node).getOrElse {
+
+          def doTransform(node: N): Seq[N] = {
             val downTs: Seq[N] = down(node)
 
             val inductionTs: Seq[N] =
@@ -75,6 +77,8 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
 
             results
           }
+
+          pruning(doTransform).apply(node)
         } else {
           Seq(node)
         }
@@ -111,21 +115,24 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
 
       private val delegate = {
 
-        val seen = Sameness.ByConstruction.Correspondence[N, N]()
+        val seen = inputGraph.samenessEv.Correspondence[N, N]()
 
         Transform(
           rewriter,
           maxDepth,
-          pruning = { node =>
-            val result = seen.get(node) match {
-              case Some(n) =>
-                Some(Seq(n))
-              case None =>
-                seen.getOrElseUpdate(node, () => node)
-                None
-            }
+          pruning = {
+            fn =>
+              { node =>
+                val result = seen.get(node) match {
+                  case Some(n) =>
+                    Seq(n)
+                  case None =>
+                    seen.getOrElseUpdate(node, () => node)
+                    fn(node)
+                }
 
-            result
+                result
+              }
           },
           down,
           up
@@ -141,30 +148,35 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
 
       private val delegate = {
 
-        val seen = Sameness.ByConstruction.Correspondence[N, N]()
+        val seen = inputGraph.samenessEv.Correspondence[N, Seq[N]]()
 
         Transform(
           rewriter,
           maxDepth,
-          pruning = { node =>
-            val result = seen.get(node) match {
-              case Some(n) =>
-                Some(Seq(n))
-              case None =>
-                seen.getOrElseUpdate(node, () => node)
-                None
-            }
+          pruning = {
+            fn =>
+              { node =>
+                val result: Seq[N] = seen.get(node) match {
+                  case Some(r) =>
+                    r
+                  case None =>
+                    val result = fn(node)
+                    seen.getOrElseUpdate(node, () => result)
+                    result
+                }
 
-            result
+                result
+              }
           },
           down,
           up
         ).DepthFirst
       }
 
-      override def exe: Graph[N] = ???
+      override def exe: Graph[N] = {
+        delegate.exe
+      }
     }
-
   }
 
   object TransformLinear {
@@ -172,7 +184,7 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
         rewriter: Rewriter[N],
         maxDepth: Int = Int.MaxValue,
         down: N => N = v => v,
-        pruning: N => Option[Seq[N]] = _ => None,
+        pruning: Pruning[N] = identity,
         up: N => N = v => v
     ): Transform = Transform(
       rewriter,
@@ -258,4 +270,9 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
   //    }
   //  }
 
+}
+
+object GraphUnary {
+
+  type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 }
