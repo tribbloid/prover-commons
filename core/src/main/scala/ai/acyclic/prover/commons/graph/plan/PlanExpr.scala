@@ -1,10 +1,10 @@
 package ai.acyclic.prover.commons.graph.plan
 
-import ai.acyclic.prover.commons.graph.GraphSystem
+import ai.acyclic.prover.commons.graph.GraphK
 
 import scala.language.implicitConversions
 
-trait PlanExpr[OG <: GraphSystem._Graph] {
+trait PlanExpr[+OG <: GraphK.Like] {
 
   def exe: OG
 
@@ -15,7 +15,7 @@ trait PlanExpr[OG <: GraphSystem._Graph] {
 
 object PlanExpr {
 
-  case class Leaf[OG <: GraphSystem._Graph](override val exe: OG) extends PlanExpr[OG]
+  case class Leaf[OG <: GraphK.Like](override val exe: OG) extends PlanExpr[OG]
 
-  implicit def asLeaf[OG <: GraphSystem._Graph](g: OG): Leaf[OG] = Leaf(g)
+  implicit def asLeaf[OG <: GraphK.Like](g: OG): Leaf[OG] = Leaf(g)
 }

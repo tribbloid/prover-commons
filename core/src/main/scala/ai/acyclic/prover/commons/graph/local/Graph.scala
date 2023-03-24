@@ -1,12 +1,15 @@
 package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.viz.{Hasse, LinkedHierarchy}
-import ai.acyclic.prover.commons.graph.{Arrow, GraphK, GraphSystem}
+import ai.acyclic.prover.commons.graph.{Arrow, Connection, GraphK}
 
 // this is untyped, should always leave the possibility to add dependent type information.
 // See project Matryoshka
 // OR this article for a possible start:
-//  https://macsphere.mcmaster.ca/bitstream/11375/18494/2/thesis.pdf
+//  https://macsphere.mcma
+//
+//
+//  ster.ca/bitstream/11375/18494/2/thesis.pdf
 trait Graph[N] extends GraphK[N] {
 
   final val sys: Local.type = Local
@@ -15,7 +18,7 @@ trait Graph[N] extends GraphK[N] {
 
   def isEmpty: Boolean = roots.isEmpty
 
-  trait GraphNOps extends GraphSystem.HasNode[N] with NodeOps {
+  trait GraphNOps extends Connection[N] {
 
     final lazy val directEdges = induction.collect {
       case v if v.arrowType.isInstanceOf[Arrow.Edge] => v
@@ -35,7 +38,7 @@ object Graph {
 
   trait Outbound[N] extends Graph[N] {
 
-    trait OutboundNOps extends GraphNOps with InductionBy[Arrow.`~>`.Of[N]] {
+    trait OutboundNOps extends GraphNOps with Connection.InductionMixin[N, Arrow.`~>`.Of[N]] {
 
       protected def getInduction: Seq[Arrow.`~>`.Of[N]] = Nil
 

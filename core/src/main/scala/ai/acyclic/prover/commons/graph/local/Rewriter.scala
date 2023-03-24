@@ -2,6 +2,13 @@ package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.local.Rewriter.WithNewSuccessor
 
+/**
+  * at this moment, only capable of rewriting `canDiscover`
+  *
+  * should be able to rewrite induction arrows in the future
+  * @tparam N
+  *   node type of a graph
+  */
 trait Rewriter[N] extends (N => WithNewSuccessor[N]) {
 
   case class VerifiedOn(graph: Graph[N]) extends Rewriter[N] {
@@ -9,6 +16,13 @@ trait Rewriter[N] extends (N => WithNewSuccessor[N]) {
     case class Applied(node: N) extends WithNewSuccessor[N] {
 
       def apply(newDiscover: Seq[N]): N = {
+        // Only rewrite if necessary
+        val originalDiscover = graph.nodeOps(node).canDiscover
+        if (originalDiscover == newDiscover) {
+          // no need to rewrite, just return node as-is
+          return node
+        }
+
         val result = Rewriter.this.apply(node).apply(newDiscover)
 
         val actualDiscover = graph.nodeOps(result).canDiscover

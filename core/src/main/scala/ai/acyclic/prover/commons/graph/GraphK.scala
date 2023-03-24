@@ -1,49 +1,43 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.{HasOuter, Same}
+import ai.acyclic.prover.commons.graph.Connection.Topology
 
-trait GraphK[N] extends GraphSystem._Graph {
+trait GraphK[N] extends GraphK.Like {
 
   final type NodeType = N
 
-  trait NodeOps extends InductionBy[Arrow.Of[N]] with HasOuter {
-
-    def outer: GraphK[N] = GraphK.this
-  }
-
   def roots: Rows[N]
 
-  type Ops <: NodeOps
-  protected val Ops: N => Ops
+  type Ops <: Connection[N]
+  protected def Ops: Topology[N, Ops]
 
-  lazy val samenessEv: Same.Definition = Same.ByEquality
-
-  def _nodeOps: N => Ops = { v =>
-    Ops(v)
-  }
-  final lazy val nodeOps: N => Ops = _nodeOps
-
-  trait InductionBy[+A <: Arrow.Of[N]] {
-
-    protected def getInduction: Seq[A]
-
-    final lazy val induction: Many[A] = sys.toMany(getInduction)
-
-    final lazy val canDiscover: Many[N] = sys.toMany(induction.map(_.target))
-  }
-
+  lazy val nodeOps: Topology[N, Ops] = Ops
 }
 
 object GraphK {
+
+  trait Like extends HasOuter {
+
+    type NodeType
+
+    val sys: GraphSystem
+
+    final def outer: GraphSystem = sys
+
+    lazy val sameness: Same.Definition = Same.ByEquality
+
+    type Rows[T] = sys.Dataset[T]
+  }
 
   trait Immutable[N] extends GraphK[N] {
 
     // the Memoization appears to confine GraphK to be only applicable to immutable graph
     //  can this be lifted?
-    override def _nodeOps: N => Ops =
-      samenessEv
+    override lazy val nodeOps: Topology[N, Ops] =
+      sameness
         .Memoize[N, Ops](
-          super._nodeOps
+          Ops
         )
   }
 }

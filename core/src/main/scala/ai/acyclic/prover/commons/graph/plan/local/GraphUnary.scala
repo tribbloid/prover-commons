@@ -1,22 +1,20 @@
 package ai.acyclic.prover.commons.graph.plan.local
 
 import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.graph.GraphSystem._Graph
+import ai.acyclic.prover.commons.graph.GraphK.Like
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
 import ai.acyclic.prover.commons.graph.plan.{PlanExpr, PlanGroup}
 import shapeless.Sized
 
-case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
-    implicit
-    ev: IG <:< Graph[N]
-    // see https://stackoverflow.com/questions/16291313/scala-inferred-type-arguments-type-bounds-inferring-to-nothing
+case class GraphUnary[IG <: Graph[N], N] private (
+    arg: PlanExpr[IG]
 ) extends PlanGroup.Unary.Expressions[IG] {
 
   import GraphUnary._
 
   final override lazy val args = Sized(arg)
 
-  lazy val inputGraph: IG = arg.exeOnce
+  lazy val inputGraph = arg.exeOnce
 
   case class UpcastNode[N2 >: N]() extends Expr[Graph[N2]] {
 
@@ -89,11 +87,9 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
         inputGraph.roots.flatMap(n => transformInternal(n, maxDepth))
       }
 
-      case class Ops(node: N) extends GraphNOps {
-        override protected def getNodeText: String = inputGraph.nodeOps(node).nodeText
-
-        override protected def getInduction: Seq[Arrow.Of[N]] = inputGraph.nodeOps(node).induction
-      }
+      type Ops = GraphNOps
+      override val Ops: N => Ops = (inputGraph: Graph[N]).nodeOps.asInstanceOf[N => GraphNOps]
+      // cast to suppress a compiler bug
     }
     object LazyResultGraph extends LazyResultGraph // TODO: this should be exposed
 
@@ -115,7 +111,7 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
 
       private val delegate = {
 
-        val seen = inputGraph.samenessEv.Correspondence[N, N]()
+        val seen = inputGraph.sameness.Correspondence[N, N]()
 
         Transform(
           rewriter,
@@ -148,7 +144,7 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
 
       private val delegate = {
 
-        val seen = inputGraph.samenessEv.Correspondence[N, Seq[N]]()
+        val seen = inputGraph.sameness.Correspondence[N, Seq[N]]()
 
         Transform(
           rewriter,
@@ -275,4 +271,15 @@ case class GraphUnary[IG <: _Graph, N](arg: PlanExpr[IG])(
 object GraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
+
+  def make[IG <: Like, N](
+      arg: PlanExpr[IG]
+  )(
+      implicit
+      ev: IG <:< Graph[N]
+      // see https://stackoverflow.com/questions/16291313/scala-inferred-type-arguments-type-bounds-inferring-to-nothing
+  ): GraphUnary[IG with Graph[N], N] = {
+
+    new GraphUnary[IG with Graph[N], N](arg.asInstanceOf[PlanExpr[IG with Graph[N]]])
+  }
 }

@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
+
 import scala.collection.Factory
 import scala.language.implicitConversions
 
@@ -8,7 +9,9 @@ trait Arrow {
 
   import Arrow._
 
-  val target: Any
+  val target: Any // TODO: should be NodeOps[N]
+
+//  val topology: NodeOps.Topology[_, _]
 
   val arrowType: ArrowType
 
@@ -51,7 +54,10 @@ object Arrow {
         override val target: N,
         override val getArrowText: Option[String] = None
     ) extends Of[N]
-        with NoInfoLike {}
+        with NoInfoLike {
+
+//      override val topology: Topology[N, _] = ???
+    }
 
     object NoInfo {}
   }

@@ -53,7 +53,8 @@ object LinkedHierarchy extends Visualisations {
     override def sameRefBy(node: Any): Option[Any] = Some(node)
 
     override def dryRun[N <: _RefNode](tree: Tree[N]): Unit = {
-      GraphUnary(tree)
+      GraphUnary
+        .make(tree)
         .Traverse(
           maxDepth = backbone.maxDepth,
           down = { v =>

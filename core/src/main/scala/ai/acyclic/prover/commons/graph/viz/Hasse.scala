@@ -121,11 +121,12 @@ trait Hasse extends Hasse.Format {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeBuffer = graph.samenessEv.Memoize[N, NodeWrapper](v => NodeWrapper(v))
+      val nodeBuffer = graph.sameness.Memoize[N, NodeWrapper](v => NodeWrapper(v))
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
-      val buildBuffers = GraphUnary(graph)
+      val buildBuffers = GraphUnary
+        .make(graph)
         .Traverse(
           maxDepth = Hasse.this.maxDepth,
           down = { node =>

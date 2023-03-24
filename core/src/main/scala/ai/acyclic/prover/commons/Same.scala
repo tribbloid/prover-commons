@@ -5,7 +5,7 @@ import scala.collection.mutable
 
 trait Same[T] {
 
-  def samenessDefinition: Same.Definition
+  def sameness: Same.Definition
 }
 
 object Same {
@@ -48,6 +48,8 @@ object Same {
       }
     }
 
+    final def refute(v1: Any, v2: Any): Boolean = !prove(v1, v2)
+
     final def proveSafely(v1: Any, v2: Any): Boolean = {
 
       val result = prove(v1, v2)
@@ -58,7 +60,7 @@ object Same {
     }
 
     trait ForAll[T] extends Same[T] {
-      final override def samenessDefinition: Definition = Definition.this
+      final override def sameness: Definition = Definition.this
     }
 
     trait EqualByMixin {

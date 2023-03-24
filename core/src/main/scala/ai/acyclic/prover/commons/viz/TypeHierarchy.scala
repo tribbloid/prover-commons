@@ -33,7 +33,8 @@ case class TypeHierarchy(
 
       def argDryRun(): Unit = {
 
-        GraphUnary(g)
+        GraphUnary
+          .make(g)
           .Traverse(
             down = { v: N =>
               v.node match {
