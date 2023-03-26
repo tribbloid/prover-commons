@@ -20,16 +20,16 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
     object Upcasted extends Graph[N2] {
 
-      case class Ops(node: N2) extends GraphNOps {
+      case class Ops(node: N2) extends GraphOps {
 
-        override protected def getNodeText: String = inputGraph.nodeOps(node.asInstanceOf[N]).nodeText
+        override protected def getNodeText: String = inputGraph.ops(node.asInstanceOf[N]).nodeText
 
         override protected def getInduction: Seq[Arrow.Of[N2]] = {
-          inputGraph.nodeOps(node.asInstanceOf[N]).induction
+          inputGraph.ops(node.asInstanceOf[N]).induction
         }
       }
 
-      override def roots: Rows[N2] = inputGraph.roots.map(v => v: N2)
+      override def roots: Dataset[N2] = inputGraph.roots.map(v => v: N2)
     }
 
     override def exe: Graph[N2] = {
@@ -61,7 +61,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
             val inductionTs: Seq[N] =
               downTs.map { n =>
-                val successors = inputGraph.nodeOps(n).canDiscover
+                val successors = inputGraph.ops(n).canDiscover
                 val successorsTransformed = successors.flatMap { nn =>
                   transformInternal(nn, depth - 1)
                 }
@@ -87,8 +87,8 @@ case class GraphUnary[IG <: Graph[N], N] private (
         inputGraph.roots.flatMap(n => transformInternal(n, maxDepth))
       }
 
-      type Ops = GraphNOps
-      override val Ops: N => Ops = (inputGraph: Graph[N]).nodeOps.asInstanceOf[N => GraphNOps]
+      type Ops = GraphOps
+      override val Ops: N => Ops = (inputGraph: Graph[N]).ops.asInstanceOf[N => GraphOps]
       // cast to suppress a compiler bug
     }
     object LazyResultGraph extends LazyResultGraph // TODO: this should be exposed

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.viz.{Hasse, LinkedHierarchy}
-import ai.acyclic.prover.commons.graph.{Arrow, Connection, GraphK}
+import ai.acyclic.prover.commons.graph.{Arrow, GraphK, TopologyOps}
 
 // this is untyped, should always leave the possibility to add dependent type information.
 // See project Matryoshka
@@ -14,11 +14,11 @@ trait Graph[N] extends GraphK[N] {
 
   final val sys: Local.type = Local
 
-  lazy val rootOps: Rows[Ops] = roots.map(v => nodeOps(v))
+  lazy val rootOps: Dataset[Ops] = roots.map(v => ops(v))
 
   def isEmpty: Boolean = roots.isEmpty
 
-  trait GraphNOps extends Connection[N] {
+  trait GraphOps extends TopologyOps[N] {
 
     final lazy val directEdges = induction.collect {
       case v if v.arrowType.isInstanceOf[Arrow.Edge] => v
@@ -26,7 +26,7 @@ trait Graph[N] extends GraphK[N] {
 
     def resolve(): Unit = { induction; nodeText }
   }
-  type Ops <: GraphNOps
+  type Ops <: GraphOps
 
   def diagram_Hasse(
       implicit
@@ -38,7 +38,7 @@ object Graph {
 
   trait Outbound[N] extends Graph[N] {
 
-    trait OutboundNOps extends GraphNOps with Connection.InductionMixin[N, Arrow.`~>`.Of[N]] {
+    trait OutboundOps extends GraphOps with TopologyOps.InductionMixin[N, Arrow.`~>`.Of[N]] {
 
       protected def getInduction: Seq[Arrow.`~>`.Of[N]] = Nil
 
@@ -49,7 +49,7 @@ object Graph {
       lazy val isLeaf: Boolean = children.isEmpty
     }
 
-    type Ops <: OutboundNOps
+    type Ops <: OutboundOps
 
     def diagram_linkedHierarchy(
         implicit

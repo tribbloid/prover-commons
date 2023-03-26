@@ -6,26 +6,25 @@ trait Semilattice[N] extends Poset[N] {
 
   def root: N
 
-  final lazy val roots: Rows[N] = sys.parallelize(Seq(root))
+  final lazy val roots: Dataset[N] = sys.parallelize(Seq(root))
 }
 
 object Semilattice {
 
   trait Upper[N] extends Semilattice[N] with Poset.Upper[N] {
 
-    trait UpperNOps extends OutboundNOps {
+    trait UpperOps extends OutboundOps {
 
       lazy val allOffsprings: Seq[N] = {
         val cc = children
         val others = children.flatMap { child =>
-          val ops = nodeOps(child)
-          ops.allOffsprings
+          ops(child).allOffsprings
         }
         cc ++ others
       }
     }
 
-    type Ops <: UpperNOps
+    type Ops <: UpperOps
 
     def diagram_hierarchy(
         implicit

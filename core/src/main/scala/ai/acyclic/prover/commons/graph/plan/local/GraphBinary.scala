@@ -21,12 +21,12 @@ case class GraphBinary[IG <: GraphK.Like, N](arg1: PlanExpr[IG], arg2: PlanExpr[
 
     object ResultGraph extends Graph[N] {
 
-      case class Ops(node: N) extends GraphNOps {
+      case class Ops(node: N) extends GraphOps {
 
         override protected def getInduction: Seq[Arrow.Of[N]] = ???
       }
 
-      override def roots: Rows[N] = ???
+      override def roots: Dataset[N] = ???
     }
 
     override def exe: Graph[N] = ???

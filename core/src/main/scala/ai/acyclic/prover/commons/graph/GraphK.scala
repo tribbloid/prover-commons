@@ -1,18 +1,18 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.{HasOuter, Same}
-import ai.acyclic.prover.commons.graph.Connection.Topology
+import ai.acyclic.prover.commons.graph.TopologyOps.Topology
 
 trait GraphK[N] extends GraphK.Like {
 
   final type NodeType = N
 
-  def roots: Rows[N]
+  def roots: Dataset[N]
 
-  type Ops <: Connection[N]
+  type Ops <: TopologyOps[N]
   protected def Ops: Topology[N, Ops]
 
-  lazy val nodeOps: Topology[N, Ops] = Ops
+  lazy val ops: Topology[N, Ops] = Ops
 }
 
 object GraphK {
@@ -27,14 +27,14 @@ object GraphK {
 
     lazy val sameness: Same.Definition = Same.ByEquality
 
-    type Rows[T] = sys.Dataset[T]
+    type Dataset[T] = sys.Dataset[T]
   }
 
   trait Immutable[N] extends GraphK[N] {
 
     // the Memoization appears to confine GraphK to be only applicable to immutable graph
     //  can this be lifted?
-    override lazy val nodeOps: Topology[N, Ops] =
+    override lazy val ops: Topology[N, Ops] =
       sameness
         .Memoize[N, Ops](
           Ops

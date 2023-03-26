@@ -184,7 +184,7 @@ trait TypeOfMixin extends HasReflection {
 
     case class GraphRepr(override val roots: Seq[VNode]) extends Graph.Outbound[VNode] {
 
-      case class Ops(node: VNode) extends OutboundNOps {
+      case class Ops(node: VNode) extends OutboundOps {
 
         override protected def getInduction: Seq[Arrow.`~>`.Of[VNode]] = {
           node.children

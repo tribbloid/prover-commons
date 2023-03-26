@@ -2,15 +2,15 @@ package ai.acyclic.prover.commons.graph
 
 import scala.language.implicitConversions
 
-trait Connection[+N] extends Connection.NodeMixin[N] with Connection.InductionMixin[N, Arrow.Of[N]] {}
+trait TopologyOps[+N] extends TopologyOps.NodeMixin[N] with TopologyOps.InductionMixin[N, Arrow.Of[N]] {}
 
-object Connection {
+object TopologyOps {
 
   type Many[+A] = Vector[A]
 
   implicit def toMany[A](value: Seq[A]): Many[A] = value.toVector
 
-  implicit def unbox[N](ops: Connection[N]): N = ops.node
+  implicit def unbox[N](ops: TopologyOps[N]): N = ops.node
 
   trait InductionMixin[+N, +A <: Arrow.Of[N]] {
 
@@ -30,7 +30,7 @@ object Connection {
     final lazy val nodeText: String = getNodeText
   }
 
-  type Topology[-I, +O <: Connection[_]] = I => O
+  type Topology[-I, +O <: TopologyOps[_]] = I => O
 }
 
 //trait Topology[N, NR <: N] extends (NR => Seq[N]) {}

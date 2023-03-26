@@ -58,7 +58,7 @@ object LinkedHierarchy extends Visualisations {
         .Traverse(
           maxDepth = backbone.maxDepth,
           down = { v =>
-            val ops = tree.nodeOps(v)
+            val ops = tree.ops(v)
             ops.induction
           }
         )
@@ -160,9 +160,9 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
         override lazy val root: RefNode = RefNode(node)
 
-        case class Ops(override val node: RefNode) extends UpperNOps {
+        case class Ops(override val node: RefNode) extends UpperOps {
 
-          def originalOps: graph.OutboundNOps = graph.nodeOps(node.node)
+          def originalOps: graph.OutboundOps = graph.ops(node.node)
 
           override protected def getInduction: Seq[Arrow.`~>`.NoInfo[RefNode]] = {
 
