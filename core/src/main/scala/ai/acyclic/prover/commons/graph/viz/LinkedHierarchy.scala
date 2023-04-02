@@ -157,11 +157,11 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
       }
 
-      case class RefTree(node: N) extends Tree[RefNode] with GraphK.Immutable[TreeT.Impl[RefNode]] {
+      case class RefTree(node: N) extends Tree[RefNode] with GraphK.Immutable[TreeT.Ops[RefNode]] {
 
         override lazy val root: RefNode = RefNode(node)
 
-        case class Ops(override val node: RefNode) extends TreeT.Impl[RefNode] {
+        case class Ops(override val node: RefNode) extends TreeT.Ops[RefNode] {
 
           def originalOps = graph.ops(node.node)
 

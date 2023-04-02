@@ -23,7 +23,7 @@ object PathToDOT {
 
   case class G(roots: Seq[Forward]) extends Graph.Outbound[Forward] {
 
-    case class Ops(node: Forward) extends OutboundT.Impl[Forward] {
+    case class Ops(node: Forward) extends OutboundT.Ops[Forward] {
 
       override protected def getNodeText: String = node.text
 

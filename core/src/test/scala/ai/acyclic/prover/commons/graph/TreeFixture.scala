@@ -83,7 +83,7 @@ object TreeFixture {
 
   case class _Tree(root: Demo) extends Tree[Demo] {
 
-    case class Ops(node: Demo) extends TreeT.Impl[Demo] {
+    case class Ops(node: Demo) extends TreeT.Ops[Demo] {
 
       override protected def getNodeText = node.text
 
@@ -93,7 +93,7 @@ object TreeFixture {
 
   case class _TreeWithArrowTexts(root: Demo) extends Tree[Demo] {
 
-    case class Ops(node: Demo) extends TreeT.Impl[Demo] {
+    case class Ops(node: Demo) extends TreeT.Ops[Demo] {
 
       override protected def getNodeText = node.text
 

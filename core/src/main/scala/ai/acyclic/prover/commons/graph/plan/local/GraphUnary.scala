@@ -21,7 +21,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
     object Upcasted extends Graph[N2] {
 
-      case class Ops(node: N2) extends GraphT.Impl[N2] {
+      case class Ops(node: N2) extends GraphT.Ops[N2] {
 
         override protected def getNodeText: String = inputGraph.ops(node.asInstanceOf[N]).nodeText
 

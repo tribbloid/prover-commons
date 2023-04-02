@@ -1,26 +1,26 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.Induction.Mixin
-
 trait Topology[A[+n] <: Arrow.Of[n]] {
 
-  type _Induction[N] = Topology.Actual[A, N, Impl[N]]
+  type _OpsBound[N] = Topology.OpsBound[A, N, Ops[N]]
 
-  type Impl[N] <: _Induction[N]
+  type Ops[N] <: _OpsBound[N]
 
-  type _Graph[N] = GraphK[Impl[N]]
+  type _Graph[N] = GraphK[Ops[N]]
 }
 
 object Topology {
 
-  trait Actual[+A[+n] <: Arrow.Of[n], N, +SELF <: Actual[A, N, SELF]] extends Induction with Mixin[A, SELF] {
+  trait OpsBound[+A[+n] <: Arrow.Of[n], N, +SELF <: OpsBound[A, N, SELF]]
+      extends Induction
+      with Induction.Mixin[A, SELF] {
 
     final type Node = N
   }
 
   object GraphT extends Topology[Arrow.Of] {
 
-    trait Impl[N] extends _Induction[N] {
+    trait Ops[N] extends _OpsBound[N] {
 
       final lazy val directEdges = induction.collect {
         case v if v.arrowType.isInstanceOf[Arrow.Edge] => v
@@ -34,7 +34,7 @@ object Topology {
 
     object OutboundT extends Topology[Arrow.`~>`.Of] {
 
-      trait Impl[N] extends GraphT.Impl[N] with _Induction[N] {
+      trait Ops[N] extends GraphT.Ops[N] with _OpsBound[N] {
 
         final lazy val children: Seq[Node] = {
           induction.map(v => v.target)
@@ -47,16 +47,16 @@ object Topology {
 
   object PosetT extends Topology[Arrow.Of] {
 
-    trait Impl[N] extends GraphT.Impl[N] with _Induction[N] {}
+    trait Ops[N] extends GraphT.Ops[N] with _OpsBound[N] {}
   }
 
   object SemilatticeT extends Topology[Arrow.Of] {
 
-    trait Impl[N] extends PosetT.Impl[N] with _Induction[N] {}
+    trait Ops[N] extends PosetT.Ops[N] with _OpsBound[N] {}
 
     object UpperT extends Topology[Arrow.`~>`.Of] {
 
-      trait Impl[N] extends _Induction[N] with SemilatticeT.Impl[N] with GraphT.OutboundT.Impl[N] {
+      trait Ops[N] extends _OpsBound[N] with SemilatticeT.Ops[N] with GraphT.OutboundT.Ops[N] {
 
         //      def ops: Node => Impl
 
@@ -73,7 +73,7 @@ object Topology {
 
   object TreeT extends Topology[Arrow.`~>`.Of] {
 
-    trait Impl[N] extends SemilatticeT.UpperT.Impl[N] with _Induction[N] {}
+    trait Ops[N] extends SemilatticeT.UpperT.Ops[N] with _OpsBound[N] {}
   }
 
 }
