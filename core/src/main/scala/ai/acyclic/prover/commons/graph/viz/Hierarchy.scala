@@ -47,7 +47,7 @@ trait Hierarchy extends Hierarchy.Format {
 
     case class SubViz(head: N, depth: Int = maxDepth) {
 
-      lazy val headOps: graph.UpperOps = graph.ops(head)
+      lazy val headOps = graph.ops(head)
 
       lazy val treeString: String = {
 

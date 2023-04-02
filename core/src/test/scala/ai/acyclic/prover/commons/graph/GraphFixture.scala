@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
 import ai.acyclic.prover.commons.graph.local.Rewriter.WithNewSuccessor
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
 import ai.acyclic.prover.commons.testlib.BaseSpec
@@ -79,7 +80,7 @@ object GraphFixture {
 
   case class _OGraph(override val roots: Seq[GN]) extends Graph.Outbound[GN] {
 
-    case class Ops(node: GN) extends OutboundOps {
+    case class Ops(node: GN) extends OutboundT.Impl[GN] {
 
       override protected def getNodeText = node.text
 
@@ -89,7 +90,7 @@ object GraphFixture {
 
   case class _OGraphWithArrowText(override val roots: Seq[GN]) extends Graph.Outbound[GN] {
 
-    case class Ops(node: GN) extends OutboundOps {
+    case class Ops(node: GN) extends OutboundT.Impl[GN] {
 
       override protected def getNodeText = node.text
 

@@ -1,32 +1,20 @@
 package ai.acyclic.prover.commons.graph.local
 
+import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.graph.viz.{Hasse, LinkedHierarchy}
-import ai.acyclic.prover.commons.graph.{Arrow, GraphK, TopologyOps}
 
 // this is untyped, should always leave the possibility to add dependent type information.
 // See project Matryoshka
 // OR this article for a possible start:
 //  https://macsphere.mcma
 //
-//
 //  ster.ca/bitstream/11375/18494/2/thesis.pdf
-trait Graph[N] extends GraphK[N] {
+trait Graph[N] extends GraphT._Graph[N] {
 
+  final type Node = N
   final val sys: Local.type = Local
 
-  lazy val rootOps: Dataset[Ops] = roots.map(v => ops(v))
-
   def isEmpty: Boolean = roots.isEmpty
-
-  trait GraphOps extends TopologyOps[N] {
-
-    final lazy val directEdges = induction.collect {
-      case v if v.arrowType.isInstanceOf[Arrow.Edge] => v
-    }
-
-    def resolve(): Unit = { induction; nodeText }
-  }
-  type Ops <: GraphOps
 
   def diagram_Hasse(
       implicit
@@ -36,20 +24,7 @@ trait Graph[N] extends GraphK[N] {
 
 object Graph {
 
-  trait Outbound[N] extends Graph[N] {
-
-    trait OutboundOps extends GraphOps with TopologyOps.InductionMixin[N, Arrow.`~>`.Of[N]] {
-
-      protected def getInduction: Seq[Arrow.`~>`.Of[N]] = Nil
-
-      final lazy val children: Seq[N] = {
-        induction.map(v => v.target)
-      }
-
-      lazy val isLeaf: Boolean = children.isEmpty
-    }
-
-    type Ops <: OutboundOps
+  trait Outbound[N] extends Graph[N] with GraphT.OutboundT._Graph[N] {
 
     def diagram_linkedHierarchy(
         implicit
@@ -58,5 +33,4 @@ object Graph {
   }
 
   object Outbound {}
-
 }

@@ -1,25 +1,24 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.{HasOuter, Same}
-import ai.acyclic.prover.commons.graph.TopologyOps.Topology
 
-trait GraphK[N] extends GraphK.Like {
+trait GraphK[+Ops <: Induction] extends GraphK.Like {
 
-  final type NodeType = N
+  type Node
 
-  def roots: Dataset[N]
+  def roots: Dataset[Node]
+//  lazy val rootOps: Dataset[Ops] = roots.map(v => ops(v))
 
-  type Ops <: TopologyOps[N]
-  protected def Ops: Topology[N, Ops]
+  protected def Ops: Node => Ops
 
-  lazy val ops: Topology[N, Ops] = Ops
+  lazy val ops: Node => Ops = Ops
 }
 
 object GraphK {
 
   trait Like extends HasOuter {
 
-    type NodeType
+    type Node
 
     val sys: GraphSystem
 
@@ -30,13 +29,13 @@ object GraphK {
     type Dataset[T] = sys.Dataset[T]
   }
 
-  trait Immutable[N] extends GraphK[N] {
+  trait Immutable[+Ops <: Induction] extends GraphK[Ops] {
 
     // the Memoization appears to confine GraphK to be only applicable to immutable graph
     //  can this be lifted?
-    override lazy val ops: Topology[N, Ops] =
+    override lazy val ops: Node => Ops =
       sameness
-        .Memoize[N, Ops](
+        .Memoize[Node, Ops](
           Ops
         )
   }

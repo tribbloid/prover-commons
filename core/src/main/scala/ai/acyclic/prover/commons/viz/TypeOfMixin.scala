@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
 import ai.acyclic.prover.commons.graph.local.Graph
 import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
 
@@ -125,8 +126,8 @@ trait TypeOfMixin extends HasReflection {
         } else {
 
           val indentedArgText =
-            TextBlock(argText)
-              .pad.left(Padding.argLeftBracket)
+            TextBlock(argText).pad
+              .left(Padding.argLeftBracket)
               .indent("      ")
               .build
 
@@ -184,7 +185,7 @@ trait TypeOfMixin extends HasReflection {
 
     case class GraphRepr(override val roots: Seq[VNode]) extends Graph.Outbound[VNode] {
 
-      case class Ops(node: VNode) extends OutboundOps {
+      case class Ops(node: VNode) extends OutboundT.Impl[VNode] {
 
         override protected def getInduction: Seq[Arrow.`~>`.Of[VNode]] = {
           node.children

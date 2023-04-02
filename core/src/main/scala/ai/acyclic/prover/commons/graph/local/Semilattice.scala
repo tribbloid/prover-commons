@@ -1,8 +1,9 @@
 package ai.acyclic.prover.commons.graph.local
 
+import ai.acyclic.prover.commons.graph.Topology.SemilatticeT
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 
-trait Semilattice[N] extends Poset[N] {
+trait Semilattice[N] extends Poset[N] with SemilatticeT._Graph[N] {
 
   def root: N
 
@@ -11,20 +12,7 @@ trait Semilattice[N] extends Poset[N] {
 
 object Semilattice {
 
-  trait Upper[N] extends Semilattice[N] with Poset.Upper[N] {
-
-    trait UpperOps extends OutboundOps {
-
-      lazy val allOffsprings: Seq[N] = {
-        val cc = children
-        val others = children.flatMap { child =>
-          ops(child).allOffsprings
-        }
-        cc ++ others
-      }
-    }
-
-    type Ops <: UpperOps
+  trait Upper[N] extends Semilattice[N] with Graph.Outbound[N] with SemilatticeT.UpperT._Graph[N] {
 
     def diagram_hierarchy(
         implicit

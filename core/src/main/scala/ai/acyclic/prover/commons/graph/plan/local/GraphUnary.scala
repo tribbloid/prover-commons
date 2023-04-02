@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.graph.plan.local
 
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.GraphK.Like
+import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
 import ai.acyclic.prover.commons.graph.plan.{PlanExpr, PlanGroup}
 import shapeless.Sized
@@ -20,7 +21,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
     object Upcasted extends Graph[N2] {
 
-      case class Ops(node: N2) extends GraphOps {
+      case class Ops(node: N2) extends GraphT.Impl[N2] {
 
         override protected def getNodeText: String = inputGraph.ops(node.asInstanceOf[N]).nodeText
 
@@ -30,12 +31,10 @@ case class GraphUnary[IG <: Graph[N], N] private (
       }
 
       override def roots: Dataset[N2] = inputGraph.roots.map(v => v: N2)
+
     }
 
-    override def exe: Graph[N2] = {
-
-      Upcasted
-    }
+    override def exe: Graph[N2] = Upcasted
   }
 
   trait TransformLike extends Expr[Graph[N]]
@@ -87,8 +86,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
         inputGraph.roots.flatMap(n => transformInternal(n, maxDepth))
       }
 
-      type Ops = GraphOps
-      override val Ops: N => Ops = (inputGraph: Graph[N]).ops.asInstanceOf[N => GraphOps]
+      override val Ops = (inputGraph: Graph[N]).ops
       // cast to suppress a compiler bug
     }
     object LazyResultGraph extends LazyResultGraph // TODO: this should be exposed

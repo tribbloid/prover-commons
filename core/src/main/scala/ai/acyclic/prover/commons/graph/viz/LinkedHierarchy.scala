@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
+import ai.acyclic.prover.commons.graph.Topology.TreeT
 import ai.acyclic.prover.commons.graph.local.{Graph, Tree}
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import ai.acyclic.prover.commons.graph.{Arrow, GraphK}
@@ -156,13 +157,13 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
       }
 
-      case class RefTree(node: N) extends Tree[RefNode] with GraphK.Immutable[RefNode] {
+      case class RefTree(node: N) extends Tree[RefNode] with GraphK.Immutable[TreeT.Impl[RefNode]] {
 
         override lazy val root: RefNode = RefNode(node)
 
-        case class Ops(override val node: RefNode) extends UpperOps {
+        case class Ops(override val node: RefNode) extends TreeT.Impl[RefNode] {
 
-          def originalOps: graph.OutboundOps = graph.ops(node.node)
+          def originalOps = graph.ops(node.node)
 
           override protected def getInduction: Seq[Arrow.`~>`.NoInfo[RefNode]] = {
 

@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.graph.Topology.TreeT
 import ai.acyclic.prover.commons.graph.local.Tree
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 import ai.acyclic.prover.commons.testlib.BaseSpec
@@ -82,7 +83,7 @@ object TreeFixture {
 
   case class _Tree(root: Demo) extends Tree[Demo] {
 
-    case class Ops(node: Demo) extends UpperOps {
+    case class Ops(node: Demo) extends TreeT.Impl[Demo] {
 
       override protected def getNodeText = node.text
 
@@ -92,7 +93,7 @@ object TreeFixture {
 
   case class _TreeWithArrowTexts(root: Demo) extends Tree[Demo] {
 
-    case class Ops(node: Demo) extends UpperOps {
+    case class Ops(node: Demo) extends TreeT.Impl[Demo] {
 
       override protected def getNodeText = node.text
 

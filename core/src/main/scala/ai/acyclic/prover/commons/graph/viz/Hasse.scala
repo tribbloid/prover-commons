@@ -67,7 +67,7 @@ trait Hasse extends Hasse.Format {
         }
       }
 
-      lazy val nOps: graph.Ops = graph.ops(node)
+      lazy val nOps = graph.ops(node)
       final override lazy val toString = {
 
         val showBinding = arrowsFrom.size >= 2

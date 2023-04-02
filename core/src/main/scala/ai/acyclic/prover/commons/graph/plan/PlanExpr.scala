@@ -10,7 +10,7 @@ trait PlanExpr[+OG <: GraphK.Like] {
 
   final lazy val exeOnce: OG = exe
 
-  type NodeType = exeOnce.NodeType
+  type NodeType = exeOnce.Node
 }
 
 object PlanExpr {

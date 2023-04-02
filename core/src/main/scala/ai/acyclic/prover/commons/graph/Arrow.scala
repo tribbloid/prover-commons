@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.graph
 
-
 import scala.collection.Factory
 import scala.language.implicitConversions
 
@@ -37,14 +36,14 @@ object Arrow {
 
     object Of {
 
-      implicit def defaultsTo[N](v: N): NoInfo[N] = NoInfo[N](v)
+      implicit def defaultFrom[N](v: N): NoInfo[N] = NoInfo[N](v)
 
-      implicit def defaultToMany[F[T] <: Iterable[T], N](vs: F[N])(
+      implicit def defaultsFrom[F[T] <: Iterable[T], N](vs: F[N])(
           implicit
           toF: Factory[NoInfo[N], F[NoInfo[N]]]
       ): F[NoInfo[N]] = {
         val mapped: Iterable[NoInfo[N]] = vs.map { v =>
-          defaultsTo(v)
+          defaultFrom(v)
         }
         toF.fromSpecific(mapped)
       }
@@ -54,10 +53,7 @@ object Arrow {
         override val target: N,
         override val getArrowText: Option[String] = None
     ) extends Of[N]
-        with NoInfoLike {
-
-//      override val topology: Topology[N, _] = ???
-    }
+        with NoInfoLike {}
 
     object NoInfo {}
   }

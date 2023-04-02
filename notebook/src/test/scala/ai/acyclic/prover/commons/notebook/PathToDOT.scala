@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.notebook
 
 import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
 import ai.acyclic.prover.commons.graph.local.Graph
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
@@ -22,7 +23,7 @@ object PathToDOT {
 
   case class G(roots: Seq[Forward]) extends Graph.Outbound[Forward] {
 
-    case class Ops(node: Forward) extends OutboundOps {
+    case class Ops(node: Forward) extends OutboundT.Impl[Forward] {
 
       override protected def getNodeText: String = node.text
 

@@ -5,6 +5,7 @@ import ai.acyclic.prover.commons.graph.local.Semilattice
 import ai.acyclic.prover.commons.reflect.ScalaReflection
 import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
 import ai.acyclic.prover.commons.HasOuter
+import ai.acyclic.prover.commons.graph.Topology.SemilatticeT
 
 import scala.reflect.ClassTag
 
@@ -17,7 +18,7 @@ abstract class ProductDiscovery[Include](
 
   import ProductDiscovery._
 
-  trait Ops extends UpperOps
+  trait Ops extends SemilatticeT.UpperT.Impl[Any] {}
   override lazy val Ops: Any => Ops = {
     case v: Exclude =>
       FallbackOps(v)
