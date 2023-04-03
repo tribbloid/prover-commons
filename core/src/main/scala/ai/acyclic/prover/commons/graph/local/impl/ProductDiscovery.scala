@@ -32,7 +32,7 @@ abstract class ProductDiscovery[Include](
 
     final override protected def getNodeText = node.toString
 
-    final override protected def getInduction: Seq[Arrow.`~>`.Of[Product]] = Nil
+    final override protected def getInduction: Seq[(Arrow.`~>`.^, Product)] = Nil
   }
 
   case class ProductOps(node: Product) extends Ops {
@@ -93,7 +93,7 @@ abstract class ProductDiscovery[Include](
       }
     }
 
-    final override protected def getInduction: Seq[Arrow.`~>`.Of[Any]] = {
+    final override protected def getInduction: Seq[(Arrow.`~>`.^, Any)] = {
 
       _children
     }

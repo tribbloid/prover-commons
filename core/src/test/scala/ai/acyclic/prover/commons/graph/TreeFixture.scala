@@ -87,7 +87,7 @@ object TreeFixture {
 
       override protected def getNodeText = node.text
 
-      override protected def getInduction: Seq[Arrow.`~>`.Of[Demo]] = node.children
+      override protected def getInduction = node.children
     }
   }
 
@@ -97,11 +97,11 @@ object TreeFixture {
 
       override protected def getNodeText = node.text
 
-      override protected def getInduction: Seq[Arrow.`~>`.Of[Demo]] = {
+      override protected def getInduction = {
 
         val children = node.children
         val result = children.map { child =>
-          Arrow.`~>`.NoInfo(child, Some(s"${node.text} |> ${child.text}"))
+          Arrow.`~>`.NoInfo(Some(s"${node.text} |> ${child.text}")) -> child
         }
         result
       }

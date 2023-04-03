@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.graph
 
-
-
 trait GraphSystem {
 
   type Dataset[T]

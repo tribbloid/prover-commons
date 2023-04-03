@@ -8,7 +8,7 @@ trait Arrow {
 
   import Arrow._
 
-  val target: Any // TODO: should be NodeOps[N]
+//  val target: Any // TODO: should be NodeOps[N]
 
 //  val topology: NodeOps.Topology[_, _]
 
@@ -20,42 +20,38 @@ trait Arrow {
 
 object Arrow {
 
-  trait Of[+N] extends Arrow {
-
-    override val target: N
-  }
-
   trait NoInfoLike extends Arrow
 
   sealed trait ArrowType extends Product {
 
-    trait Of[+N] extends Arrow.Of[N] {
+    trait ^ extends Arrow {
 
       override val arrowType: ArrowType.this.type = ArrowType.this
     }
 
-    object Of {
+    implicit def pair[N](v: N): (NoInfo, N) = NoInfo.empty -> v
 
-      implicit def defaultFrom[N](v: N): NoInfo[N] = NoInfo[N](v)
-
-      implicit def defaultsFrom[F[T] <: Iterable[T], N](vs: F[N])(
-          implicit
-          toF: Factory[NoInfo[N], F[NoInfo[N]]]
-      ): F[NoInfo[N]] = {
-        val mapped: Iterable[NoInfo[N]] = vs.map { v =>
-          defaultFrom(v)
-        }
-        toF.fromSpecific(mapped)
+    implicit def pairMany[F[T] <: Iterable[T], N](vs: F[N])(
+        implicit
+        toF: Factory[(NoInfo, N), F[(NoInfo, N)]]
+    ): F[(NoInfo, N)] = {
+      val mapped = vs.map { v =>
+        pair(v)
       }
+      toF.fromSpecific(mapped)
     }
 
-    case class NoInfo[N](
-        override val target: N,
+    object ^ {}
+
+    case class NoInfo(
         override val getArrowText: Option[String] = None
-    ) extends Of[N]
+    ) extends ^
         with NoInfoLike {}
 
-    object NoInfo {}
+    object NoInfo {
+
+      lazy val empty = NoInfo()
+    }
   }
 
   sealed abstract class Edge extends ArrowType {}

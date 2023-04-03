@@ -25,7 +25,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
         override protected def getNodeText: String = inputGraph.ops(node.asInstanceOf[N]).nodeText
 
-        override protected def getInduction: Seq[Arrow.Of[N2]] = {
+        override protected def getInduction: Seq[(Arrow, N2)] = {
           inputGraph.ops(node.asInstanceOf[N]).induction
         }
       }

@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-trait Topology[A[+n] <: Arrow.Of[n]] {
+trait Topology[A <: Arrow] {
 
   type _OpsBound[N] = Topology.OpsBound[A, N, Ops[N]]
 
@@ -11,19 +11,17 @@ trait Topology[A[+n] <: Arrow.Of[n]] {
 
 object Topology {
 
-  trait OpsBound[+A[+n] <: Arrow.Of[n], N, +SELF <: OpsBound[A, N, SELF]]
-      extends Induction
-      with Induction.Mixin[A, SELF] {
+  trait OpsBound[+A <: Arrow, N, +SELF <: OpsBound[A, N, SELF]] extends Induction with Induction.Mixin[A, SELF] {
 
     final type Node = N
   }
 
-  object GraphT extends Topology[Arrow.Of] {
+  object GraphT extends Topology[Arrow] {
 
     trait Ops[N] extends _OpsBound[N] {
 
       final lazy val directEdges = induction.collect {
-        case v if v.arrowType.isInstanceOf[Arrow.Edge] => v
+        case (v, _) if v.arrowType.isInstanceOf[Arrow.Edge] => v
       }
 
       def resolve(): Unit = {
@@ -32,12 +30,12 @@ object Topology {
       }
     }
 
-    object OutboundT extends Topology[Arrow.`~>`.Of] {
+    object OutboundT extends Topology[Arrow.`~>`.^] {
 
       trait Ops[N] extends GraphT.Ops[N] with _OpsBound[N] {
 
         final lazy val children: Seq[Node] = {
-          induction.map(v => v.target)
+          induction.map(v => v._2)
         }
 
         lazy val isLeaf: Boolean = children.isEmpty
@@ -45,16 +43,16 @@ object Topology {
     }
   }
 
-  object PosetT extends Topology[Arrow.Of] {
+  object PosetT extends Topology[Arrow] {
 
     trait Ops[N] extends GraphT.Ops[N] with _OpsBound[N] {}
   }
 
-  object SemilatticeT extends Topology[Arrow.Of] {
+  object SemilatticeT extends Topology[Arrow] {
 
     trait Ops[N] extends PosetT.Ops[N] with _OpsBound[N] {}
 
-    object UpperT extends Topology[Arrow.`~>`.Of] {
+    object UpperT extends Topology[Arrow.`~>`.^] {
 
       trait Ops[N] extends _OpsBound[N] with SemilatticeT.Ops[N] with GraphT.OutboundT.Ops[N] {
 
@@ -71,7 +69,7 @@ object Topology {
     }
   }
 
-  object TreeT extends Topology[Arrow.`~>`.Of] {
+  object TreeT extends Topology[Arrow.`~>`.^] {
 
     trait Ops[N] extends SemilatticeT.UpperT.Ops[N] with _OpsBound[N] {}
   }

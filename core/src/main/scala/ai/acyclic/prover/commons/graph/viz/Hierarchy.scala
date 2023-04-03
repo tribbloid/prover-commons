@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
+import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Semilattice
 import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
 
@@ -62,20 +63,20 @@ trait Hierarchy extends Hierarchy.Format {
           val selfT = wText.pad.left(FORK)
 
           val arrows = headOps.induction
-          val target2Arrow = arrows
+          val groupedByTarget: Map[N, Vector[(Arrow.`~>`.^, N)]] = arrows
             .groupBy { v =>
-              v.target
+              v._2
             }
 
-          val children = arrows.map(_.target).distinct
+          val children = arrows.map(_._2).distinct
 
           val childrenTProtos: Seq[TextBlock] = children.toList.map { child =>
-            val _arrows = target2Arrow(child)
-            val arrowBlocksOpt = _arrows
-              .flatMap { arrow =>
-                arrow.arrowText.map { text =>
-                  TextBlock(text).encloseIn.parenthesis.pad.left(ARROW)
-                }
+            val arrowBlocksOpt = groupedByTarget(child)
+              .flatMap {
+                case (arrow, target) =>
+                  arrow.arrowText.map { text =>
+                    TextBlock(text).encloseIn.parenthesis.pad.left(ARROW)
+                  }
               }
               .reduceOption((x, y) => x.zipBottom(y))
 

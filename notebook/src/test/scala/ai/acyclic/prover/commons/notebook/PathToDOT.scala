@@ -12,11 +12,11 @@ object PathToDOT {
 
   case class Forward(text: String) {
 
-    val arrowBuffer = mutable.Buffer.empty[Arrow.`~>`.Of[Forward]]
+    val arrowBuffer = mutable.Buffer.empty[(Arrow.`~>`.^, Forward)]
 
     def from(fromNode: Forward, msg: String): this.type = {
 
-      fromNode.arrowBuffer += Arrow.`~>`.NoInfo(this, Option(msg).filter(_.nonEmpty))
+      fromNode.arrowBuffer += Arrow.`~>`.NoInfo(Option(msg).filter(_.nonEmpty)) -> this
       this
     }
   }
