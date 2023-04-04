@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.viz
 import ai.acyclic.prover.commons.graph.Topology.TreeT
 import ai.acyclic.prover.commons.graph.local.{Graph, Tree}
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
-import ai.acyclic.prover.commons.graph.{Arrow, GraphK}
+import ai.acyclic.prover.commons.graph.GraphK
 import ai.acyclic.prover.commons.viz.text.TextBlock
 
 import java.util.UUID
@@ -60,7 +60,7 @@ object LinkedHierarchy extends Visualisations {
           maxDepth = backbone.maxDepth,
           down = { v =>
             val ops = tree.ops(v)
-            ops.induction
+            ops.discoverArrow
           }
         )
         .DepthFirst
@@ -165,14 +165,14 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
           def originalOps = graph.ops(node.node)
 
-          override protected def getInduction: Seq[(Arrow.`~>`.^, RefNode)] = {
+          override protected def getInduction = {
 
             if (!node.shouldExpand) {
               Nil
             } else {
 
-              val result = originalOps.induction.map { v =>
-                v._1 -> RefNode(v._2) // this discard arrow info
+              val result = originalOps.discoverArrow.map { v =>
+                v._1 -> Ops(RefNode(v._2)) // this discard arrow info
               }
 
               result

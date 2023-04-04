@@ -87,7 +87,7 @@ object TreeFixture {
 
       override protected def getNodeText = node.text
 
-      override protected def getInduction = node.children
+      override protected def getInduction = node.children.map(v => Ops(v))
     }
   }
 
@@ -101,7 +101,7 @@ object TreeFixture {
 
         val children = node.children
         val result = children.map { child =>
-          Arrow.`~>`.NoInfo(Some(s"${node.text} |> ${child.text}")) -> child
+          Arrow.`~>`.NoInfo(Some(s"${node.text} |> ${child.text}")) -> Ops(child)
         }
         result
       }

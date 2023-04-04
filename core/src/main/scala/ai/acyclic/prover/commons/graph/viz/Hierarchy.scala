@@ -62,7 +62,7 @@ trait Hierarchy extends Hierarchy.Format {
 
           val selfT = wText.pad.left(FORK)
 
-          val arrows = headOps.induction
+          val arrows = headOps.discoverArrow
           val groupedByTarget: Map[N, Vector[(Arrow.`~>`.^, N)]] = arrows
             .groupBy { v =>
               v._2

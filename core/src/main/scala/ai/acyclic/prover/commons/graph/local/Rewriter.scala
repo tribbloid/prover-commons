@@ -17,7 +17,7 @@ trait Rewriter[N] extends (N => WithNewSuccessor[N]) {
 
       def apply(newDiscover: Seq[N]): N = {
         // Only rewrite if necessary
-        val originalDiscover = graph.ops(node).canDiscover
+        val originalDiscover = graph.ops(node).discoverNode
         if (originalDiscover == newDiscover) {
           // no need to rewrite, just return node as-is
           return node
@@ -25,7 +25,7 @@ trait Rewriter[N] extends (N => WithNewSuccessor[N]) {
 
         val result = Rewriter.this.apply(node).apply(newDiscover)
 
-        val actualDiscover = graph.ops(result).canDiscover
+        val actualDiscover = graph.ops(result).discoverNode
         require(
           actualDiscover == newDiscover,
           s"""Incompatible rewriter?

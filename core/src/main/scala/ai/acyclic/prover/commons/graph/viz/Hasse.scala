@@ -132,7 +132,7 @@ trait Hasse extends Hasse.Format {
           down = { node =>
             val wrapper = nodeBuffer.apply(node)
 
-            val newRelations = wrapper.nOps.induction.flatMap { v =>
+            val newRelations = wrapper.nOps.discoverArrow.flatMap { v =>
               v._1.arrowType match {
                 case Arrow.`~>` =>
                   val to = nodeBuffer.apply(v._2)

@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff
-import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
 import ai.acyclic.prover.commons.graph.local.Graph
 import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
@@ -187,8 +186,8 @@ trait TypeOfMixin extends HasReflection {
 
       case class Ops(node: VNode) extends OutboundT.Ops[VNode] {
 
-        override protected def getInduction: Seq[(Arrow.`~>`.^, VNode)] = {
-          node.children
+        override protected def getInduction = {
+          node.children.map(v => Ops(v))
         }
       }
     }

@@ -1,11 +1,10 @@
 package ai.acyclic.prover.commons.graph.local.impl
 
-import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.HasOuter
+import ai.acyclic.prover.commons.graph.Topology.SemilatticeT
 import ai.acyclic.prover.commons.graph.local.Semilattice
 import ai.acyclic.prover.commons.reflect.ScalaReflection
 import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
-import ai.acyclic.prover.commons.HasOuter
-import ai.acyclic.prover.commons.graph.Topology.SemilatticeT
 
 import scala.reflect.ClassTag
 
@@ -32,7 +31,7 @@ abstract class ProductDiscovery[Include](
 
     final override protected def getNodeText = node.toString
 
-    final override protected def getInduction: Seq[(Arrow.`~>`.^, Product)] = Nil
+    final override protected def getInduction = Nil
   }
 
   case class ProductOps(node: Product) extends Ops {
@@ -93,9 +92,9 @@ abstract class ProductDiscovery[Include](
       }
     }
 
-    final override protected def getInduction: Seq[(Arrow.`~>`.^, Any)] = {
+    final override protected def getInduction = {
 
-      _children
+      _children.map(v => Ops(v))
     }
   }
 }

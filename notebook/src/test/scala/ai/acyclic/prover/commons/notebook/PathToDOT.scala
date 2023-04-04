@@ -28,7 +28,9 @@ object PathToDOT {
       override protected def getNodeText: String = node.text
 
       override protected def getInduction = {
-        node.arrowBuffer.toSeq
+        node.arrowBuffer.toSeq.map { v =>
+          v._1 -> Ops(v._2)
+        }
       }
     }
   }

@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.graph.plan.local
 
-import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.GraphK.Like
 import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
@@ -25,8 +24,10 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
         override protected def getNodeText: String = inputGraph.ops(node.asInstanceOf[N]).nodeText
 
-        override protected def getInduction: Seq[(Arrow, N2)] = {
-          inputGraph.ops(node.asInstanceOf[N]).induction
+        override protected def getInduction = {
+          inputGraph.ops(node.asInstanceOf[N]).induction.map { v =>
+            v._1 -> Ops(v._2.node: N2)
+          }
         }
       }
 
@@ -60,7 +61,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
             val inductionTs: Seq[N] =
               downTs.map { n =>
-                val successors = inputGraph.ops(n).canDiscover
+                val successors = inputGraph.ops(n).discoverNode
                 val successorsTransformed = successors.flatMap { nn =>
                   transformInternal(nn, depth - 1)
                 }

@@ -84,7 +84,7 @@ object GraphFixture {
 
       override protected def getNodeText = node.text
 
-      override protected def getInduction = node.children.toSeq
+      override protected def getInduction = node.children.toSeq.map(v => Ops(v))
     }
   }
 
@@ -98,7 +98,7 @@ object GraphFixture {
 
         val children = node.children.toSeq
         val result = children.map { child =>
-          Arrow.`~>`.NoInfo(Some(s"${node.text} |> ${child.text}")) -> child
+          Arrow.`~>`.NoInfo(Some(s"${node.text} |> ${child.text}")) -> Ops(child)
         }
         result
       }
