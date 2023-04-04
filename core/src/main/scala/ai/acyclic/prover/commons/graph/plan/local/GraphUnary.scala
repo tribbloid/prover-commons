@@ -3,11 +3,11 @@ package ai.acyclic.prover.commons.graph.plan.local
 import ai.acyclic.prover.commons.graph.GraphK.Like
 import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
-import ai.acyclic.prover.commons.graph.plan.{PlanExpr, PlanGroup}
+import ai.acyclic.prover.commons.graph.plan.{Expression, PlanGroup}
 import shapeless.Sized
 
 case class GraphUnary[IG <: Graph[N], N] private (
-    arg: PlanExpr[IG]
+    arg: Expression[IG]
 ) extends PlanGroup.Unary.Expressions[IG] {
 
   import GraphUnary._
@@ -272,13 +272,13 @@ object GraphUnary {
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
   def make[IG <: Like, N](
-      arg: PlanExpr[IG]
+      arg: Expression[IG]
   )(
       implicit
       ev: IG <:< Graph[N]
       // see https://stackoverflow.com/questions/16291313/scala-inferred-type-arguments-type-bounds-inferring-to-nothing
   ): GraphUnary[IG with Graph[N], N] = {
 
-    new GraphUnary[IG with Graph[N], N](arg.asInstanceOf[PlanExpr[IG with Graph[N]]])
+    new GraphUnary[IG with Graph[N], N](arg.asInstanceOf[Expression[IG with Graph[N]]])
   }
 }

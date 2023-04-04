@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
-import ai.acyclic.prover.commons.graph.local.Rewriter.WithNewSuccessor
+import ai.acyclic.prover.commons.graph.local.Rewriter.WithNewInduction
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
@@ -71,7 +71,7 @@ object GraphFixture {
 
   object GNRewriter extends Rewriter[GN] {
 
-    override def apply(gn: GN): WithNewSuccessor[GN] = { ss: Seq[GN] =>
+    override def apply(gn: GN): WithNewInduction[GN] = { ss: Seq[GN] =>
       val result = gn.copy()
       result.children.addAll(ss)
       result

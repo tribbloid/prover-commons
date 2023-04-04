@@ -2,10 +2,10 @@ package ai.acyclic.prover.commons.graph.plan.local
 
 import ai.acyclic.prover.commons.graph.GraphK
 import ai.acyclic.prover.commons.graph.local.Graph
-import ai.acyclic.prover.commons.graph.plan.{PlanExpr, PlanGroup}
+import ai.acyclic.prover.commons.graph.plan.{Expression, PlanGroup}
 import shapeless.Sized
 
-case class GraphBinary[IG <: GraphK.Like, N](arg1: PlanExpr[IG], arg2: PlanExpr[IG])(
+case class GraphBinary[IG <: GraphK.Like, N](arg1: Expression[IG], arg2: Expression[IG])(
     implicit
     ev1: IG <:< Graph[N],
     ev2: IG <:< Graph[N]

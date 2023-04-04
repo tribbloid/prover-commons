@@ -9,9 +9,9 @@ trait PlanGroup {
 
   trait Expressions[IG <: GraphK.Like] {
 
-    def args: Sized[Seq[PlanExpr[IG]], Arity]
+    def args: Sized[Seq[Expression[IG]], Arity]
 
-    trait Expr[OG <: GraphK.Like] extends PlanExpr[OG]
+    trait Expr[OG <: GraphK.Like] extends Expression[OG]
   }
 }
 

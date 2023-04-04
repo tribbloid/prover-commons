@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.local
 
-import ai.acyclic.prover.commons.graph.local.Rewriter.WithNewSuccessor
+import ai.acyclic.prover.commons.graph.local.Rewriter.WithNewInduction
 
 /**
   * at this moment, only capable of rewriting `canDiscover`
@@ -9,11 +9,11 @@ import ai.acyclic.prover.commons.graph.local.Rewriter.WithNewSuccessor
   * @tparam N
   *   node type of a graph
   */
-trait Rewriter[N] extends (N => WithNewSuccessor[N]) {
+trait Rewriter[N] extends (N => WithNewInduction[N]) {
 
   case class VerifiedOn(graph: Graph[N]) extends Rewriter[N] {
 
-    case class Applied(node: N) extends WithNewSuccessor[N] {
+    case class Applied(node: N) extends WithNewInduction[N] {
 
       def apply(newDiscover: Seq[N]): N = {
         // Only rewrite if necessary
@@ -43,11 +43,11 @@ trait Rewriter[N] extends (N => WithNewSuccessor[N]) {
 
 object Rewriter {
 
-  type WithNewSuccessor[N] = Seq[N] => N
+  type WithNewInduction[N] = Seq[N] => N
 
   case class DoNotRewrite[N]() extends Rewriter[N] {
 
-    override def apply(v1: N): WithNewSuccessor[N] = { _ =>
+    override def apply(v1: N): WithNewInduction[N] = { _ =>
       v1
     }
   }
