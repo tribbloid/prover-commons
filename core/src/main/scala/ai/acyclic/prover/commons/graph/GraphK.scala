@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.{HasOuter, Same}
 
-trait GraphK[+Ops <: Induction] extends GraphK.Like {
+trait GraphK[+Ops <: Induction.Like[_, _]] extends GraphK.Like {
 
   type Node
 
@@ -29,7 +29,7 @@ object GraphK {
     type Dataset[T] = sys.Dataset[T]
   }
 
-  trait Immutable[+Ops <: Induction] extends GraphK[Ops] {
+  trait Immutable[+Ops <: Induction.Like[_, _]] extends GraphK[Ops] {
 
     // the Memoization appears to confine GraphK to be only applicable to immutable graph
     //  can this be lifted?

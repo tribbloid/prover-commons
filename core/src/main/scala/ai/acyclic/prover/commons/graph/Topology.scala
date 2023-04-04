@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph
 
 trait Topology[A <: Arrow] {
 
-  type _OpsBound[N] = Topology.OpsBound[A, N, Ops[N]]
+  type _OpsBound[N] = Induction[N, A, Ops[N]]
 
   type Ops[N] <: _OpsBound[N]
 
@@ -11,10 +11,10 @@ trait Topology[A <: Arrow] {
 
 object Topology {
 
-  trait OpsBound[+A <: Arrow, N, +SELF <: OpsBound[A, N, SELF]] extends Induction with Induction.Mixin[A, SELF] {
-
-    final type Node = N
-  }
+//  trait OpsBound[+A <: Arrow, N, +SELF <: OpsBound[A, N, SELF]] extends Induction.ArrowImpl[N, A, SELF] {
+//
+//    final type Node = N
+//  }
 
   object GraphT extends Topology[Arrow] {
 
