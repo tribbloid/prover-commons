@@ -20,13 +20,13 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
     object Upcasted extends Graph[N2] {
 
-      case class Ops(node: N2) extends GraphT.Ops[N2] {
+      case class Ops(value: N2) extends GraphT.Ops[N2] {
 
-        override protected def getNodeText: String = inputGraph.ops(node.asInstanceOf[N]).nodeText
+        override protected def getNodeText: String = inputGraph.ops(value.asInstanceOf[N]).nodeText
 
         override protected def getInduction = {
-          inputGraph.ops(node.asInstanceOf[N]).induction.map { v =>
-            v._1 -> Ops(v._2.node: N2)
+          inputGraph.ops(value.asInstanceOf[N]).induction.map { v =>
+            v._1 -> Ops(v._2.value: N2)
           }
         }
       }

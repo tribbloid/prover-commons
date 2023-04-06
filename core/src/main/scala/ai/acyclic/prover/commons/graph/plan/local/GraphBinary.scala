@@ -1,9 +1,8 @@
 package ai.acyclic.prover.commons.graph.plan.local
 
-import ai.acyclic.prover.commons.graph.GraphK
 import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.graph.local.Graph
-import ai.acyclic.prover.commons.graph.plan.{local, Arity, Expression}
+import ai.acyclic.prover.commons.graph.plan.{Arity, Expression}
 import shapeless.Sized
 
 case class GraphBinary[IG <: Graph[N], N](arg1: Expression[IG], arg2: Expression[IG])
@@ -17,11 +16,6 @@ case class GraphBinary[IG <: Graph[N], N](arg1: Expression[IG], arg2: Expression
   object Union extends To[Graph[N]] {
 
     object ResultGraph extends Graph[N] {
-
-//      case class Ops(node: N) extends GraphOps {
-//
-//        override protected def getInduction: Seq[Arrow.Of[Node]] = ???
-//      }
 
       override def roots: Dataset[N] = inputGraph1.roots ++ inputGraph2.roots
 

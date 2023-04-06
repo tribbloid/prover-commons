@@ -184,10 +184,10 @@ trait TypeOfMixin extends HasReflection {
 
     case class GraphRepr(override val roots: Seq[VNode]) extends Graph.Outbound[VNode] {
 
-      case class Ops(node: VNode) extends OutboundT.Ops[VNode] {
+      case class Ops(value: VNode) extends OutboundT.Ops[VNode] {
 
         override protected def getInduction = {
-          node.children.map(v => Ops(v))
+          value.children.map(v => Ops(v))
         }
       }
     }

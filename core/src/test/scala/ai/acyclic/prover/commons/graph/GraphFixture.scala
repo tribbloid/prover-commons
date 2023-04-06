@@ -80,25 +80,25 @@ object GraphFixture {
 
   case class _OGraph(override val roots: Seq[GN]) extends Graph.Outbound[GN] {
 
-    case class Ops(node: GN) extends OutboundT.Ops[GN] {
+    case class Ops(value: GN) extends OutboundT.Ops[GN] {
 
-      override protected def getNodeText = node.text
+      override protected def getNodeText = value.text
 
-      override protected def getInduction = node.children.toSeq.map(v => Ops(v))
+      override protected def getInduction = value.children.toSeq.map(v => Ops(v))
     }
   }
 
   case class _OGraphWithArrowText(override val roots: Seq[GN]) extends Graph.Outbound[GN] {
 
-    case class Ops(node: GN) extends OutboundT.Ops[GN] {
+    case class Ops(value: GN) extends OutboundT.Ops[GN] {
 
-      override protected def getNodeText = node.text
+      override protected def getNodeText = value.text
 
       override protected def getInduction = {
 
-        val children = node.children.toSeq
+        val children = value.children.toSeq
         val result = children.map { child =>
-          Arrow.`~>`.NoInfo(Some(s"${node.text} |> ${child.text}")) -> Ops(child)
+          Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Ops(child)
         }
         result
       }

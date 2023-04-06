@@ -161,13 +161,13 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
         override lazy val root: RefNode = RefNode(node)
 
-        case class Ops(override val node: RefNode) extends TreeT.Ops[RefNode] {
+        case class Ops(override val value: RefNode) extends TreeT.Ops[RefNode] {
 
-          def originalOps = graph.ops(node.node)
+          def originalOps = graph.ops(value.node)
 
           override protected def getInduction = {
 
-            if (!node.shouldExpand) {
+            if (!value.shouldExpand) {
               Nil
             } else {
 
@@ -183,9 +183,9 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
             val originalText = originalOps.nodeText
 
-            node.bindingOpt
+            value.bindingOpt
               .map { binding =>
-                if (node.shouldExpand) addSrcAnnotation(originalText, binding)
+                if (value.shouldExpand) addSrcAnnotation(originalText, binding)
                 else addRefAnnotation(originalText, binding)
               }
               .getOrElse(originalText)

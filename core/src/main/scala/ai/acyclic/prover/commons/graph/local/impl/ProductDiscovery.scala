@@ -27,16 +27,16 @@ abstract class ProductDiscovery[Include](
       FallbackOps(v)
   }
 
-  case class FallbackOps(node: Any) extends Ops {
+  case class FallbackOps(value: Any) extends Ops {
 
-    final override protected def getNodeText = node.toString
+    final override protected def getNodeText = value.toString
 
     final override protected def getInduction = Nil
   }
 
-  case class ProductOps(node: Product) extends Ops {
+  case class ProductOps(value: Product) extends Ops {
 
-    protected lazy val contains: List[Any] = node.productIterator.toList
+    protected lazy val contains: List[Any] = value.productIterator.toList
 
     protected lazy val _args_children = contains.map {
       case v: Include =>
@@ -56,10 +56,10 @@ abstract class ProductDiscovery[Include](
 
     lazy val constructorString: String = {
 
-      val hasOuter = node.getClass.getDeclaringClass != null
+      val hasOuter = value.getClass.getDeclaringClass != null
 
       if (hasOuter) {
-        val list = HasOuter.outerListOf(node)
+        val list = HasOuter.outerListOf(value)
 
         val names = list.map { v =>
           val dec = decodedStrOf(v)
@@ -69,7 +69,7 @@ abstract class ProductDiscovery[Include](
 
         names.reverse.mkString(" ‣ ")
       } else {
-        decodedStrOf(node)
+        decodedStrOf(value)
       }
     }
 

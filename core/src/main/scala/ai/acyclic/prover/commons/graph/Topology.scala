@@ -2,23 +2,18 @@ package ai.acyclic.prover.commons.graph
 
 trait Topology[A <: Arrow] {
 
-  type _OpsBound[N] = Induction[N, A, Ops[N]]
+  type _OpsBound[V] = Induction[V, A, Ops[V]]
 
-  type Ops[N] <: _OpsBound[N]
+  type Ops[V] <: _OpsBound[V]
 
-  type _Graph[N] = GraphK[Ops[N]]
+  type _Graph[V] = GraphK[Ops[V]]
 }
 
 object Topology {
 
-//  trait OpsBound[+A <: Arrow, N, +SELF <: OpsBound[A, N, SELF]] extends Induction.ArrowImpl[N, A, SELF] {
-//
-//    final type Node = N
-//  }
-
   object GraphT extends Topology[Arrow] {
 
-    trait Ops[N] extends _OpsBound[N] {
+    trait Ops[V] extends _OpsBound[V] {
 
       final lazy val discoverEdges = discoverArrows.collect {
         case (v, _) if v.arrowType.isInstanceOf[Arrow.Edge] => v
@@ -32,9 +27,9 @@ object Topology {
 
     object OutboundT extends Topology[Arrow.`~>`.^] {
 
-      trait Ops[N] extends GraphT.Ops[N] with _OpsBound[N] {
+      trait Ops[V] extends GraphT.Ops[V] with _OpsBound[V] {
 
-        final lazy val children: Seq[Node] = {
+        final lazy val children: Seq[V] = {
           discoverArrows.map(v => v._2)
         }
 
@@ -45,16 +40,16 @@ object Topology {
 
   object PosetT extends Topology[Arrow] {
 
-    trait Ops[N] extends GraphT.Ops[N] with _OpsBound[N] {}
+    trait Ops[V] extends GraphT.Ops[V] with _OpsBound[V] {}
   }
 
   object SemilatticeT extends Topology[Arrow] {
 
-    trait Ops[N] extends PosetT.Ops[N] with _OpsBound[N] {}
+    trait Ops[V] extends PosetT.Ops[V] with _OpsBound[V] {}
 
     object UpperT extends Topology[Arrow.`~>`.^] {
 
-      trait Ops[N] extends _OpsBound[N] with SemilatticeT.Ops[N] with GraphT.OutboundT.Ops[N] {
+      trait Ops[V] extends _OpsBound[V] with SemilatticeT.Ops[V] with GraphT.OutboundT.Ops[V] {
 
         //      def ops: Node => Impl
 
@@ -71,7 +66,7 @@ object Topology {
 
   object TreeT extends Topology[Arrow.`~>`.^] {
 
-    trait Ops[N] extends SemilatticeT.UpperT.Ops[N] with _OpsBound[N] {}
+    trait Ops[V] extends SemilatticeT.UpperT.Ops[V] with _OpsBound[V] {}
   }
 
 }

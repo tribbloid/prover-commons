@@ -23,12 +23,12 @@ object PathToDOT {
 
   case class G(roots: Seq[Forward]) extends Graph.Outbound[Forward] {
 
-    case class Ops(node: Forward) extends OutboundT.Ops[Forward] {
+    case class Ops(value: Forward) extends OutboundT.Ops[Forward] {
 
-      override protected def getNodeText: String = node.text
+      override protected def getNodeText: String = value.text
 
       override protected def getInduction = {
-        node.arrowBuffer.toSeq.map { v =>
+        value.arrowBuffer.toSeq.map { v =>
           v._1 -> Ops(v._2)
         }
       }

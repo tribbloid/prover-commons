@@ -83,25 +83,25 @@ object TreeFixture {
 
   case class _Tree(root: Demo) extends Tree[Demo] {
 
-    case class Ops(node: Demo) extends TreeT.Ops[Demo] {
+    case class Ops(value: Demo) extends TreeT.Ops[Demo] {
 
-      override protected def getNodeText = node.text
+      override protected def getNodeText = value.text
 
-      override protected def getInduction = node.children.map(v => Ops(v))
+      override protected def getInduction = value.children.map(v => Ops(v))
     }
   }
 
   case class _TreeWithArrowTexts(root: Demo) extends Tree[Demo] {
 
-    case class Ops(node: Demo) extends TreeT.Ops[Demo] {
+    case class Ops(value: Demo) extends TreeT.Ops[Demo] {
 
-      override protected def getNodeText = node.text
+      override protected def getNodeText = value.text
 
       override protected def getInduction = {
 
-        val children = node.children
+        val children = value.children
         val result = children.map { child =>
-          Arrow.`~>`.NoInfo(Some(s"${node.text} |> ${child.text}")) -> Ops(child)
+          Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Ops(child)
         }
         result
       }
