@@ -11,9 +11,11 @@ trait Induction[N, +A <: Arrow, +SELF <: Induction[N, A, SELF]] extends Inductio
   protected def getInduction: Seq[(A, SELF)]
   lazy val induction = getInduction
 
-  final lazy val discoverArrow: Many[(A, N)] = induction.map(v => v._1 -> v._2.node)
+  final lazy val discoverInduction: Seq[SELF] = getInduction.map(_._2)
 
-  final lazy val discoverNode: Many[N] = discoverArrow.map(_._2)
+  final lazy val discoverArrows: Many[(A, N)] = induction.map(v => v._1 -> v._2.node)
+
+  final lazy val discoverNodes: Many[N] = discoverArrows.map(_._2)
 }
 
 object Induction {

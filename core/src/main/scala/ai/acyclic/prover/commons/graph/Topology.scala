@@ -20,12 +20,12 @@ object Topology {
 
     trait Ops[N] extends _OpsBound[N] {
 
-      final lazy val directEdges = discoverArrow.collect {
+      final lazy val discoverEdges = discoverArrows.collect {
         case (v, _) if v.arrowType.isInstanceOf[Arrow.Edge] => v
       }
 
       def resolve(): Unit = {
-        discoverArrow;
+        discoverArrows;
         nodeText
       }
     }
@@ -35,7 +35,7 @@ object Topology {
       trait Ops[N] extends GraphT.Ops[N] with _OpsBound[N] {
 
         final lazy val children: Seq[Node] = {
-          discoverArrow.map(v => v._2)
+          discoverArrows.map(v => v._2)
         }
 
         lazy val isLeaf: Boolean = children.isEmpty

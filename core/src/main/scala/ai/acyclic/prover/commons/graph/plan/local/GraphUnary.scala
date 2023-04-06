@@ -3,12 +3,12 @@ package ai.acyclic.prover.commons.graph.plan.local
 import ai.acyclic.prover.commons.graph.GraphK.Like
 import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
-import ai.acyclic.prover.commons.graph.plan.{Expression, PlanGroup}
+import ai.acyclic.prover.commons.graph.plan.{Arity, Expression}
 import shapeless.Sized
 
 case class GraphUnary[IG <: Graph[N], N] private (
     arg: Expression[IG]
-) extends PlanGroup.Unary.Expressions[IG] {
+) extends Arity.Unary.Expressions[IG] {
 
   import GraphUnary._
 
@@ -16,7 +16,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
   lazy val inputGraph = arg.exeOnce
 
-  case class UpcastNode[N2 >: N]() extends Expr[Graph[N2]] {
+  case class UpcastNode[N2 >: N]() extends To[Graph[N2]] {
 
     object Upcasted extends Graph[N2] {
 
@@ -38,7 +38,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
     override def exe: Graph[N2] = Upcasted
   }
 
-  trait TransformLike extends Expr[Graph[N]]
+  trait TransformLike extends To[Graph[N]]
 
   // TODO:
   //  need to cross NodeType
@@ -51,58 +51,59 @@ case class GraphUnary[IG <: Graph[N], N] private (
       up: N => Seq[N] = v => Seq(v)
   ) {
 
-    trait LazyResultGraph extends Graph[N] {
-
-      private def transformInternal(node: N, depth: Int = maxDepth): Seq[N] = {
-        if (depth > 0) {
-
-          def doTransform(node: N): Seq[N] = {
-            val downTs: Seq[N] = down(node)
-
-            val inductionTs: Seq[N] =
-              downTs.map { n =>
-                val successors = inputGraph.ops(n).discoverNode
-                val successorsTransformed = successors.flatMap { nn =>
-                  transformInternal(nn, depth - 1)
-                }
-                val rewritten = rewriter.VerifiedOn(inputGraph).apply(n)(successorsTransformed)
-                rewritten
-              }
-
-            val results = inductionTs.flatMap { n =>
-              up(n)
-            }
-
-            results
-          }
-
-          pruning(doTransform).apply(node)
-        } else {
-          Seq(node)
-        }
-
-      }
-
-      override lazy val roots: Seq[N] = {
-        inputGraph.roots.flatMap(n => transformInternal(n, maxDepth))
-      }
-
-      override val Ops = (inputGraph: Graph[N]).ops
-      // cast to suppress a compiler bug
-    }
-    object LazyResultGraph extends LazyResultGraph // TODO: this should be exposed
-
-    object ResultGraph extends LazyResultGraph {
-
-      {
-        roots
-      }
-    }
-
     object DepthFirst extends TransformLike {
 
+      trait TransformedLazily extends Graph[N] {
+
+        private def transformInternal(node: N, depth: Int = maxDepth): Seq[N] = {
+          if (depth > 0) {
+
+            def doTransform(node: N): Seq[N] = {
+              val downTs: Seq[N] = down(node)
+
+              val inductionTs: Seq[N] =
+                downTs.map { n =>
+                  val successors = inputGraph.ops(n).discoverNodes
+                  val successorsTransformed = successors.flatMap { nn =>
+                    transformInternal(nn, depth - 1)
+                  }
+                  val rewritten = rewriter.VerifiedOn(inputGraph).apply(n)(successorsTransformed)
+                  rewritten
+                }
+
+              val results = inductionTs.flatMap { n =>
+                up(n)
+              }
+
+              results
+            }
+
+            pruning(doTransform).apply(node)
+          } else {
+            Seq(node)
+          }
+
+        }
+
+        override lazy val roots: Seq[N] = {
+          inputGraph.roots.flatMap(n => transformInternal(n, maxDepth))
+        }
+
+        override val Ops = (inputGraph: Graph[N]).ops
+        // cast to suppress a compiler bug
+      }
+
+      object TransformedLazily extends TransformedLazily // TODO: this should be exposed
+
+      object Transformed extends TransformedLazily {
+
+        {
+          roots
+        }
+      }
+
       override def exe: Graph[N] = {
-        ResultGraph
+        Transformed
       }
     }
 
@@ -190,7 +191,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
     )
   }
 
-  trait TraverseLike extends Expr[IG] {}
+  trait TraverseLike extends To[IG] {}
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(

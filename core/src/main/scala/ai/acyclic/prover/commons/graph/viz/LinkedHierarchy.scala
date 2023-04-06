@@ -60,7 +60,7 @@ object LinkedHierarchy extends Visualisations {
           maxDepth = backbone.maxDepth,
           down = { v =>
             val ops = tree.ops(v)
-            ops.discoverArrow
+            ops.discoverArrows
           }
         )
         .DepthFirst
@@ -171,7 +171,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
               Nil
             } else {
 
-              val result = originalOps.discoverArrow.map { v =>
+              val result = originalOps.discoverArrows.map { v =>
                 v._1 -> Ops(RefNode(v._2)) // this discard arrow info
               }
 

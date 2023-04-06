@@ -15,21 +15,21 @@ trait Rewriter[N] extends (N => WithNewInduction[N]) {
 
     case class Applied(node: N) extends WithNewInduction[N] {
 
-      def apply(newDiscover: Seq[N]): N = {
+      def apply(newNs: Seq[N]): N = {
         // Only rewrite if necessary
-        val originalDiscover = graph.ops(node).discoverNode
-        if (originalDiscover == newDiscover) {
+        val originalNs = graph.ops(node).discoverNodes
+        if (originalNs == newNs) {
           // no need to rewrite, just return node as-is
           return node
         }
 
-        val result = Rewriter.this.apply(node).apply(newDiscover)
+        val result = Rewriter.this.apply(node).apply(newNs)
 
-        val actualDiscover = graph.ops(result).discoverNode
+        val actualDiscover = graph.ops(result).discoverNodes
         require(
-          actualDiscover == newDiscover,
+          actualDiscover == newNs,
           s"""Incompatible rewriter?
-             |Rewrite result should be [${newDiscover.mkString(", ")}]
+             |Rewrite result should be [${newNs.mkString(", ")}]
              |but it is actually [${actualDiscover.mkString(", ")}]""".stripMargin
         )
 
