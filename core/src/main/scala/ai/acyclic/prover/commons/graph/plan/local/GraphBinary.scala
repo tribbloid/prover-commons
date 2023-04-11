@@ -13,15 +13,15 @@ case class GraphBinary[IG <: Graph[N], N](arg1: Expression[IG], arg2: Expression
   lazy val inputGraph1 = arg1.exeOnce
   lazy val inputGraph2 = arg2.exeOnce
 
-  object Union extends To[Graph[N]] {
-
-    object ResultGraph extends Graph[N] {
-
-      override def roots: Dataset[N] = inputGraph1.roots ++ inputGraph2.roots
-
-      override protected def Ops: Node => GraphT.Ops[N] = ???
-    }
-
-    override def exe: Graph[N] = ???
-  }
+//  object Union extends To[Graph[N]] {
+//
+//    object ResultGraph extends Graph[N] {
+//
+//      override def roots: Dataset[N] = inputGraph1.roots ++ inputGraph2.roots
+//
+//      override protected def Ops: Value => GraphT.Ops[N] = ???
+//    }
+//
+//    override def exe: Graph[N] = ???
+//  }
 }

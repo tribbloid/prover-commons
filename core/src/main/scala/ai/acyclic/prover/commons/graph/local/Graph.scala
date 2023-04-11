@@ -9,17 +9,19 @@ import ai.acyclic.prover.commons.graph.viz.{Hasse, LinkedHierarchy}
 //  https://macsphere.mcma
 //
 //  ster.ca/bitstream/11375/18494/2/thesis.pdf
-trait Graph[N] extends GraphT._Graph[N] {
+trait Graph[V] extends GraphT._Graph[V] {
 
-  final type Node = N
+  final type Value = V
   final val sys: Local.type = Local
 
   def isEmpty: Boolean = roots.isEmpty
 
+  final override lazy val rootValues = roots.map(_.value)
+
   def diagram_Hasse(
       implicit
       format: Hasse
-  ): format.Viz[N] = format.Viz(this)
+  ): format.Viz[V] = format.Viz(this)
 }
 
 object Graph {

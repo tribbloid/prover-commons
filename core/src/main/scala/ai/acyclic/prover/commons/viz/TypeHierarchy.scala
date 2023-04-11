@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.graph.local.Tree
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
-import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy._RefNode
+import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy._RefBinding
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
 import ai.acyclic.prover.commons.reflect.format.TypeFormat
 
@@ -29,7 +29,7 @@ case class TypeHierarchy(
       }
     }
 
-    override def dryRun[N <: _RefNode](g: Tree[N]): Unit = {
+    override def dryRun[N <: _RefBinding](g: Tree[N]): Unit = {
 
       def argDryRun(): Unit = {
 

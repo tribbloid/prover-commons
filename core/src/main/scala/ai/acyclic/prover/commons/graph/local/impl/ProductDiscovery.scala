@@ -17,7 +17,7 @@ abstract class ProductDiscovery[Include](
 
   import ProductDiscovery._
 
-  trait Ops extends SemilatticeT.UpperT.Ops[Any] {}
+  trait Ops extends SemilatticeT.UpperT._Node[Any] {}
   override lazy val Ops: Any => Ops = {
     case v: Exclude =>
       FallbackOps(v)

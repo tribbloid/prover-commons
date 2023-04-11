@@ -10,7 +10,7 @@ trait Expression[+OG <: GraphK.Like] {
 
   final lazy val exeOnce: OG = exe
 
-  type Node = exeOnce.Node
+  type Value = exeOnce.Value
 }
 
 object Expression {

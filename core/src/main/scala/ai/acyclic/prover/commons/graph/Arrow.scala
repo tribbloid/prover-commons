@@ -8,10 +8,6 @@ trait Arrow {
 
   import Arrow._
 
-//  val target: Any // TODO: should be NodeOps[N]
-
-//  val topology: NodeOps.Topology[_, _]
-
   val arrowType: ArrowType
 
   protected def getArrowText: Option[String] = None

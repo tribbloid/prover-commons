@@ -6,7 +6,5 @@ trait DSL[N, G[a] <: Graph[a]] {
 
   def graph: G[N]
 
-  def tagToNodes: Map[Tag, Seq[N]]
-
   type _Graph = G[N]
 }

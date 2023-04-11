@@ -2,72 +2,72 @@ package ai.acyclic.prover.commons.graph.plan.local
 
 import ai.acyclic.prover.commons.graph.GraphK.Like
 import ai.acyclic.prover.commons.graph.Topology.GraphT
-import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
+import ai.acyclic.prover.commons.graph.local.Graph
 import ai.acyclic.prover.commons.graph.plan.{Arity, Expression}
 import shapeless.Sized
 
-case class GraphUnary[IG <: Graph[N], N] private (
+case class GraphUnary[IG <: Graph[V], V] private (
     arg: Expression[IG]
 ) extends Arity.Unary.Expressions[IG] {
 
   import GraphUnary._
+  import GraphT._
 
   final override lazy val args = Sized(arg)
 
   lazy val inputGraph = arg.exeOnce
 
-  case class UpcastNode[N2 >: N]() extends To[Graph[N2]] {
+  case class UpcastNode[N2 >: V]() extends To[Graph[N2]] {
 
     object Upcasted extends Graph[N2] {
 
-      case class Ops(value: N2) extends GraphT.Ops[N2] {
+      case class Ops(value: N2) extends GraphT._Node[N2] {
 
-        override protected def getNodeText: String = inputGraph.ops(value.asInstanceOf[N]).nodeText
+        override protected def getNodeText: String = inputGraph.ops(value.asInstanceOf[V]).nodeText
 
         override protected def getInduction = {
-          inputGraph.ops(value.asInstanceOf[N]).induction.map { v =>
+          inputGraph.ops(value.asInstanceOf[V]).induction.map { v =>
             v._1 -> Ops(v._2.value: N2)
           }
         }
       }
 
-      override def roots: Dataset[N2] = inputGraph.roots.map(v => v: N2)
-
+      override def roots = inputGraph.roots.map(v => Ops(v.value))
     }
 
     override def exe: Graph[N2] = Upcasted
   }
 
-  trait TransformLike extends To[Graph[N]]
+  trait TransformLike extends To[Graph[V]]
 
   // TODO:
   //  need to cross NodeType
   //  need to transcribe to a different graph type
   case class Transform(
-      rewriter: Rewriter[N],
+      rewriter: Rewriter[V],
       maxDepth: Int = Int.MaxValue,
-      pruning: Pruning[N] = identity,
-      down: N => Seq[N] = v => Seq(v),
-      up: N => Seq[N] = v => Seq(v)
+      pruning: Pruning[_Node[V]] = identity,
+      down: _Node[V] => Seq[_Node[V]] = v => Seq(v),
+      up: _Node[V] => Seq[_Node[V]] = v => Seq(v)
   ) {
 
     object DepthFirst extends TransformLike {
 
-      trait TransformedLazily extends Graph[N] {
+      trait TransformedLazily extends Graph[V] {
 
-        private def transformInternal(node: N, depth: Int = maxDepth): Seq[N] = {
+        private def transformInternal(node: _Node[V], depth: Int = maxDepth): Seq[_Node[V]] = {
           if (depth > 0) {
 
-            def doTransform(node: N): Seq[N] = {
-              val downTs: Seq[N] = down(node)
+            def doTransform(n: _Node[V]): Seq[_Node[V]] = {
+              val downTs: Seq[_Node[V]] = down(n)
 
-              val inductionTs: Seq[N] =
+              val inductionTs: Seq[_Node[V]] =
                 downTs.map { n =>
                   val successors = inputGraph.ops(n).discoverNodes
                   val successorsTransformed = successors.flatMap { nn =>
                     transformInternal(nn, depth - 1)
                   }
-                  val rewritten = rewriter.VerifiedOn(inputGraph).apply(n)(successorsTransformed)
+                  val rewritten = rewriter.Verified.rewrite(n)(successorsTransformed)
                   rewritten
                 }
 
@@ -85,11 +85,11 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
         }
 
-        override lazy val roots: Seq[N] = {
+        override lazy val roots: Seq[_Node[V]] = {
           inputGraph.roots.flatMap(n => transformInternal(n, maxDepth))
         }
 
-        override val Ops = (inputGraph: Graph[N]).ops
+        override val Ops = (inputGraph: Graph[V]).ops
         // cast to suppress a compiler bug
       }
 
@@ -102,7 +102,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
         }
       }
 
-      override def exe: Graph[N] = {
+      override def exe: Graph[V] = {
         Transformed
       }
     }
@@ -111,7 +111,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
       private val delegate = {
 
-        val seen = inputGraph.sameness.Correspondence[N, N]()
+        val seen = inputGraph.sameness.Correspondence[V, _Node[V]]()
 
         Transform(
           rewriter,
@@ -135,7 +135,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
         ).DepthFirst
       }
 
-      override def exe: Graph[N] = {
+      override def exe: Graph[V] = {
         delegate.exe
       }
     }
@@ -144,7 +144,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
       private val delegate = {
 
-        val seen = inputGraph.sameness.Correspondence[N, Seq[N]]()
+        val seen = inputGraph.sameness.Correspondence[V, Seq[V]]()
 
         Transform(
           rewriter,
@@ -152,7 +152,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
           pruning = {
             fn =>
               { node =>
-                val result: Seq[N] = seen.get(node) match {
+                val result: Seq[V] = seen.get(node) match {
                   case Some(r) =>
                     r
                   case None =>
@@ -169,7 +169,7 @@ case class GraphUnary[IG <: Graph[N], N] private (
         ).DepthFirst
       }
 
-      override def exe: Graph[N] = {
+      override def exe: Graph[V] = {
         delegate.exe
       }
     }
@@ -177,11 +177,11 @@ case class GraphUnary[IG <: Graph[N], N] private (
 
   object TransformLinear {
     def apply(
-        rewriter: Rewriter[N],
+        rewriter: Rewriter[V],
         maxDepth: Int = Int.MaxValue,
-        down: N => N = v => v,
-        pruning: Pruning[N] = identity,
-        up: N => N = v => v
+        down: V => V = v => v,
+        pruning: Pruning[V] = identity,
+        up: V => V = v => v
     ): Transform = Transform(
       rewriter,
       maxDepth,
@@ -196,12 +196,12 @@ case class GraphUnary[IG <: Graph[N], N] private (
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
       maxDepth: Int = Int.MaxValue,
-      down: N => Unit = { _: N => {} },
-      up: N => Unit = { _: N => {} }
+      down: V => Unit = { _: V => {} },
+      up: V => Unit = { _: V => {} }
   ) {
 
     private val delegate = Transform(
-      rewriter = Rewriter.DoNotRewrite[N](),
+      rewriter = Rewriter.DoNotRewrite[V](),
       maxDepth,
       down = { v => down(v); Seq(v) },
       up = { v => up(v); Seq(v) }

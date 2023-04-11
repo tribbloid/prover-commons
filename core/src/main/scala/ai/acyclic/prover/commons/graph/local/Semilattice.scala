@@ -7,7 +7,7 @@ trait Semilattice[N] extends Poset[N] with SemilatticeT._Graph[N] {
 
   def root: N
 
-  final lazy val roots: Dataset[N] = sys.parallelize(Seq(root))
+  final lazy val rootValues: Dataset[N] = sys.parallelize(Seq(root))
 }
 
 object Semilattice {

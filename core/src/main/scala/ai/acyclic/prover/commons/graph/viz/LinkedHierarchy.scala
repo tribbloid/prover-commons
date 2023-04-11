@@ -53,14 +53,14 @@ object LinkedHierarchy extends Visualisations {
 
     override def sameRefBy(node: Any): Option[Any] = Some(node)
 
-    override def dryRun[N <: _RefNode](tree: Tree[N]): Unit = {
+    override def dryRun[N <: _RefBinding](tree: Tree[N]): Unit = {
       GraphUnary
         .make(tree)
         .Traverse(
           maxDepth = backbone.maxDepth,
           down = { v =>
             val ops = tree.ops(v)
-            ops.discoverArrows
+            ops.valueInduction
           }
         )
         .DepthFirst
@@ -68,14 +68,14 @@ object LinkedHierarchy extends Visualisations {
     }
   }
 
-  trait _RefNode {
+  trait _RefBinding {
 
     def node: Any
   }
 
   case class SameRefs() {
 
-    val buffer: mutable.ArrayBuffer[_RefNode] = mutable.ArrayBuffer.empty
+    val buffer: mutable.ArrayBuffer[_RefBinding] = mutable.ArrayBuffer.empty
   }
 }
 
@@ -87,7 +87,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  def dryRun[N <: _RefNode](tree: Tree[N]): Unit
+  def dryRun[N <: _RefBinding](tree: Tree[N]): Unit
 
   def sameRefBy(node: Any): Option[Any]
 
@@ -104,7 +104,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     case class Viz[N](override val graph: UB[N]) extends _Viz[N] {
 
-      case class RefNode(node: N, id: UUID = UUID.randomUUID()) extends _RefNode {
+      case class RefBinding(node: N, id: UUID = UUID.randomUUID()) extends _RefBinding {
 
         {
           sameRefs_shouldExpand
@@ -157,11 +157,11 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
       }
 
-      case class RefTree(node: N) extends Tree[RefNode] with GraphK.Immutable[TreeT.Ops[RefNode]] {
+      case class RefTree(node: N) extends Tree[RefBinding] with GraphK.Immutable[TreeT._Node[RefBinding]] {
 
-        override lazy val root: RefNode = RefNode(node)
+        override lazy val root: RefBinding = RefBinding(node)
 
-        case class Ops(override val value: RefNode) extends TreeT.Ops[RefNode] {
+        case class Ops(override val value: RefBinding) extends TreeT._Node[RefBinding] {
 
           def originalOps = graph.ops(value.node)
 
@@ -171,8 +171,8 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
               Nil
             } else {
 
-              val result = originalOps.discoverArrows.map { v =>
-                v._1 -> Ops(RefNode(v._2)) // this discard arrow info
+              val result = originalOps.valueInduction.map { v =>
+                v._1 -> Ops(RefBinding(v._2)) // this discard arrow info
               }
 
               result

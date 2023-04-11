@@ -78,9 +78,9 @@ object GraphFixture {
     }
   }
 
-  case class _OGraph(override val roots: Seq[GN]) extends Graph.Outbound[GN] {
+  case class _OGraph(override val rootValues: Seq[GN]) extends Graph.Outbound[GN] {
 
-    case class Ops(value: GN) extends OutboundT.Ops[GN] {
+    case class Ops(value: GN) extends OutboundT._Node[GN] {
 
       override protected def getNodeText = value.text
 
@@ -88,9 +88,9 @@ object GraphFixture {
     }
   }
 
-  case class _OGraphWithArrowText(override val roots: Seq[GN]) extends Graph.Outbound[GN] {
+  case class _OGraphWithArrowText(override val rootValues: Seq[GN]) extends Graph.Outbound[GN] {
 
-    case class Ops(value: GN) extends OutboundT.Ops[GN] {
+    case class Ops(value: GN) extends OutboundT._Node[GN] {
 
       override protected def getNodeText = value.text
 
