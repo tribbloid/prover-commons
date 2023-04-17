@@ -1,17 +1,17 @@
 package ai.acyclic.prover.commons.graph.plan
 
-import ai.acyclic.prover.commons.graph.GraphK
+import ai.acyclic.prover.commons.graph.Structure
 import shapeless.{Nat, Sized}
 
 trait Arity {
 
   type N <: Nat
 
-  trait Expressions[IG <: GraphK.Like] {
+  trait Expressions[IG <: Structure.Like] {
 
     def args: Sized[Seq[Expression[IG]], N]
 
-    trait To[OG <: GraphK.Like] extends Expression[OG]
+    trait To[OG <: Structure.Like] extends Expression[OG]
   }
 }
 

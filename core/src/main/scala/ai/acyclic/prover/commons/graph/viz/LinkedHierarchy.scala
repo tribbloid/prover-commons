@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.viz
 import ai.acyclic.prover.commons.graph.Topology.TreeT
 import ai.acyclic.prover.commons.graph.local.{Graph, Tree}
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
-import ai.acyclic.prover.commons.graph.GraphK
+import ai.acyclic.prover.commons.graph.Structure
 import ai.acyclic.prover.commons.viz.text.TextBlock
 
 import java.util.UUID
@@ -157,7 +157,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
       }
 
-      case class RefTree(node: N) extends Tree[RefBinding] with GraphK.Immutable[TreeT._Node[RefBinding]] {
+      case class RefTree(node: N) extends Tree[RefBinding] with Structure.Immutable[TreeT._Node[RefBinding]] {
 
         override lazy val root: RefBinding = RefBinding(node)
 

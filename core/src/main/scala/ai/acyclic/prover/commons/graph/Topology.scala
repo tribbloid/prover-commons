@@ -1,14 +1,25 @@
 package ai.acyclic.prover.commons.graph
 
-trait Topology[A <: Arrow] {
+trait Topology {
+  self: Singleton =>
 
-  type _NodeBound[V] = Node[V, A, _Node[V]]
+  import Topology._
 
-  type _Node[V] <: _NodeBound[V]
+  type _Arrow <: Arrow
 
-  
+  type CC <: Constraint
 
-  type _Graph[V] = GraphK[_Node[V]]
+  final type _Node[V] = Node[CC, _Arrow, V]
+
+  final type SS[V] = Structure[CC, _Arrow, V]
+
+  trait SimpleDef {
+    self: Singleton =>
+
+    type Node <: _Node[SimpleDef.this.Node]
+
+    final type _Graph = Topology.this.SS[Node]
+  }
 
   trait Rewriter[V] {
 
@@ -39,66 +50,59 @@ trait Topology[A <: Arrow] {
       }
     }
   }
+
+  object Rewriter {
+
+    case class DoNotRewrite[N]() extends Rewriter[N] {
+
+      override def rewrite(src: _Node[N])(inductions: Seq[_Node[N]]): _Node[N] = src
+    }
+  }
 }
 
 object Topology {
 
-  object GraphT extends Topology[Arrow] {
+  trait Constraint
 
-    trait _Node[V] extends _NodeBound[V] {
+  trait GraphLike extends Topology {
+    self: Singleton =>
 
-      final lazy val edgeInduction = valueInduction.collect {
-        case v if v._1.arrowType.isInstanceOf[Arrow.Edge] => v
-      }
+    override type _Arrow = Arrow
+  }
 
-      def resolve(): Unit = {
-        valueInduction;
-        nodeText
-      }
-    }
+  trait OutboundLike extends Topology {
+    self: Singleton =>
 
-    object OutboundT extends Topology[Arrow.`~>`.^] {
+    override type _Arrow = Arrow.`~>`.^
+  }
 
-      trait _Node[V] extends GraphT._Node[V] with _NodeBound[V] {
+  object GraphT extends GraphLike {
 
-        final lazy val children: Seq[V] = {
-          valueInduction.map(v => v._2)
-        }
+    trait CC extends Constraint
 
-        lazy val isLeaf: Boolean = children.isEmpty
-      }
+    object OutboundT extends OutboundLike {
+
+      trait CC extends GraphT.CC
     }
   }
 
-  object PosetT extends Topology[Arrow] {
+  object PosetT extends GraphLike {
 
-    trait _Node[V] extends GraphT._Node[V] with _NodeBound[V] {}
+    trait CC extends GraphT.CC
   }
 
-  object SemilatticeT extends Topology[Arrow] {
+  object SemilatticeT extends GraphLike {
 
-    trait _Node[V] extends PosetT._Node[V] with _NodeBound[V] {}
+    trait CC extends PosetT.CC
 
-    object UpperT extends Topology[Arrow.`~>`.^] {
+    object UpperT extends OutboundLike {
 
-      trait _Node[V] extends _NodeBound[V] with SemilatticeT._Node[V] with GraphT.OutboundT._Node[V] {
-
-        //      def ops: Node => Impl
-
-        //      lazy val allOffsprings: Seq[Node] = {
-        //        val cc = children
-        //        val others = children.flatMap { child =>
-        //          ops(child).allOffsprings
-        //        }
-        //        cc ++ others
-        //      }
-      }
+      trait CC extends SemilatticeT.CC with GraphT.OutboundT.CC
     }
   }
 
-  object TreeT extends Topology[Arrow.`~>`.^] {
+  object TreeT extends GraphLike {
 
-    trait _Node[V] extends SemilatticeT.UpperT._Node[V] with _NodeBound[V] {}
+    trait CC extends SemilatticeT.UpperT.CC
   }
-
 }

@@ -1,40 +1,49 @@
 package ai.acyclic.prover.commons.graph
 
-import scala.language.implicitConversions
+trait Node[+C <: Topology.Constraint, +A <: Arrow, +V] {
+  // V is the bound type of values of this node and all its descendants
+  //  NOT the type of this value!
 
-trait Node[+V, +A <: Arrow, +SELF <: Node[V, A, SELF]] extends Node.Like[A, SELF] {
+  def value: V
 
-  import Node._
+//  protected def getNodeText: String = value.toString
+//
+//  final lazy val nodeText: String = getNodeText
 
-  override val value: V
+  final type Peer = Node[C, A, V]
 
-  protected def getInduction: Seq[(A, SELF)]
+  final type ArrowsTo[T] = Seq[(A, T)]
+
+  protected def getInduction: Seq[(A, Peer)]
+
   lazy val induction = getInduction
 
-  final lazy val discoverNodes: Seq[SELF] = induction.map(_._2)
+  final lazy val discoverNodes: Seq[Peer] = induction.map(_._2)
 
-  final lazy val valueInduction: Many[(A, V)] = induction.map(v => v._1 -> v._2.value)
+  final lazy val valueInduction: Seq[(A, V)] = induction.map(v => v._1 -> v._2.value)
 
-  final lazy val discoverValues: Many[V] = valueInduction.map(_._2)
+  final lazy val discoverValues: Seq[V] = valueInduction.map(_._2)
+
+  def map[V2](fn: V => V2): Node.Mapped[C, A, V, V2] = Node.Mapped(this, fn)
+
 }
 
 object Node {
 
-  trait Like[+A <: Arrow, +SELF <: Like[A, SELF]] {
+  case class Mapped[+C <: Topology.Constraint, +A <: Arrow, V, V2](
+      original: Node[C, A, V],
+      fn: V => V2
+  ) extends Node[C, A, V2] {
 
-    val value: Any
+    override def value: V2 = fn(original.value)
 
-    protected def getNodeText: String = value.toString
+//    override protected def getNodeText: String = ???
 
-    final lazy val nodeText: String = getNodeText
+    override protected def getInduction: Seq[(A, Node[C, A, _ <: V2])] = {
+      original.induction.map {
+        case (a, n) =>
+          a -> Mapped(n, fn)
+      }
+    }
   }
-
-//  type Cap[N] = Induction[N, Arrow, Induction[N, Arrow, _]] {}
-
-  type Many[+A] = Vector[A]
-
-  implicit def toMany[A](value: Seq[A]): Many[A] = value.toVector
-
-  implicit def unbox[N](i: Node[N, Arrow, _]): N = i.value
-
 }
