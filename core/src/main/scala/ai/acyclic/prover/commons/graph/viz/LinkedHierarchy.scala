@@ -1,10 +1,11 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.Topology.TreeT
-import ai.acyclic.prover.commons.graph.local.{Graph, Tree}
+import ai.acyclic.prover.commons.graph.{Arrow, GraphKind}
+import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
+import ai.acyclic.prover.commons.graph.Topology.{GraphT, TreeT}
+import ai.acyclic.prover.commons.graph.local.{Graph, Local, Tree}
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
-import ai.acyclic.prover.commons.graph.Structure
-import ai.acyclic.prover.commons.viz.text.TextBlock
+import ai.acyclic.prover.commons.typesetting.TextBlock
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
@@ -51,16 +52,15 @@ object LinkedHierarchy extends Visualisations {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def sameRefBy(node: Any): Option[Any] = Some(node)
+    override def sameRefBy(node: GraphT.Node[Any]): Option[Any] = Some(node)
 
     override def dryRun[N <: _RefBinding](tree: Tree[N]): Unit = {
       GraphUnary
         .make(tree)
         .Traverse(
           maxDepth = backbone.maxDepth,
-          down = { v =>
-            val ops = tree.ops(v)
-            ops.valueInduction
+          down = { n =>
+            n.induction
           }
         )
         .DepthFirst
@@ -89,7 +89,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
   def dryRun[N <: _RefBinding](tree: Tree[N]): Unit
 
-  def sameRefBy(node: Any): Option[Any]
+  def sameRefBy(node: GraphT.Node[Any]): Option[Any]
 
   trait _Viz[N] extends TextViz[N]
 
@@ -102,9 +102,10 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class Viz[N](override val graph: UB[N]) extends _Viz[N] {
+    case class Viz[V](override val graph: UB[V]) extends _Viz[V] {
 
-      case class RefBinding(node: N, id: UUID = UUID.randomUUID()) extends _RefBinding {
+      case class RefBinding(node: graph.Node, id: UUID = UUID.randomUUID()) extends _RefBinding {
+        // TODO: merge into RefBindings.Node
 
         {
           sameRefs_shouldExpand
@@ -157,13 +158,11 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
       }
 
-      case class RefTree(node: N) extends Tree[RefBinding] with Structure.Immutable[TreeT._Node[RefBinding]] {
+      object RefBindings extends TreeT.SimpleDef {
 
-        override lazy val root: RefBinding = RefBinding(node)
+        case class Node(override val value: RefBinding) extends TreeT.Node[RefBinding] {
 
-        case class Ops(override val value: RefBinding) extends TreeT._Node[RefBinding] {
-
-          def originalOps = graph.ops(value.node)
+          def originalNode = value.node
 
           override protected def getInduction = {
 
@@ -171,8 +170,8 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
               Nil
             } else {
 
-              val result = originalOps.valueInduction.map { v =>
-                v._1 -> Ops(RefBinding(v._2)) // this discard arrow info
+              val result = originalNode.induction.map { v =>
+                v._1 -> Node(RefBinding(v._2)) // this discard arrow info
               }
 
               result
@@ -181,7 +180,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
           override protected def getNodeText: String = {
 
-            val originalText = originalOps.nodeText
+            val originalText = originalNode.nodeText
 
             value.bindingOpt
               .map { binding =>
@@ -193,11 +192,12 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
         }
       }
 
-      lazy val delegates: Seq[RefTree] = {
-        graph.roots
-          .map { node =>
-            RefTree(node)
-          }
+      lazy val delegates: Seq[Tree[RefBinding]] = {
+        val roots: IndexedSeq[graph.Node] = graph.roots
+        roots.map { node =>
+          val refBinding = RefBindings.Node(RefBinding(node))
+          Local.Build(refBinding)
+        }
       }
 
       def dryRun(): Unit = {
@@ -212,7 +212,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
         delegates
           .map { v =>
-            backbone.Viz(v).treeString
+            backbone.Viz[RefBinding](v).treeString
           }
           .mkString("\n")
       }

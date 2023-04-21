@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.viz
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Graph
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
-import ai.acyclic.prover.commons.viz.text.TextBlock
+import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
 import org.scalameta.ascii.layout.prefs.{LayoutPrefs, LayoutPrefsImpl}
@@ -14,7 +14,7 @@ import scala.collection.mutable
 
 object Hasse extends Visualisations {
 
-  type UB[N] = Graph[N]
+  type UB[V] = Graph[V]
 
   trait Default extends Hasse {
 
@@ -29,6 +29,7 @@ object Hasse extends Visualisations {
 trait Hasse extends Hasse.Format {
 
   import Hasse._
+  import ai.acyclic.prover.commons.graph.Topology.GraphT._
 
   lazy val maxDepth = 20
 
@@ -38,13 +39,13 @@ trait Hasse extends Hasse.Format {
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  def apply[N](s: UB[N]): Viz[N] = Viz(s)
+  def apply[V](s: UB[V]): Viz[V] = Viz(s)
 
-  case class Viz[N](override val graph: UB[N]) extends TextViz[N] {
+  case class Viz[V](override val graph: UB[V]) extends TextViz[V] {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(node: N) {
+    case class NodeWrapper(node: Node[V]) {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
@@ -67,7 +68,6 @@ trait Hasse extends Hasse.Format {
         }
       }
 
-      lazy val nOps = graph.ops(node)
       final override lazy val toString = {
 
         val showBinding = arrowsFrom.size >= 2
@@ -101,11 +101,13 @@ trait Hasse extends Hasse.Format {
           .map(_.rectangular)
 
         val nodeText = {
+          lazy val nodeText = node.nodeText
+
           val ss = bindingOpt
             .map { binding =>
-              s"${nOps.nodeText}\n[$binding]"
+              s"$nodeText\n[$binding]"
             }
-            .getOrElse(nOps.nodeText)
+            .getOrElse(nodeText)
           TextBlock(ss).rectangular
         }
         val result = arrowTextOpt
@@ -121,7 +123,7 @@ trait Hasse extends Hasse.Format {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeBuffer = graph.sameness.Memoize[N, NodeWrapper](v => NodeWrapper(v))
+      val nodeBuffer = graph.sameness.Memoize[Node[V], NodeWrapper](v => NodeWrapper(v))
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
@@ -132,7 +134,7 @@ trait Hasse extends Hasse.Format {
           down = { node =>
             val wrapper = nodeBuffer.apply(node)
 
-            val newRelations = wrapper.nOps.valueInduction.flatMap { v =>
+            val newRelations = wrapper.node.induction.flatMap { v =>
               v._1.arrowType match {
                 case Arrow.`~>` =>
                   val to = nodeBuffer.apply(v._2)

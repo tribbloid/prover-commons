@@ -14,5 +14,5 @@ dependencies {
 
     testFixturesApi("org.scalatest:scalatest_${vs.scalaBinaryV}:${vs.scalaTestV}")
 
-    testFixturesApi("io.tryp:splain_${vs.scalaV}:${splainVFallback}")
+//    testFixturesApi("io.tryp:splain_${vs.scalaV}:${splainVFallback}")
 }

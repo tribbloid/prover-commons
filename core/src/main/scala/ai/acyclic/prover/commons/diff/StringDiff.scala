@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.diff
 
 import ai.acyclic.prover.commons.debug.print_@
-import ai.acyclic.prover.commons.viz.text.TextBlock
+import ai.acyclic.prover.commons.typesetting.TextBlock
 
 case class StringDiff(
     left: Option[String],

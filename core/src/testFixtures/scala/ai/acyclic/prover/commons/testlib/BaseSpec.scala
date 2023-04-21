@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.testlib
 
 import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.diff.StringDiff
-import ai.acyclic.prover.commons.viz.text.TextBlock
+import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalatest.funspec.AnyFunSpec
 import splain.test.TryCompile
 

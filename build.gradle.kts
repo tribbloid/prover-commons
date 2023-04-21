@@ -59,9 +59,9 @@ allprojects {
 //            testFixturesImplementation(constraintNotation)
 //        }
 
-        implementation("${vs.scalaGroup}:scala-compiler:${vs.scalaV}")
+//        implementation("${vs.scalaGroup}:scala-compiler:${vs.scalaV}")
         implementation("${vs.scalaGroup}:scala-library:${vs.scalaV}")
-        implementation("${vs.scalaGroup}:scala-reflect:${vs.scalaV}")
+//        implementation("${vs.scalaGroup}:scala-reflect:${vs.scalaV}")
 
         val scalaTestV = "3.2.3"
         testImplementation("org.scalatest:scalatest_${vs.scalaBinaryV}:${scalaTestV}")

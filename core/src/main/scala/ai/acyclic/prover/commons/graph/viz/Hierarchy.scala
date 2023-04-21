@@ -1,12 +1,11 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Semilattice
-import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
+import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
 object Hierarchy extends Visualisations {
 
-  type UB[N] = Semilattice.Upper[N]
+  type UB[V] = Semilattice.Upper[V]
 
   implicit lazy val default: Hierarchy.Indent2.type = Hierarchy.Indent2
 
@@ -42,19 +41,17 @@ trait Hierarchy extends Hierarchy.Format {
 
   lazy val SPACE = " "
 
-  def apply[N](s: UB[N]): Viz[N] = Viz(s)
+  def apply[V](s: UB[V]): Viz[V] = Viz(s)
 
-  case class Viz[N](override val graph: UB[N]) extends TextViz[N] {
+  case class Viz[V](override val graph: UB[V]) extends TextViz[V] {
 
-    case class SubViz(head: N, depth: Int = maxDepth) {
-
-      lazy val headOps = graph.ops(head)
+    case class SubViz(head: graph.Node, depth: Int = maxDepth) {
 
       lazy val treeString: String = {
 
-        val wText = TextBlock(headOps.nodeText).indent(SPACE)
+        val wText = TextBlock(head.nodeText).indent(SPACE)
 
-        if (headOps.isLeaf || depth <= 0) {
+        if (head.isLeaf || depth <= 0) {
 
           wText.pad.left(LEAF).build
 
@@ -62,8 +59,8 @@ trait Hierarchy extends Hierarchy.Format {
 
           val selfT = wText.pad.left(FORK)
 
-          val arrows = headOps.valueInduction
-          val groupedByTarget: Map[N, Vector[(Arrow.`~>`.^, N)]] = arrows
+          val arrows = head.induction
+          val groupedByTarget = arrows
             .groupBy { v =>
               v._2
             }
@@ -106,6 +103,6 @@ trait Hierarchy extends Hierarchy.Format {
       }
     }
 
-    override lazy val treeString: String = SubViz(graph.root).treeString
+    override lazy val treeString: String = SubViz(graph.roots.head).treeString
   }
 }
