@@ -1,7 +1,6 @@
-package ai.acyclic.prover.commons.viz.typesetting
+package ai.acyclic.prover.commons.typesetting
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.typesetting.TextBlock
 
 class TextBlockSpec extends BaseSpec {
 

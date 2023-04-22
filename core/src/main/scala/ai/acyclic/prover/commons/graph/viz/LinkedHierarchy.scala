@@ -1,8 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.{Arrow, GraphKind}
-import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
-import ai.acyclic.prover.commons.graph.Topology.{GraphT, TreeT}
+import ai.acyclic.prover.commons.graph.Topology.TreeT
 import ai.acyclic.prover.commons.graph.local.{Graph, Local, Tree}
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
@@ -52,9 +50,9 @@ object LinkedHierarchy extends Visualisations {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def sameRefBy(node: GraphT.Node[Any]): Option[Any] = Some(node)
+    override def sameRefBy(node: Graph.Outbound.Node[_]): Option[Any] = Some(node)
 
-    override def dryRun[N <: _RefBinding](tree: Tree[N]): Unit = {
+    override def dryRun(tree: Tree[_ <: _RefBinding]): Unit = {
       GraphUnary
         .make(tree)
         .Traverse(
@@ -87,11 +85,11 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  def dryRun[N <: _RefBinding](tree: Tree[N]): Unit
+  def dryRun(tree: Tree[_ <: _RefBinding]): Unit
 
-  def sameRefBy(node: GraphT.Node[Any]): Option[Any]
+  def sameRefBy(node: Graph.Outbound.Node[_]): Option[Any]
 
-  trait _Viz[N] extends TextViz[N]
+  trait _Viz[V] extends TextViz[V]
 
   // shared between visualisations of multiple graphs
   case class Group() {
@@ -104,74 +102,73 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     case class Viz[V](override val graph: UB[V]) extends _Viz[V] {
 
-      case class RefBinding(node: graph.Node, id: UUID = UUID.randomUUID()) extends _RefBinding {
-        // TODO: merge into RefBindings.Node
+      object RefBindingS extends TreeT.System {
 
-        {
-          sameRefs_shouldExpand
-        }
+        case class Node(
+            node: Graph.Outbound.Node[V],
+            id: UUID = UUID.randomUUID()
+        ) extends UntypedNode
+            with _RefBinding {
 
-        lazy val refKeyOpt: Option[Any] = sameRefBy(node)
-
-        lazy val sameRefs_shouldExpand = {
-
-          val existing = refKeyOpt
-            .map { refKey =>
-              val result = expanded
-                .get(refKey)
-                .map { sameRefs =>
-                  binded.getOrElseUpdate(
-                    refKey,
-                    bindings(bindingIndices.getAndIncrement())
-                  )
-
-                  sameRefs.buffer += this
-                  sameRefs -> false
-                }
-                .getOrElse {
-
-                  val result = SameRefs()
-                  result.buffer += this
-
-                  expanded.put(refKey, result)
-                  result -> true
-                }
-              result
-            }
-
-          val result = existing
-            .getOrElse {
-              SameRefs() -> true
-            }
-
-          result
-        }
-        def sameRefs = sameRefs_shouldExpand._1
-        def shouldExpand = sameRefs_shouldExpand._2
-
-        lazy val bindingOpt: Option[String] = {
-
-          refKeyOpt.flatMap { k =>
-            binded.get(k)
+          {
+            sameRefs_shouldExpand
           }
-        }
 
-      }
+          lazy val refKeyOpt: Option[Any] = sameRefBy(node)
 
-      object RefBindings extends TreeT.SimpleDef {
+          lazy val sameRefs_shouldExpand = {
 
-        case class Node(override val value: RefBinding) extends TreeT.Node[RefBinding] {
+            val existing = refKeyOpt
+              .map { refKey =>
+                val result = expanded
+                  .get(refKey)
+                  .map { sameRefs =>
+                    binded.getOrElseUpdate(
+                      refKey,
+                      bindings(bindingIndices.getAndIncrement())
+                    )
 
-          def originalNode = value.node
+                    sameRefs.buffer += this
+                    sameRefs -> false
+                  }
+                  .getOrElse {
+
+                    val result = SameRefs()
+                    result.buffer += this
+
+                    expanded.put(refKey, result)
+                    result -> true
+                  }
+                result
+              }
+
+            val result = existing
+              .getOrElse {
+                SameRefs() -> true
+              }
+
+            result
+          }
+
+          def sameRefs = sameRefs_shouldExpand._1
+
+          def shouldExpand = sameRefs_shouldExpand._2
+
+          lazy val bindingNameOpt: Option[String] = {
+
+            refKeyOpt.flatMap { k =>
+              binded.get(k)
+            }
+          }
 
           override protected def getInduction = {
 
-            if (!value.shouldExpand) {
+            if (!shouldExpand) {
               Nil
             } else {
 
-              val result = originalNode.induction.map { v =>
-                v._1 -> Node(RefBinding(v._2)) // this discard arrow info
+              val result = node.induction.map { v =>
+                v._1 -> Node(v._2) // this discard arrow info
               }
 
               result
@@ -180,23 +177,57 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
           override protected def getNodeText: String = {
 
-            val originalText = originalNode.nodeText
+            val originalText = node.nodeText
 
-            value.bindingOpt
-              .map { binding =>
-                if (value.shouldExpand) addSrcAnnotation(originalText, binding)
-                else addRefAnnotation(originalText, binding)
+            bindingNameOpt
+              .map { name =>
+                if (shouldExpand) addSrcAnnotation(originalText, name)
+                else addRefAnnotation(originalText, name)
               }
               .getOrElse(originalText)
           }
         }
       }
 
-      lazy val delegates: Seq[Tree[RefBinding]] = {
-        val roots: IndexedSeq[graph.Node] = graph.roots
+//      object RefBindings extends TreeT.SimpleDef {
+//
+//        case class NodeImpl(binding: RefBinding) extends Node {
+//
+//          def originalNode = binding.node
+//
+//          override protected def getInduction = {
+//
+//            if (!binding.shouldExpand) {
+//              Nil
+//            } else {
+//
+//              val result = originalNode.induction.map { v =>
+//                v._1 -> NodeImpl(RefBinding(v._2)) // this discard arrow info
+//              }
+//
+//              result
+//            }
+//          }
+//
+//          override protected def getNodeText: String = {
+//
+//            val originalText = originalNode.nodeText
+//
+//            binding.bindingNameOpt
+//              .map { name =>
+//                if (binding.shouldExpand) addSrcAnnotation(originalText, name)
+//                else addRefAnnotation(originalText, name)
+//              }
+//              .getOrElse(originalText)
+//          }
+//        }
+//      }
+
+      lazy val delegates: Seq[Tree[RefBindingS.Node]] = {
+        val roots: Local.Dataset[Graph.Outbound.Node[V]] = graph.roots
         roots.map { node =>
-          val refBinding = RefBindings.Node(RefBinding(node))
-          Local.Build(refBinding)
+          val refBinding: RefBindingS.Node = RefBindingS.Node(node)
+          Tree(refBinding)
         }
       }
 
@@ -212,7 +243,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
         delegates
           .map { v =>
-            backbone.Viz[RefBinding](v).treeString
+            backbone.Viz(v).treeString
           }
           .mkString("\n")
       }

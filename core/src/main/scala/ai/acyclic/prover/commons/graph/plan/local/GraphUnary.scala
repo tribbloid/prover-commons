@@ -6,6 +6,8 @@ import ai.acyclic.prover.commons.graph.local.{Graph, Local}
 import ai.acyclic.prover.commons.graph.plan.{Arity, Expression}
 import shapeless.Sized
 
+import scala.language.existentials
+
 case class GraphUnary[IG <: Graph[V], V] private (
     arg: Expression[IG]
 ) extends Arity.Unary.Expressions[IG] {
@@ -20,7 +22,7 @@ case class GraphUnary[IG <: Graph[V], V] private (
   case class UpcastNode[V2 >: V]() extends To[Graph[V2]] {
 
     override def exe: Graph[V2] = {
-      val roots: Local.Dataset[inputGraph.Node] = inputGraph.roots
+      val roots = inputGraph.roots
 
       Graph(
         roots.map { n =>
@@ -33,7 +35,6 @@ case class GraphUnary[IG <: Graph[V], V] private (
   trait TransformLike extends To[Graph[V]]
 
   // TODO:
-  //  need to cross NodeType
   //  need to transcribe to a different graph type
   case class Transform(
       rewriter: Rewriter[V],
@@ -201,43 +202,6 @@ case class GraphUnary[IG <: Graph[V], V] private (
       }
     }
   }
-
-  // TODO: delete the following example, note sure if map or monadic flatMap can be supported
-  //  case class TransformNode[G1 <: Graph[Int], G2 <: Graph[String]](original: G1) {
-  //
-  //    // just a carbon copy:
-  //    lazy val g1: G1 = ???
-  //
-  //    lazy val rewriter: Transcriber[String, G2] = ???
-  //
-  //    def mapNodeFn: (Int => String) = _.toString
-  //
-  //    lazy val compile: G2 = {
-  //
-  //      def _internal(oldNode: Int): String = {
-  //        val oldInductions: Seq[Arrow.Of[Int]] = g1.nodeOps(oldNode).induction
-  //
-  //        val mappedNode: String = mapNodeFn(oldNode)
-  ////        val mappedInductions: String =
-  //
-  //        val rewrittenInductions = oldInductions.map { arrow =>
-  //          val target = _internal(arrow.target)
-  //          val newArrow = rewriter.rewriteArrow(arrow).setTarget(target)
-  //          newArrow
-  //        }
-  //
-  //        val newNode: String = rewriter.rewriteNode(mappedNode).setInductions(rewrittenInductions)
-  //
-  //        newNode
-  //      }
-  //
-  //      val newRoots = original.roots.map { root =>
-  //        _internal(root)
-  //      }
-  //
-  //      rewriter.build(newRoots)
-  //    }
-  //  }
 
 }
 

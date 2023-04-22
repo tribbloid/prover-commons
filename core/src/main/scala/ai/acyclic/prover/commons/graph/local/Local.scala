@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.graph.local
 
-import ai.acyclic.prover.commons.graph.Platform
+import ai.acyclic.prover.commons.graph.Engine
 import ai.acyclic.prover.commons.graph.viz.{Hasse, Hierarchy, LinkedHierarchy}
 
-object Local extends Platform {
+object Local extends Engine {
 
-  override type Dataset[T] = IndexedSeq[T]
+  type Dataset[+T] = IndexedSeq[T]
   def parallelize[T](seq: Seq[T]): Dataset[T] = seq.toIndexedSeq
 
   implicit class GraphView[V](val self: Graph[V]) {

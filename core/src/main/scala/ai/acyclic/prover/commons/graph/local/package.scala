@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-package object local extends Local.Aliases {
+package object local extends Local.Syntax {
 
   private def compileTimeSanityCheck[V](): Unit = {
 

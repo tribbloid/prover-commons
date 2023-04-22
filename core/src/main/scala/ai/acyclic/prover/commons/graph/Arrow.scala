@@ -3,7 +3,6 @@ package ai.acyclic.prover.commons.graph
 import scala.collection.Factory
 import scala.language.implicitConversions
 
-// TODO: should this be within a System to enable family polymorphism?
 trait Arrow {
 
   import Arrow._

@@ -45,7 +45,7 @@ trait Hierarchy extends Hierarchy.Format {
 
   case class Viz[V](override val graph: UB[V]) extends TextViz[V] {
 
-    case class SubViz(head: graph.Node, depth: Int = maxDepth) {
+    case class SubViz(head: Semilattice.Upper.Node[V], depth: Int = maxDepth) {
 
       lazy val treeString: String = {
 
@@ -77,7 +77,7 @@ trait Hierarchy extends Hierarchy.Format {
               }
               .reduceOption((x, y) => x.zipBottom(y))
 
-            val childViz = this.copy(child, depth - 1)
+            val childViz: SubViz = SubViz(child, depth - 1)
             val childBlock = TextBlock(childViz.treeString)
 
             val all: TextBlock = arrowBlocksOpt.map(v => v.zipBottom(childBlock)).getOrElse(childBlock)
@@ -103,6 +103,6 @@ trait Hierarchy extends Hierarchy.Format {
       }
     }
 
-    override lazy val treeString: String = SubViz(graph.roots.head).treeString
+    override lazy val treeString: String = SubViz(graph.roots.toSeq.head).treeString
   }
 }

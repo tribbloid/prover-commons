@@ -9,20 +9,27 @@ trait Topology {
 
   type C <: Constraint
 
-  final type Node[V] = NodeKind[C, A, V]
+  type Node[V] <: NodeKind.Lt[C, A, V]
 
-  final type G[V] = GraphKind[C, A, V]
+  type G[V] <: GraphKind[C, A, V]
 
-//  case class OnPlatform[P <: Platform](p: P) {
-//    trait G[V] extends GraphKind[C, _Arrow, V] {
-//      override val platform: P = OnPlatform.this.p
-//    }
-//  }
+  trait Expression[V] {
 
-  trait SimpleDef {
+    def exe: G[V]
+
+    final lazy val exeOnce: G[V] = exe
+  }
+
+  trait System {
     self: Singleton =>
 
-    type Node <: Topology.this.Node[SimpleDef.this.Node]
+    trait UntypedNode extends NodeKind.Untyped[C, A] {
+      self: Node =>
+
+      type Value = Node
+    }
+
+    type Node <: UntypedNode
 
     final type Graph = Topology.this.G[Node]
   }
@@ -70,13 +77,21 @@ object Topology {
 
   trait Constraint
 
-  trait HasAnyArrow extends Topology {
+  trait Generic extends Topology {
+    self: Singleton =>
+
+    type Node[V] = NodeKind.Lt[C, A, V]
+
+    type G[V] = GraphKind[C, A, V]
+  }
+
+  trait HasAnyArrow extends Generic {
     self: Singleton =>
 
     override type A = Arrow
   }
 
-  trait HasOutboundArrow extends Topology {
+  trait HasOutboundArrow extends Generic {
     self: Singleton =>
 
     override type A = Arrow.`~>`.^

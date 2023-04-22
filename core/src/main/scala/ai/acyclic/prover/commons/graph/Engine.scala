@@ -2,39 +2,49 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.Same
 
-trait Platform {
+trait Engine {
   self: Singleton =>
 
   import Topology._
 
-  type Dataset[T]
+  type Dataset[+T]
   def parallelize[T](seq: Seq[T]): Dataset[T]
 
-  trait ThisGraphKind[+C <: Constraint, +A <: Arrow, V] extends GraphKind[C, A, V] {
+  trait GraphOnEngine[+C <: Constraint, +A <: Arrow, V] extends GraphKind[C, A, V] {
 
-    final override val platform: Platform.this.type = Platform.this
+    final override val engine: Engine.this.type = Engine.this
+
   }
 
-  case class GraphK[+C <: Constraint, +A <: Arrow, V](
-      override val roots: Dataset[NodeKind[C, A, V]],
+  case class GraphImpl[C <: Constraint, A <: Arrow, V](
+      override val roots: Dataset[NodeKind.Lt[C, A, V]],
       override val sameness: Same.Definition = Same.ByEquality
       //      nodeText: V => String = (v: V) => v.toString,
       //      arrowText: Arrow => Option[String] = v => v.arrowText
-  ) extends ThisGraphKind[C, A, V]
+  ) extends GraphOnEngine[C, A, V] {
 
-  abstract class BuildTemplate[T <: Topology](val latch: T) {
+    override type Peer = GraphImpl[C, A, V]
+    override type Node = NodeKind.Aux[C, A, V]
+  }
 
-    final type G[V] = ThisGraphKind[latch.C, latch.A, V]
+  abstract class BuildTemplate[T <: Topology](val topology: T) extends Topology {
+    self: Singleton =>
+    final type C = topology.C
+    final type A = topology.A
 
-    def apply[C <: latch.C, A <: latch.A, V](
-        nodes: NodeKind[C, A, V]*
-    ): GraphK[C, A, V] =
-      GraphK(parallelize(nodes))
+    final type Node[V] = NodeKind.Lt[C, A, V]
+
+    final type G[V] = GraphOnEngine[C, A, V]
+
+    def apply[CC <: C, AA <: A, V](
+        nodes: NodeKind.Lt[CC, AA, V]*
+    ): GraphOnEngine[CC, AA, V] =
+      GraphImpl(parallelize(nodes))
   }
 
   object Build extends BuildTemplate(AnyT)
 
-  trait Aliases {
+  trait Syntax {
 
     object Graph extends BuildTemplate(GraphT) {
 
@@ -56,7 +66,7 @@ trait Platform {
     object Tree extends BuildTemplate(TreeT)
     type Tree[V] = Tree.G[V]
   }
-  object Aliases extends Aliases
+  object Syntax extends Syntax
 }
 
-object Platform {}
+object Engine {}

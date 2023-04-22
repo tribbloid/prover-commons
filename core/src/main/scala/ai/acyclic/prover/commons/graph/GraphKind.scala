@@ -6,18 +6,21 @@ trait GraphKind[+C <: Topology.Constraint, +A <: Arrow, V] extends GraphKind.Lik
 
   final type Value = V
 
-  def roots: platform.Dataset[NodeKind[C, A, V]]
+  type Peer <: GraphKind[C, A, V]
+  type Node <: NodeKind.Aux[C, A, V]
+
+  def roots: engine.Dataset[NodeKind.Lt[C, A, V]]
 }
 
 object GraphKind {
 
   trait Like {
 
-    val platform: Platform
+    val engine: Engine
 
     // should only compare the sameness of node, NOT value!
     //  otherwise a mapping to the value may introduce forbidden subgraph(s).
-    lazy val sameness: Same.Definition = Same.ByEquality
+    def sameness: Same.Definition = Same.ByEquality
   }
 
   // TODO: don't know how to define it in the new architecture`

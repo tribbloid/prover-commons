@@ -4,13 +4,15 @@ import ai.acyclic.prover.commons.graph.GraphKind
 
 import scala.language.implicitConversions
 
-trait Expression[+OG <: GraphKind.Like] {
+trait Expression[+T <: GraphKind.Like] {
 
-  def exe: OG
+//  val t: Topology {type G[V] >: T}
 
-  final lazy val exeOnce: OG = exe
+//  type Node[V] = t.Node[V]
 
-//  type Value = exeOnce.Value
+  def exe: T
+
+  final lazy val exeOnce: T = exe
 }
 
 object Expression {
