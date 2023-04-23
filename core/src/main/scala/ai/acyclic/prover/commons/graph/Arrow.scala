@@ -9,8 +9,8 @@ trait Arrow {
 
   val arrowType: ArrowType
 
-  protected def getArrowText: Option[String] = None
-  final lazy val arrowTextOpt: Option[String] = getArrowText
+  protected def arrowTextC: Option[String] = None
+  final lazy val arrowText: Option[String] = arrowTextC
 }
 
 object Arrow {
@@ -37,7 +37,7 @@ object Arrow {
     }
 
     case class NoInfo(
-        override val getArrowText: Option[String] = None
+        override protected val arrowTextC: Option[String] = None
     ) extends ^
         with NoInfoLike {}
 

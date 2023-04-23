@@ -138,11 +138,11 @@ trait Hasse extends Hasse.Format {
               v._1.arrowType match {
                 case Arrow.`~>` =>
                   val to = nodeBuffer.apply(v._2)
-                  to.arrowsFrom += wrapper -> v._1.arrowTextOpt
+                  to.arrowsFrom += wrapper -> v._1.arrowText
                   Some(wrapper -> to)
                 case Arrow.`<~` =>
                   val from = nodeBuffer.apply(v._2)
-                  wrapper.arrowsFrom += from -> v._1.arrowTextOpt
+                  wrapper.arrowsFrom += from -> v._1.arrowText
                   Some(from -> wrapper)
                 case _ =>
                   None

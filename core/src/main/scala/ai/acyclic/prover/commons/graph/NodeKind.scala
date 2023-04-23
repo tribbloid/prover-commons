@@ -7,11 +7,11 @@ trait NodeKind[+C <: Topology.Constraint, +A <: Arrow] {
   type Value
   def value: Value // bound type of values of this node and all its descendants, NOT the type of this value!
 
-  protected def getNodeText: String = value.toString
-  final lazy val nodeText: String = getNodeText
+  protected def nodeTextC: String = value.toString
+  final lazy val nodeText: String = nodeTextC
 
-  protected def getInduction: Seq[(A, NodeKind.Lt[C, A, Value])]
-  lazy val induction = getInduction
+  protected def inductionC: Seq[(A, NodeKind.Lt[C, A, Value])]
+  lazy val induction = inductionC
 
   final lazy val discoverNodes: Seq[NodeKind.Lt[C, A, Value]] = induction.map(_._2)
 
@@ -44,9 +44,9 @@ object NodeKind {
 
     override def value: V2 = fn(original.value)
 
-    override protected def getNodeText: String = original.nodeText
+    override protected def nodeTextC: String = original.nodeText
 
-    override protected def getInduction: Seq[(A, NodeKind.Aux[C, A, V2])] = {
+    override protected def inductionC: Seq[(A, NodeKind.Aux[C, A, V2])] = {
       original.induction.map {
         case (a, n) =>
           a -> Mapped(n, fn)

@@ -85,16 +85,16 @@ object TreeFixture {
 
   case class Node(value: TV) extends TreeT.Node[TV] {
 
-    override protected def getNodeText = value.text
+    override protected def nodeTextC = value.text
 
-    override protected def getInduction = value.children.map(v => Node(v))
+    override protected def inductionC = value.children.map(v => Node(v))
   }
 
   case class NodeWithArrowText(value: TV) extends TreeT.Node[TV] {
 
-    override protected def getNodeText = value.text
+    override protected def nodeTextC = value.text
 
-    override protected def getInduction = {
+    override protected def inductionC = {
 
       val children = value.children
       val result = children.map { child =>

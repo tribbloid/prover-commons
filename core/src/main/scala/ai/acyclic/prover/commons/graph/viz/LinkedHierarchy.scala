@@ -102,11 +102,11 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     case class Viz[V](override val graph: UB[V]) extends _Viz[V] {
 
-      object RefBindingS extends TreeT.System {
+      object RefBindingT extends TreeT.System {
 
         case class Node(
-                         node: Graph.Outbound.LesserNode[V],
-                         id: UUID = UUID.randomUUID()
+            node: Graph.Outbound.LesserNode[V],
+            id: UUID = UUID.randomUUID()
         ) extends UntypedNode
             with _RefBinding {
 
@@ -161,7 +161,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             }
           }
 
-          override protected def getInduction = {
+          override protected def inductionC = {
 
             if (!shouldExpand) {
               Nil
@@ -175,7 +175,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             }
           }
 
-          override protected def getNodeText: String = {
+          override protected def nodeTextC: String = {
 
             val originalText = node.nodeText
 
@@ -223,10 +223,10 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 //        }
 //      }
 
-      lazy val delegates: Seq[Tree[RefBindingS.Node]] = {
+      lazy val delegates: Seq[Tree[RefBindingT.Node]] = {
         val roots: Local.Dataset[Graph.Outbound.LesserNode[V]] = graph.roots
         roots.map { node =>
-          val refBinding: RefBindingS.Node = RefBindingS.Node(node)
+          val refBinding: RefBindingT.Node = RefBindingT.Node(node)
           Tree(refBinding)
         }
       }

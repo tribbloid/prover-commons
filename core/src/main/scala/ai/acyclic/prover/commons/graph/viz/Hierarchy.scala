@@ -71,7 +71,7 @@ trait Hierarchy extends Hierarchy.Format {
             val arrowBlocksOpt = groupedByTarget(child)
               .flatMap {
                 case (arrow, _) =>
-                  arrow.arrowTextOpt.map { text =>
+                  arrow.arrowText.map { text =>
                     TextBlock(text).encloseIn.parenthesis.pad.left(ARROW)
                   }
               }

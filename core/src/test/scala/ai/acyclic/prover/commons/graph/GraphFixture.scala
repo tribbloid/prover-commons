@@ -73,17 +73,17 @@ object GraphFixture {
 
   case class Node(override val value: GV) extends GraphT.OutboundT.Node[GV] {
 
-    override protected def getNodeText = value.text
+    override protected def nodeTextC = value.text
 
-    override protected def getInduction =
+    override protected def inductionC =
       value.children.toSeq.map(v => Node(v))
   }
 
   case class NodeWithArrowText(override val value: GV) extends GraphT.OutboundT.Node[GV] {
 
-    override protected def getNodeText = value.text
+    override protected def nodeTextC = value.text
 
-    override protected def getInduction = {
+    override protected def inductionC = {
       val children = value.children.toSeq
       val result = children.map { child =>
         Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
