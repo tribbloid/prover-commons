@@ -26,15 +26,15 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
 
     it("DepthFirst") {
 
-      val down = mutable.Buffer.empty[GN]
-      val up = mutable.Buffer.empty[GN]
+      val down = mutable.Buffer.empty[GV]
+      val up = mutable.Buffer.empty[GV]
 
       GraphUnary
         .make(cyclic.graph)
         .Traverse(
           5,
-          v => down += v,
-          v => up += v
+          n => down += n.value,
+          n => up += n.value
         )
         .DepthFirst
         .exe
@@ -68,15 +68,15 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
 
     it(" ... Once") {
 
-      val down = mutable.Buffer.empty[GN]
-      val up = mutable.Buffer.empty[GN]
+      val down = mutable.Buffer.empty[GV]
+      val up = mutable.Buffer.empty[GV]
 
       GraphUnary
         .make(cyclic.graph)
         .Traverse(
           5,
-          v => down += v,
-          v => up += v
+          n => down += n.value,
+          n => up += n.value
         )
         .DepthFirst_Once
         .exe
@@ -112,17 +112,17 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
       val result = GraphUnary
         .make(diamond.graph)
         .TransformLinear(
-          GNRewriter,
+          GVRewriter(Node),
           4,
           down = { v =>
-            val result = v.copy(text = v.text + "+" + inc.getAndIncrement())
-            result.children ++= v.children
-            result
+            val result = v.value.copy(text = v.value.text + "+" + inc.getAndIncrement())
+            result.children ++= v.value.children
+            Node(result)
           },
           up = { v =>
-            val result = v.copy(text = v.text + "-" + inc.getAndIncrement())
-            result.children ++= v.children
-            result
+            val result = v.value.copy(text = v.value.text + "-" + inc.getAndIncrement())
+            result.children ++= v.value.children
+            Node(result)
           }
         )
       result

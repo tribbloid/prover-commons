@@ -50,7 +50,7 @@ object LinkedHierarchy extends Visualisations {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def sameRefBy(node: Graph.Outbound.Node[_]): Option[Any] = Some(node)
+    override def sameRefBy(node: Graph.Outbound.LesserNode[_]): Option[Any] = Some(node)
 
     override def dryRun(tree: Tree[_ <: _RefBinding]): Unit = {
       GraphUnary
@@ -87,7 +87,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
   def dryRun(tree: Tree[_ <: _RefBinding]): Unit
 
-  def sameRefBy(node: Graph.Outbound.Node[_]): Option[Any]
+  def sameRefBy(node: Graph.Outbound.LesserNode[_]): Option[Any]
 
   trait _Viz[V] extends TextViz[V]
 
@@ -105,8 +105,8 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
       object RefBindingS extends TreeT.System {
 
         case class Node(
-            node: Graph.Outbound.Node[V],
-            id: UUID = UUID.randomUUID()
+                         node: Graph.Outbound.LesserNode[V],
+                         id: UUID = UUID.randomUUID()
         ) extends UntypedNode
             with _RefBinding {
 
@@ -224,7 +224,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 //      }
 
       lazy val delegates: Seq[Tree[RefBindingS.Node]] = {
-        val roots: Local.Dataset[Graph.Outbound.Node[V]] = graph.roots
+        val roots: Local.Dataset[Graph.Outbound.LesserNode[V]] = graph.roots
         roots.map { node =>
           val refBinding: RefBindingS.Node = RefBindingS.Node(node)
           Tree(refBinding)

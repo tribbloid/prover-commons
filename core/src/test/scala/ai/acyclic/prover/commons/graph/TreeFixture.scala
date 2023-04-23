@@ -1,9 +1,9 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.Topology.TreeT
-import ai.acyclic.prover.commons.graph.local.Tree
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import local.Tree
 
 abstract class TreeFixture extends BaseSpec {
 
@@ -15,96 +15,94 @@ abstract class TreeFixture extends BaseSpec {
 
   implicit lazy val treeFormat: Hierarchy = Top5
 
-  val tn1 = TN(
+  val tn1 = TVF(
     "aaa",
     Seq(
-      TN(
+      TVF(
         "bbb",
         Seq(
-          TN("ddd")
+          TVF("ddd")
         )
       ),
-      TN(
+      TVF(
         "ccc"
       )
     )
   )
 
-  val tn2 = TN( // TODO: simplify this with graph Transform
+  val tn2 = TVF( // TODO: simplify this with graph Transform
     "aaa\n%%%%%",
     Seq(
-      TN(
+      TVF(
         "bbb\n%%%%%",
         Seq(
-          TN("ddd\n%%%%%")
+          TVF("ddd\n%%%%%")
         )
       ),
-      TN(
+      TVF(
         "ccc\n%%%%%"
       )
     )
   )
 
-  val treeInf = TInf("abcdefgh")
+  val treeInf = TVInf("abcdefgh")
 }
 
 object TreeFixture {
 
-  trait Demo {
+  trait TV {
 
     def text: String
-    def children: Seq[Demo]
+    def children: Seq[TV]
 
-    def tree: _Tree = _Tree(this)
+//    def tree: _Tree = _Tree(this)
+//
+//    def treeWithArrowTexts: _TreeWithArrowTexts = _TreeWithArrowTexts(this)
 
-    def treeWithArrowTexts: _TreeWithArrowTexts = _TreeWithArrowTexts(this)
+    def tree = Tree(Node(this))
+
+    def treeWithArrowTexts = Tree(Node(this))
   }
 
-  case class TN(
+  case class TVF(
       text: String,
-      children: Seq[Demo] = Nil
-  ) extends Demo {}
+      children: Seq[TV] = Nil
+  ) extends TV {}
 
-  case class TInf(
+  case class TVInf(
       text: String
-  ) extends Demo {
+  ) extends TV {
 
-    override def children: Seq[Demo] = {
+    override def children: Seq[TV] = {
 
       if (text.length <= 2) {
         Seq(this)
       } else {
         text.sliding(text.length - 1, 1).toSeq.map { v =>
-          TInf(v)
+          TVInf(v)
         }
       }
     }
   }
 
-  case class _Tree(root: Demo) extends Tree[Demo] {
+  case class Node(value: TV) extends TreeT.Node[TV] {
 
-    case class Ops(value: Demo) extends TreeT.Node[Demo] {
+    override protected def getNodeText = value.text
 
-      override protected def getNodeText = value.text
-
-      override protected def getInduction = value.children.map(v => Ops(v))
-    }
+    override protected def getInduction = value.children.map(v => Node(v))
   }
 
-  case class _TreeWithArrowTexts(root: Demo) extends Tree[Demo] {
+  case class NodeWithArrowText(value: TV) extends TreeT.Node[TV] {
 
-    case class Ops(value: Demo) extends TreeT.Node[Demo] {
+    override protected def getNodeText = value.text
 
-      override protected def getNodeText = value.text
+    override protected def getInduction = {
 
-      override protected def getInduction = {
-
-        val children = value.children
-        val result = children.map { child =>
-          Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Ops(child)
-        }
-        result
+      val children = value.children
+      val result = children.map { child =>
+        Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Node(child)
       }
+      result
     }
   }
 }

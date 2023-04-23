@@ -32,8 +32,6 @@ trait Engine {
     final type C = topology.C
     final type A = topology.A
 
-    final type Node[V] = NodeKind.Lt[C, A, V]
-
     final type G[V] = GraphOnEngine[C, A, V]
 
     def apply[CC <: C, AA <: A, V](

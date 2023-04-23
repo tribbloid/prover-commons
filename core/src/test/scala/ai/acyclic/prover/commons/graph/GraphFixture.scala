@@ -1,9 +1,9 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
-import ai.acyclic.prover.commons.graph.local.Rewriter.WithNewInduction
-import ai.acyclic.prover.commons.graph.local.{Graph, Rewriter}
+import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.testlib.BaseSpec
+
+import local.Graph
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -11,13 +11,13 @@ trait GraphFixture extends BaseSpec {
 
   import GraphFixture._
 
-  val diamond: GN = {
+  val diamond: GV = {
 
-    val a = GN("aaa")
-    val b = GN("bbb")
-    val c = GN("ccc")
-    val d = GN("ddd")
-    val e = GN("eee")
+    val a = GV("aaa")
+    val b = GV("bbb")
+    val c = GV("ccc")
+    val d = GV("ddd")
+    val e = GV("eee")
 
     a.children ++= Seq(b, c)
     b.children += d
@@ -27,12 +27,12 @@ trait GraphFixture extends BaseSpec {
     a
   }
 
-  val cyclic: GN = {
+  val cyclic: GV = {
 
-    val a = GN("aaa")
-    val b = GN("bbb")
-    val c = GN("ccc")
-    val d = GN("ddd")
+    val a = GV("aaa")
+    val b = GV("bbb")
+    val c = GV("ccc")
+    val d = GV("ddd")
 
     a.children += b
     b.children ++= Seq(c, d)
@@ -41,12 +41,12 @@ trait GraphFixture extends BaseSpec {
     a
   }
 
-  val cyclic2: GN = {
+  val cyclic2: GV = {
 
-    val a = GN("aaa\n%%%%")
-    val b = GN("bbb\n%%%%")
-    val c = GN("ccc\n%%%%")
-    val d = GN("ddd\n%%%%")
+    val a = GV("aaa\n%%%%")
+    val b = GV("bbb\n%%%%")
+    val c = GV("ccc\n%%%%")
+    val d = GV("ddd\n%%%%")
 
     a.children += b
     b.children ++= Seq(c, d)
@@ -58,50 +58,47 @@ trait GraphFixture extends BaseSpec {
 
 object GraphFixture {
 
-  case class GN(
+  case class GV(
       text: String
   ) {
 
-    lazy val children: ArrayBuffer[GN] = ArrayBuffer.empty
+    lazy val children: ArrayBuffer[GV] = ArrayBuffer.empty
 
-    def graph: _OGraph = _OGraph(Seq(this))
+    def graph = Graph(Node(this))
 
-    def graphWithArrowText: _OGraphWithArrowText = _OGraphWithArrowText(Seq(this))
+    def graphWithArrowText = Graph(Node(this))
   }
 
-  object GNRewriter extends Rewriter[GN] {
+  case class Node(override val value: GV) extends GraphT.OutboundT.Node[GV] {
 
-    override def apply(gn: GN): WithNewInduction[GN] = { ss: Seq[GN] =>
-      val result = gn.copy()
-      result.children.addAll(ss)
+    override protected def getNodeText = value.text
+
+    override protected def getInduction =
+      value.children.toSeq.map(v => Node(v))
+  }
+
+  case class NodeWithArrowText(override val value: GV) extends GraphT.OutboundT.Node[GV] {
+
+    override protected def getNodeText = value.text
+
+    override protected def getInduction = {
+      val children = value.children.toSeq
+      val result = children.map { child =>
+        Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
+      }
       result
     }
   }
 
-  case class _OGraph(override val rootValues: Seq[GN]) extends Graph.Outbound[GN] {
+  case class GVRewriter(builder: GV => GraphT.Node[GV]) extends GraphT.Rewriter[GV] {
 
-    case class Ops(value: GN) extends OutboundT.Node[GN] {
+    override def rewrite(src: GraphT.LesserNode[GV])(
+        inductions: Seq[GraphT.LesserNode[GV]]
+    ): GraphT.Node[GV] = {
 
-      override protected def getNodeText = value.text
-
-      override protected def getInduction = value.children.toSeq.map(v => Ops(v))
-    }
-  }
-
-  case class _OGraphWithArrowText(override val rootValues: Seq[GN]) extends Graph.Outbound[GN] {
-
-    case class Ops(value: GN) extends OutboundT.Node[GN] {
-
-      override protected def getNodeText = value.text
-
-      override protected def getInduction = {
-
-        val children = value.children.toSeq
-        val result = children.map { child =>
-          Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Ops(child)
-        }
-        result
-      }
+      val result = src.value.copy()
+      result.children.addAll(inductions.map(_.value))
+      builder(result)
     }
   }
 }

@@ -27,6 +27,7 @@ object NodeKind {
   type Aux[+C <: Topology.Constraint, +A <: Arrow, V] = NodeKind[C, A] { type Value = V }
   trait AuxT[+C <: Topology.Constraint, +A <: Arrow, V] extends NodeKind[C, A] { type Value = V }
 
+  // Acronym of "Less Than"
   type Lt[+C <: Topology.Constraint, +A <: Arrow, +V] = Aux[C, A, _ <: V]
 
   trait Untyped[+C <: Topology.Constraint, +A <: Arrow] extends NodeKind[C, A] {

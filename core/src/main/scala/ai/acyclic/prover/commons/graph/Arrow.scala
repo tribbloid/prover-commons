@@ -36,8 +36,6 @@ object Arrow {
       toF.fromSpecific(mapped)
     }
 
-    object ^ {}
-
     case class NoInfo(
         override val getArrowText: Option[String] = None
     ) extends ^

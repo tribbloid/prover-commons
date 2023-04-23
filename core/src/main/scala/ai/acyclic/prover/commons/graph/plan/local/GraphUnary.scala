@@ -37,22 +37,22 @@ case class GraphUnary[IG <: Graph[V], V] private (
   // TODO:
   //  need to transcribe to a different graph type
   case class Transform(
-      rewriter: Rewriter[V],
-      maxDepth: Int = Int.MaxValue,
-      pruning: Pruning[Node[V]] = identity,
-      down: Node[V] => Seq[Node[V]] = v => Seq(v),
-      up: Node[V] => Seq[Node[V]] = v => Seq(v)
+                        rewriter: Rewriter[V],
+                        maxDepth: Int = Int.MaxValue,
+                        pruning: Pruning[LesserNode[V]] = identity,
+                        down: LesserNode[V] => Seq[LesserNode[V]] = v => Seq(v),
+                        up: LesserNode[V] => Seq[LesserNode[V]] = v => Seq(v)
   ) {
 
     object DepthFirst extends TransformLike {
 
-      private def transformInternal(node: Node[V], depth: Int = maxDepth): Seq[Node[V]] = {
+      private def transformInternal(node: LesserNode[V], depth: Int = maxDepth): Seq[LesserNode[V]] = {
         if (depth > 0) {
 
-          def doTransform(n: Node[V]): Seq[Node[V]] = {
-            val downNs: Seq[Node[V]] = down(n)
+          def doTransform(n: LesserNode[V]): Seq[LesserNode[V]] = {
+            val downNs: Seq[LesserNode[V]] = down(n)
 
-            val inductionTs: Seq[Node[V]] =
+            val inductionTs: Seq[LesserNode[V]] =
               downNs.map { n =>
                 val successors = n.discoverNodes
                 val successorsTransformed = successors.flatMap { nn =>
@@ -85,7 +85,7 @@ case class GraphUnary[IG <: Graph[V], V] private (
 
       private val delegate = {
 
-        val seen = inputGraph.sameness.Correspondence[Node[V], Node[V]]()
+        val seen = inputGraph.sameness.Correspondence[LesserNode[V], LesserNode[V]]()
 
         Transform(
           rewriter,
@@ -118,7 +118,7 @@ case class GraphUnary[IG <: Graph[V], V] private (
 
       private val delegate = {
 
-        val seen = inputGraph.sameness.Correspondence[Node[V], Seq[Node[V]]]()
+        val seen = inputGraph.sameness.Correspondence[LesserNode[V], Seq[LesserNode[V]]]()
 
         Transform(
           rewriter,
@@ -151,11 +151,11 @@ case class GraphUnary[IG <: Graph[V], V] private (
 
   object TransformLinear {
     def apply(
-        rewriter: Rewriter[V],
-        maxDepth: Int = Int.MaxValue,
-        down: Node[V] => Node[V] = v => v,
-        pruning: Pruning[Node[V]] = identity,
-        up: Node[V] => Node[V] = v => v
+               rewriter: Rewriter[V],
+               maxDepth: Int = Int.MaxValue,
+               down: LesserNode[V] => LesserNode[V] = v => v,
+               pruning: Pruning[LesserNode[V]] = identity,
+               up: LesserNode[V] => LesserNode[V] = v => v
     ): Transform = Transform(
       rewriter,
       maxDepth,
@@ -169,9 +169,9 @@ case class GraphUnary[IG <: Graph[V], V] private (
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
-      maxDepth: Int = Int.MaxValue,
-      down: Node[V] => Unit = { _: Node[V] => {} },
-      up: Node[V] => Unit = { _: Node[V] => {} }
+                       maxDepth: Int = Int.MaxValue,
+                       down: LesserNode[V] => Unit = { _: LesserNode[V] => {} },
+                       up: LesserNode[V] => Unit = { _: LesserNode[V] => {} }
   ) {
 
     private val delegate = Transform(

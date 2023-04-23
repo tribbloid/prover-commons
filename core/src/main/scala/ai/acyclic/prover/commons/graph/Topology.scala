@@ -9,7 +9,8 @@ trait Topology {
 
   type C <: Constraint
 
-  type Node[V] <: NodeKind.Lt[C, A, V]
+  final type Node[V] = NodeKind.AuxT[C, A, V]
+  final type LesserNode[V] = NodeKind.Lt[C, A, V]
 
   type G[V] <: GraphKind[C, A, V]
 
@@ -36,13 +37,13 @@ trait Topology {
 
   trait Rewriter[V] {
 
-    def rewrite(src: Node[V])(
-        inductions: Seq[Node[V]]
-    ): Node[V]
+    def rewrite(src: LesserNode[V])(
+        inductions: Seq[LesserNode[V]]
+    ): LesserNode[V]
 
     object Verified extends Rewriter[V] {
 
-      override def rewrite(src: Node[V])(linksTo: Seq[Node[V]]): Node[V] = {
+      override def rewrite(src: LesserNode[V])(linksTo: Seq[LesserNode[V]]): LesserNode[V] = {
 
         val originalNs = src.discoverNodes
         if (originalNs == linksTo) {
@@ -68,7 +69,7 @@ trait Topology {
 
     case class DoNotRewrite[N]() extends Rewriter[N] {
 
-      override def rewrite(src: Node[N])(inductions: Seq[Node[N]]): Node[N] = src
+      override def rewrite(src: LesserNode[N])(inductions: Seq[LesserNode[N]]): LesserNode[N] = src
     }
   }
 }
@@ -77,21 +78,19 @@ object Topology {
 
   trait Constraint
 
-  trait Generic extends Topology {
+  trait NoEngine extends Topology {
     self: Singleton =>
-
-    type Node[V] = NodeKind.Lt[C, A, V]
 
     type G[V] = GraphKind[C, A, V]
   }
 
-  trait HasAnyArrow extends Generic {
+  trait HasAnyArrow extends NoEngine {
     self: Singleton =>
 
     override type A = Arrow
   }
 
-  trait HasOutboundArrow extends Generic {
+  trait HasOutboundArrow extends NoEngine {
     self: Singleton =>
 
     override type A = Arrow.`~>`.^
@@ -125,7 +124,7 @@ object Topology {
 
       trait C extends SemilatticeT.C with GraphT.OutboundT.C
 
-      implicit class NodeOps[V](n: Node[V]) {
+      implicit class NodeOps[V](n: LesserNode[V]) {
 
         def isLeaf: Boolean = n.induction.isEmpty
       }
@@ -139,8 +138,8 @@ object Topology {
 
   private def compileTimeSanityCheck[V](): Unit = {
 
-    implicitly[PosetT.Node[Int] <:< GraphT.Node[Int]]
+    implicitly[PosetT.LesserNode[Int] <:< GraphT.LesserNode[Int]]
 
-    implicitly[PosetT.Node[V] <:< GraphT.Node[V]]
+    implicitly[PosetT.LesserNode[V] <:< GraphT.LesserNode[V]]
   }
 }
