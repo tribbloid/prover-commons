@@ -62,7 +62,7 @@ object LinkedHierarchy extends Visualisations {
           }
         )
         .DepthFirst
-        .exe
+        .compute
     }
   }
 

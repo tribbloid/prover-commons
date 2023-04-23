@@ -1,26 +1,31 @@
 package ai.acyclic.prover.commons.graph.plan.local
 
-import ai.acyclic.prover.commons.graph.local.Graph
-import ai.acyclic.prover.commons.graph.plan.{Arity, Expression}
-import shapeless.Sized
+import ai.acyclic.prover.commons.graph.local.{Graph, Local}
+import ai.acyclic.prover.commons.graph.plan.PlanArg
 
-case class GraphBinary[IG <: Graph[N], N](arg1: Expression[IG], arg2: Expression[IG])
-    extends Arity.Binary.Expressions[IG] {
+trait GraphBinary extends PlanArg.Binary {
 
-  override lazy val args = Sized(arg1, arg2)
+  type Prev <: GraphUnary
 
-  lazy val inputGraph1 = arg1.exeOnce
-  lazy val inputGraph2 = arg2.exeOnce
+  type V
+  override type LastInputG <: Graph[V]
 
-//  object Union extends To[Graph[N]] {
-//
-//    object ResultGraph extends Graph[N] {
-//
-//      override def roots: Dataset[N] = inputGraph1.roots ++ inputGraph2.roots
-//
-//      override protected def Ops: Value => GraphT.Ops[N] = ???
-//    }
-//
-//    override def exe: Graph[N] = ???
-//  }
+  case class Union[VV]()(
+      implicit
+      ev1: prev.V <:< VV,
+      ev2: V <:< VV
+  ) extends To[Graph[VV]] {
+
+    override def compute: Graph[VV] = {
+
+      val roots1: Local.Dataset[Graph.LesserNode[VV]] =
+        prev.lastInputG.roots.map((n: Graph.LesserNode[prev.V]) => n.upcast[VV])
+      val roots2: Local.Dataset[Graph.LesserNode[VV]] =
+        lastInputG.roots.map((n: Graph.LesserNode[V]) => n.upcast[VV])
+
+      Graph.apply(
+        (roots1 ++ roots2): _*
+      )
+    }
+  }
 }

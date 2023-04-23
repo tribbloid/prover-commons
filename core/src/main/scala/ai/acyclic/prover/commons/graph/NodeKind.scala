@@ -20,9 +20,16 @@ trait NodeKind[+C <: Topology.Constraint, +A <: Arrow] {
   final lazy val discoverValues: Seq[Value] = inductionToValues.map(_._2)
 
   def map[V2](fn: Value => V2): NodeKind.Aux[C, A, V2] = Mapped(this: NodeKind.Lt[C, A, Value], fn)
+
+  def upcast[V2](
+      implicit
+      ev: Value <:< V2
+  ) = map((v: Value) => v: V2)
 }
 
 object NodeKind {
+
+  type Top = NodeKind[_, _]
 
   type Aux[+C <: Topology.Constraint, +A <: Arrow, V] = NodeKind[C, A] { type Value = V }
   trait AuxT[+C <: Topology.Constraint, +A <: Arrow, V] extends NodeKind[C, A] { type Value = V }

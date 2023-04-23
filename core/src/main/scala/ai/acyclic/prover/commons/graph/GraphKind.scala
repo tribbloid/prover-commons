@@ -20,7 +20,7 @@ trait GraphKind[+C <: Topology.Constraint, +A <: Arrow, V] {
 
 object GraphKind {
 
-  type Like = GraphKind[_, _, _]
+  type Top = GraphKind[_, _, _]
 
   // TODO: don't know how to define it in the new architecture`
 //  trait Immutable[+Ops <: Node.Like[_, _]] extends GraphK[Ops] {

@@ -45,7 +45,7 @@ case class TypeHierarchy(
             }
           )
           .DepthFirst
-          .exe
+          .compute
       }
 
       if (_expandArgsBeforeSubtypes) {

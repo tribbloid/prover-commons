@@ -14,8 +14,8 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
   it("Upcast") {
     val result = GraphUnary
       .make(cyclic.graph)
-      .UpcastNode[Any]()
-      .exe
+      .NodeUpcast[Any]
+      .compute
 
     result.diagram_Hasse.treeString.shouldBe(
       cyclic.graph.diagram_Hasse.treeString
@@ -37,7 +37,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
           n => up += n.value
         )
         .DepthFirst
-        .exe
+        .compute
 
       down
         .map(_.text)
@@ -79,7 +79,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
           n => up += n.value
         )
         .DepthFirst_Once
-        .exe
+        .compute
 
       down
         .map(_.text)
@@ -130,7 +130,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
 
     it("DepthFirst") {
 
-      val tt = proto.DepthFirst.exe
+      val tt = proto.DepthFirst.compute
 
       tt.diagram_Hasse.treeString.shouldBe(
         """
@@ -160,7 +160,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
 
     it("DepthFirst_Once") {
 
-      val tt = proto.DepthFirst_Once.exe
+      val tt = proto.DepthFirst_Once.compute
 
       tt.diagram_Hasse.treeString.shouldBe(
         """
@@ -190,7 +190,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
 
     it("DepthFirst_Cached") {
 
-      val tt = proto.DepthFirst_Cached.exe
+      val tt = proto.DepthFirst_Cached.compute
 
       tt.diagram_Hasse.treeString.shouldBe(
         """

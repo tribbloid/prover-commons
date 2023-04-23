@@ -154,7 +154,7 @@ trait Hasse extends Hasse.Format {
         )
         .DepthFirst_Once
 
-      buildBuffers.exeOnce
+      buildBuffers.graph
 
       val nodeSet: Set[NodeWrapper] = nodeBuffer.outer.values
         .map { nodeWrapper =>

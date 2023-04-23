@@ -1,38 +1,41 @@
 package ai.acyclic.prover.commons.graph.plan.local
 
-import ai.acyclic.prover.commons.graph.GraphKind.Like
+import ai.acyclic.prover.commons.graph.GraphKind.Top
 import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.graph.local.{Graph, Local}
-import ai.acyclic.prover.commons.graph.plan.{Arity, Expression}
-import shapeless.Sized
+import ai.acyclic.prover.commons.graph.plan.{Plan, PlanArg}
 
 import scala.language.existentials
 
-case class GraphUnary[IG <: Graph[V], V] private (
-    arg: Expression[IG]
-) extends Arity.Unary.Expressions[IG] {
+trait GraphUnary extends PlanArg.Unary {
 
-  import GraphUnary._
+  type V
+  override type LastInputG <: Graph[V]
+
   import GraphT._
+  import GraphUnary._
 
-  final override lazy val args = Sized(arg)
+  case class NodeMap[V2](
+      fn: V => V2
+  ) extends To[Graph[V2]] {
 
-  lazy val inputGraph = arg.exeOnce
-
-  case class UpcastNode[V2 >: V]() extends To[Graph[V2]] {
-
-    override def exe: Graph[V2] = {
-      val roots = inputGraph.roots
+    override def compute: Graph[V2] = {
+      val roots = lastInputG.roots
 
       Graph(
         roots.map { n =>
-          n.map(v => v: V2)
+          n.map(v => fn(v): V2)
         }: _*
       )
     }
   }
 
-  trait TransformLike extends To[Graph[V]]
+  object NodeUpcast {
+
+    def apply[V2 >: V] = NodeMap[V2](v => v: V2)
+  }
+
+  trait TransformPlan extends To[Graph[V]]
 
   // TODO:
   //  need to transcribe to a more constraining graph type
@@ -44,7 +47,7 @@ case class GraphUnary[IG <: Graph[V], V] private (
       up: LesserNode[V] => Seq[LesserNode[V]] = v => Seq(v)
   ) {
 
-    object DepthFirst extends TransformLike {
+    object DepthFirst extends TransformPlan {
 
       private def transformInternal(node: LesserNode[V], depth: Int = maxDepth): Seq[LesserNode[V]] = {
         if (depth > 0) {
@@ -75,17 +78,17 @@ case class GraphUnary[IG <: Graph[V], V] private (
         }
       }
 
-      override def exe: Graph[V] = {
-        val transformed = inputGraph.roots.flatMap(n => transformInternal(n, maxDepth))
+      override def compute: Graph[V] = {
+        val transformed = lastInputG.roots.flatMap(n => transformInternal(n, maxDepth))
         Local.Build(transformed: _*)
       }
     }
 
-    object DepthFirst_Once extends TransformLike {
+    object DepthFirst_Once extends TransformPlan {
 
       private val delegate = {
 
-        val seen = inputGraph.sameness.Correspondence[LesserNode[V], LesserNode[V]]()
+        val seen = lastInputG.sameness.Correspondence[LesserNode[V], LesserNode[V]]()
 
         Transform(
           rewriter,
@@ -109,16 +112,16 @@ case class GraphUnary[IG <: Graph[V], V] private (
         ).DepthFirst
       }
 
-      override def exe: Graph[V] = {
-        delegate.exe
+      override def compute: Graph[V] = {
+        delegate.compute
       }
     }
 
-    object DepthFirst_Cached extends TransformLike {
+    object DepthFirst_Cached extends TransformPlan {
 
       private val delegate = {
 
-        val seen = inputGraph.sameness.Correspondence[LesserNode[V], Seq[LesserNode[V]]]()
+        val seen = lastInputG.sameness.Correspondence[LesserNode[V], Seq[LesserNode[V]]]()
 
         Transform(
           rewriter,
@@ -143,8 +146,8 @@ case class GraphUnary[IG <: Graph[V], V] private (
         ).DepthFirst
       }
 
-      override def exe: Graph[V] = {
-        delegate.exe
+      override def compute: Graph[V] = {
+        delegate.compute
       }
     }
   }
@@ -165,7 +168,7 @@ case class GraphUnary[IG <: Graph[V], V] private (
     )
   }
 
-  trait TraverseLike extends To[IG] {}
+  trait TraversePlan extends To[LastInputG] {}
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
@@ -181,24 +184,24 @@ case class GraphUnary[IG <: Graph[V], V] private (
       up = { v => up(v); Seq(v) }
     )
 
-    object DepthFirst extends TraverseLike {
+    object DepthFirst extends TraversePlan {
 
-      override def exe: IG = {
+      override def compute: LastInputG = {
 
-        delegate.DepthFirst.exe
-        inputGraph
+        delegate.DepthFirst.compute
+        lastInputG
       }
     }
 
-    object DepthFirst_Once extends TraverseLike {
+    object DepthFirst_Once extends TraversePlan {
 
 //      private val _down = down
 //      private val _up = up
 
-      override def exe: IG = {
+      override def compute: LastInputG = {
 
-        delegate.DepthFirst_Once.exe
-        inputGraph
+        delegate.DepthFirst_Once.compute
+        lastInputG
       }
     }
   }
@@ -209,14 +212,21 @@ object GraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  def make[IG <: Like, N](
-      arg: Expression[IG]
+  case class ^[VV, IG <: Graph[VV]](
+      last: Plan[IG]
+  ) extends GraphUnary {
+    override type V = VV
+    override type LastInputG = IG
+  }
+
+  def make[IG <: Top, V](
+      arg: Plan[IG]
   )(
       implicit
-      ev: IG <:< Graph[N]
+      ev: IG <:< Graph[V]
       // see https://stackoverflow.com/questions/16291313/scala-inferred-type-arguments-type-bounds-inferring-to-nothing
-  ): GraphUnary[IG with Graph[N], N] = {
+  ): ^[V, IG with Graph[V]] = {
 
-    new GraphUnary[IG with Graph[N], N](arg.asInstanceOf[Expression[IG with Graph[N]]])
+    new ^[V, IG with Graph[V]](arg.asInstanceOf[Plan[IG with Graph[V]]])
   }
 }
