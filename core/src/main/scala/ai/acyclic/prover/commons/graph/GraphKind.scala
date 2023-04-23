@@ -2,7 +2,13 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.Same
 
-trait GraphKind[+C <: Topology.Constraint, +A <: Arrow, V] extends GraphKind.Like {
+trait GraphKind[+C <: Topology.Constraint, +A <: Arrow, V] {
+
+  val engine: Engine
+
+  // should only compare the sameness of node, NOT value!
+  //  otherwise a mapping to the value may introduce forbidden subgraph(s).
+  def sameness: Same.Definition = Same.ByEquality
 
   final type Value = V
 
@@ -14,14 +20,7 @@ trait GraphKind[+C <: Topology.Constraint, +A <: Arrow, V] extends GraphKind.Lik
 
 object GraphKind {
 
-  trait Like {
-
-    val engine: Engine
-
-    // should only compare the sameness of node, NOT value!
-    //  otherwise a mapping to the value may introduce forbidden subgraph(s).
-    def sameness: Same.Definition = Same.ByEquality
-  }
+  type Like = GraphKind[_, _, _]
 
   // TODO: don't know how to define it in the new architecture`
 //  trait Immutable[+Ops <: Node.Like[_, _]] extends GraphK[Ops] {

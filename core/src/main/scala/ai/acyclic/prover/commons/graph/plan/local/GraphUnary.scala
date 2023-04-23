@@ -35,13 +35,13 @@ case class GraphUnary[IG <: Graph[V], V] private (
   trait TransformLike extends To[Graph[V]]
 
   // TODO:
-  //  need to transcribe to a different graph type
+  //  need to transcribe to a more constraining graph type
   case class Transform(
-                        rewriter: Rewriter[V],
-                        maxDepth: Int = Int.MaxValue,
-                        pruning: Pruning[LesserNode[V]] = identity,
-                        down: LesserNode[V] => Seq[LesserNode[V]] = v => Seq(v),
-                        up: LesserNode[V] => Seq[LesserNode[V]] = v => Seq(v)
+      rewriter: Rewriter[V],
+      maxDepth: Int = Int.MaxValue,
+      pruning: Pruning[LesserNode[V]] = identity,
+      down: LesserNode[V] => Seq[LesserNode[V]] = v => Seq(v),
+      up: LesserNode[V] => Seq[LesserNode[V]] = v => Seq(v)
   ) {
 
     object DepthFirst extends TransformLike {
@@ -151,11 +151,11 @@ case class GraphUnary[IG <: Graph[V], V] private (
 
   object TransformLinear {
     def apply(
-               rewriter: Rewriter[V],
-               maxDepth: Int = Int.MaxValue,
-               down: LesserNode[V] => LesserNode[V] = v => v,
-               pruning: Pruning[LesserNode[V]] = identity,
-               up: LesserNode[V] => LesserNode[V] = v => v
+        rewriter: Rewriter[V],
+        maxDepth: Int = Int.MaxValue,
+        down: LesserNode[V] => LesserNode[V] = v => v,
+        pruning: Pruning[LesserNode[V]] = identity,
+        up: LesserNode[V] => LesserNode[V] = v => v
     ): Transform = Transform(
       rewriter,
       maxDepth,
@@ -169,9 +169,9 @@ case class GraphUnary[IG <: Graph[V], V] private (
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
-                       maxDepth: Int = Int.MaxValue,
-                       down: LesserNode[V] => Unit = { _: LesserNode[V] => {} },
-                       up: LesserNode[V] => Unit = { _: LesserNode[V] => {} }
+      maxDepth: Int = Int.MaxValue,
+      down: LesserNode[V] => Unit = { _: LesserNode[V] => {} },
+      up: LesserNode[V] => Unit = { _: LesserNode[V] => {} }
   ) {
 
     private val delegate = Transform(

@@ -64,9 +64,11 @@ object GraphFixture {
 
     lazy val children: ArrayBuffer[GV] = ArrayBuffer.empty
 
-    def graph = Graph(Node(this))
+    def graph =
+      Graph(Node(this))
 
-    def graphWithArrowText = Graph(Node(this))
+    def graphWithArrowText =
+      Graph(NodeWithArrowText(this))
   }
 
   case class Node(override val value: GV) extends GraphT.OutboundT.Node[GV] {

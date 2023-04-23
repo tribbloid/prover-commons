@@ -55,13 +55,11 @@ object TreeFixture {
     def text: String
     def children: Seq[TV]
 
-//    def tree: _Tree = _Tree(this)
-//
-//    def treeWithArrowTexts: _TreeWithArrowTexts = _TreeWithArrowTexts(this)
+    def tree =
+      Tree(Node(this))
 
-    def tree = Tree(Node(this))
-
-    def treeWithArrowTexts = Tree(Node(this))
+    def treeWithArrowTexts =
+      Tree(NodeWithArrowText(this))
   }
 
   case class TVF(
