@@ -15,31 +15,31 @@ abstract class TreeFixture extends BaseSpec {
 
   implicit lazy val treeFormat: Hierarchy = Top5
 
-  val tn1 = TVF(
+  val tn1 = TVProduct(
     "aaa",
     Seq(
-      TVF(
+      TVProduct(
         "bbb",
         Seq(
-          TVF("ddd")
+          TVProduct("ddd")
         )
       ),
-      TVF(
+      TVProduct(
         "ccc"
       )
     )
   )
 
-  val tn2 = TVF( // TODO: simplify this with graph Transform
+  val tn2 = TVProduct( // TODO: simplify this with graph Transform
     "aaa\n%%%%%",
     Seq(
-      TVF(
+      TVProduct(
         "bbb\n%%%%%",
         Seq(
-          TVF("ddd\n%%%%%")
+          TVProduct("ddd\n%%%%%")
         )
       ),
-      TVF(
+      TVProduct(
         "ccc\n%%%%%"
       )
     )
@@ -62,7 +62,7 @@ object TreeFixture {
       Tree(NodeWithArrowText(this))
   }
 
-  case class TVF(
+  case class TVProduct(
       text: String,
       children: Seq[TV] = Nil
   ) extends TV {}
@@ -98,7 +98,7 @@ object TreeFixture {
 
       val children = value.children
       val result = children.map { child =>
-        Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Node(child)
+        Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
       }
       result
     }

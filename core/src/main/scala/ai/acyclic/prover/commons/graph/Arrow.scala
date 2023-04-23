@@ -10,7 +10,7 @@ trait Arrow {
   val arrowType: ArrowType
 
   protected def getArrowText: Option[String] = None
-  final lazy val arrowText: Option[String] = getArrowText
+  final lazy val arrowTextOpt: Option[String] = getArrowText
 }
 
 object Arrow {

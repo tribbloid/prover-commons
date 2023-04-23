@@ -38,25 +38,25 @@ trait Topology {
   trait Rewriter[V] {
 
     def rewrite(src: LesserNode[V])(
-        inductionToValue: Seq[LesserNode[V]]
+        discoverNodes: Seq[LesserNode[V]]
     ): LesserNode[V]
 
     object Verified extends Rewriter[V] {
 
-      override def rewrite(src: LesserNode[V])(inductionToValue: Seq[LesserNode[V]]): LesserNode[V] = {
+      override def rewrite(src: LesserNode[V])(discoverNodes: Seq[LesserNode[V]]): LesserNode[V] = {
 
         val originalNs = src.discoverNodes
-        if (originalNs == inductionToValue) {
+        if (originalNs == discoverNodes) {
           // no need to rewrite, just return node as-is
           return src
         }
 
-        val result = Rewriter.this.rewrite(src)(inductionToValue)
+        val result = Rewriter.this.rewrite(src)(discoverNodes)
 
         require(
-          originalNs == inductionToValue,
+          result.discoverNodes == discoverNodes,
           s"""Incompatible rewriter?
-             |Rewrite result should be [${inductionToValue.mkString(", ")}]
+             |Rewrite result should be [${discoverNodes.mkString(", ")}]
              |but it is actually [${originalNs.mkString(", ")}]""".stripMargin
         )
 
@@ -69,7 +69,7 @@ trait Topology {
 
     case class DoNotRewrite[N]() extends Rewriter[N] {
 
-      override def rewrite(src: LesserNode[N])(inductionToValue: Seq[LesserNode[N]]): LesserNode[N] = src
+      override def rewrite(src: LesserNode[N])(discoverNodes: Seq[LesserNode[N]]): LesserNode[N] = src
     }
   }
 }

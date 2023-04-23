@@ -59,19 +59,19 @@ trait Hierarchy extends Hierarchy.Format {
 
           val selfT = wText.pad.left(FORK)
 
-          val arrows = head.induction
-          val groupedByTarget = arrows
+          val arrows_targets = head.induction
+          val groupedByTarget = arrows_targets
             .groupBy { v =>
               v._2
             }
 
-          val children = arrows.map(_._2).distinct
+          val children = arrows_targets.map(_._2).distinct
 
           val childrenTProtos: Seq[TextBlock] = children.toList.map { child =>
             val arrowBlocksOpt = groupedByTarget(child)
               .flatMap {
-                case (arrow, target) =>
-                  arrow.arrowText.map { text =>
+                case (arrow, _) =>
+                  arrow.arrowTextOpt.map { text =>
                     TextBlock(text).encloseIn.parenthesis.pad.left(ARROW)
                   }
               }
