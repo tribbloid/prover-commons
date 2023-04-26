@@ -158,6 +158,6 @@ case class TextBlock(lines: Seq[String]) {
 
 object TextBlock {
 
-  def apply(tt: String) = new TextBlock(tt.split('\n').toIndexedSeq)
+  def apply(tt: String) = new TextBlock(tt.split('\n').toVector)
 
 }

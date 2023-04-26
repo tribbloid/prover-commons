@@ -1,19 +1,27 @@
 package ai.acyclic.prover.commons.graph.plan
 
-import ai.acyclic.prover.commons.graph.GraphKind
+import ai.acyclic.prover.commons.graph.Topology
 
 import scala.language.implicitConversions
 
-trait Plan[+T <: GraphKind.Top] {
+trait Plan {
 
-  def compute: T
+  type OT <: Topology
+  val outTopology: OT
 
-  final lazy val graph: T = compute
+  type OV
+
+  final type OGK[v] = outTopology.G[v]
+  final type OG = OGK[OV]
+  final type ON = outTopology.Node[OV]
+
+  def compute: OG
+
+  final lazy val resolve: OG = compute
+
 }
 
 object Plan {
 
-  case class Leaf[OG <: GraphKind.Top](override val compute: OG) extends Plan[OG]
-
-  implicit def asLeaf[OG <: GraphKind.Top](g: OG): Leaf[OG] = Leaf(g)
+//  type Aux[TT <: Topology] = Plan { type OT = TT }
 }

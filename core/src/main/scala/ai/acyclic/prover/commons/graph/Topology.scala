@@ -7,12 +7,12 @@ trait Topology {
 
   type A <: Arrow
 
-  type C <: Constraint
+  type L <: Law
 
-  final type Node[V] = NodeKind.AuxT[C, A, V]
-  final type LesserNode[V] = NodeKind.Lt[C, A, V]
+  type NodeEx[V] = NodeKind.AuxEx[L, A, V]
+  type Node[V] = NodeKind.Lt[L, A, V]
 
-  type G[V] <: GraphKind[C, A, V]
+  type G[V] <: GraphKind.Aux[L, A, V]
 
   trait Expression[V] {
 
@@ -21,10 +21,10 @@ trait Topology {
     final lazy val exeOnce: G[V] = exe
   }
 
-  trait System {
+  trait Untyped {
     self: Singleton =>
 
-    trait UntypedNode extends NodeKind.Untyped[C, A] {
+    trait UntypedNode extends NodeKind.Untyped[L, A] {
       self: Node =>
 
       type Value = Node
@@ -37,13 +37,13 @@ trait Topology {
 
   trait Rewriter[V] {
 
-    def rewrite(src: LesserNode[V])(
-        discoverNodes: Seq[LesserNode[V]]
-    ): LesserNode[V]
+    def rewrite(src: Node[V])(
+        discoverNodes: Seq[Node[V]]
+    ): Node[V]
 
     object Verified extends Rewriter[V] {
 
-      override def rewrite(src: LesserNode[V])(discoverNodes: Seq[LesserNode[V]]): LesserNode[V] = {
+      override def rewrite(src: Node[V])(discoverNodes: Seq[Node[V]]): Node[V] = {
 
         val originalNs = src.discoverNodes
         if (originalNs == discoverNodes) {
@@ -69,19 +69,19 @@ trait Topology {
 
     case class DoNotRewrite[N]() extends Rewriter[N] {
 
-      override def rewrite(src: LesserNode[N])(discoverNodes: Seq[LesserNode[N]]): LesserNode[N] = src
+      override def rewrite(src: Node[N])(discoverNodes: Seq[Node[N]]): Node[N] = src
     }
   }
 }
 
 object Topology {
 
-  trait Constraint
+  trait Law
 
   trait NoEngine extends Topology {
     self: Singleton =>
 
-    type G[V] = GraphKind[C, A, V]
+    type G[V] = GraphKind.Aux[L, A, V]
   }
 
   trait HasAnyArrow extends NoEngine {
@@ -98,33 +98,33 @@ object Topology {
 
   object AnyT extends HasAnyArrow {
 
-    type C = Constraint
+    type L = Law
   }
 
   object GraphT extends HasAnyArrow {
 
-    trait C extends Constraint
+    trait L extends Law
 
     object OutboundT extends HasOutboundArrow {
 
-      trait C extends GraphT.C
+      trait L extends GraphT.L
     }
   }
 
   object PosetT extends HasAnyArrow {
 
-    trait C extends GraphT.C
+    trait L extends GraphT.L
   }
 
   object SemilatticeT extends HasAnyArrow {
 
-    trait C extends PosetT.C
+    trait L extends PosetT.L
 
     object UpperT extends HasOutboundArrow {
 
-      trait C extends SemilatticeT.C with GraphT.OutboundT.C
+      trait L extends SemilatticeT.L with GraphT.OutboundT.L
 
-      implicit class NodeOps[V](n: LesserNode[V]) {
+      implicit class NodeOps[V](n: Node[V]) {
 
         def isLeaf: Boolean = n.induction.isEmpty
       }
@@ -133,13 +133,13 @@ object Topology {
 
   object TreeT extends HasOutboundArrow {
 
-    trait C extends SemilatticeT.UpperT.C
+    trait L extends SemilatticeT.UpperT.L
   }
 
-  private def compileTimeSanityCheck[V](): Unit = {
+  private def compileTimeCheck[V](): Unit = {
 
-    implicitly[PosetT.LesserNode[Int] <:< GraphT.LesserNode[Int]]
+    implicitly[PosetT.Node[Int] <:< GraphT.Node[Int]]
 
-    implicitly[PosetT.LesserNode[V] <:< GraphT.LesserNode[V]]
+    implicitly[PosetT.Node[V] <:< GraphT.Node[V]]
   }
 }

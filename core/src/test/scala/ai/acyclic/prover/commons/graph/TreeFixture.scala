@@ -83,14 +83,14 @@ object TreeFixture {
     }
   }
 
-  case class Node(value: TV) extends TreeT.Node[TV] {
+  case class Node(value: TV) extends TreeT.NodeEx[TV] {
 
     override protected def nodeTextC = value.text
 
     override protected def inductionC = value.children.map(v => Node(v))
   }
 
-  case class NodeWithArrowText(value: TV) extends TreeT.Node[TV] {
+  case class NodeWithArrowText(value: TV) extends TreeT.NodeEx[TV] {
 
     override protected def nodeTextC = value.text
 

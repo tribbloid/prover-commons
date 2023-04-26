@@ -8,7 +8,7 @@ package object commons {
     * type or class names in a companion object:
     *
     *   - `Aux` for auxiliary type refinement: introduced in shapeless as a shorthand definition for duck type
-    *   - `AuxT` for a trait that satisfies `Aux`, Scala won't allow inheriting duck type, expecting redundant
+    *   - `AuxEx` for a trait that satisfies `Aux`, Scala won't allow inheriting duck type, expecting redundant
     *     boilerplate
     *   - `Lt` for "less than" type refinement: same as above, but for type refinement that is a subtype of `Aux`
     *   - `Gt` for "greater than" type refinement, enough said
@@ -20,11 +20,16 @@ package object commons {
     *   - `T` for type classes (can be omitted if it is a companion object)
     *   - `Kind` for generic type that has too many type parameters, only their much shorter aliases are supposed to be
     *     used
+    *   - `Ex` for an extendable type, an alias of a trait with no refinement, `AuxEx` is one such example
     *
     * type or class name prefixes:
     *
     *   - `Has` for classes that have an inner definition of the same name
     *   - (In object) `This` for a specific subtype related to this object
+    *
+    * function name:
+    *
+    *   - `compileTimeCheck` for simple sanity proof that can be conducted on Scala type system level
     *
     * function name suffixes:
     *

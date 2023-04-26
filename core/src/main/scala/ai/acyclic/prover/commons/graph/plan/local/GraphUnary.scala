@@ -1,29 +1,53 @@
 package ai.acyclic.prover.commons.graph.plan.local
 
-import ai.acyclic.prover.commons.graph.GraphKind.Top
-import ai.acyclic.prover.commons.graph.Topology.GraphT
-import ai.acyclic.prover.commons.graph.local.{Graph, Local}
+import ai.acyclic.prover.commons.graph.Topology
+import ai.acyclic.prover.commons.graph.local.Graph
 import ai.acyclic.prover.commons.graph.plan.{Plan, PlanArg}
+import ai.acyclic.prover.commons.graph.viz.Hasse
 
 import scala.language.existentials
 
 trait GraphUnary extends PlanArg.Unary {
 
-  type V
-  override type LastInputG <: Graph[V]
-
-  import GraphT._
   import GraphUnary._
 
-  case class NodeMap[V2](
-      fn: V => V2
-  ) extends To[Graph[V2]] {
+  type T = Graph.type
 
-    override def compute: Graph[V2] = {
-      val roots = lastInputG.roots
+  lazy val entries: Vector[IN] = {
+    val result = inputG.entriesC
+    val result2 = result
+    result2
+  }
+
+  lazy val distinctEntries: Vector[IN] = entries.distinct
+
+  def diagram_Hasse(
+      implicit
+      format: Hasse
+  ): format.Viz[IV] = format.Viz(inputG)
+
+  object asIterable extends Iterable[inputG.Value] {
+
+    override def iterator: Iterator[inputG.Value] = {
+      val base = entries.iterator
+
+      base.flatMap { bb =>
+        bb.asIterable.iterator
+      }
+    }
+  }
+
+  lazy val asLazyList: LazyList[inputG.Value] = asIterable.to(LazyList)
+
+  case class NodeMap[V2](
+      fn: IV => V2
+  ) extends To[V2] {
+
+    override def compute: IGK[V2] = {
+      val known = inputG.entriesC
 
       Graph(
-        roots.map { n =>
+        known.map { n =>
           n.map(v => fn(v): V2)
         }: _*
       )
@@ -32,30 +56,30 @@ trait GraphUnary extends PlanArg.Unary {
 
   object NodeUpcast {
 
-    def apply[V2 >: V] = NodeMap[V2](v => v: V2)
+    def apply[V2 >: IV]: NodeMap[V2] = NodeMap[V2](v => v: V2)
   }
 
-  trait TransformPlan extends To[Graph[V]]
+  trait TransformPlan extends To[IV]
 
   // TODO:
   //  need to transcribe to a more constraining graph type
   case class Transform(
-      rewriter: Rewriter[V],
+      rewriter: Rewriter,
       maxDepth: Int = Int.MaxValue,
-      pruning: Pruning[LesserNode[V]] = identity,
-      down: LesserNode[V] => Seq[LesserNode[V]] = v => Seq(v),
-      up: LesserNode[V] => Seq[LesserNode[V]] = v => Seq(v)
+      pruning: Pruning[IN] = identity,
+      down: IN => Seq[IN] = v => Seq(v),
+      up: IN => Seq[IN] = v => Seq(v)
   ) {
 
     object DepthFirst extends TransformPlan {
 
-      private def transformInternal(node: LesserNode[V], depth: Int = maxDepth): Seq[LesserNode[V]] = {
+      private def transformInternal(node: IN, depth: Int = maxDepth): Seq[IN] = {
         if (depth > 0) {
 
-          def doTransform(n: LesserNode[V]): Seq[LesserNode[V]] = {
-            val downNs: Seq[LesserNode[V]] = down(n)
+          def doTransform(n: IN): Seq[IN] = {
+            val downNs: Seq[IN] = down(n)
 
-            val inductionTs: Seq[LesserNode[V]] =
+            val inductionTs: Seq[IN] =
               downNs.map { n =>
                 val successors = n.discoverNodes
                 val successorsTransformed = successors.flatMap { nn =>
@@ -78,9 +102,10 @@ trait GraphUnary extends PlanArg.Unary {
         }
       }
 
-      override def compute: Graph[V] = {
-        val transformed = lastInputG.roots.flatMap(n => transformInternal(n, maxDepth))
-        Local.Build(transformed: _*)
+      override def compute: IGK[IV] = {
+        val ee = entries
+        val transformed = ee.flatMap(n => transformInternal(n, maxDepth))
+        Graph(transformed: _*)
       }
     }
 
@@ -88,7 +113,7 @@ trait GraphUnary extends PlanArg.Unary {
 
       private val delegate = {
 
-        val seen = lastInputG.sameness.Correspondence[LesserNode[V], LesserNode[V]]()
+        val seen = inputG.nodeSameness.Correspondence[ON, ON]()
 
         Transform(
           rewriter,
@@ -96,7 +121,7 @@ trait GraphUnary extends PlanArg.Unary {
           pruning = {
             fn =>
               { node =>
-                val result = seen.get(node) match {
+                val result: Seq[ON] = seen.get(node) match {
                   case Some(n) =>
                     Seq(n)
                   case None =>
@@ -112,7 +137,7 @@ trait GraphUnary extends PlanArg.Unary {
         ).DepthFirst
       }
 
-      override def compute: Graph[V] = {
+      override def compute: IGK[IV] = {
         delegate.compute
       }
     }
@@ -121,7 +146,7 @@ trait GraphUnary extends PlanArg.Unary {
 
       private val delegate = {
 
-        val seen = lastInputG.sameness.Correspondence[LesserNode[V], Seq[LesserNode[V]]]()
+        val seen = inputG.nodeSameness.Correspondence[ON, Seq[ON]]()
 
         Transform(
           rewriter,
@@ -146,7 +171,7 @@ trait GraphUnary extends PlanArg.Unary {
         ).DepthFirst
       }
 
-      override def compute: Graph[V] = {
+      override def compute: IGK[IV] = {
         delegate.compute
       }
     }
@@ -154,11 +179,11 @@ trait GraphUnary extends PlanArg.Unary {
 
   object TransformLinear {
     def apply(
-        rewriter: Rewriter[V],
+        rewriter: Rewriter,
         maxDepth: Int = Int.MaxValue,
-        down: LesserNode[V] => LesserNode[V] = v => v,
-        pruning: Pruning[LesserNode[V]] = identity,
-        up: LesserNode[V] => LesserNode[V] = v => v
+        down: IN => IN = v => v,
+        pruning: Pruning[IN] = identity,
+        up: IN => IN = v => v
     ): Transform = Transform(
       rewriter,
       maxDepth,
@@ -168,17 +193,17 @@ trait GraphUnary extends PlanArg.Unary {
     )
   }
 
-  trait TraversePlan extends To[LastInputG] {}
+  trait TraversePlan extends To[IG] {}
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
       maxDepth: Int = Int.MaxValue,
-      down: LesserNode[V] => Unit = { _: LesserNode[V] => {} },
-      up: LesserNode[V] => Unit = { _: LesserNode[V] => {} }
+      down: IN => Unit = { _: IN => {} },
+      up: IN => Unit = { _: IN => {} }
   ) {
 
     private val delegate = Transform(
-      rewriter = Rewriter.DoNotRewrite[V](),
+      rewriter = Rewriter.DoNotRewrite[IV](),
       maxDepth,
       down = { v => down(v); Seq(v) },
       up = { v => up(v); Seq(v) }
@@ -186,22 +211,19 @@ trait GraphUnary extends PlanArg.Unary {
 
     object DepthFirst extends TraversePlan {
 
-      override def compute: LastInputG = {
+      override def compute: IG = {
 
         delegate.DepthFirst.compute
-        lastInputG
+        inputG
       }
     }
 
     object DepthFirst_Once extends TraversePlan {
 
-//      private val _down = down
-//      private val _up = up
-
-      override def compute: LastInputG = {
+      override def compute: IG = {
 
         delegate.DepthFirst_Once.compute
-        lastInputG
+        inputG
       }
     }
   }
@@ -212,21 +234,18 @@ object GraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[VV, IG <: Graph[VV]](
-      last: Plan[IG]
+  case class ^[VV, TT <: Topology](
+      inputPlan: Plan.Aux[TT]
   ) extends GraphUnary {
-    override type V = VV
-    override type LastInputG = IG
+
+    override type IV = VV
   }
 
-  def make[IG <: Top, V](
-      arg: Plan[IG]
-  )(
-      implicit
-      ev: IG <:< Graph[V]
-      // see https://stackoverflow.com/questions/16291313/scala-inferred-type-arguments-type-bounds-inferring-to-nothing
-  ): ^[V, IG with Graph[V]] = {
+  // TODO: memoize all views to avoid duplicated computation
+  def make[TT <: Topology](
+      arg: Plan.Aux[TT]
+  ): ^[arg.OV, TT] = {
 
-    new ^[V, IG with Graph[V]](arg.asInstanceOf[Plan[IG with Graph[V]]])
+    new ^[arg.OV, TT](arg)
   }
 }

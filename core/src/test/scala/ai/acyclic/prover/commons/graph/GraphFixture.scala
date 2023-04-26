@@ -71,7 +71,7 @@ object GraphFixture {
       Graph(NodeWithArrowText(this))
   }
 
-  case class Node(override val value: GV) extends GraphT.OutboundT.Node[GV] {
+  case class Node(override val value: GV) extends GraphT.OutboundT.NodeEx[GV] {
 
     override protected def nodeTextC = value.text
 
@@ -79,7 +79,7 @@ object GraphFixture {
       value.children.toSeq.map(v => Node(v))
   }
 
-  case class NodeWithArrowText(override val value: GV) extends GraphT.OutboundT.Node[GV] {
+  case class NodeWithArrowText(override val value: GV) extends GraphT.OutboundT.NodeEx[GV] {
 
     override protected def nodeTextC = value.text
 
@@ -92,11 +92,11 @@ object GraphFixture {
     }
   }
 
-  case class GVRewriter(builder: GV => GraphT.Node[GV]) extends GraphT.Rewriter[GV] {
+  case class GVRewriter(builder: GV => GraphT.NodeEx[GV]) extends GraphT.Rewriter[GV] {
 
-    override def rewrite(src: GraphT.LesserNode[GV])(
-        inductions: Seq[GraphT.LesserNode[GV]]
-    ): GraphT.Node[GV] = {
+    override def rewrite(src: GraphT.Node[GV])(
+        inductions: Seq[GraphT.Node[GV]]
+    ): GraphT.NodeEx[GV] = {
 
       val result = src.value.copy()
       result.children.addAll(inductions.map(_.value))

@@ -59,7 +59,7 @@ object Same {
       result
     }
 
-    trait ForAll[T] extends Same[T] {
+    trait ^[T] extends Same[T] {
       final override def sameness: Definition = Definition.this
     }
 
