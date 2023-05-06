@@ -1,10 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.Same
-import ai.acyclic.prover.commons.graph.plan.Plan
-import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
-
-import scala.language.implicitConversions
 
 trait Engine {
   self: Singleton =>
@@ -14,94 +10,216 @@ trait Engine {
   type Dataset[+T]
   def parallelize[T](seq: Seq[T]): Dataset[T]
 
-  trait OnEngine {
-    self: GraphKind[_, _] =>
+  trait _GraphKind[+L <: Law] extends GraphKind[L] {
+    override type _E = Engine.this.type
+    final override def engine: _E = Engine.this
 
-    final override val engine: Engine.this.type = Engine.this
+    override type Dataset[v] = Engine.this.Dataset[v]
+
+    def entriesC: Dataset[NodeKind.Compat[L, Value]]
+
+    lazy val entries: Dataset[NodeKind.Compat[L, Value]] = {
+      entriesC
+    }
   }
 
-  /**
-    * Graph representation without any validation
-    */
-  case class Unlawful[L <: Law, A <: Arrow, V](
-      entriesC: Dataset[NodeKind.Lt[L, A, V]],
-      override val nodeSameness: Same.Definition = Same.ByEquality
-      //      nodeText: V => String = (v: V) => v.toString,
-      //      arrowText: Arrow => Option[String] = v => v.arrowText
-  ) extends GraphKind.AuxT[L, A, V]
-      with OnEngine {
-    // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
+  object _GraphKind {
 
-    type Node = NodeKind.Lt[L, A, Value]
-  }
+    type Aux[+L <: Law, V] = _GraphKind[L] { type Value = V }
 
-  abstract class BuildTemplate[T <: Topology](val base: T) extends Topology {
-    self: Singleton =>
-
-    final type L = base.L
-    final type A = base.A
-
-    final type G[V] = GraphKind.Aux[L, A, V] with OnEngine
-
-    case class Leaf[V](val cc: G[V]) extends Plan {
-      override type OT = BuildTemplate.this.type
-      override val outTopology = BuildTemplate.this
-
-      override type OV = V
-
-      override def compute: G[V] = cc
+    trait AuxEx[+L <: Law, V] extends _GraphKind[L] {
+      type Value = V
     }
 
-    implicit def graphAsLeaf[V](g: G[V]): Leaf[V] = Leaf(g.asInstanceOf)
+    // Acronym of "Less Than"
+    type Lt[+C <: Law, +V] = Aux[C, _ <: V]
 
-    implicit def graphAsUnary[V](
-        self: G[V]
-    ) = GraphUnary.make(graphAsLeaf(self))
+    /**
+      * Graph representation without any validation
+      */
+    case class Unchecked[L <: Law, V](
+        entriesC: Dataset[NodeKind.Compat[L, V]],
+        override val nodeSameness: Same.Definition = Same.ByEquality
+    )(
+        implicit
+        override val law: L
+    ) extends _GraphKind.AuxEx[L, V] {
+      // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
+    }
   }
 
-  abstract class FromRoots[T <: Topology](override val base: T) extends BuildTemplate(base) {
+  trait PlanKind[+L <: Law] extends Lawful.Construct[L] {
+
+    private[this] type OGraph = _GraphKind.Aux[L, Value]
+//    type ONode = NodeKind.Lt[L, Value]
+
+    def compute: OGraph
+
+    final lazy val resolve: OGraph = compute
+
+    lazy val law: L = resolve.law
+  }
+
+  object PlanKind {
+
+    type Aux[L <: Law, V] = PlanKind[L] { type Value = V }
+
+    trait AuxEx[L <: Law, V] extends PlanKind[L] {
+      type Value = V
+    }
+
+//    type Lt[L <: Law, +V] = PlanKind[_ <: L] { type Value <: V }
+
+    implicit class LeafPlan[L <: Law, V](
+        override val compute: _GraphKind.Aux[L, V]
+    ) extends PlanKind[L] {
+
+      override type Value = V
+    }
+  }
+
+  trait _Lawful extends Lawful {
+
+    type GraphLike[v] = _GraphKind.Aux[_L, v]
+
+    type Plan[v] = PlanKind.Aux[_L, v]
+
+    trait PlanEx[v] extends PlanKind.AuxEx[_L, v]
+  }
+
+  abstract class GraphBuilder[T <: Topology](val topology: T) extends _Lawful {
     self: Singleton =>
 
-    def apply[CC <: L, AA <: A, V](
-        nodes: NodeKind.Lt[CC, AA, V]*
-    ): GraphKind.Aux[L, A, V] with OnEngine =
-      Unlawful(parallelize(nodes))
+    type _L = topology._L
+    final val law = topology.law
+
+    def makeTightest[LL <: _L, V](
+        nodes: NodeKind.Compat[LL, V]*
+    )(
+        implicit
+        tightestLaw: LL
+    ): _GraphKind.Aux[LL, V] =
+      _GraphKind.Unchecked(parallelize(nodes))
+
+    def make[V](
+        nodes: NodeKind.Compat[_L, V]*
+    ): GraphLike[V] =
+      _GraphKind.Unchecked(parallelize(nodes))(law)
+
+    def apply[V](
+        nodes: NodeKind.Compat[_L, V]*
+    ): GraphLike[V] = make[V](nodes: _*)
+
+    trait UntypedDef {
+      self: Singleton =>
+
+      trait UntypedNode extends NodeKind.Untyped[_L] {
+        self: UntypedDef.this.Node =>
+
+        type Value = UntypedDef.this.Node
+      }
+
+      type Node <: UntypedNode
+
+      final type Graph = _GraphKind.Aux[_L, Node]
+    }
+
+    trait Ops {
+
+      def outer = GraphBuilder.this
+
+      // invariant type
+      // like `Plan`
+      //  all following types refers to the tightest bound of the actual graph structure
+
+      // UNLIKE `Plan`
+      //  implementation of `Ops` is subclass-compatible
+      //  e.g. it is possible to create a `GraphUnary` from a Tree
+
+      type Prev
+      val prev: Prev
+
+      type AcceptingLaw = GraphBuilder.this._L
+      type ArgLaw <: AcceptingLaw
+      type ArgV
+
+      object Arg extends _Lawful {
+
+        type _L = ArgLaw
+      }
+
+      type ArgPlan = Arg.Plan[ArgV]
+      def argPlan: ArgPlan
+
+      type Arg = Arg.GraphLike[ArgV]
+      def arg: Arg = argPlan.resolve
+
+      type ArgNode = Arg.Node[ArgV]
+      type ArgRewriter = Arg.Rewriter[ArgV]
+    }
+
+    object Ops {
+
+      type Aux[P <: PlanKind[_]] = Ops { type InputPlan = P }
+      //  trait AuxEx[P <: Plan] extends Ops { type Input = P }
+
+      trait Unary extends Ops {
+
+        type Prev = Unit
+        val prev: Unit = {}
+      }
+
+      trait Binary extends Ops {
+
+        type Prev <: Unary
+      }
+
+      //      private def compileTimeCheck[V](): Unit = {}
+    }
   }
 
-//  abstract class FromSingleRoot[T <: Topology](override val topology: T) extends BuildTemplate(topology) {
-//    self: Singleton =>
+//  trait PlanBuilder extends _Lawful {
 //
-//    def apply[CC <: L, AA <: A, V](
-//        node: NodeKind.Lt[CC, AA, V]
-//    ): OnEngine[CC, AA, V] =
-//      Unlawful(parallelize[NodeKind.Lt[CC, AA, V]](Seq(node)))
+//    trait PlanImpl[V] extends PlanKind.AuxEx[_L, V]
 //  }
-
-  object Build extends FromRoots(AnyT)
 
   trait Syntax {
 
-    object Graph extends FromRoots(GraphT) {
+    object Graph extends GraphBuilder(GraphT) {
 
-      object Outbound extends FromRoots(GraphT.OutboundT)
-      type Outbound[V] = Outbound.G[V]
+      object Outbound extends GraphBuilder(GraphT.OutboundT) {
+//        override val law: _L = new _L {}
+      }
+      type Outbound[V] = Outbound.GraphLike[V]
+
+//      override val law: _L = new _L {}
     }
-    type Graph[V] = Graph.G[V]
+    type Graph[V] = Graph.GraphLike[V]
 
-    object Poset extends FromRoots(PosetT)
-    type Poset[V] = Poset.G[V]
-
-    object Semilattice extends FromRoots(SemilatticeT) {
-
-      object Upper extends FromRoots(SemilatticeT.UpperT)
-      type Upper[V] = Upper.G[V]
+    object Poset extends GraphBuilder(PosetT) {
+//      override val law: _L = new _L {}
     }
-    type Semilattice[V] = Semilattice.G[V]
+    type Poset[V] = Poset.GraphLike[V]
 
-    object Tree extends FromRoots(TreeT)
-    type Tree[V] = Tree.G[V]
+    object Semilattice extends GraphBuilder(SemilatticeT) {
+
+      object Upper extends GraphBuilder(SemilatticeT.UpperT) {
+//        override val law: _L = new _L {}
+      }
+      type Upper[V] = Upper.GraphLike[V]
+
+//      override val law: _L = new _L {}
+    }
+    type Semilattice[V] = Semilattice.GraphLike[V]
+
+    object Tree extends GraphBuilder(TreeT) {
+
+//      override val law: _L = new _L {}
+    }
+    type Tree[V] = Tree.GraphLike[V]
+
   }
-  object Syntax extends Syntax
+
 }
 
 object Engine {}

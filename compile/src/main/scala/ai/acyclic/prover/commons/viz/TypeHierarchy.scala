@@ -37,7 +37,7 @@ case class TypeHierarchy(
           .make(g)
           .Traverse(
             down = { v: N =>
-              v.node match {
+              v.original match {
                 case vNode: TypeOfMixin#VNode =>
                   vNode.argDryRun()
                 case _ => // do nothing

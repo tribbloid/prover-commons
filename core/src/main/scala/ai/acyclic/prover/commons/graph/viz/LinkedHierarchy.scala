@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.Topology.TreeT
-import ai.acyclic.prover.commons.graph.local.{Graph, Local, Tree}
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
 
@@ -40,7 +40,7 @@ object LinkedHierarchy extends Visualisations {
       .build
   }
 
-  type UB[N] = Graph.Outbound[N]
+  type UB[V] = Local.Graph.Outbound[V]
 
   implicit lazy val defaultFormat: Default = new Default(Hierarchy.default)
 
@@ -50,11 +50,11 @@ object LinkedHierarchy extends Visualisations {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def sameRefBy(node: Graph.Outbound.Node[_]): Option[Any] = Some(node)
+    override def sameRefBy(node: Local.Graph.Outbound.Node[_]): Option[Any] = Some(node)
 
-    override def dryRun(tree: Tree[_ <: _RefBinding]): Unit = {
+    override def dryRun(tree: Local.Tree[_ <: _RefBinding]): Unit = {
       GraphUnary
-        .make(tree)
+        .^(tree)
         .Traverse(
           maxDepth = backbone.maxDepth,
           down = { n =>
@@ -68,7 +68,7 @@ object LinkedHierarchy extends Visualisations {
 
   trait _RefBinding {
 
-    def node: Any
+    def original: Any
   }
 
   type SameRefs = mutable.ArrayBuffer[_RefBinding]
@@ -86,9 +86,9 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  def dryRun(tree: Tree[_ <: _RefBinding]): Unit
+  def dryRun(tree: Local.Tree[_ <: _RefBinding]): Unit
 
-  def sameRefBy(node: Graph.Outbound.Node[_]): Option[Any]
+  def sameRefBy(node: Local.Graph.Outbound.Node[_]): Option[Any]
 
   trait _Viz[V] extends TextViz[V]
 
@@ -101,21 +101,23 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class Viz[V](override val graph: UB[V]) extends _Viz[V] {
+    case class Viz[V](override val semilattice: UB[V]) extends _Viz[V] {
 
-      object RefBindingT extends TreeT.Untyped {
+      object RefBindingT extends Local.Tree.UntypedDef {
 
         case class Node(
-                         node: Graph.Outbound.Node[V],
-                         id: UUID = UUID.randomUUID()
+            original: Local.Graph.Outbound.Node[V],
+            id: UUID = UUID.randomUUID()
         ) extends UntypedNode
             with _RefBinding {
+
+          override val law: TreeT._L = Local.Tree.law
 
           {
             sameRefs_shouldExpand
           }
 
-          lazy val refKeyOpt: Option[Any] = sameRefBy(node)
+          lazy val refKeyOpt: Option[Any] = sameRefBy(original)
 
           lazy val sameRefs_shouldExpand = {
 
@@ -162,23 +164,24 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             }
           }
 
-          override protected def inductionC = {
+          override protected def inductionC: Seq[(_A, RefBindingT.Node)] = {
 
-            if (!shouldExpand) {
+            val result: Seq[(_A, RefBindingT.Node)] = if (!shouldExpand) {
               Nil
             } else {
 
-              val result = node.induction.map { v =>
-                v._1 -> Node(v._2) // this discard arrow info
+              original.induction.map { v =>
+                (v._1: Local.Tree.law._A) -> RefBindingT.Node.apply(v._2)
               }
 
-              result
             }
+
+            result
           }
 
           override protected def nodeTextC: String = {
 
-            val originalText = node.nodeText
+            val originalText = original.nodeText
 
             bindingNameOpt
               .map { name =>
@@ -190,11 +193,11 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
         }
       }
 
-      lazy val delegates: Seq[Tree[RefBindingT.Node]] = {
-        val roots: Local.Dataset[Graph.Outbound.Node[V]] = graph.entriesC
+      lazy val delegates: Seq[Local.Tree[RefBindingT.Node]] = {
+        val roots: Vector[Local.Graph.Outbound.Node[V]] = semilattice.entriesC
         roots.map { node =>
           val refBinding: RefBindingT.Node = RefBindingT.Node(node)
-          Tree(refBinding)
+          Local.Tree(refBinding)
         }
       }
 

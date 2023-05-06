@@ -1,13 +1,13 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.HasOuter
-import ai.acyclic.prover.commons.graph.local.Graph
+import ai.acyclic.prover.commons.graph.local.Local
 
 import scala.language.implicitConversions
 
 trait Visualisations {
 
-  type UB[V] <: Graph[V]
+  type UB[V] <: Local.Graph[V]
 
   trait Format {
 
@@ -21,14 +21,14 @@ trait Visualisations {
 
     val outer: Format
 
-    val graph: UB[N]
+    val semilattice: UB[N]
 
     lazy val treeString: String = "[MISSING]"
   }
 
   object _TextViz {
 
-    implicit def unbox[N](v: _TextViz[N]): UB[N] = v.graph
+    implicit def unbox[N](v: _TextViz[N]): UB[N] = v.semilattice
   }
 
 }

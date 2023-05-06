@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.local.Semilattice
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
 object Hierarchy extends Visualisations {
 
-  type UB[V] = Semilattice.Upper[V]
+  type UB[V] = Local.Semilattice.Upper[V]
 
   implicit lazy val default: Hierarchy.Indent2.type = Hierarchy.Indent2
 
@@ -43,9 +43,9 @@ trait Hierarchy extends Hierarchy.Format {
 
   def apply[V](s: UB[V]): Viz[V] = Viz(s)
 
-  case class Viz[V](override val graph: UB[V]) extends TextViz[V] {
+  case class Viz[V](override val semilattice: UB[V]) extends TextViz[V] {
 
-    case class SubViz(head: Semilattice.Upper.Node[V], depth: Int = maxDepth) {
+    case class SubViz(head: Local.Semilattice.Upper.Node[V], depth: Int = maxDepth) {
 
       lazy val treeString: String = {
 
@@ -103,6 +103,6 @@ trait Hierarchy extends Hierarchy.Format {
       }
     }
 
-    override lazy val treeString: String = SubViz(graph.maxNode).treeString
+    override lazy val treeString: String = SubViz(semilattice.maxNode).treeString
   }
 }

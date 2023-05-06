@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.graph.local.Graph
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
@@ -14,7 +14,7 @@ import scala.collection.mutable
 
 object Hasse extends Visualisations {
 
-  type UB[V] = Graph[V]
+  type UB[V] = Local.Graph[V]
 
   trait Default extends Hasse {
 
@@ -41,7 +41,7 @@ trait Hasse extends Hasse.Format {
 
   def apply[V](s: UB[V]): Viz[V] = Viz(s)
 
-  case class Viz[V](override val graph: UB[V]) extends TextViz[V] {
+  case class Viz[V](override val semilattice: UB[V]) extends TextViz[V] {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
@@ -123,12 +123,12 @@ trait Hasse extends Hasse.Format {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeBuffer = graph.nodeSameness.Memoize[Node[V], NodeWrapper](v => NodeWrapper(v))
+      val nodeBuffer = semilattice.nodeSameness.Memoize[Node[V], NodeWrapper](v => NodeWrapper(v))
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
       val buildBuffers = GraphUnary
-        .make(graph)
+        .^(semilattice)
         .Traverse(
           maxDepth = Hasse.this.maxDepth,
           down = { node =>

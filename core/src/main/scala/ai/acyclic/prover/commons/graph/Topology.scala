@@ -1,128 +1,58 @@
 package ai.acyclic.prover.commons.graph
 
-trait Topology {
+trait Topology extends Lawful {
   self: Singleton =>
 
-  import Topology._
+  type ArrowBound <: Arrow
 
-  type A <: Arrow
+  type GraphLike[V] = GraphKind.Aux[_L, V]
 
-  type L <: Law
-
-  type NodeEx[V] = NodeKind.AuxEx[L, A, V]
-  type Node[V] = NodeKind.Lt[L, A, V]
-
-  type G[V] <: GraphKind.Aux[L, A, V]
-
-  trait Expression[V] {
-
-    def exe: G[V]
-
-    final lazy val exeOnce: G[V] = exe
-  }
-
-  trait Untyped {
-    self: Singleton =>
-
-    trait UntypedNode extends NodeKind.Untyped[L, A] {
-      self: Node =>
-
-      type Value = Node
-    }
-
-    type Node <: UntypedNode
-
-    final type Graph = Topology.this.G[Node]
-  }
-
-  trait Rewriter[V] {
-
-    def rewrite(src: Node[V])(
-        discoverNodes: Seq[Node[V]]
-    ): Node[V]
-
-    object Verified extends Rewriter[V] {
-
-      override def rewrite(src: Node[V])(discoverNodes: Seq[Node[V]]): Node[V] = {
-
-        val originalNs = src.discoverNodes
-        if (originalNs == discoverNodes) {
-          // no need to rewrite, just return node as-is
-          return src
-        }
-
-        val result = Rewriter.this.rewrite(src)(discoverNodes)
-
-        require(
-          result.discoverNodes == discoverNodes,
-          s"""Incompatible rewriter?
-             |Rewrite result should be [${discoverNodes.mkString(", ")}]
-             |but it is actually [${originalNs.mkString(", ")}]""".stripMargin
-        )
-
-        result
-      }
-    }
-  }
-
-  object Rewriter {
-
-    case class DoNotRewrite[N]() extends Rewriter[N] {
-
-      override def rewrite(src: Node[N])(discoverNodes: Seq[Node[N]]): Node[N] = src
-    }
-  }
+  implicit def summon: this.type = this
 }
 
 object Topology {
 
-  trait Law
+  object GraphT extends Topology {
 
-  trait NoEngine extends Topology {
-    self: Singleton =>
+    type ArrowBound = Ar
 
-    type G[V] = GraphKind.Aux[L, A, V]
-  }
+    trait _L extends Law
+    val law: _L = new _L {
+      type _A = Arrow
+    }
 
-  trait HasAnyArrow extends NoEngine {
-    self: Singleton =>
+    object OutboundT extends Topology {
 
-    override type A = Arrow
-  }
-
-  trait HasOutboundArrow extends NoEngine {
-    self: Singleton =>
-
-    override type A = Arrow.`~>`.^
-  }
-
-  object AnyT extends HasAnyArrow {
-
-    type L = Law
-  }
-
-  object GraphT extends HasAnyArrow {
-
-    trait L extends Law
-
-    object OutboundT extends HasOutboundArrow {
-
-      trait L extends GraphT.L
+      trait _L extends GraphT._L {
+        type _A <: Arrow.`~>`.^
+      }
+      val law: _L = new _L {
+        type _A = Arrow.`~>`.^
+      }
     }
   }
 
-  object PosetT extends HasAnyArrow {
+  object PosetT extends Topology {
 
-    trait L extends GraphT.L
+    trait _L extends GraphT._L
+    val law: _L = new _L {
+      type _A = Arrow.`~>`.^
+    }
   }
 
-  object SemilatticeT extends HasAnyArrow {
+  object SemilatticeT extends Topology {
 
-    trait L extends PosetT.L
+    trait _L extends PosetT._L
+    val law: _L = new _L {
+      type _A = Arrow.`~>`.^
+    }
 
-    object UpperT extends HasOutboundArrow {
+    object UpperT extends Topology {
 
-      trait L extends SemilatticeT.L with GraphT.OutboundT.L
+      trait _L extends SemilatticeT._L with GraphT.OutboundT._L
+      val law: _L = new _L {
+        type _A = Arrow.`~>`.^
+      }
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -131,9 +61,12 @@ object Topology {
     }
   }
 
-  object TreeT extends HasOutboundArrow {
+  object TreeT extends Topology {
 
-    trait L extends SemilatticeT.UpperT.L
+    trait _L extends SemilatticeT.UpperT._L
+    val law: _L = new _L {
+      type _A = Arrow.`~>`.^
+    }
   }
 
   private def compileTimeCheck[V](): Unit = {

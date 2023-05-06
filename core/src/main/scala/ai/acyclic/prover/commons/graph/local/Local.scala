@@ -1,60 +1,48 @@
 package ai.acyclic.prover.commons.graph.local
 
-import ai.acyclic.prover.commons.graph.Engine
-import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
+import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.graph.Topology.GraphT
 
-import java.util.concurrent.atomic.AtomicInteger
-import scala.language.implicitConversions
+object Local extends LocalEngine.Syntax {
 
-object Local extends Engine {
-
-  final type Dataset[+T] = Vector[T]
-  def parallelize[T](seq: Seq[T]): Dataset[T] = seq.toVector
-
-//  implicit class OutboundGraphView[IG <: Graph.Outbound[_]](val self: IG) {
+//  implicit def graphAsUnary[L <: Local.Graph._L, V](
+//      self: LocalEngine._GraphKind.Aux[L, V]
+//  ): GraphUnary.^[L, V] = {
 //
-//    def diagram_linkedHierarchy(
-//        implicit
-//        group: LinkedHierarchy#Group
-//    ): group.Viz[self.Value] = group.Viz(self)
+//    val leaf = new LocalEngine.PlanKind.LeafPlan[L, V](self)
+//
+//    GraphUnary.^(leaf)
 //  }
 //
-//  implicit class UpperSemilatticeView[IG <: Semilattice.Upper[_]](val self: IG) {
+//  implicit def outboundGraphAsUnary[L <: Local.Graph.Outbound._L, V](
+//      self: LocalEngine._GraphKind.Aux[L, V]
+//  ): OutboundGraphUnary.^[L, V] = {
 //
-//    {
-//      require(self.entries.size == 1, "NOT a semilattice!")
-//    }
+//    val leaf = new LocalEngine.PlanKind.LeafPlan[L, V](self)
 //
-//    // algorithm assumes no cycles
-//    lazy val maxNode: self.Node = {
-//
-//      val counters: Map[self.Node, AtomicInteger] = {
-//
-//        val ee: Vector[self.Node] = self.entries
-//        Map(
-//          ee.map { nn =>
-//            nn -> new AtomicInteger()
-//          }: _*
-//        )
-//      }
-//      self.Traverse(
-//        down = { n =>
-//          counters.get(n.asInstanceOf).foreach(a => a.incrementAndGet())
-//        }
-//      )
-//
-//      val once = counters.toSeq.filter {
-//        case (k, v) => v.get() == 1
-//      }
-//
-//      require(once.size == 1, "NOT a semilattice!")
-//
-//      once.head._1
-//    }
-//
-//    def diagram_hierarchy(
-//        implicit
-//        format: Hierarchy
-//    ): format.Viz[self.Value] = format.Viz(self)
+//    OutboundGraphUnary.^(leaf)
 //  }
+//
+//  implicit def upperSemilatticeAsUnary[L <: Local.Semilattice.Upper._L, V](
+//      self: LocalEngine._GraphKind.Aux[L, V]
+//  ): UpperSemilatticeUnary.^[L, V] = {
+//
+//    val leaf = new LocalEngine.PlanKind.LeafPlan[L, V](self)
+//
+//    UpperSemilatticeUnary.^(leaf)
+//  }
+
+  private def compileTimeCheck[V](): Unit = {
+
+    implicitly[Tree[Int] <:< Semilattice.Upper[Int]]
+
+    implicitly[Tree[V] <:< Semilattice.Upper[V]]
+
+    implicitly[Local.Tree.law._A <:< Arrow.`~>`.^]
+
+    implicitly[Local.Graph.Outbound.law._A <:< Local.Tree.law._A]
+
+    val example = Local.Graph.Outbound[Int]()
+    implicitly[example.law._A <:< Local.Tree.law._A]
+  }
 }
