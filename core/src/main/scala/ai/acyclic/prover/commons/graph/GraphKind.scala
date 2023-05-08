@@ -13,7 +13,7 @@ trait GraphKind[+L <: Law] extends Lawful.Construct[L] {
   //  otherwise a mapping to the value may introduce forbidden subgraph(s).
   def nodeSameness: Same.Definition = Same.ByEquality
 
-  type Dataset[_]
+  type Dataset[+_]
 
 //  final type Peer = GraphKind[C, A, V]
 //  final type Node = NodeKind.Aux[C, A, V]

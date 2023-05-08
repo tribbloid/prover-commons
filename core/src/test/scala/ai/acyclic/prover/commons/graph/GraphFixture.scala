@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph
 import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-import local.Graph
+import local.Local.Graph
 
 import scala.collection.mutable.ArrayBuffer
 

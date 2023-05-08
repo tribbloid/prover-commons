@@ -234,7 +234,7 @@ object GraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[L <: Local.Graph._L, V](plan: LocalEngine.PlanKind.Aux[L, V]) extends GraphUnary {
+  case class ^[L <: Local.Graph._L, V](argPlan: LocalEngine.PlanKind.Aux[L, V]) extends GraphUnary {
 
     override type ArgLaw = L
 

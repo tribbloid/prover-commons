@@ -14,7 +14,7 @@ trait Engine {
     override type _E = Engine.this.type
     final override def engine: _E = Engine.this
 
-    override type Dataset[v] = Engine.this.Dataset[v]
+    override type Dataset[+v] = Engine.this.Dataset[v]
 
     def entriesC: Dataset[NodeKind.Compat[L, Value]]
 
@@ -44,6 +44,7 @@ trait Engine {
         implicit
         override val law: L
     ) extends _GraphKind.AuxEx[L, V] {
+
       // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
     }
   }
@@ -91,7 +92,7 @@ trait Engine {
     self: Singleton =>
 
     type _L = topology._L
-    final val law = topology.law
+    val law: _L
 
     def makeTightest[LL <: _L, V](
         nodes: NodeKind.Compat[LL, V]*
@@ -110,13 +111,15 @@ trait Engine {
         nodes: NodeKind.Compat[_L, V]*
     ): GraphLike[V] = make[V](nodes: _*)
 
-    trait UntypedDef {
+    trait UntypedNodeDef {
       self: Singleton =>
 
       trait UntypedNode extends NodeKind.Untyped[_L] {
-        self: UntypedDef.this.Node =>
+        self: UntypedNodeDef.this.Node =>
 
-        type Value = UntypedDef.this.Node
+        final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
+
+        type Value = UntypedNodeDef.this.Node
       }
 
       type Node <: UntypedNode
@@ -188,33 +191,33 @@ trait Engine {
     object Graph extends GraphBuilder(GraphT) {
 
       object Outbound extends GraphBuilder(GraphT.OutboundT) {
-//        override val law: _L = new _L {}
+        object law extends _L with topology.LawImpl
       }
       type Outbound[V] = Outbound.GraphLike[V]
 
-//      override val law: _L = new _L {}
+      object law extends _L with topology.LawImpl
     }
     type Graph[V] = Graph.GraphLike[V]
 
     object Poset extends GraphBuilder(PosetT) {
-//      override val law: _L = new _L {}
+      object law extends _L with topology.LawImpl
     }
     type Poset[V] = Poset.GraphLike[V]
 
     object Semilattice extends GraphBuilder(SemilatticeT) {
 
       object Upper extends GraphBuilder(SemilatticeT.UpperT) {
-//        override val law: _L = new _L {}
+        object law extends _L with topology.LawImpl
       }
       type Upper[V] = Upper.GraphLike[V]
 
-//      override val law: _L = new _L {}
+      object law extends _L with topology.LawImpl
     }
     type Semilattice[V] = Semilattice.GraphLike[V]
 
     object Tree extends GraphBuilder(TreeT) {
 
-//      override val law: _L = new _L {}
+      object law extends _L with topology.LawImpl
     }
     type Tree[V] = Tree.GraphLike[V]
 

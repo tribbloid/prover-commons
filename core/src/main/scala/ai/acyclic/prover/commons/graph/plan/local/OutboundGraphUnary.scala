@@ -18,7 +18,7 @@ trait OutboundGraphUnary extends Local.Graph.Outbound.Ops.Unary {
 
 object OutboundGraphUnary {
 
-  case class ^[L <: Local.Graph.Outbound._L, V](plan: LocalEngine.PlanKind.Aux[L, V]) extends OutboundGraphUnary {
+  case class ^[L <: Local.Graph.Outbound._L, V](argPlan: LocalEngine.PlanKind.Aux[L, V]) extends OutboundGraphUnary {
 
     override type ArgLaw = L
 

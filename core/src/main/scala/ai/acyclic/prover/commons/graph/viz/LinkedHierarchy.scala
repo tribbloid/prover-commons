@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.Topology.TreeT
+import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
@@ -103,15 +103,17 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     case class Viz[V](override val semilattice: UB[V]) extends _Viz[V] {
 
-      object RefBindingT extends Local.Tree.UntypedDef {
+      object RefBindingT extends Local.Tree.UntypedNodeDef {
 
         case class Node(
-            original: Local.Graph.Outbound.Node[V],
+            override val original: Local.Graph.Outbound.Node[V],
             id: UUID = UUID.randomUUID()
         ) extends UntypedNode
             with _RefBinding {
 
-          override val law: TreeT._L = Local.Tree.law
+//          implicitly[original.law._A <:< Local.Tree.law._A]
+//
+//          implicitly[Local.Tree.law._A =:= Arrow.`~>`.^]
 
           {
             sameRefs_shouldExpand
@@ -164,14 +166,18 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             }
           }
 
-          override protected def inductionC: Seq[(_A, RefBindingT.Node)] = {
+          override protected def inductionC = {
 
-            val result: Seq[(_A, RefBindingT.Node)] = if (!shouldExpand) {
+            val result = if (!shouldExpand) {
               Nil
             } else {
 
-              original.induction.map { v =>
-                (v._1: Local.Tree.law._A) -> RefBindingT.Node.apply(v._2)
+              original.induction.map { tuple =>
+                val arrow = tuple._1: Arrow.`~>`.^
+
+                val target: RefBindingT.Node = RefBindingT.Node.apply(tuple._2)
+
+                arrow -> target
               }
 
             }

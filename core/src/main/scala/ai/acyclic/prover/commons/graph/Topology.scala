@@ -3,7 +3,13 @@ package ai.acyclic.prover.commons.graph
 trait Topology extends Lawful {
   self: Singleton =>
 
-  type ArrowBound <: Arrow
+  type ArrowUB <: Arrow
+
+  override type _L <: Law { type _A <: ArrowUB }
+
+  trait LawImpl extends Law {
+    type _A = ArrowUB
+  }
 
   type GraphLike[V] = GraphKind.Aux[_L, V]
 
@@ -14,45 +20,34 @@ object Topology {
 
   object GraphT extends Topology {
 
-    type ArrowBound = Ar
-
+    type ArrowUB = Arrow
     trait _L extends Law
-    val law: _L = new _L {
-      type _A = Arrow
-    }
 
     object OutboundT extends Topology {
 
+      type ArrowUB = Arrow.`~>`.^
       trait _L extends GraphT._L {
         type _A <: Arrow.`~>`.^
       }
-      val law: _L = new _L {
-        type _A = Arrow.`~>`.^
-      }
+
     }
   }
 
   object PosetT extends Topology {
 
+    type ArrowUB = Arrow
     trait _L extends GraphT._L
-    val law: _L = new _L {
-      type _A = Arrow.`~>`.^
-    }
   }
 
   object SemilatticeT extends Topology {
 
+    type ArrowUB = Arrow
     trait _L extends PosetT._L
-    val law: _L = new _L {
-      type _A = Arrow.`~>`.^
-    }
 
     object UpperT extends Topology {
 
+      type ArrowUB = Arrow.`~>`.^
       trait _L extends SemilatticeT._L with GraphT.OutboundT._L
-      val law: _L = new _L {
-        type _A = Arrow.`~>`.^
-      }
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -63,10 +58,9 @@ object Topology {
 
   object TreeT extends Topology {
 
+    type ArrowUB = Arrow.`~>`.^
     trait _L extends SemilatticeT.UpperT._L
-    val law: _L = new _L {
-      type _A = Arrow.`~>`.^
-    }
+
   }
 
   private def compileTimeCheck[V](): Unit = {

@@ -2,17 +2,19 @@ package ai.acyclic.prover.commons.graph
 
 trait RewriterKind[L <: Law] extends Lawful.Construct[L] {
 
-  type Node = NodeKind.Compat[L, Value]
+  private[this] type NodeV = NodeKind.Compat[L, Value]
 
-  def rewrite(src: Node)(
-      discoverNodes: Seq[Node]
-  ): Node
+  def rewrite(src: NodeV)(
+      discoverNodes: Seq[NodeV]
+  ): NodeV
 
   object Verified extends RewriterKind[L] {
 
     type Value = RewriterKind.this.Value
 
-    override def rewrite(src: Node)(discoverNodes: Seq[Node]): Node = {
+    val law: L = RewriterKind.this.law
+
+    override def rewrite(src: NodeV)(discoverNodes: Seq[NodeV]): NodeV = {
 
       val originalNs = src.discoverNodes
       if (originalNs == discoverNodes) {
@@ -42,6 +44,10 @@ object RewriterKind {
 
     type Value = N
 
-    override def rewrite(src: Node)(discoverNodes: Seq[Node]): Node = src
+    override def rewrite(src: NodeKind.Compat[L, Value])(
+        discoverNodes: Seq[NodeKind.Compat[L, Value]]
+    ): NodeKind.Compat[L, Value] = src
+
+    override val law: L = ???
   }
 }

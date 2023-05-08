@@ -46,7 +46,7 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
 object UpperSemilatticeUnary {
 
-  case class ^[L <: Local.Semilattice.Upper._L, V](plan: LocalEngine.PlanKind.Aux[L, V]) extends UpperSemilatticeUnary {
+  case class ^[L <: Local.Semilattice.Upper._L, V](argPlan: LocalEngine.PlanKind.Aux[L, V]) extends UpperSemilatticeUnary {
 
     override type ArgLaw = L
 

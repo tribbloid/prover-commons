@@ -9,7 +9,6 @@ trait NodeKind[+L <: Law] extends Lawful.Construct[L] {
   protected def nodeTextC: String = value.toString
   final lazy val nodeText: String = nodeTextC
 
-  private[this] type _A = law._A
   private[this] type Compat = NodeKind.Compat[L, Value]
 
   protected def inductionC: Seq[(_A, Compat)]

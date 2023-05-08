@@ -3,7 +3,7 @@
 
 include(
     ":core",
-    ":compile",
+//    ":compile",
     ":notebook"
 )
 
