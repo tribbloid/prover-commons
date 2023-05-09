@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.graph.plan
 
 import ai.acyclic.prover.commons.graph.GraphFixture
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import org.scalatest.funspec.AnyFunSpec
 
@@ -110,7 +111,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
     def proto = {
       val inc = new AtomicInteger(0)
       val result = GraphUnary
-        .^(diamond.graph)
+        .^(diamond.graph: Local.Graph[GV])
         .TransformLinear(
           GVRewriter(v => Node(v)),
           4,
