@@ -50,7 +50,7 @@ object LinkedHierarchy extends Visualisations {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def sameRefBy(node: Local.Graph.Outbound.Node[_]): Option[Any] = Some(node)
+    override def sameRefBy(node: Local.Graph.Outbound.NodeCompat[_]): Option[Any] = Some(node)
 
     override def dryRun(tree: Local.Tree[_ <: _RefBinding]): Unit = {
       GraphUnary
@@ -88,9 +88,9 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
   def dryRun(tree: Local.Tree[_ <: _RefBinding]): Unit
 
-  def sameRefBy(node: Local.Graph.Outbound.Node[_]): Option[Any]
+  def sameRefBy(node: Local.Graph.Outbound.NodeCompat[_]): Option[Any]
 
-  trait _Viz[V] extends TextViz[V]
+  trait TheTextViz[V] extends TextViz[V]
 
   // shared between visualisations of multiple graphs
   case class Group() {
@@ -101,13 +101,13 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class Viz[V](override val semilattice: UB[V]) extends _Viz[V] {
+    case class Viz[V](override val semilattice: UB[V]) extends TheTextViz[V] {
 
       object RefBindingT extends Local.Tree.UntypedNodeDef {
 
         case class Node(
-            override val original: Local.Graph.Outbound.Node[V],
-            id: UUID = UUID.randomUUID()
+                         override val original: Local.Graph.Outbound.NodeCompat[V],
+                         id: UUID = UUID.randomUUID()
         ) extends UntypedNode
             with _RefBinding {
 
@@ -200,7 +200,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
       }
 
       lazy val delegates: Seq[Local.Tree[RefBindingT.Node]] = {
-        val roots: Vector[Local.Graph.Outbound.Node[V]] = semilattice.entriesC
+        val roots: Vector[Local.Graph.Outbound.NodeCompat[V]] = semilattice.entriesC
         roots.map { node =>
           val refBinding: RefBindingT.Node = RefBindingT.Node(node)
           Local.Tree(refBinding)

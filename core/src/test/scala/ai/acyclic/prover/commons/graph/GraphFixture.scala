@@ -92,10 +92,10 @@ object GraphFixture {
     }
   }
 
-  case class GVRewriter(builder: GV => GraphT.NodeEx[GV]) extends GraphT.Rewriter[GV] {
+  case class GVRewriter(builder: GV => GraphT.NodeEx[GV]) extends GraphT.RewriterCompat[GV] {
 
-    override def rewrite(src: GraphT.Node[GV])(
-        inductions: Seq[GraphT.Node[GV]]
+    override def rewrite(src: GraphT.NodeCompat[GV])(
+        inductions: Seq[GraphT.NodeCompat[GV]]
     ): GraphT.NodeEx[GV] = {
 
       val result = src.value.copy()

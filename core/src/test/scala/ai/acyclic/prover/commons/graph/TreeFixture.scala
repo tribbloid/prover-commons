@@ -3,7 +3,6 @@ package ai.acyclic.prover.commons.graph
 import ai.acyclic.prover.commons.graph.Topology.TreeT
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import local.Tree
 
 abstract class TreeFixture extends BaseSpec {
 

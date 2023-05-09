@@ -29,12 +29,14 @@ package object commons {
     *   - `T` for type classes (can be omitted if it is a companion object)
     *   - `Kind` for generic type that has too many type parameters, only their much shorter aliases are supposed to be
     *     used
-    *   - `Ex` for an extendable type, an alias of a trait with no refinement, `AuxEx` is one such example
+    *   - `Ex` for an extendable type, an alias of a trait with no refinement, `AuxEx` is an example
+    *   - `Lt`, same as `Lt` as a type name but can appear anywhere
+    *   - `Compat`, same as `Compat` as a type name but can appear anywhere
     *
     * type or class name prefixes:
     *
     *   - `Has` for classes that have an inner definition of the same name
-    *   - (In object) `This` for a specific subtype related to this object
+    *   - (Under a object) `The` for a specific subtype that depends on this object
     *
     * function name:
     *

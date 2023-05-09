@@ -45,7 +45,7 @@ trait Hasse extends Hasse.Format {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(node: Node[V]) {
+    case class NodeWrapper(node: NodeCompat[V]) {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
@@ -123,7 +123,7 @@ trait Hasse extends Hasse.Format {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeBuffer = semilattice.nodeSameness.Memoize[Node[V], NodeWrapper](v => NodeWrapper(v))
+      val nodeBuffer = semilattice.nodeSameness.Memoize[NodeCompat[V], NodeWrapper](v => NodeWrapper(v))
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 

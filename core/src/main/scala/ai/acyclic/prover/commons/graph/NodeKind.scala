@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-trait NodeKind[+L <: Law] extends Lawful.Construct[L] {
+trait NodeKind[+L <: Law] extends Lawful.ConstructKind[L] {
 
   import NodeKind._
 

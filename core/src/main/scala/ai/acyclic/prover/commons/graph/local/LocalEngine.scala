@@ -13,7 +13,7 @@ object LocalEngine extends Engine {
 //  private def compileTimeCheck[V](): Unit = {}
 
   implicit def graphAsUnary[L <: Local.Graph._L, V](
-      self: LocalEngine._GraphKind.Aux[L, V]
+      self: LocalEngine.TheGraphKind.Aux[L, V]
   ): GraphUnary.^[L, V] = {
 
     val leaf = new LocalEngine.PlanKind.LeafPlan[L, V](self)
@@ -22,7 +22,7 @@ object LocalEngine extends Engine {
   }
 
   implicit def outboundGraphAsUnary[L <: Local.Graph.Outbound._L, V](
-      self: LocalEngine._GraphKind.Aux[L, V]
+      self: LocalEngine.TheGraphKind.Aux[L, V]
   ): OutboundGraphUnary.^[L, V] = {
 
     val leaf = new LocalEngine.PlanKind.LeafPlan[L, V](self)
@@ -31,7 +31,7 @@ object LocalEngine extends Engine {
   }
 
   implicit def upperSemilatticeAsUnary[L <: Local.Semilattice.Upper._L, V](
-      self: LocalEngine._GraphKind.Aux[L, V]
+      self: LocalEngine.TheGraphKind.Aux[L, V]
   ): UpperSemilatticeUnary.^[L, V] = {
 
     val leaf = new LocalEngine.PlanKind.LeafPlan[L, V](self)

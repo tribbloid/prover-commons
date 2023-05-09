@@ -10,7 +10,7 @@ trait Engine {
   type Dataset[+T]
   def parallelize[T](seq: Seq[T]): Dataset[T]
 
-  trait _GraphKind[+L <: Law] extends GraphKind[L] {
+  trait TheGraphKind[+L <: Law] extends GraphKind[L] {
     override type _E = Engine.this.type
     final override def engine: _E = Engine.this
 
@@ -23,11 +23,11 @@ trait Engine {
     }
   }
 
-  object _GraphKind {
+  object TheGraphKind {
 
-    type Aux[+L <: Law, V] = _GraphKind[L] { type Value = V }
+    type Aux[+L <: Law, V] = TheGraphKind[L] { type Value = V }
 
-    trait AuxEx[+L <: Law, V] extends _GraphKind[L] {
+    trait AuxEx[+L <: Law, V] extends TheGraphKind[L] {
       type Value = V
     }
 
@@ -43,15 +43,15 @@ trait Engine {
     )(
         implicit
         override val law: L
-    ) extends _GraphKind.AuxEx[L, V] {
+    ) extends TheGraphKind.AuxEx[L, V] {
 
       // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
     }
   }
 
-  trait PlanKind[+L <: Law] extends Lawful.Construct[L] {
+  trait PlanKind[+L <: Law] extends Lawful.ConstructKind[L] {
 
-    private[this] type OGraph = _GraphKind.Aux[L, Value]
+    private[this] type OGraph = TheGraphKind.Aux[L, Value]
 //    type ONode = NodeKind.Lt[L, Value]
 
     def compute: OGraph
@@ -72,40 +72,50 @@ trait Engine {
 //    type Lt[L <: Law, +V] = PlanKind[_ <: L] { type Value <: V }
 
     implicit class LeafPlan[L <: Law, V](
-        override val compute: _GraphKind.Aux[L, V]
+        override val compute: TheGraphKind.Aux[L, V]
     ) extends PlanKind[L] {
 
       override type Value = V
     }
   }
 
-  trait _Lawful extends Lawful {
+  trait TheLawful extends Lawful {
 
-    type GraphLike[v] = _GraphKind.Aux[_L, v]
+    type GraphLike[v] = TheGraphKind.Aux[_L, v]
 
     type Plan[v] = PlanKind.Aux[_L, v]
 
     trait PlanEx[v] extends PlanKind.AuxEx[_L, v]
   }
 
-  abstract class GraphBuilder[T <: Topology](val topology: T) extends _Lawful {
+  abstract class GraphBuilder[T <: Topology](val topology: T) extends TheLawful {
     self: Singleton =>
 
     type _L = topology._L
     val law: _L
+
+    trait Node[V] extends NodeKind.AuxEx[_L, V] {
+
+      final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
+    }
+
+    trait Rewriter[V] extends RewriterKind.AuxEx[_L, V] {
+
+      final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
+    }
 
     def makeTightest[LL <: _L, V](
         nodes: NodeKind.Compat[LL, V]*
     )(
         implicit
         tightestLaw: LL
-    ): _GraphKind.Aux[LL, V] =
-      _GraphKind.Unchecked(parallelize(nodes))
+    ): TheGraphKind.Aux[LL, V] =
+      TheGraphKind.Unchecked(parallelize(nodes))
 
     def make[V](
         nodes: NodeKind.Compat[_L, V]*
     ): GraphLike[V] =
-      _GraphKind.Unchecked(parallelize(nodes))(law)
+      TheGraphKind.Unchecked(parallelize(nodes))(law)
 
     def apply[V](
         nodes: NodeKind.Compat[_L, V]*
@@ -124,7 +134,7 @@ trait Engine {
 
       type Node <: UntypedNode
 
-      final type Graph = _GraphKind.Aux[_L, Node]
+      final type Graph = TheGraphKind.Aux[_L, Node]
     }
 
     trait Ops {
@@ -146,7 +156,7 @@ trait Engine {
       type ArgLaw <: AcceptingLaw
       type ArgV
 
-      object Arg extends _Lawful {
+      object Arg extends TheLawful {
 
         type _L = ArgLaw
       }
@@ -157,8 +167,8 @@ trait Engine {
       type Arg = Arg.GraphLike[ArgV]
       def arg: Arg = argPlan.resolve
 
-      type ArgNode = Arg.Node[ArgV]
-      type ArgRewriter = Arg.Rewriter[ArgV]
+      type ArgNode = Arg.NodeCompat[ArgV]
+      type ArgRewriter = Arg.RewriterCompat[ArgV]
     }
 
     object Ops {

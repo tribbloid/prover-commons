@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.Same
 
 import scala.language.implicitConversions
 
-trait GraphKind[+L <: Law] extends Lawful.Construct[L] {
+trait GraphKind[+L <: Law] extends Lawful.ConstructKind[L] {
 
   type _E <: Engine
   def engine: _E

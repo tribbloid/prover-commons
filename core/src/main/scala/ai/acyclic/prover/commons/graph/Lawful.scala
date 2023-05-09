@@ -3,17 +3,18 @@ package ai.acyclic.prover.commons.graph
 trait Lawful {
   type _L <: Law
 
-  type Node[v] = NodeKind.Compat[_L, v]
-  type NodeEx[v] = NodeKind.AuxEx[_L, v]
+  type NodeCompat[v] = NodeKind.Compat[_L, v]
+//  type NodeEx[v] = NodeKind.AuxEx[_L, v]
 
-  type Rewriter[v] = RewriterKind.Aux[_L, v]
+  type RewriterCompat[v] = RewriterKind.Aux[_L, v]
+//  type RewriterEx[v] = RewriterKind.AuxEx[_L, v]
 
-  trait _Construct extends Lawful.Construct[this._L]
+  trait Construct extends Lawful.ConstructKind[this._L]
 }
 
 object Lawful {
 
-  trait Construct[+L <: Law] {
+  trait ConstructKind[+L <: Law] {
 
     val law: L
     type _A = law._A
