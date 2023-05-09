@@ -13,7 +13,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
 
   it("Upcast") {
     val result = GraphUnary
-      .make(cyclic.graph)
+      .^(cyclic.graph)
       .NodeUpcast[Any]
       .compute
 
@@ -30,7 +30,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
       val up = mutable.Buffer.empty[GV]
 
       GraphUnary
-        .make(cyclic.graph)
+        .^(cyclic.graph)
         .Traverse(
           5,
           n => down += n.value,
@@ -72,7 +72,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
       val up = mutable.Buffer.empty[GV]
 
       GraphUnary
-        .make(cyclic.graph)
+        .^(cyclic.graph)
         .Traverse(
           5,
           n => down += n.value,
@@ -110,7 +110,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
     def proto = {
       val inc = new AtomicInteger(0)
       val result = GraphUnary
-        .make(diamond.graph)
+        .^(diamond.graph)
         .TransformLinear(
           GVRewriter(Node),
           4,

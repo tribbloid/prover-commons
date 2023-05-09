@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.Topology.GraphT
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.testlib.BaseSpec
-
 import local.Local.Graph
 
 import scala.collection.mutable.ArrayBuffer
@@ -64,14 +64,12 @@ object GraphFixture {
 
     lazy val children: ArrayBuffer[GV] = ArrayBuffer.empty
 
-    def graph =
-      Graph(Node(this))
+    def graph = Graph.Outbound(Node(this))
 
-    def graphWithArrowText =
-      Graph(NodeWithArrowText(this))
+    def graphWithArrowText = Graph.Outbound(NodeWithArrowText(this))
   }
 
-  case class Node(override val value: GV) extends GraphT.OutboundT.NodeEx[GV] {
+  case class Node(override val value: GV) extends Local.Graph.Outbound.Node[GV] {
 
     override protected def nodeTextC = value.text
 
@@ -79,7 +77,7 @@ object GraphFixture {
       value.children.toSeq.map(v => Node(v))
   }
 
-  case class NodeWithArrowText(override val value: GV) extends GraphT.OutboundT.NodeEx[GV] {
+  case class NodeWithArrowText(override val value: GV) extends Local.Graph.Outbound.Node[GV] {
 
     override protected def nodeTextC = value.text
 
@@ -92,11 +90,11 @@ object GraphFixture {
     }
   }
 
-  case class GVRewriter(builder: GV => GraphT.NodeEx[GV]) extends GraphT.RewriterCompat[GV] {
+  case class GVRewriter(builder: GV => Local.Graph.Node[GV]) extends Local.Graph.Rewriter[GV] {
 
     override def rewrite(src: GraphT.NodeCompat[GV])(
         inductions: Seq[GraphT.NodeCompat[GV]]
-    ): GraphT.NodeEx[GV] = {
+    ): Local.Graph.Node[GV] = {
 
       val result = src.value.copy()
       result.children.addAll(inductions.map(_.value))

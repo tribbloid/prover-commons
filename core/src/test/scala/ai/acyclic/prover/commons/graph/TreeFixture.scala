@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.Topology.TreeT
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
@@ -55,10 +55,10 @@ object TreeFixture {
     def children: Seq[TV]
 
     def tree =
-      Tree(Node(this))
+      Local.Tree(Node(this))
 
     def treeWithArrowTexts =
-      Tree(NodeWithArrowText(this))
+      Local.Tree(NodeWithArrowText(this))
   }
 
   case class TVProduct(
@@ -82,14 +82,14 @@ object TreeFixture {
     }
   }
 
-  case class Node(value: TV) extends TreeT.NodeEx[TV] {
+  case class Node(value: TV) extends Local.Tree.Node[TV] {
 
     override protected def nodeTextC = value.text
 
     override protected def inductionC = value.children.map(v => Node(v))
   }
 
-  case class NodeWithArrowText(value: TV) extends TreeT.NodeEx[TV] {
+  case class NodeWithArrowText(value: TV) extends Local.Tree.Node[TV] {
 
     override protected def nodeTextC = value.text
 
