@@ -1,9 +1,8 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.Topology.GraphT
 import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.local.Local.Graph
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import local.Local.Graph
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -77,6 +76,13 @@ object GraphFixture {
       value.children.toSeq.map(v => Node(v))
   }
 
+//  {
+//    // sanity
+//
+//    implicitly[Node <:< Local.Graph.NodeCompat[GV]]
+//    implicitly[Node <:< Local.Graph.Outbound.NodeCompat[GV]]
+//  }
+
   case class NodeWithArrowText(override val value: GV) extends Local.Graph.Outbound.Node[GV] {
 
     override protected def nodeTextC = value.text
@@ -90,11 +96,11 @@ object GraphFixture {
     }
   }
 
-  case class GVRewriter(builder: GV => Local.Graph.Node[GV]) extends Local.Graph.Rewriter[GV] {
+  case class GVRewriter(builder: GV => Local.Graph.NodeCompat[GV]) extends Local.Graph.Rewriter[GV] {
 
-    override def rewrite(src: GraphT.NodeCompat[GV])(
-        inductions: Seq[GraphT.NodeCompat[GV]]
-    ): Local.Graph.Node[GV] = {
+    override def rewrite(src: Graph.NodeCompat[GV])(
+        inductions: Seq[Graph.NodeCompat[GV]]
+    ): Local.Graph.NodeCompat[GV] = {
 
       val result = src.value.copy()
       result.children.addAll(inductions.map(_.value))

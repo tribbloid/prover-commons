@@ -41,7 +41,7 @@ object RewriterKind {
   type Aux[L <: Law, V] = RewriterKind[L] { type Value = V }
   trait AuxEx[L <: Law, V] extends RewriterKind[L] { type Value = V }
 
-  case class DoNotRewrite[L <: Law, N]() extends RewriterKind[L] {
+  case class DoNotRewrite[L <: Law, N](override val law: L) extends RewriterKind[L] {
 
     type Value = N
 
@@ -49,6 +49,5 @@ object RewriterKind {
         discoverNodes: Seq[NodeKind.Compat[L, Value]]
     ): NodeKind.Compat[L, Value] = src
 
-    override val law: L = ???
   }
 }

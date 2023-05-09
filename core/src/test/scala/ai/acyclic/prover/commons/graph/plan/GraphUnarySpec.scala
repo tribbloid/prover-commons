@@ -112,7 +112,7 @@ class GraphUnarySpec extends AnyFunSpec with GraphFixture {
       val result = GraphUnary
         .^(diamond.graph)
         .TransformLinear(
-          GVRewriter(Node),
+          GVRewriter(v => Node(v)),
           4,
           down = { v =>
             val result = v.value.copy(text = v.value.text + "+" + inc.getAndIncrement())

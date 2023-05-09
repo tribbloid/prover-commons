@@ -203,7 +203,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
   ) {
 
     private val delegate = Transform(
-      rewriter = RewriterKind.DoNotRewrite(),
+      rewriter = RewriterKind.DoNotRewrite(arg.law),
       maxDepth,
       down = { v => down(v); Seq(v) },
       up = { v => up(v); Seq(v) }
