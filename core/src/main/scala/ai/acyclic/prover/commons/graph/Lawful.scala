@@ -9,7 +9,7 @@ trait Lawful {
   type RewriterCompat[v] = RewriterKind.Aux[_L, v]
 //  type RewriterEx[v] = RewriterKind.AuxEx[_L, v]
 
-  trait Construct extends Lawful.ConstructKind[this._L]
+//  trait Construct extends Lawful.ConstructKind[this._L]
 }
 
 object Lawful {

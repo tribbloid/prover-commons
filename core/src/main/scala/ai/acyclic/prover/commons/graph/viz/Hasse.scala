@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
+import ai.acyclic.prover.commons.graph.local.ops.GraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout

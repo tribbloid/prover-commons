@@ -1,8 +1,7 @@
-package ai.acyclic.prover.commons.graph.plan
+package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.GraphFixture
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
 import org.scalatest.funspec.AnyFunSpec
 
 import java.util.concurrent.atomic.AtomicInteger

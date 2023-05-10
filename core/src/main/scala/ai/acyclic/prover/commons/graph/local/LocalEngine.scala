@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.Engine
-import ai.acyclic.prover.commons.graph.plan.local.{GraphUnary, OutboundGraphUnary, UpperSemilatticeUnary}
+import ai.acyclic.prover.commons.graph.local.ops.{GraphUnary, OutboundGraphUnary, UpperSemilatticeUnary}
 
 import scala.language.implicitConversions
 

@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.graph.plan.local
+package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.local.Local
 

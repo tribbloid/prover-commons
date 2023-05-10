@@ -1,8 +1,8 @@
-package ai.acyclic.prover.commons.graph.plan.local
+package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Hasse
-import ai.acyclic.prover.commons.graph.{NodeKind, RewriterKind, Topology}
+import ai.acyclic.prover.commons.graph.{NodeKind, RewriterKind}
 
 import scala.language.existentials
 
