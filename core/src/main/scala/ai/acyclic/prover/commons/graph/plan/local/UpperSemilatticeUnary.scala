@@ -4,6 +4,8 @@ import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 
 import java.util.concurrent.atomic.AtomicInteger
+import scala.collection.mutable
+import scala.util.control.Breaks
 
 trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
@@ -12,30 +14,53 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
   }
 
   // algorithm assumes no cycles
-  lazy val maxNode: ArgNode = {
+  lazy val maxNodeOpt: Option[ArgNode] = {
 
-    val counters: Map[ArgNode, AtomicInteger] = {
+    val entries = arg.entries
 
-      val ee: Vector[ArgNode] = arg.entries
-      Map(
-        ee.map { nn =>
-          nn -> new AtomicInteger()
-        }: _*
-      )
-    }
-    arg.Traverse(
-      down = { n =>
-        counters.get(n.asInstanceOf).foreach(a => a.incrementAndGet())
+    if (entries.isEmpty) None
+    else if (entries.size == 1) entries.headOption
+    else {
+      val counters: mutable.Map[ArgNode, AtomicInteger] = {
+
+        mutable.Map(
+          entries.map { nn =>
+            nn -> new AtomicInteger()
+          }: _*
+        )
       }
-    )
 
-    val once = counters.toSeq.filter {
-      case (k, v) => v.get() == 1
+      Breaks.breakable {
+
+        arg
+          .Traverse(
+            down = { n =>
+              val counterOpt = counters.get(n)
+              counterOpt.foreach { a =>
+                a.incrementAndGet()
+
+                if (a.get() >= 2) counters.remove(n)
+
+                if (counters.size == 1) {
+                  Breaks.break()
+                }
+              }
+
+            }
+          )
+          .DepthFirst
+          .resolve
+      }
+
+      val once = counters.toSeq.filter {
+        case (_, v) => v.get() == 1
+      }
+
+      require(once.size == 1, "NOT a semilattice!")
+
+      once.map(_._1).headOption
     }
 
-    require(once.size == 1, "NOT a semilattice!")
-
-    once.head._1
   }
 
   def diagram_hierarchy(
@@ -46,7 +71,8 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
 object UpperSemilatticeUnary {
 
-  case class ^[L <: Local.Semilattice.Upper._L, V](argPlan: LocalEngine.PlanKind.Aux[L, V]) extends UpperSemilatticeUnary {
+  case class ^[L <: Local.Semilattice.Upper._L, V](argPlan: LocalEngine.PlanKind.Aux[L, V])
+      extends UpperSemilatticeUnary {
 
     override type ArgLaw = L
 
