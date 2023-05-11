@@ -113,4 +113,26 @@ class HasseSpec extends GraphFixture {
           |""".stripMargin
     }
   }
+
+  it("graph with duplicate nodes") {
+
+    withDuplicateNodes.graph.diagram_Hasse.treeString shouldBe
+      """
+        |    ┌───┐
+        |    │aaa│
+        |    └─┬─┘
+        |      │
+        |      v
+        |  ┌───────┐
+        |  │  bbb  │
+        |  └┬────┬─┘
+        |   │ ^  │
+        |   │ │  └──┐
+        |   │ │     │
+        |   v │     v
+        | ┌───┴─┐ ┌───┐
+        | │ ccc │ │ddd│
+        | └─────┘ └───┘
+        |""".stripMargin
+  }
 }

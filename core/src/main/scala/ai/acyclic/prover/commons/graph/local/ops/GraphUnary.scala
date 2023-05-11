@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph.local.ops
 
+import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Hasse
 import ai.acyclic.prover.commons.graph.{NodeKind, RewriterKind}
@@ -113,7 +114,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
 
       private val delegate = {
 
-        val seen = arg.nodeSameness.Correspondence[ArgNode, ArgNode]()
+        val evaled = Same.ByEquality.Correspondence[Any, ArgNode]()
 
         Transform(
           rewriter,
@@ -121,11 +122,18 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
           pruning = {
             fn =>
               { node =>
-                val result: Seq[ArgNode] = seen.get(node) match {
+                val keyOpt = node.evalCacheKey
+
+                val result: Seq[ArgNode] = keyOpt.flatMap { key =>
+                  evaled.get(key)
+                } match {
                   case Some(n) =>
                     Seq(n)
                   case None =>
-                    seen.getOrElseUpdate(node, () => node)
+                    keyOpt.foreach { key =>
+                      evaled.getOrElseUpdate(key, () => node)
+                    }
+
                     fn(node)
                 }
 
@@ -146,7 +154,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
 
       private val delegate = {
 
-        val seen = arg.nodeSameness.Correspondence[ArgNode, Seq[ArgNode]]()
+        val evaled = Same.ByEquality.Correspondence[Any, Seq[ArgNode]]()
 
         Transform(
           rewriter,
@@ -154,12 +162,18 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
           pruning = {
             fn =>
               { node =>
-                val result = seen.get(node) match {
+                val keyOpt = node.evalCacheKey
+
+                val result = keyOpt.flatMap { key =>
+                  evaled.get(key)
+                } match {
                   case Some(r) =>
                     r
                   case None =>
                     val result = fn(node)
-                    seen.getOrElseUpdate(node, () => result)
+                    keyOpt.foreach { key =>
+                      evaled.getOrElseUpdate(key, () => result)
+                    }
                     result
                 }
 

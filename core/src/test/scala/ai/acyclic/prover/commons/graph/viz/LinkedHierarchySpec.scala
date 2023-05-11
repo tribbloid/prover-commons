@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.graph.GraphFixture
 class LinkedHierarchySpec extends GraphFixture {
 
   describe(Hierarchy.Indent2.productPrefix) {
-    lazy val format = Hierarchy.Indent2
+//    lazy val format = Hierarchy.Indent2
 
     describe("treeString") {
       it("cyclic graph") {

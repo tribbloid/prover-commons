@@ -38,8 +38,7 @@ trait Engine {
       * Graph representation without any validation
       */
     case class Unchecked[L <: Law, V](
-        entriesC: Dataset[NodeKind.Compat[L, V]],
-        override val nodeSameness: Same.Definition = Same.ByEquality
+        entriesC: Dataset[NodeKind.Compat[L, V]]
     )(
         implicit
         override val law: L

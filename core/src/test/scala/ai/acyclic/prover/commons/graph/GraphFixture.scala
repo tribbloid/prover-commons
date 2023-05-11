@@ -4,13 +4,14 @@ import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.Local.Graph
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
+import java.util.UUID
 import scala.collection.mutable.ArrayBuffer
 
 trait GraphFixture extends BaseSpec {
 
   import GraphFixture._
 
-  val diamond: GV = {
+  val diamond: Seq[GV] = {
 
     val a = GV("aaa")
     val b = GV("bbb")
@@ -23,10 +24,10 @@ trait GraphFixture extends BaseSpec {
     c.children += d
     d.children += e
 
-    a
+    Seq(a)
   }
 
-  val cyclic: GV = {
+  val cyclic: Seq[GV] = {
 
     val a = GV("aaa")
     val b = GV("bbb")
@@ -37,10 +38,10 @@ trait GraphFixture extends BaseSpec {
     b.children ++= Seq(c, d)
     c.children += a
 
-    a
+    Seq(a)
   }
 
-  val cyclic2: GV = {
+  val cyclic2: Seq[GV] = {
 
     val a = GV("aaa\n%%%%")
     val b = GV("bbb\n%%%%")
@@ -51,21 +52,41 @@ trait GraphFixture extends BaseSpec {
     b.children ++= Seq(c, d)
     c.children += a
 
-    a
+    Seq(a)
+  }
+
+  val withDuplicateNodes: Seq[GV] = {
+
+    val a = GV("aaa")
+    val b = GV("bbb")
+    val c = GV("ccc")
+    val d = GV("ddd")
+
+    val b2 = GV("bbb")
+
+    a.children += b
+    b.children += c
+    c.children += b2
+    b2.children += d
+
+    Seq(a)
+  }
+
+  implicit class GVsView(self: Seq[GV]) {
+
+    def graph =
+      Graph.Outbound(self.map(v => Node(v)): _*)
+
+    def graphWithArrowText =
+      Graph.Outbound(self.map(v => NodeWithArrowText(v)): _*)
   }
 }
 
 object GraphFixture {
 
-  case class GV(
-      text: String
-  ) {
+  case class GV(text: String, id: UUID = UUID.randomUUID()) {
 
     lazy val children: ArrayBuffer[GV] = ArrayBuffer.empty
-
-    def graph = Graph.Outbound(Node(this))
-
-    def graphWithArrowText = Graph.Outbound(NodeWithArrowText(this))
   }
 
   case class Node(override val value: GV) extends Local.Graph.Outbound.Node[GV] {
@@ -74,14 +95,18 @@ object GraphFixture {
 
     override protected def inductionC =
       value.children.toSeq.map(v => Node(v))
+
+    override lazy val evalCacheKey: Option[GV] = Some(value)
+
+    override lazy val identityKey: Option[Any] = Some(value.text)
   }
 
-//  {
-//    // sanity
-//
-//    implicitly[Node <:< Local.Graph.NodeCompat[GV]]
-//    implicitly[Node <:< Local.Graph.Outbound.NodeCompat[GV]]
-//  }
+  //  {
+  //    // sanity
+  //
+  //    implicitly[Node <:< Local.Graph.NodeCompat[GV]]
+  //    implicitly[Node <:< Local.Graph.Outbound.NodeCompat[GV]]
+  //  }
 
   case class NodeWithArrowText(override val value: GV) extends Local.Graph.Outbound.Node[GV] {
 
@@ -94,6 +119,10 @@ object GraphFixture {
       }
       result
     }
+
+    override lazy val evalCacheKey: Option[GV] = Some(value)
+
+    override lazy val identityKey: Option[Any] = Some(value.text)
   }
 
   case class GVRewriter(builder: GV => Local.Graph.NodeCompat[GV]) extends Local.Graph.Rewriter[GV] {

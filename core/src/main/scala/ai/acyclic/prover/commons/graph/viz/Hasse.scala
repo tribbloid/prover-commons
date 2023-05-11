@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.{EqualBy, Same}
+import ai.acyclic.prover.commons.graph.{Arrow, Topology}
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.GraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
@@ -45,7 +46,7 @@ trait Hasse extends Hasse.Format {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(node: NodeCompat[V]) {
+    case class NodeWrapper(node: NodeCompat[V]) extends EqualBy {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
@@ -119,11 +120,15 @@ trait Hasse extends Hasse.Format {
           .getOrElse(nodeText)
         result.build
       }
+
+      override protected def _equalBy: Any = node.identityKey
     }
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeBuffer = semilattice.nodeSameness.Memoize[NodeCompat[V], NodeWrapper](v => NodeWrapper(v))
+      // TODO: this is defective, should respect NodeKind.referenceKey
+      val nodeBuffer =
+        Same.ByEquality.Memoize[NodeCompat[V], NodeWrapper](v => NodeWrapper(v))
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
@@ -162,6 +167,7 @@ trait Hasse extends Hasse.Format {
           nodeWrapper
         }
         .toList
+        .distinct
         .to(ListSet)
       ascii.graph.Graph(nodeSet, relationBuffer.toList)
     }

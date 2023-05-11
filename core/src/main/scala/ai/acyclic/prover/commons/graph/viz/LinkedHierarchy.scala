@@ -50,8 +50,6 @@ object LinkedHierarchy extends Visualisations {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def sameRefBy(node: Local.Graph.Outbound.NodeCompat[_]): Option[Any] = Some(node)
-
     override def dryRun(tree: Local.Tree[_ <: _RefBinding]): Unit = {
       GraphUnary
         .^(tree)
@@ -88,8 +86,6 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
   def dryRun(tree: Local.Tree[_ <: _RefBinding]): Unit
 
-  def sameRefBy(node: Local.Graph.Outbound.NodeCompat[_]): Option[Any]
-
   trait TheTextViz[V] extends TextViz[V]
 
   // shared between visualisations of multiple graphs
@@ -106,20 +102,16 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
       object RefBindingT extends Local.Tree.UntypedNodeDef {
 
         case class Node(
-                         override val original: Local.Graph.Outbound.NodeCompat[V],
-                         id: UUID = UUID.randomUUID()
+            override val original: Local.Graph.Outbound.NodeCompat[V],
+            id: UUID = UUID.randomUUID()
         ) extends UntypedNode
             with _RefBinding {
-
-//          implicitly[original.law._A <:< Local.Tree.law._A]
-//
-//          implicitly[Local.Tree.law._A =:= Arrow.`~>`.^]
 
           {
             sameRefs_shouldExpand
           }
 
-          lazy val refKeyOpt: Option[Any] = sameRefBy(original)
+          lazy val refKeyOpt: Option[Any] = original.identityKey
 
           lazy val sameRefs_shouldExpand = {
 

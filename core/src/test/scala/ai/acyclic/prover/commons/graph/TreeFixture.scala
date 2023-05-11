@@ -14,63 +14,67 @@ abstract class TreeFixture extends BaseSpec {
 
   implicit lazy val treeFormat: Hierarchy = Top5
 
-  val tn1 = TVProduct(
+  val tn1 = TV(
     "aaa",
     Seq(
-      TVProduct(
+      TV(
         "bbb",
         Seq(
-          TVProduct("ddd")
+          TV("ddd")
         )
       ),
-      TVProduct(
+      TV(
         "ccc"
       )
     )
   )
 
-  val tn2 = TVProduct( // TODO: simplify this with graph Transform
+  val tn2 = TV( // TODO: simplify this with graph Transform
     "aaa\n%%%%%",
     Seq(
-      TVProduct(
+      TV(
         "bbb\n%%%%%",
         Seq(
-          TVProduct("ddd\n%%%%%")
+          TV("ddd\n%%%%%")
         )
       ),
-      TVProduct(
+      TV(
         "ccc\n%%%%%"
       )
     )
   )
 
   val treeInf = TVInf("abcdefgh")
+
+  implicit class TVView(self: TVLike) {
+
+    def tree =
+      Local.Tree(Node(self))
+
+    def treeWithArrowTexts =
+      Local.Tree(NodeWithArrowText(self))
+  }
 }
 
 object TreeFixture {
 
-  trait TV {
+  trait TVLike {
 
     def text: String
-    def children: Seq[TV]
+    def children: Seq[TVLike]
 
-    def tree =
-      Local.Tree(Node(this))
-
-    def treeWithArrowTexts =
-      Local.Tree(NodeWithArrowText(this))
   }
 
-  case class TVProduct(
+  case class TV(
       text: String,
-      children: Seq[TV] = Nil
-  ) extends TV {}
+      children: Seq[TVLike] = Nil
+  ) extends TVLike {}
 
   case class TVInf(
       text: String
-  ) extends TV {
+  ) extends TVLike {
 
-    override def children: Seq[TV] = {
+    override def children: Seq[TVLike] = {
 
       if (text.length <= 2) {
         Seq(this)
@@ -82,14 +86,14 @@ object TreeFixture {
     }
   }
 
-  case class Node(value: TV) extends Local.Tree.Node[TV] {
+  case class Node(value: TVLike) extends Local.Tree.Node[TVLike] {
 
     override protected def nodeTextC = value.text
 
     override protected def inductionC = value.children.map(v => Node(v))
   }
 
-  case class NodeWithArrowText(value: TV) extends Local.Tree.Node[TV] {
+  case class NodeWithArrowText(value: TVLike) extends Local.Tree.Node[TVLike] {
 
     override protected def nodeTextC = value.text
 

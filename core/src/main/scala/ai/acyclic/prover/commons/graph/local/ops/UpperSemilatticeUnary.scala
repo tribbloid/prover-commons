@@ -13,7 +13,8 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
     implicitly[ArgLaw <:< Local.Semilattice.Upper._L]
   }
 
-  // algorithm assumes no cycles
+  // TODO: will trigger StackOverflow on cyclic graph or infinite acyclic graph
+  //  maxDepth may need to be defined
   lazy val maxNodeOpt: Option[ArgNode] = {
 
     val entries = arg.entries

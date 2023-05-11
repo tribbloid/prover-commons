@@ -2,12 +2,11 @@ package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.GraphFixture
 import ai.acyclic.prover.commons.graph.local.Local
-import org.scalatest.funspec.AnyFunSpec
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 
-class GraphUnarySpec extends AnyFunSpec with GraphFixture {
+class GraphUnarySpec extends GraphFixture {
 
   import GraphFixture._
 

@@ -20,12 +20,40 @@ trait NodeKind[+L <: Law] extends Lawful.ConstructKind[L] {
 
   final lazy val discoverValues: Seq[Value] = inductionToValues.map(_._2)
 
+  /**
+    * Only affecting caching mechanism in resolving induction(s). Induction of the same node may be cached and reused
+    * instead of being computed twice. If returns None, no computation will ever be cached
+    *
+    * CAUTION: this won't affect node representation in diagrams, need to override the following [[sameNodeReference]]
+    *
+    * in general, [[evalCacheKey]] equality should be a sufficient condition of [[identityKey]] equality
+    *
+    * @return
+    *   key with equality & hashcode
+    */
+  lazy val evalCacheKey: Option[Any] = Some(this)
+
+  /**
+    * A node instance may only give part of the local topology!
+    *
+    * The full topology can only be revealed by merging information from several node instances that are considered the
+    * same. If returns None, this node will be considered different from any other node
+    *
+    * this primarily affects visualisation, e.g. in Hasse & Linked hierarchy diagrams
+    *
+    * in general, [[identityKey]] equality should be a necessary condition of [[evalCacheKey]] equality
+    *
+    * @return
+    *   key with equality & hashcode
+    */
+  lazy val identityKey: Option[Any] = evalCacheKey
+
   def map[V2](fn: Value => V2): NodeKind.Aux[L, V2] = Mapped(this: Compat, fn)
 
   def upcast[V2](
       implicit
       ev: Value <:< V2
-  ) = map((v: Value) => v: V2)
+  ): Aux[L, V2] = map((v: Value) => v: V2)
 
   object asIterable extends Iterable[Value] {
 

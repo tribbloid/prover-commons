@@ -2,22 +2,12 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.Same
 
-import scala.language.implicitConversions
-
 trait GraphKind[+L <: Law] extends Lawful.ConstructKind[L] {
 
   type _E <: Engine
   def engine: _E
 
-  // should only compare the sameness of node, NOT value!
-  //  otherwise a mapping to the value may introduce forbidden subgraph(s).
-  def nodeSameness: Same.Definition = Same.ByEquality
-
   type Dataset[+_]
-
-//  final type Peer = GraphKind[C, A, V]
-//  final type Node = NodeKind.Aux[C, A, V]
-//  type LesserNode <: NodeKind.Lt[C, A, V]
 
   def entriesC: Dataset[NodeKind.Compat[L, Value]]
 }
