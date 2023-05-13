@@ -10,8 +10,9 @@ object GraphFixture {
 
   case class GV(
       text: String,
-      initialChildren: Seq[GV] = Nil,
       id: UUID = UUID.randomUUID()
+  )(
+      initialChildren: Seq[GV] = Nil
   ) {
 
     val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren: _*)
@@ -59,7 +60,8 @@ object GraphFixture {
         inductions: Seq[Graph.NodeCompat[GV]]
     ): Local.Graph.NodeCompat[GV] = {
 
-      val result = src.value.copy()
+      val result = src.value.copy()(Nil)
+      result.children.clear()
       result.children.addAll(inductions.map(_.value))
       builder(result)
     }
@@ -69,17 +71,15 @@ object GraphFixture {
 
   val diamond: Seq[GV] = {
 
-    val d = GV(
-      "ddd",
-      Seq(GV("eee"))
+    val d = GV("ddd")(
+      Seq(GV("eee")())
     )
 
     Seq(
-      GV(
-        "aaa",
+      GV("aaa")(
         Seq(
-          GV("bbb", Seq(d)),
-          GV("ccc", Seq(d))
+          GV("bbb")(Seq(d)),
+          GV("ccc")(Seq(d))
         )
       )
     )
@@ -87,10 +87,10 @@ object GraphFixture {
 
   val cyclic: Seq[GV] = {
 
-    val a = GV("aaa")
-    val b = GV("bbb")
-    val c = GV("ccc")
-    val d = GV("ddd")
+    val a = GV("aaa")()
+    val b = GV("bbb")()
+    val c = GV("ccc")()
+    val d = GV("ddd")()
 
     a.children += b
     b.children ++= Seq(c, d)
@@ -101,10 +101,10 @@ object GraphFixture {
 
   val cyclic2: Seq[GV] = {
 
-    val a = GV("aaa\n%%%%")
-    val b = GV("bbb\n%%%%")
-    val c = GV("ccc\n%%%%")
-    val d = GV("ddd\n%%%%")
+    val a = GV("aaa\n%%%%")()
+    val b = GV("bbb\n%%%%")()
+    val c = GV("ccc\n%%%%")()
+    val d = GV("ddd\n%%%%")()
 
     a.children += b
     b.children ++= Seq(c, d)

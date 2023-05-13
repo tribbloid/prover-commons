@@ -115,12 +115,12 @@ class GraphUnarySpec extends BaseSpec {
           GVRewriter(v => Node(v)),
           4,
           down = { v =>
-            val result = v.value.copy(text = v.value.text + "+" + inc.getAndIncrement())
+            val result = v.value.copy(text = v.value.text + "+" + inc.getAndIncrement())(Nil)
             result.children ++= v.value.children
             Node(result)
           },
           up = { v =>
-            val result = v.value.copy(text = v.value.text + "-" + inc.getAndIncrement())
+            val result = v.value.copy(text = v.value.text + "-" + inc.getAndIncrement())(Nil)
             result.children ++= v.value.children
             Node(result)
           }

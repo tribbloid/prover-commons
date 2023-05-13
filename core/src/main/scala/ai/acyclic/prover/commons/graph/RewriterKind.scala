@@ -16,8 +16,8 @@ trait RewriterKind[L <: Law] extends Lawful.ConstructKind[L] {
 
     override def rewrite(src: NodeV)(discoverNodes: Seq[NodeV]): NodeV = {
 
-      val originalNs = src.discoverNodes
-      if (originalNs == discoverNodes) {
+      val oldDiscoverNodes = src.discoverNodes
+      if (oldDiscoverNodes == discoverNodes) {
         // no need to rewrite, just return node as-is
         return src
       }
@@ -28,7 +28,7 @@ trait RewriterKind[L <: Law] extends Lawful.ConstructKind[L] {
         result.discoverNodes == discoverNodes,
         s"""Incompatible rewriter?
            |Rewrite result should be [${discoverNodes.mkString(", ")}]
-           |but it is actually [${originalNs.mkString(", ")}]""".stripMargin
+           |but it is actually [${oldDiscoverNodes.mkString(", ")}]""".stripMargin
       )
 
       result
