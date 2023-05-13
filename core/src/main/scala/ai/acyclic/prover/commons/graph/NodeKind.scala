@@ -96,5 +96,9 @@ object NodeKind {
       }
     }
 
+    override lazy val identityKey: Option[Any] = original.identityKey
+
+    override lazy val evalCacheKey: Option[Any] = original.evalCacheKey
+
   }
 }
