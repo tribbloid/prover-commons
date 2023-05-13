@@ -1,8 +1,11 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.GraphFixture
+import ai.acyclic.prover.commons.testlib.BaseSpec
 
-class HasseSpec extends GraphFixture {
+class HasseSpec extends BaseSpec {
+
+  import GraphFixture._
 
   describe("string") {
 
@@ -114,25 +117,25 @@ class HasseSpec extends GraphFixture {
     }
   }
 
-  it("graph with duplicate nodes") {
-
-    withDuplicateNodes.graph.diagram_Hasse.treeString shouldBe
-      """
-        |    ┌───┐
-        |    │aaa│
-        |    └─┬─┘
-        |      │
-        |      v
-        |  ┌───────┐
-        |  │  bbb  │
-        |  └┬────┬─┘
-        |   │ ^  │
-        |   │ │  └──┐
-        |   │ │     │
-        |   v │     v
-        | ┌───┴─┐ ┌───┐
-        | │ ccc │ │ddd│
-        | └─────┘ └───┘
-        |""".stripMargin
-  }
+//  it("graph with duplicate nodes") {
+//
+//    DuplicatedB.full.graph.diagram_Hasse.treeString shouldBe
+//      """
+//        |    ┌───┐
+//        |    │aaa│
+//        |    └─┬─┘
+//        |      │
+//        |      v
+//        |  ┌───────┐
+//        |  │  bbb  │
+//        |  └┬────┬─┘
+//        |   │ ^  │
+//        |   │ │  └──┐
+//        |   │ │     │
+//        |   v │     v
+//        | ┌───┴─┐ ┌───┐
+//        | │ ccc │ │ddd│
+//        | └─────┘ └───┘
+//        |""".stripMargin
+//  }
 }

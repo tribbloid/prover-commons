@@ -1,8 +1,11 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.TreeFixture
+import ai.acyclic.prover.commons.testlib.BaseSpec
 
-class HierarchySpec extends TreeFixture {
+class HierarchySpec extends BaseSpec {
+
+  import TreeFixture._
 
   describe(Hierarchy.Indent2.productPrefix) {
     lazy val format = Hierarchy.Indent2

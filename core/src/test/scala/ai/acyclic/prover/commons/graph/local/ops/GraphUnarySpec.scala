@@ -2,11 +2,12 @@ package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.GraphFixture
 import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.testlib.BaseSpec
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 
-class GraphUnarySpec extends GraphFixture {
+class GraphUnarySpec extends BaseSpec {
 
   import GraphFixture._
 
@@ -65,7 +66,7 @@ class GraphUnarySpec extends GraphFixture {
         )
     }
 
-    it(" ... Once") {
+    it("DepthFirst_Once") {
 
       val down = mutable.Buffer.empty[GV]
       val up = mutable.Buffer.empty[GV]

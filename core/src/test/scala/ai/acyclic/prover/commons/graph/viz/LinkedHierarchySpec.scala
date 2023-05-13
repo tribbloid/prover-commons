@@ -1,8 +1,11 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.GraphFixture
+import ai.acyclic.prover.commons.testlib.BaseSpec
 
-class LinkedHierarchySpec extends GraphFixture {
+class LinkedHierarchySpec extends BaseSpec {
+
+  import GraphFixture._
 
   describe(Hierarchy.Indent2.productPrefix) {
 //    lazy val format = Hierarchy.Indent2

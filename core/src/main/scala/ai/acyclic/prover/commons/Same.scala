@@ -1,11 +1,14 @@
 package ai.acyclic.prover.commons
 
+import ai.acyclic.prover.commons.util.ConstructionID
+
 import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
+import scala.reflect.ClassTag
 
 trait Same[T] {
 
-  def sameness: Same.Definition
+  def sameness: Same.By
 }
 
 object Same {
@@ -18,15 +21,22 @@ object Same {
     result
   }
 
-  trait Definition {
+  trait By {
 
-    protected def _getID(v1: Any): Any
+    protected def _getID(v1: Any): Option[Any]
 
-    @transient final def getID(v1: Any): Any = {
+    @transient final def getID(v1: Any): Option[Any] = {
       _getID(rectify(v1))
     }
 
-    protected def proveNonTrivial(v1: Any, v2: Any): Boolean = getID(v1) == getID(v2)
+    protected def proveNonTrivial(v1: Any, v2: Any): Boolean = {
+
+      (getID(v1), getID(v2)) match {
+
+        case (Some(id1), Some(id2)) => id1 == id2
+        case _                      => false
+      }
+    }
 
     /*
      must satisfy:
@@ -55,35 +65,46 @@ object Same {
       val result = prove(v1, v2)
       val swapped = prove(v2, v1)
       require(result == swapped, "sameness should be symmetric")
-      if (result) require(getID(v1) == getID(v2), "if two objects are the same, their IDs should be identical")
+      if (result)
+        require(
+          getID(v1).get == getID(v2).get,
+          "if two objects are the same, their IDs should be identical"
+        ) // TODO: need more info
       result
     }
 
     trait ^[T] extends Same[T] {
-      final override def sameness: Definition = Definition.this
+      final override def sameness: By = By.this
     }
 
-    trait EqualByMixin {
+    def idOrConstructionHash(v: Any): Int = {
 
-      override def hashCode: Int = getID(this).##
-
-      override def equals(that: Any): Boolean = {
-        Definition.this.proveSafely(this, that)
+      getID(v) match {
+        case Some(id) =>
+          id.##
+        case None =>
+          ConstructionID.apply(this)
       }
     }
 
-    case class Wrapper[T](v: T) {
+    trait Facade {
+      def self: Any
 
-      final override def toString: String = "" + v
-
-      final override def hashCode: Int = getID(v).##
+      final override def hashCode(): Int = {
+        idOrConstructionHash(self)
+      }
 
       final override def equals(that: Any): Boolean = {
         that match {
-          case Wrapper(thatV) => Definition.this.proveSafely(v, thatV)
+          case Wrapper(thatV) => By.this.proveSafely(self, thatV)
           case _              => false
         }
       }
+    }
+
+    case class Wrapper[T](override val self: T) extends Facade {
+
+      final override def toString: String = "" + self
     }
 
     case class Correspondence[K, V]() {
@@ -98,14 +119,14 @@ object Same {
 
       def values: Seq[V] = collection.map(_.value).toSeq
 
-      final def getOrElseUpdate(key: K, getValue: () => V): V = {
+      final def getOrElseUpdate(key: K, getValue: => V): V = {
 
         val inMemoryId = Wrapper(key)
         val w =
           this.synchronized {
             lookup.getOrElseUpdate(
               inMemoryId, {
-                val created = Thunk(getValue)
+                val created = Thunk(() => getValue)
                 collection += created
                 created
               }
@@ -130,31 +151,59 @@ object Same {
 
       override lazy val outer = Correspondence[K, V]()
 
-      final def apply(key: K): V = outer.getOrElseUpdate(key, () => fn(key))
+      final def apply(key: K): V = outer.getOrElseUpdate(key, fn(key))
     }
-  }
 
-  object ByConstruction extends Definition {
+    case class Of[T: ClassTag](fn: T => Option[Any]) extends By {
 
-    override def _getID(v1: Any): Any = util.constructionID[Any](v1)
+      def outer: By.this.type = By.this
 
-    override def proveNonTrivial(v1: Any, v2: Any): Boolean = {
-      (v1, v2) match {
-        case (_v1: AnyRef, _v2: AnyRef) => _v1.eq(_v2)
-        case _                          => _getID(v1) == _getID(v2)
+      override protected def _getID(v1: Any): Option[Any] = {
+        v1 match {
+          case vv: T =>
+            outer.getID(fn(vv))
+          case _ =>
+            None
+        }
+      }
+
+      override protected def proveNonTrivial(v1: Any, v2: Any): Boolean = {
+
+        (v1, v2) match {
+          case (vv1: T, vv2: T) =>
+            (fn(vv1), fn(vv2)) match {
+              case (Some(t1), Some(t2)) =>
+                outer.proveNonTrivial(t1, t2)
+              case _ => false
+            }
+
+          case _ => false
+        }
       }
     }
   }
 
-  object ByEquality extends Definition {
-    override def _getID(v1: Any): Any = v1
+  object ByConstruction extends By {
+
+    override def _getID(v1: Any): Some[Any] = Some(ConstructionID[Any](v1))
+
+    override def proveNonTrivial(v1: Any, v2: Any): Boolean = {
+      (v1, v2) match {
+        case (_v1: AnyRef, _v2: AnyRef) => _v1.eq(_v2)
+        case _                          => super.proveNonTrivial(v1, v2)
+      }
+    }
   }
 
-  trait ByProductWithTolerance extends Definition {
+  object ByEquality extends By {
+    override def _getID(v1: Any): Some[Any] = Some(v1)
+  }
 
-    override def _getID(v1: Any): Any = {
+  trait ByProductWithTolerance extends By {
 
-      truncateToTolerance(v1) match {
+    override def _getID(v1: Any): Some[Any] = {
+
+      val result = truncateToTolerance(v1) match {
         case Some(r) => r
         case None =>
           v1 match {
@@ -164,6 +213,7 @@ object Same {
               v1
           }
       }
+      Some(result)
     }
 
     def truncateToTolerance(v: Any): Option[Any]

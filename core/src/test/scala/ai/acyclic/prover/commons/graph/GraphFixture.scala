@@ -2,91 +2,19 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.Local.Graph
-import ai.acyclic.prover.commons.testlib.BaseSpec
 
 import java.util.UUID
 import scala.collection.mutable.ArrayBuffer
 
-trait GraphFixture extends BaseSpec {
-
-  import GraphFixture._
-
-  val diamond: Seq[GV] = {
-
-    val a = GV("aaa")
-    val b = GV("bbb")
-    val c = GV("ccc")
-    val d = GV("ddd")
-    val e = GV("eee")
-
-    a.children ++= Seq(b, c)
-    b.children += d
-    c.children += d
-    d.children += e
-
-    Seq(a)
-  }
-
-  val cyclic: Seq[GV] = {
-
-    val a = GV("aaa")
-    val b = GV("bbb")
-    val c = GV("ccc")
-    val d = GV("ddd")
-
-    a.children += b
-    b.children ++= Seq(c, d)
-    c.children += a
-
-    Seq(a)
-  }
-
-  val cyclic2: Seq[GV] = {
-
-    val a = GV("aaa\n%%%%")
-    val b = GV("bbb\n%%%%")
-    val c = GV("ccc\n%%%%")
-    val d = GV("ddd\n%%%%")
-
-    a.children += b
-    b.children ++= Seq(c, d)
-    c.children += a
-
-    Seq(a)
-  }
-
-  val withDuplicateNodes: Seq[GV] = {
-
-    val a = GV("aaa")
-    val b = GV("bbb")
-    val c = GV("ccc")
-    val d = GV("ddd")
-
-    val b2 = GV("bbb")
-
-    a.children += b
-    b.children += c
-    c.children += b2
-    b2.children += d
-
-    Seq(a)
-  }
-
-  implicit class GVsView(self: Seq[GV]) {
-
-    def graph =
-      Graph.Outbound(self.map(v => Node(v)): _*)
-
-    def graphWithArrowText =
-      Graph.Outbound(self.map(v => NodeWithArrowText(v)): _*)
-  }
-}
-
 object GraphFixture {
 
-  case class GV(text: String, id: UUID = UUID.randomUUID()) {
+  case class GV(
+      text: String,
+      initialChildren: Seq[GV] = Nil,
+      id: UUID = UUID.randomUUID()
+  ) {
 
-    lazy val children: ArrayBuffer[GV] = ArrayBuffer.empty
+    val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren: _*)
   }
 
   case class Node(override val value: GV) extends Local.Graph.Outbound.Node[GV] {
@@ -135,5 +63,102 @@ object GraphFixture {
       result.children.addAll(inductions.map(_.value))
       builder(result)
     }
+  }
+
+  // instances:
+
+  val diamond: Seq[GV] = {
+
+    val d = GV(
+      "ddd",
+      Seq(GV("eee"))
+    )
+
+    Seq(
+      GV(
+        "aaa",
+        Seq(
+          GV("bbb", Seq(d)),
+          GV("ccc", Seq(d))
+        )
+      )
+    )
+  }
+
+  val cyclic: Seq[GV] = {
+
+    val a = GV("aaa")
+    val b = GV("bbb")
+    val c = GV("ccc")
+    val d = GV("ddd")
+
+    a.children += b
+    b.children ++= Seq(c, d)
+    c.children += a
+
+    Seq(a)
+  }
+
+  val cyclic2: Seq[GV] = {
+
+    val a = GV("aaa\n%%%%")
+    val b = GV("bbb\n%%%%")
+    val c = GV("ccc\n%%%%")
+    val d = GV("ddd\n%%%%")
+
+    a.children += b
+    b.children ++= Seq(c, d)
+    c.children += a
+
+    Seq(a)
+  }
+
+  //  object DuplicatedB {
+  //
+  //    val part1: Seq[GV] = {
+  //      val a = GV("aaa")
+  //      val b = GV("bbb")
+  //      val c = GV("ccc")
+  //
+  //      a.children += b
+  //      b.children += c
+  //      c.children += b
+  //
+  //      Seq(a)
+  //    }
+  //
+  //    val part2: Seq[GV] = {
+  //
+  //      val b2 = GV("bbb")
+  //      val d = GV("ddd")
+  //
+  //      b2.children += d
+  //      Seq(b2)
+  //    }
+  //
+  //    val full: Seq[GV] = {
+  //
+  //      val a = GV("aaa")
+  //      val b = GV("bbb")
+  //      val c = GV("ccc")
+  //      val d = GV("ddd")
+  //      val b2 = GV("bbb")
+  //
+  //      a.children += b
+  //      b.children += c
+  //      c.children += b2
+  //      b2.children += d
+  //
+  //      Seq(a)
+  //    }
+  //  }
+
+  implicit class GVsView(self: Seq[GV]) {
+
+    def graph =
+      Graph.Outbound(self.map(v => Node(v)): _*)
+
+    def graphWithArrowText =
+      Graph.Outbound(self.map(v => NodeWithArrowText(v)): _*)
   }
 }

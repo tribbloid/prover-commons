@@ -17,16 +17,16 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
   //  maxDepth may need to be defined
   lazy val maxNodeOpt: Option[ArgNode] = {
 
-    val entries = arg.entries
+    val entryIDs = arg.entries
 
-    if (entries.isEmpty) None
-    else if (entries.size == 1) entries.headOption
+    if (entryIDs.isEmpty) None
+    else if (entryIDs.size == 1) entryIDs.headOption
     else {
-      val counters: mutable.Map[ArgNode, AtomicInteger] = {
+      val id_counters: mutable.Map[Any, (ArgNode, AtomicInteger)] = {
 
         mutable.Map(
-          entries.map { nn =>
-            nn -> new AtomicInteger()
+          entryIDs.map { nn =>
+            nn.identityKey -> (nn -> new AtomicInteger())
           }: _*
         )
       }
@@ -36,15 +36,16 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
         arg
           .Traverse(
             down = { n =>
-              val counterOpt = counters.get(n)
-              counterOpt.foreach { a =>
-                a.incrementAndGet()
+              val counterOpt = id_counters.get(n.identityKey)
+              counterOpt.foreach {
+                case (nn, cc) =>
+                  val ccv = cc.incrementAndGet()
 
-                if (a.get() >= 2) counters.remove(n)
+                  if (ccv >= 2) id_counters.remove(n)
 
-                if (counters.size == 1) {
-                  Breaks.break()
-                }
+                  if (id_counters.size == 1) {
+                    Breaks.break()
+                  }
               }
 
             }
@@ -53,13 +54,9 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
           .resolve
       }
 
-      val once = counters.toSeq.filter {
-        case (_, v) => v.get() == 1
-      }
+      require(id_counters.size == 1, "NOT a semilattice!")
 
-      require(once.size == 1, "NOT a semilattice!")
-
-      once.map(_._1).headOption
+      id_counters.map(_._2._1).headOption
     }
 
   }

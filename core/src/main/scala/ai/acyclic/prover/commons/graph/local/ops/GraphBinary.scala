@@ -26,3 +26,5 @@ trait GraphBinary extends Local.Graph.Ops.Binary {
     }
   }
 }
+
+object GraphBinary {}

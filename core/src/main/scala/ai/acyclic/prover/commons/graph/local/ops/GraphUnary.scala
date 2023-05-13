@@ -131,7 +131,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
                     Seq(n)
                   case None =>
                     keyOpt.foreach { key =>
-                      evaled.getOrElseUpdate(key, () => node)
+                      evaled.getOrElseUpdate(key, node)
                     }
 
                     fn(node)
@@ -172,7 +172,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
                   case None =>
                     val result = fn(node)
                     keyOpt.foreach { key =>
-                      evaled.getOrElseUpdate(key, () => result)
+                      evaled.getOrElseUpdate(key, result)
                     }
                     result
                 }
@@ -253,6 +253,18 @@ object GraphUnary {
     override type ArgLaw = L
 
     override type ArgV = V
+
+    case class &&[L2 <: Local.Graph._L, V2](
+        argPlan: LocalEngine.PlanKind.Aux[L2, V2]
+    ) extends GraphBinary {
+
+      override type Prev = ^.this.type
+      override val prev: ^.this.type = ^.this
+
+      override type ArgLaw = L2
+
+      override type ArgV = V2
+    }
   }
 
   // TODO: memoize all views to avoid duplicated computation

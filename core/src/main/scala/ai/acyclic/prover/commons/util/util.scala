@@ -40,12 +40,8 @@ package object util {
 //    text.split('\n').filter(_.nonEmpty).map(str + _).mkString("\n")
 //  }
 
-  protected object ConstructionID extends (Any => (Int, Any)) {
-    override def apply(v1: Any): (Int, Any) = System.identityHashCode(v1) -> v1
-  }
-
   // any 2 objects that has identical constrution ID must be constructed at the same time & allocated in the same memory
   // they are not just functionally identical, they have the same bare metal footprint!
   // a cloned object should absolutely has a different constructionID
-  def constructionID[T]: T => (Int, T) = ConstructionID.asInstanceOf[T => (Int, T)]
+//  def constructionID[T]: T => (Int, T) = ConstructionID.asInstanceOf[T => (Int, T)]
 }

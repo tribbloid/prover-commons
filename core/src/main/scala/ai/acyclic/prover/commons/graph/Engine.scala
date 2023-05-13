@@ -120,15 +120,15 @@ trait Engine {
         nodes: NodeKind.Compat[_L, V]*
     ): GraphLike[V] = make[V](nodes: _*)
 
-    trait UntypedNodeDef {
+    trait UntypedDef {
       self: Singleton =>
 
       trait UntypedNode extends NodeKind.Untyped[_L] {
-        self: UntypedNodeDef.this.Node =>
+        self: UntypedDef.this.Node =>
 
         final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
 
-        type Value = UntypedNodeDef.this.Node
+        type Value = UntypedDef.this.Node
       }
 
       type Node <: UntypedNode
@@ -189,11 +189,6 @@ trait Engine {
       //      private def compileTimeCheck[V](): Unit = {}
     }
   }
-
-//  trait PlanBuilder extends _Lawful {
-//
-//    trait PlanImpl[V] extends PlanKind.AuxEx[_L, V]
-//  }
 
   trait Syntax {
 

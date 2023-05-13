@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.{EqualBy, Same}
-import ai.acyclic.prover.commons.graph.{Arrow, Topology}
+import ai.acyclic.prover.commons.Same
+import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.GraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListSet
 import scala.collection.mutable
 
+// TODO: rename to Flow! Hasse diagram is only applicable to poset
 object Hasse extends Visualisations {
 
   type UB[V] = Local.Graph[V]
@@ -30,7 +31,7 @@ object Hasse extends Visualisations {
 trait Hasse extends Hasse.Format {
 
   import Hasse._
-  import ai.acyclic.prover.commons.graph.Topology.GraphT._
+  import Local.Graph._
 
   lazy val maxDepth = 20
 
@@ -42,11 +43,13 @@ trait Hasse extends Hasse.Format {
 
   def apply[V](s: UB[V]): Viz[V] = Viz(s)
 
+  val sameness = Same.ByEquality.Of[NodeCompat[_]](v => v.identityKey)
+
   case class Viz[V](override val semilattice: UB[V]) extends TextViz[V] {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(node: NodeCompat[V]) extends EqualBy {
+    case class NodeWrapper(override val self: NodeCompat[V]) extends sameness.Facade {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
@@ -102,7 +105,7 @@ trait Hasse extends Hasse.Format {
           .map(_.rectangular)
 
         val nodeText = {
-          lazy val nodeText = node.nodeText
+          lazy val nodeText = self.nodeText
 
           val ss = bindingOpt
             .map { binding =>
@@ -120,15 +123,22 @@ trait Hasse extends Hasse.Format {
           .getOrElse(nodeText)
         result.build
       }
-
-      override protected def _equalBy: Any = node.identityKey
     }
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      // TODO: this is defective, should respect NodeKind.referenceKey
-      val nodeBuffer =
-        Same.ByEquality.Memoize[NodeCompat[V], NodeWrapper](v => NodeWrapper(v))
+      val nodeID2Wrapper = sameness
+        .Memoize { v =>
+          NodeWrapper(v)
+        }
+
+//      val nodeBuffer = mutable.Buffer.empty[NodeWrapper]
+
+//      def wrap(node: NodeCompat[V]): NodeWrapper = {
+//        val result = NodeWrapper(node)
+//        nodeBuffer += result
+//        result
+//      }
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
@@ -137,16 +147,16 @@ trait Hasse extends Hasse.Format {
         .Traverse(
           maxDepth = Hasse.this.maxDepth,
           down = { node =>
-            val wrapper = nodeBuffer.apply(node)
+            val wrapper = nodeID2Wrapper(node)
 
-            val newRelations = wrapper.node.induction.flatMap { v =>
+            val newRelations: Seq[(NodeWrapper, NodeWrapper)] = node.induction.flatMap { v =>
               v._1.arrowType match {
                 case Arrow.`~>` =>
-                  val to = nodeBuffer.apply(v._2)
+                  val to = nodeID2Wrapper.apply(v._2)
                   to.arrowsFrom += wrapper -> v._1.arrowText
                   Some(wrapper -> to)
                 case Arrow.`<~` =>
-                  val from = nodeBuffer.apply(v._2)
+                  val from = nodeID2Wrapper.apply(v._2)
                   wrapper.arrowsFrom += from -> v._1.arrowText
                   Some(from -> wrapper)
                 case _ =>
@@ -161,7 +171,7 @@ trait Hasse extends Hasse.Format {
 
       buildBuffers.resolve
 
-      val nodeSet: Set[NodeWrapper] = nodeBuffer.outer.values
+      val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.outer.values
         .map { nodeWrapper =>
           nodeWrapper.bindInboundArrows()
           nodeWrapper

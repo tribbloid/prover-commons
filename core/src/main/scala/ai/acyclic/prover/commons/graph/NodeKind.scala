@@ -24,7 +24,7 @@ trait NodeKind[+L <: Law] extends Lawful.ConstructKind[L] {
     * Only affecting caching mechanism in resolving induction(s). Induction of the same node may be cached and reused
     * instead of being computed twice. If returns None, no computation will ever be cached
     *
-    * CAUTION: this won't affect node representation in diagrams, need to override the following [[sameNodeReference]]
+    * CAUTION: this won't affect node representation in diagrams, need to override the following [[identityKey]]
     *
     * in general, [[evalCacheKey]] equality should be a sufficient condition of [[identityKey]] equality
     *
@@ -34,10 +34,11 @@ trait NodeKind[+L <: Law] extends Lawful.ConstructKind[L] {
   lazy val evalCacheKey: Option[Any] = Some(this)
 
   /**
-    * A node instance may only give part of the local topology!
+    * Due to the inductive nature of this library it is possible to have connectivity information of one node to be
+    * split in multiple Node instances, each providing only a subset. The connectivity of a node thus can only revealed
+    * by aggregating several Node instances with the same identityKey
     *
-    * The full topology can only be revealed by merging information from several node instances that are considered the
-    * same. If returns None, this node will be considered different from any other node
+    * If returns None, this node will be considered different from any other node
     *
     * this primarily affects visualisation, e.g. in Hasse & Linked hierarchy diagrams
     *

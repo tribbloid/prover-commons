@@ -99,7 +99,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     case class Viz[V](override val semilattice: UB[V]) extends TheTextViz[V] {
 
-      object RefBindingT extends Local.Tree.UntypedNodeDef {
+      object RefBindingT extends Local.Tree.UntypedDef {
 
         case class Node(
             override val original: Local.Graph.Outbound.NodeCompat[V],
