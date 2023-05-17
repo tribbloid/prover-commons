@@ -182,7 +182,7 @@ trait Hasse extends Hasse.Format {
       ascii.graph.Graph(nodeSet, relationBuffer.toList)
     }
 
-    override lazy val treeString: String = {
+    override lazy val graphString: String = {
 
       GraphLayout.renderGraph(asciiDiagram, layoutPrefs = _layoutPreferences)
     }

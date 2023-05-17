@@ -13,7 +13,7 @@ class LinkedHierarchySpec extends BaseSpec {
     describe("treeString") {
       it("cyclic graph") {
 
-        cyclic.graph.diagram_linkedHierarchy.treeString shouldBe
+        cyclic.graph.diagram_linkedHierarchy.graphString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-+ bbb
@@ -22,7 +22,7 @@ class LinkedHierarchySpec extends BaseSpec {
             |  !-- ddd
             |""".stripMargin
 
-        cyclic.graphWithArrowText.diagram_linkedHierarchy.treeString shouldBe
+        cyclic.graphWithArrowText.diagram_linkedHierarchy.graphString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-: ( aaa |> bbb )
@@ -38,7 +38,7 @@ class LinkedHierarchySpec extends BaseSpec {
 
       it(" ... with multiple lines") {
 
-        cyclic2.graph.diagram_linkedHierarchy.treeString shouldBe
+        cyclic2.graph.diagram_linkedHierarchy.graphString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -52,7 +52,7 @@ class LinkedHierarchySpec extends BaseSpec {
             |      %%%%
             |""".stripMargin
 
-        cyclic2.graphWithArrowText.diagram_linkedHierarchy.treeString shouldBe
+        cyclic2.graphWithArrowText.diagram_linkedHierarchy.graphString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -82,7 +82,7 @@ class LinkedHierarchySpec extends BaseSpec {
       it("diamond semilattice") {
 
         // TODO: this is wrong! second line is not flushed
-        diamond.graph.diagram_linkedHierarchy.treeString shouldBe
+        diamond.graph.diagram_linkedHierarchy.graphString shouldBe
           """
             |+ aaa
             |!-+ bbb

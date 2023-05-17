@@ -206,12 +206,12 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
         }
       }
 
-      override lazy val treeString: String = {
+      override lazy val graphString: String = {
         dryRun()
 
         delegates
           .map { v =>
-            backbone.Viz(v).treeString
+            backbone.Viz(v).graphString
           }
           .mkString("\n")
       }

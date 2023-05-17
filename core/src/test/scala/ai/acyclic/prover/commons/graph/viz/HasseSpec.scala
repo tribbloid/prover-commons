@@ -11,7 +11,7 @@ class HasseSpec extends BaseSpec {
 
     it("cyclic graph") {
 
-      cyclic.graph.diagram_Hasse.treeString shouldBe
+      cyclic.graph.diagram_Hasse.graphString shouldBe
         """
           |  ┌───────┐
           |  │  bbb  │
@@ -30,7 +30,7 @@ class HasseSpec extends BaseSpec {
           | └─────┘ └───┘
           |""".stripMargin
 
-      cyclic.graphWithArrowText.diagram_Hasse.treeString shouldBe
+      cyclic.graphWithArrowText.diagram_Hasse.graphString shouldBe
         """
           |         ┌──────────────┐
           |         │( aaa |> bbb )│
@@ -57,7 +57,7 @@ class HasseSpec extends BaseSpec {
 
     it("diamond graph") {
 
-      diamond.graph.diagram_Hasse.treeString shouldBe
+      diamond.graph.diagram_Hasse.graphString shouldBe
         """
           |  ┌─────┐
           |  │ aaa │
@@ -83,7 +83,7 @@ class HasseSpec extends BaseSpec {
           |   └───┘
           |""".stripMargin
 
-      diamond.graphWithArrowText.diagram_Hasse.treeString shouldBe
+      diamond.graphWithArrowText.diagram_Hasse.graphString shouldBe
         """
           |             ┌─────┐
           |             │ aaa │

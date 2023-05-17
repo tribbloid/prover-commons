@@ -105,45 +105,17 @@ object GraphFixture {
     Seq(a)
   }
 
-  //  object DuplicatedB {
-  //
-  //    val part1: Seq[GV] = {
-  //      val a = GV("aaa")
-  //      val b = GV("bbb")
-  //      val c = GV("ccc")
-  //
-  //      a.children += b
-  //      b.children += c
-  //      c.children += b
-  //
-  //      Seq(a)
-  //    }
-  //
-  //    val part2: Seq[GV] = {
-  //
-  //      val b2 = GV("bbb")
-  //      val d = GV("ddd")
-  //
-  //      b2.children += d
-  //      Seq(b2)
-  //    }
-  //
-  //    val full: Seq[GV] = {
-  //
-  //      val a = GV("aaa")
-  //      val b = GV("bbb")
-  //      val c = GV("ccc")
-  //      val d = GV("ddd")
-  //      val b2 = GV("bbb")
-  //
-  //      a.children += b
-  //      b.children += c
-  //      c.children += b2
-  //      b2.children += d
-  //
-  //      Seq(a)
-  //    }
-  //  }
+  object Appendage {
+
+    val p1: Seq[GV] = {
+
+      val b = GV("bbb")
+      val d = GV("eee")
+
+      b.children += d
+      Seq(b)
+    }
+  }
 
   implicit class GVsView(self: Seq[GV]) {
 

@@ -15,7 +15,7 @@ class HierarchySpec extends BaseSpec {
       describe("finite tree") {
         it("each node has 1 line of text") {
 
-          tn1.tree.diagram_hierarchy.treeString shouldBe
+          tn1.tree.diagram_hierarchy.graphString shouldBe
             """
               |+ aaa
               |!-+ bbb
@@ -23,7 +23,7 @@ class HierarchySpec extends BaseSpec {
               |!-- ccc
               |""".stripMargin
 
-          tn1.treeWithArrowTexts.diagram_hierarchy.treeString shouldBe
+          tn1.treeWithArrowTexts.diagram_hierarchy.graphString shouldBe
             """
               |+ aaa
               |!-: ( aaa |> bbb )
@@ -37,7 +37,7 @@ class HierarchySpec extends BaseSpec {
 
         it("each node has multiple lines of text") {
 
-          tn2.tree.diagram_hierarchy.treeString shouldBe
+          tn2.tree.diagram_hierarchy.graphString shouldBe
             """
               |+ aaa
               |: %%%%%
@@ -49,7 +49,7 @@ class HierarchySpec extends BaseSpec {
               |    %%%%%
               |""".stripMargin
 
-          tn2.treeWithArrowTexts.diagram_hierarchy.treeString shouldBe
+          tn2.treeWithArrowTexts.diagram_hierarchy.graphString shouldBe
             """
               |+ aaa
               |: %%%%%
@@ -73,7 +73,7 @@ class HierarchySpec extends BaseSpec {
       }
 
       it("infinite tree") {
-        treeInf.tree.diagram_hierarchy.treeString shouldBe
+        treeInf.tree.diagram_hierarchy.graphString shouldBe
           """
             |+ abcdefgh
             |!-+ abcdefg
@@ -149,7 +149,7 @@ class HierarchySpec extends BaseSpec {
     describe("treeString") {
       it("supports nodes each with 1 line str") {
 
-        tn1.tree.diagram_hierarchy.treeString shouldBe
+        tn1.tree.diagram_hierarchy.graphString shouldBe
           """
             |aaa
             | ‣ bbb
@@ -162,7 +162,7 @@ class HierarchySpec extends BaseSpec {
       it("... or not") {
 
         // TODO: this is wrong! second line is not flushed
-        tn2.tree.diagram_hierarchy.treeString shouldBe
+        tn2.tree.diagram_hierarchy.graphString shouldBe
           """
             |aaa
             |%%%%%

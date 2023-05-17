@@ -103,7 +103,7 @@ trait Hierarchy extends Hierarchy.Format {
       }
     }
 
-    override lazy val treeString: String = semilattice.maxNodeOpt
+    override lazy val graphString: String = semilattice.maxNodeOpt
       .map { nn =>
         SubViz(nn).treeString
       }

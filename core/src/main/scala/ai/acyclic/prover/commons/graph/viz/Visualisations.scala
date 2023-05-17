@@ -23,7 +23,7 @@ trait Visualisations {
 
     val semilattice: UB[N]
 
-    lazy val treeString: String = "[MISSING]"
+    lazy val graphString: String = "[MISSING]"
   }
 
   object _TextViz {
