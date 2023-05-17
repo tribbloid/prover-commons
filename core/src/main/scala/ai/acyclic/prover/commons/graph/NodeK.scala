@@ -1,15 +1,15 @@
 package ai.acyclic.prover.commons.graph
 
-trait NodeKind[+L <: Law] extends Lawful.ConstructKind[L] {
+trait NodeK[+L <: Law] extends Lawful.Construct[L] {
 
-  import NodeKind._
+  import NodeK._
 
   def value: Value // bound type of values of this node and all its descendants, NOT the type of this value!
 
   protected def nodeTextC: String = value.toString
   final lazy val nodeText: String = nodeTextC
 
-  private[this] type Compat = NodeKind.Compat[L, Value]
+  private[this] type Compat = NodeK.Compat[L, Value]
 
   protected def inductionC: Seq[(_A, Compat)]
   lazy val induction = inductionC
@@ -49,7 +49,7 @@ trait NodeKind[+L <: Law] extends Lawful.ConstructKind[L] {
     */
   lazy val identityKey: Option[Any] = evalCacheKey
 
-  def map[V2](fn: Value => V2): NodeKind.Aux[L, V2] = Mapped(this: Compat, fn)
+  def map[V2](fn: Value => V2): NodeK.Aux[L, V2] = Mapped(this: Compat, fn)
 
   def upcast[V2](
       implicit
@@ -63,15 +63,15 @@ trait NodeKind[+L <: Law] extends Lawful.ConstructKind[L] {
   }
 }
 
-object NodeKind {
+object NodeK {
 
-  type Aux[+L <: Law, V] = NodeKind[L] { type Value = V }
-  trait AuxEx[+L <: Law, V] extends NodeKind[L] { type Value = V }
+  type Aux[+L <: Law, V] = NodeK[L] { type Value = V }
+  trait AuxEx[+L <: Law, V] extends NodeK[L] { type Value = V }
 
   // Acronym of "Less Than"
   type Compat[+L <: Law, +V] = Aux[L, _ <: V]
 
-  trait Untyped[+L <: Law] extends NodeKind[L] {
+  trait Untyped[+L <: Law] extends NodeK[L] {
     // actually self typed, but that doesn't convey any extra information
 
     type Value >: this.type
@@ -79,8 +79,8 @@ object NodeKind {
   }
 
   case class Mapped[L <: Law, V, V2](
-      original: NodeKind.Compat[L, V],
-      fn: V => V2
+                                      original: NodeK.Compat[L, V],
+                                      fn: V => V2
   ) extends AuxEx[L, V2] {
 
     override val law: original.law.type = original.law
@@ -89,7 +89,7 @@ object NodeKind {
 
     override protected def nodeTextC: String = original.nodeText
 
-    override protected def inductionC: Seq[(_A, NodeKind.Aux[L, V2])] = {
+    override protected def inductionC: Seq[(_A, NodeK.Aux[L, V2])] = {
       original.induction.map {
         case (a, n) =>
           a -> Mapped(n, fn)

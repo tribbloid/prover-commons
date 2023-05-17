@@ -45,7 +45,7 @@ trait Hierarchy extends Hierarchy.Format {
 
   case class Viz[V](override val semilattice: UB[V]) extends TextViz[V] {
 
-    case class SubViz(head: Local.Semilattice.Upper.NodeCompat[V], depth: Int = maxDepth) {
+    case class SubViz(head: Local.Semilattice.Upper.Node[V], depth: Int = maxDepth) {
 
       lazy val treeString: String = {
 

@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.local.ops
 import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Hasse
-import ai.acyclic.prover.commons.graph.{NodeKind, RewriterKind}
+import ai.acyclic.prover.commons.graph.{NodeK, RewriterK}
 
 import scala.language.existentials
 
@@ -45,7 +45,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
 
       val result = {
 
-        val newNode: Vector[NodeKind.Aux[ArgLaw, V2]] = known.map { n =>
+        val newNode: Vector[NodeK.Aux[ArgLaw, V2]] = known.map { n =>
           n.map(v => fn(v): V2)
         }
 
@@ -217,7 +217,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
   ) {
 
     private val delegate = Transform(
-      rewriter = RewriterKind.DoNotRewrite(arg.law),
+      rewriter = RewriterK.DoNotRewrite(arg.law),
       maxDepth,
       down = { v => down(v); Seq(v) },
       up = { v => up(v); Seq(v) }
@@ -248,14 +248,14 @@ object GraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[L <: Local.Graph._L, V](argPlan: LocalEngine.PlanKind.Aux[L, V]) extends GraphUnary {
+  case class ^[L <: Local.Graph._L, V](argPlan: LocalEngine.PlanK.Aux[L, V]) extends GraphUnary {
 
     override type ArgLaw = L
 
     override type ArgV = V
 
     case class &&[L2 <: Local.Graph._L, V2](
-        argPlan: LocalEngine.PlanKind.Aux[L2, V2]
+        argPlan: LocalEngine.PlanK.Aux[L2, V2]
     ) extends GraphBinary {
 
       override type Prev = ^.this.type

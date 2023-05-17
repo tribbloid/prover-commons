@@ -1,22 +1,20 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.Same
-
-trait GraphKind[+L <: Law] extends Lawful.ConstructKind[L] {
+trait GraphK[+L <: Law] extends Lawful.Construct[L] {
 
   type _E <: Engine
   def engine: _E
 
   type Dataset[+_]
 
-  def entriesC: Dataset[NodeKind.Compat[L, Value]]
+  def entriesC: Dataset[NodeK.Compat[L, Value]]
 }
 
-object GraphKind {
+object GraphK {
 
-  type Aux[+L <: Law, V] = GraphKind[L] { type Value = V }
+  type Aux[+L <: Law, V] = GraphK[L] { type Value = V }
 
-  trait AuxT[+L <: Law, V] extends GraphKind[L] {
+  trait AuxT[+L <: Law, V] extends GraphK[L] {
     type Value = V
   }
 

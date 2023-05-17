@@ -5,20 +5,20 @@ import ai.acyclic.prover.commons.graph.viz.Hierarchy
 
 object TreeFixture {
 
-  trait _TV {
+  trait TV {
 
     def text: String
-    def children: collection.Seq[_TV]
+    def children: collection.Seq[TV]
   }
 
-  case class TV(
+  case class TVF(
       text: String,
-      children: Seq[TV] = Nil
-  ) extends _TV {}
+      children: Seq[TVF] = Nil
+  ) extends TV {}
 
   case class TVInf(
       text: String
-  ) extends _TV {
+  ) extends TV {
 
     override def children: Seq[TVInf] = {
 
@@ -32,16 +32,17 @@ object TreeFixture {
     }
   }
 
-  case class Node(value: _TV) extends Local.Tree.Node[_TV] {
+  trait TreeNode extends Local.Tree.NodeImpl[TV] {
 
-    override protected def nodeTextC = value.text
+    final override protected def nodeTextC = value.text
+  }
+
+  case class Node(value: TV) extends TreeNode {
 
     override protected def inductionC = value.children.map(v => Node(v)).toSeq
   }
 
-  case class NodeWithArrowText(value: _TV) extends Local.Tree.Node[_TV] {
-
-    override protected def nodeTextC = value.text
+  case class NodeWithArrowText(value: TV) extends TreeNode {
 
     override protected def inductionC = {
 
@@ -63,31 +64,31 @@ object TreeFixture {
     Top5
   }
 
-  val tn1 = TV(
+  val tn1 = TVF(
     "aaa",
     Seq(
-      TV(
+      TVF(
         "bbb",
         Seq(
-          TV("ddd")
+          TVF("ddd")
         )
       ),
-      TV(
+      TVF(
         "ccc"
       )
     )
   )
 
-  val tn2 = TV( // TODO: simplify this with graph Transform
+  val tn2 = TVF( // TODO: simplify this with graph Transform
     "aaa\n%%%%%",
     Seq(
-      TV(
+      TVF(
         "bbb\n%%%%%",
         Seq(
-          TV("ddd\n%%%%%")
+          TVF("ddd\n%%%%%")
         )
       ),
-      TV(
+      TVF(
         "ccc\n%%%%%"
       )
     )
@@ -95,7 +96,7 @@ object TreeFixture {
 
   val treeInf = TVInf("abcdefgh")
 
-  implicit class TVView(self: _TV) {
+  implicit class TVView(self: TV) {
 
     def tree =
       Local.Tree(Node(self))

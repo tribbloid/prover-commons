@@ -43,13 +43,13 @@ trait Hasse extends Hasse.Format {
 
   def apply[V](s: UB[V]): Viz[V] = Viz(s)
 
-  val sameness = Same.ByEquality.Of[NodeCompat[_]](v => v.identityKey)
+  val sameness = Same.ByEquality.Of[Node[_]](v => v.identityKey)
 
   case class Viz[V](override val semilattice: UB[V]) extends TextViz[V] {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(override val self: NodeCompat[V]) extends sameness.Facade {
+    case class NodeWrapper(override val delegate: Node[V]) extends sameness.Facade {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
@@ -105,7 +105,7 @@ trait Hasse extends Hasse.Format {
           .map(_.rectangular)
 
         val nodeText = {
-          lazy val nodeText = self.nodeText
+          lazy val nodeText = delegate.nodeText
 
           val ss = bindingOpt
             .map { binding =>

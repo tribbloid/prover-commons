@@ -27,9 +27,10 @@ package object commons {
     *
     *   - Should contains at least 2 characters to differentiate from higher-kind-arguments
     *   - `T` for type classes (can be omitted if it is a companion object)
-    *   - `Kind` for generic type that has too many type parameters, only their much shorter aliases are supposed to be
+    *   - `K` for generic type that has too many type parameters, only their much shorter aliases are supposed to be
     *     used
-    *   - `Ex` for an extendable type, an alias of a trait with no refinement, `AuxEx` is an example
+    *   - `Ex` for an extendable type, a trait or type alias that can be extended, `AuxEx` is an example
+    *   - `Impl` for implementation, ditto
     *   - `Lt`, same as `Lt` as a type name but can appear anywhere
     *   - `Compat`, same as `Compat` as a type name but can appear anywhere
     *

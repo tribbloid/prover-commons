@@ -1,13 +1,13 @@
-package ai.acyclic.prover.commons.graph.local.ops
-
-import ai.acyclic.prover.commons.graph.GraphFixture
-import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.testlib.BaseSpec
-
-class GraphBinarySpec extends BaseSpec {
-
-  import GraphFixture._
-
+//package ai.acyclic.prover.commons.graph.local.ops
+//
+//import ai.acyclic.prover.commons.graph.GraphFixture
+//import ai.acyclic.prover.commons.graph.local.Local
+//import ai.acyclic.prover.commons.testlib.BaseSpec
+//
+//class GraphBinarySpec extends BaseSpec {
+//
+//  import GraphFixture._
+//
 //  describe("Union") {
 //    it("of graphs") {
 //
@@ -22,4 +22,4 @@ class GraphBinarySpec extends BaseSpec {
 //      )
 //    }
 //  }
-}
+//}

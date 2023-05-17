@@ -11,7 +11,7 @@ trait Topology extends Lawful {
     type _A = ArrowUB
   }
 
-  type GraphLike[V] = GraphKind.Aux[_L, V]
+  type GraphLike[V] = GraphK.Aux[_L, V]
 
   implicit def summon: this.type = this
 }
@@ -49,7 +49,7 @@ object Topology {
       type ArrowUB = Arrow.`~>`.^
       trait _L extends SemilatticeT._L with GraphT.OutboundT._L
 
-      implicit class NodeOps[V](n: NodeCompat[V]) {
+      implicit class NodeOps[V](n: Node[V]) {
 
         def isLeaf: Boolean = n.induction.isEmpty
       }
@@ -65,8 +65,8 @@ object Topology {
 
   private def compileTimeCheck[V](): Unit = {
 
-    implicitly[PosetT.NodeCompat[Int] <:< GraphT.NodeCompat[Int]]
+    implicitly[PosetT.Node[Int] <:< GraphT.Node[Int]]
 
-    implicitly[PosetT.NodeCompat[V] <:< GraphT.NodeCompat[V]]
+    implicitly[PosetT.Node[V] <:< GraphT.Node[V]]
   }
 }

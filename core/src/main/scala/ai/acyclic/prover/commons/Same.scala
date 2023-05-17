@@ -87,24 +87,24 @@ object Same {
       }
     }
 
-    trait Facade {
-      def self: Any
+    abstract class Facade {
+      def delegate: Any
 
       final override def hashCode(): Int = {
-        idOrConstructionHash(self)
+        idOrConstructionHash(delegate)
       }
 
       final override def equals(that: Any): Boolean = {
         that match {
-          case Wrapper(thatV) => By.this.proveSafely(self, thatV)
+          case Wrapper(thatV) => By.this.proveSafely(delegate, thatV)
           case _              => false
         }
       }
     }
 
-    case class Wrapper[T](override val self: T) extends Facade {
+    case class Wrapper[T](override val delegate: T) extends Facade {
 
-      final override def toString: String = "" + self
+      final override def toString: String = "" + delegate
     }
 
     case class Correspondence[K, V]() {
