@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.graph.Topology.GraphT
 
 object Local extends LocalEngine.Syntax {
 
@@ -42,7 +41,7 @@ object Local extends LocalEngine.Syntax {
 
     implicitly[Local.Graph.Outbound.law._A <:< Local.Tree.law._A]
 
-    val example = Local.Graph.Outbound[Int]()
+    val example = Local.Graph.Outbound.empty[Int]
     implicitly[example.law._A <:< Local.Tree.law._A]
   }
 }

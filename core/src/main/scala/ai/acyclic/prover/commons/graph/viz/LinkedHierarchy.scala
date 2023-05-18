@@ -102,8 +102,8 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
       object RefBindingT extends Local.Tree.UntypedDef {
 
         case class Node(
-                         override val original: Local.Graph.Outbound.Node[V],
-                         id: UUID = UUID.randomUUID()
+            override val original: Local.Graph.Outbound.Node[V],
+            id: UUID = UUID.randomUUID()
         ) extends UntypedNode
             with _RefBinding {
 
@@ -195,6 +195,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
         val roots: Vector[Local.Graph.Outbound.Node[V]] = semilattice.entriesC
         roots.map { node =>
           val refBinding: RefBindingT.Node = RefBindingT.Node(node)
+
           Local.Tree(refBinding)
         }
       }

@@ -45,7 +45,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
 
       val result = {
 
-        val newNode: Vector[NodeK.Aux[ArgLaw, V2]] = known.map { n =>
+        val newNode = known.map { n =>
           n.map(v => fn(v): V2)
         }
 

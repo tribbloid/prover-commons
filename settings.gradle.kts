@@ -4,7 +4,7 @@
 include(
     ":core",
 //    ":compile",
-//    ":notebook"
+    ":notebook"
 )
 
 

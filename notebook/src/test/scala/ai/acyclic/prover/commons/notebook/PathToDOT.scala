@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.notebook
 
 import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 import scala.collection.mutable
@@ -20,9 +20,9 @@ object PathToDOT {
     }
   }
 
-  case class G(rootValues: Seq[Forward]) extends Graph.Outbound[Forward] {
+  object G {
 
-    case class Ops(value: Forward) extends OutboundT.NodeCompat[Forward] {
+    case class Ops(value: Forward) extends Local.Graph.Outbound.NodeImpl[Forward] {
 
       override protected def getNodeText: String = value.text
 
@@ -32,6 +32,12 @@ object PathToDOT {
         }
       }
     }
+
+    def apply(rootValues: Seq[Forward]) = Local.Graph(
+      rootValues.map { v =>
+        Ops(v)
+      }: _*
+    )
   }
 
   trait LambdaCube {
@@ -117,17 +123,17 @@ class PathToDOT extends BaseSpec {
 
     val g = G(Seq(LambdaCube.f))
 
-    print_@(g.diagram_Hasse.treeString)
+    print_@(g.diagram_Hasse.graphString)
 
-    print_@(g.diagram_linkedHierarchy.treeString)
+    print_@(g.diagram_linkedHierarchy.graphString)
   }
 
   it("DOT") {
 
     val g = G(Seq(ToDOT.f))
 
-    print_@(g.diagram_Hasse.treeString)
+    print_@(g.diagram_Hasse.graphString)
 
-    print_@(g.diagram_linkedHierarchy.treeString)
+    print_@(g.diagram_linkedHierarchy.graphString)
   }
 }

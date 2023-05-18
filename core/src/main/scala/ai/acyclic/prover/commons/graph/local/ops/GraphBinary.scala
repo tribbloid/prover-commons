@@ -20,7 +20,7 @@ trait GraphBinary extends Local.Graph.Ops.Binary {
       val roots1: Seq[prev.Arg.Node[VV]] = e1.map(n => n.upcast[VV])
       val roots2: Seq[Arg.Node[VV]] = e2.map(n => n.upcast[VV])
 
-      Local.Graph.apply(
+      Local.Graph.make(
         (roots1 ++ roots2).distinct: _*
       )
     }

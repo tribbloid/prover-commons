@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.Same
-
 trait Engine {
   self: Singleton =>
 
@@ -87,8 +85,13 @@ trait Engine {
     trait PlanEx[v] extends PlanK.AuxEx[_L, v]
   }
 
+  object GraphBuilder {
+
+    type Aux[L] = GraphBuilder[_] { type _L = L }
+  }
+
   abstract class GraphBuilder[T <: Topology](val topology: T) extends TheLawful {
-    self: Singleton =>
+//    self: Singleton =>
 
     type _L = topology._L
     val law: _L
@@ -113,12 +116,20 @@ trait Engine {
 
     def make[V](
         nodes: NodeK.Compat[_L, V]*
-    ): GraphLike[V] =
-      TheGraphK.Unchecked(parallelize(nodes))(law)
+    ): GraphLike[V] = makeTightest[_L, V](nodes: _*)(law)
 
-    def apply[V](
-        nodes: NodeK.Compat[_L, V]*
-    ): GraphLike[V] = make[V](nodes: _*)
+    def apply[LL <: _L, V](
+        nodes: NodeK.Compat[LL, V]*
+    )(
+        implicit
+        tightestLaw: LL
+    ): TheGraphK.Aux[LL, V] = makeTightest[LL, V](nodes: _*)
+
+//    def apply[V](
+//        nodes: NodeK.Compat[_L, V]*
+//    ): GraphLike[V] = make(nodes: _*)
+
+    def empty[V]: GraphLike[V] = make[V]()
 
     trait UntypedDef {
       self: Singleton =>

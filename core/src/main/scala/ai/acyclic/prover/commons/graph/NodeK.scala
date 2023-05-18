@@ -49,12 +49,12 @@ trait NodeK[+L <: Law] extends Lawful.Construct[L] {
     */
   lazy val identityKey: Option[Any] = evalCacheKey
 
-  def map[V2](fn: Value => V2): NodeK.Aux[L, V2] = Mapped(this: Compat, fn)
+  def map[V2](fn: Value => V2): Mapped[L, Value, V2] = Mapped(this: Compat, fn)
 
   def upcast[V2](
       implicit
       ev: Value <:< V2
-  ): Aux[L, V2] = map((v: Value) => v: V2)
+  ): Mapped[L, Value, V2] = map((v: Value) => v: V2)
 
   object asIterable extends Iterable[Value] {
 
@@ -79,8 +79,8 @@ object NodeK {
   }
 
   case class Mapped[L <: Law, V, V2](
-                                      original: NodeK.Compat[L, V],
-                                      fn: V => V2
+      original: NodeK.Compat[L, V],
+      fn: V => V2
   ) extends AuxEx[L, V2] {
 
     override val law: original.law.type = original.law
@@ -89,7 +89,7 @@ object NodeK {
 
     override protected def nodeTextC: String = original.nodeText
 
-    override protected def inductionC: Seq[(_A, NodeK.Aux[L, V2])] = {
+    override protected def inductionC = {
       original.induction.map {
         case (a, n) =>
           a -> Mapped(n, fn)
