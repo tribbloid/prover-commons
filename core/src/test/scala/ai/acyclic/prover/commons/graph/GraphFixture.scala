@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.local.Local.Graph
+import ai.acyclic.prover.commons.graph.local.Local.AnyGraph
 
 import java.util.UUID
 import scala.collection.mutable.ArrayBuffer
@@ -17,7 +17,7 @@ object GraphFixture {
     val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren: _*)
   }
 
-  trait OGraphNode extends Local.Graph.Outbound.NodeImpl[GV] {
+  trait OGraphNode extends Local.AnyGraph.Outbound.NodeImpl[GV] {
 
     override protected def nodeTextC = value.text
 
@@ -43,11 +43,11 @@ object GraphFixture {
     }
   }
 
-  case class GVRewriter(builder: GV => Local.Graph.Node[GV]) extends Local.Graph.RewriterImpl[GV] {
+  case class GVRewriter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.RewriterImpl[GV] {
 
-    override def rewrite(src: Graph.Node[GV])(
-        inductions: Seq[Graph.Node[GV]]
-    ): Local.Graph.Node[GV] = {
+    override def rewrite(src: AnyGraph.Node[GV])(
+        inductions: Seq[AnyGraph.Node[GV]]
+    ): Local.AnyGraph.Node[GV] = {
 
       val result = src.value.copy()
       result.children.clear()
@@ -120,9 +120,9 @@ object GraphFixture {
   implicit class GVsView(self: Seq[GV]) {
 
     def graph =
-      Graph.Outbound(self.map(v => Node(v)): _*)
+      AnyGraph.Outbound(self.map(v => Node(v)): _*)
 
     def graphWithArrowText =
-      Graph.Outbound(self.map(v => NodeWithArrowText(v)): _*)
+      AnyGraph.Outbound(self.map(v => NodeWithArrowText(v)): _*)
   }
 }

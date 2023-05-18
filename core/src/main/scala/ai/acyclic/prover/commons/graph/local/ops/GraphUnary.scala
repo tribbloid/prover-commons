@@ -7,10 +7,10 @@ import ai.acyclic.prover.commons.graph.{NodeK, RewriterK}
 
 import scala.language.existentials
 
-trait GraphUnary extends Local.Graph.Ops.Unary {
+trait GraphUnary extends Local.AnyGraph.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.Graph._L]
+    implicitly[ArgLaw <:< Local.AnyGraph.Law_/\]
   }
 
   import GraphUnary._
@@ -39,7 +39,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
       fn: ArgV => V2
   ) extends Arg.PlanEx[V2] {
 
-    override def compute: Arg.GraphLike[V2] = {
+    override def compute: Arg.Graph[V2] = {
 
       val known: Vector[ArgNode] = distinctEntries
 
@@ -49,7 +49,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
           n.map(v => fn(v): V2)
         }
 
-        Local.Graph.makeTightest[ArgLaw, V2](newNode: _*)(argPlan.law)
+        Local.AnyGraph.makeTightest[ArgLaw, V2](newNode: _*)(argPlan.law)
       }
 
       result
@@ -106,7 +106,7 @@ trait GraphUnary extends Local.Graph.Ops.Unary {
 
       override def compute = {
         val transformed: Seq[ArgNode] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
-        Local.Graph.makeTightest[ArgLaw, ArgV](transformed: _*)(argPlan.law)
+        Local.AnyGraph.makeTightest[ArgLaw, ArgV](transformed: _*)(argPlan.law)
       }
     }
 
@@ -248,13 +248,13 @@ object GraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[L <: Local.Graph._L, V](argPlan: LocalEngine.PlanK.Aux[L, V]) extends GraphUnary {
+  case class ^[L <: Local.AnyGraph.Law_/\, V](argPlan: LocalEngine.PlanK.Aux[L, V]) extends GraphUnary {
 
     override type ArgLaw = L
 
     override type ArgV = V
 
-    case class &&[L2 <: Local.Graph._L, V2](
+    case class &&[L2 <: Local.AnyGraph.Law_/\, V2](
         argPlan: LocalEngine.PlanK.Aux[L2, V2]
     ) extends GraphBinary {
 

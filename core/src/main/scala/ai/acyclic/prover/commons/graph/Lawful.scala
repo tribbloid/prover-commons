@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.graph
 
 trait Lawful {
-  type _L <: Law
+  type Law_/\ <: Law
 
-  type Node[v] = NodeK.Compat[_L, v]
+  type Node[v] = NodeK.Compat[Law_/\, v]
 
-  type Rewriter[v] = RewriterK.Aux[_L, v]
+  type Rewriter[v] = RewriterK.Aux[Law_/\, v]
 }
 
 object Lawful {

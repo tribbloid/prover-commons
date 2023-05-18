@@ -3,10 +3,10 @@ package ai.acyclic.prover.commons.graph.local.ops
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy
 
-trait OutboundGraphUnary extends Local.Graph.Outbound.Ops.Unary {
+trait OutboundGraphUnary extends Local.AnyGraph.Outbound.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.Graph.Outbound._L]
+    implicitly[ArgLaw <:< Local.AnyGraph.Outbound.Law_/\]
   }
 
   def diagram_linkedHierarchy(
@@ -17,7 +17,7 @@ trait OutboundGraphUnary extends Local.Graph.Outbound.Ops.Unary {
 
 object OutboundGraphUnary {
 
-  case class ^[L <: Local.Graph.Outbound._L, V](argPlan: LocalEngine.PlanK.Aux[L, V]) extends OutboundGraphUnary {
+  case class ^[L <: Local.AnyGraph.Outbound.Law_/\, V](argPlan: LocalEngine.PlanK.Aux[L, V]) extends OutboundGraphUnary {
 
     override type ArgLaw = L
 

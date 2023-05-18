@@ -32,7 +32,9 @@ package object commons {
     *   - `Ex` for an extendable type, a trait or type alias that can be extended, `AuxEx` is an example
     *   - `Impl` for implementation, ditto
     *   - `Lt`, same as `Lt` as a type name but can appear anywhere
-    *   - `Compat`, same as `Compat` as a type name but can appear anywhere
+    *   - `Compat` for compatible type, same as `Compat` as a type name but can appear anywhere
+    *   - `_/\` for type upper bound
+    *   - `_\/` for type lower bound
     *
     * type or class name prefixes:
     *

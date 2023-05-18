@@ -40,7 +40,7 @@ object LinkedHierarchy extends Visualisations {
       .build
   }
 
-  type UB[V] = Local.Graph.Outbound[V]
+  type UB[V] = Local.AnyGraph.Outbound[V]
 
   implicit lazy val defaultFormat: Default = new Default(Hierarchy.default)
 
@@ -102,7 +102,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
       object RefBindingT extends Local.Tree.UntypedDef {
 
         case class Node(
-            override val original: Local.Graph.Outbound.Node[V],
+            override val original: Local.AnyGraph.Outbound.Node[V],
             id: UUID = UUID.randomUUID()
         ) extends UntypedNode
             with _RefBinding {
@@ -192,7 +192,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
       }
 
       lazy val delegates: Seq[Local.Tree[RefBindingT.Node]] = {
-        val roots: Vector[Local.Graph.Outbound.Node[V]] = semilattice.entriesC
+        val roots: Vector[Local.AnyGraph.Outbound.Node[V]] = semilattice.entriesC
         roots.map { node =>
           val refBinding: RefBindingT.Node = RefBindingT.Node(node)
 

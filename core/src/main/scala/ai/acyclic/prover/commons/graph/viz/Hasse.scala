@@ -16,7 +16,7 @@ import scala.collection.mutable
 // TODO: rename to Flow! Hasse diagram is only applicable to poset
 object Hasse extends Visualisations {
 
-  type UB[V] = Local.Graph[V]
+  type UB[V] = Local.AnyGraph[V]
 
   trait Default extends Hasse {
 
@@ -31,7 +31,7 @@ object Hasse extends Visualisations {
 trait Hasse extends Hasse.Format {
 
   import Hasse._
-  import Local.Graph._
+  import Local.AnyGraph._
 
   lazy val maxDepth = 20
 

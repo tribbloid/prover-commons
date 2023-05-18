@@ -110,7 +110,7 @@ class GraphUnarySpec extends BaseSpec {
     def proto = {
       val inc = new AtomicInteger(0)
       val result = GraphUnary
-        .^(diamond.graph: Local.Graph[GV])
+        .^(diamond.graph: Local.AnyGraph[GV])
         .TransformLinear(
           GVRewriter(v => Node(v)),
           4,

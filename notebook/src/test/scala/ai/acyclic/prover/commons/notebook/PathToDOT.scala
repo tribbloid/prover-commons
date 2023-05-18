@@ -22,7 +22,7 @@ object PathToDOT {
 
   object G {
 
-    case class Ops(value: Forward) extends Local.Graph.Outbound.NodeImpl[Forward] {
+    case class Ops(value: Forward) extends Local.AnyGraph.Outbound.NodeImpl[Forward] {
 
       override protected def getNodeText: String = value.text
 
@@ -33,7 +33,7 @@ object PathToDOT {
       }
     }
 
-    def apply(rootValues: Seq[Forward]) = Local.Graph(
+    def apply(rootValues: Seq[Forward]) = Local.AnyGraph(
       rootValues.map { v =>
         Ops(v)
       }: _*

@@ -12,7 +12,7 @@ object LocalEngine extends Engine {
 
 //  private def compileTimeCheck[V](): Unit = {}
 
-  implicit def graphAsUnary[L <: Local.Graph._L, V](
+  implicit def graphAsUnary[L <: Local.AnyGraph.Law_/\, V](
       self: LocalEngine.TheGraphK.Aux[L, V]
   ): GraphUnary.^[L, V] = {
 
@@ -21,7 +21,7 @@ object LocalEngine extends Engine {
     GraphUnary.^(leaf)
   }
 
-  implicit def outboundGraphAsUnary[L <: Local.Graph.Outbound._L, V](
+  implicit def outboundGraphAsUnary[L <: Local.AnyGraph.Outbound.Law_/\, V](
       self: LocalEngine.TheGraphK.Aux[L, V]
   ): OutboundGraphUnary.^[L, V] = {
 
@@ -30,7 +30,7 @@ object LocalEngine extends Engine {
     OutboundGraphUnary.^(leaf)
   }
 
-  implicit def upperSemilatticeAsUnary[L <: Local.Semilattice.Upper._L, V](
+  implicit def upperSemilatticeAsUnary[L <: Local.Semilattice.Upper.Law_/\, V](
       self: LocalEngine.TheGraphK.Aux[L, V]
   ): UpperSemilatticeUnary.^[L, V] = {
 

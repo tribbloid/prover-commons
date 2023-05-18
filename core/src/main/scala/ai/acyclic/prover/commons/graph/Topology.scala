@@ -3,51 +3,50 @@ package ai.acyclic.prover.commons.graph
 trait Topology extends Lawful {
   self: Singleton =>
 
-  type ArrowUB <: Arrow
+  type Arrow_/\ <: Arrow
 
-  override type _L <: Law { type _A <: ArrowUB }
+  override type Law_/\ <: Law { type _A <: Arrow_/\ }
 
   trait LawImpl extends Law {
-    type _A = ArrowUB
+    type _A = Arrow_/\
   }
 
-  type GraphLike[V] = GraphK.Aux[_L, V]
+  type Graph[V] = GraphK.Aux[Law_/\, V]
 
   implicit def summon: this.type = this
 }
 
 object Topology {
 
-  object GraphT extends Topology {
+  object AnyGraphT extends Topology {
 
-    type ArrowUB = Arrow
-    trait _L extends Law
+    type Arrow_/\ = Arrow
+    trait Law_/\ extends Law
 
     object OutboundT extends Topology {
 
-      type ArrowUB = Arrow.`~>`.^
-      trait _L extends GraphT._L {
+      type Arrow_/\ = Arrow.`~>`.^
+      trait Law_/\ extends AnyGraphT.Law_/\ {
         type _A <: Arrow.`~>`.^
       }
-
     }
   }
 
   object PosetT extends Topology {
 
-    type ArrowUB = Arrow
-    trait _L extends GraphT._L
+    type Arrow_/\ = Arrow
+    trait Law_/\ extends AnyGraphT.Law_/\
   }
 
   object SemilatticeT extends Topology {
 
-    type ArrowUB = Arrow
-    trait _L extends PosetT._L
+    type Arrow_/\ = Arrow
+    trait Law_/\ extends PosetT.Law_/\
 
     object UpperT extends Topology {
 
-      type ArrowUB = Arrow.`~>`.^
-      trait _L extends SemilatticeT._L with GraphT.OutboundT._L
+      type Arrow_/\ = Arrow.`~>`.^
+      trait Law_/\ extends SemilatticeT.Law_/\ with AnyGraphT.OutboundT.Law_/\
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -58,15 +57,15 @@ object Topology {
 
   object TreeT extends Topology {
 
-    type ArrowUB = Arrow.`~>`.^
-    trait _L extends SemilatticeT.UpperT._L
+    type Arrow_/\ = Arrow.`~>`.^
+    trait Law_/\ extends SemilatticeT.UpperT.Law_/\
 
   }
 
   private def compileTimeCheck[V](): Unit = {
 
-    implicitly[PosetT.Node[Int] <:< GraphT.Node[Int]]
+    implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
 
-    implicitly[PosetT.Node[V] <:< GraphT.Node[V]]
+    implicitly[PosetT.Node[V] <:< AnyGraphT.Node[V]]
   }
 }

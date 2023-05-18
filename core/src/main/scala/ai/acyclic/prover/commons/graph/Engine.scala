@@ -78,11 +78,11 @@ trait Engine {
 
   trait TheLawful extends Lawful {
 
-    type GraphLike[v] = TheGraphK.Aux[_L, v]
+    type Graph[v] = TheGraphK.Aux[Law_/\, v]
 
-    type Plan[v] = PlanK.Aux[_L, v]
+    type Plan[v] = PlanK.Aux[Law_/\, v]
 
-    trait PlanEx[v] extends PlanK.AuxEx[_L, v]
+    trait PlanEx[v] extends PlanK.AuxEx[Law_/\, v]
   }
 
   object GraphBuilder {
@@ -93,20 +93,20 @@ trait Engine {
   abstract class GraphBuilder[T <: Topology](val topology: T) extends TheLawful {
 //    self: Singleton =>
 
-    type _L = topology._L
-    val law: _L
+    type Law_/\ = topology.Law_/\
+    val law: Law_/\
 
-    trait NodeImpl[V] extends NodeK.AuxEx[_L, V] {
-
-      final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
-    }
-
-    trait RewriterImpl[V] extends RewriterK.AuxEx[_L, V] {
+    trait NodeImpl[V] extends NodeK.AuxEx[Law_/\, V] {
 
       final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
     }
 
-    def makeTightest[LL <: _L, V](
+    trait RewriterImpl[V] extends RewriterK.AuxEx[Law_/\, V] {
+
+      final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
+    }
+
+    def makeTightest[LL <: Law_/\, V](
         nodes: NodeK.Compat[LL, V]*
     )(
         implicit
@@ -115,10 +115,10 @@ trait Engine {
       TheGraphK.Unchecked(parallelize(nodes))
 
     def make[V](
-        nodes: NodeK.Compat[_L, V]*
-    ): GraphLike[V] = makeTightest[_L, V](nodes: _*)(law)
+        nodes: NodeK.Compat[Law_/\, V]*
+    ): Graph[V] = makeTightest[Law_/\, V](nodes: _*)(law)
 
-    def apply[LL <: _L, V](
+    def apply[LL <: Law_/\, V](
         nodes: NodeK.Compat[LL, V]*
     )(
         implicit
@@ -129,12 +129,12 @@ trait Engine {
 //        nodes: NodeK.Compat[_L, V]*
 //    ): GraphLike[V] = make(nodes: _*)
 
-    def empty[V]: GraphLike[V] = make[V]()
+    def empty[V]: Graph[V] = make[V]()
 
     trait UntypedDef {
       self: Singleton =>
 
-      trait UntypedNode extends NodeK.Untyped[_L] {
+      trait UntypedNode extends NodeK.Untyped[Law_/\] {
         self: UntypedDef.this.Node =>
 
         final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
@@ -144,7 +144,7 @@ trait Engine {
 
       type Node <: UntypedNode
 
-      final type Graph = TheGraphK.Aux[_L, Node]
+      type Graph = TheGraphK.Aux[Law_/\, Node]
     }
 
     trait Ops {
@@ -162,19 +162,19 @@ trait Engine {
       type Prev
       val prev: Prev
 
-      type AcceptingLaw = GraphBuilder.this._L
+      type AcceptingLaw = GraphBuilder.this.Law_/\
       type ArgLaw <: AcceptingLaw
       type ArgV
 
       object Arg extends TheLawful {
 
-        type _L = ArgLaw
+        type Law_/\ = ArgLaw
       }
 
       type ArgPlan = Arg.Plan[ArgV]
       def argPlan: ArgPlan
 
-      type Arg = Arg.GraphLike[ArgV]
+      type Arg = Arg.Graph[ArgV]
       def arg: Arg = argPlan.resolve
 
       type ArgNode = Arg.Node[ArgV]
@@ -203,38 +203,38 @@ trait Engine {
 
   trait Syntax {
 
-    object Graph extends GraphBuilder(GraphT) {
+    object AnyGraph extends GraphBuilder(AnyGraphT) {
 
-      object Outbound extends GraphBuilder(GraphT.OutboundT) {
-        object law extends _L with topology.LawImpl
+      object Outbound extends GraphBuilder(AnyGraphT.OutboundT) {
+        object law extends Law_/\ with topology.LawImpl
       }
-      type Outbound[V] = Outbound.GraphLike[V]
+      type Outbound[V] = Outbound.Graph[V]
 
-      object law extends _L with topology.LawImpl
+      object law extends Law_/\ with topology.LawImpl
     }
-    type Graph[V] = Graph.GraphLike[V]
+    type AnyGraph[V] = AnyGraph.Graph[V]
 
     object Poset extends GraphBuilder(PosetT) {
-      object law extends _L with topology.LawImpl
+      object law extends Law_/\ with topology.LawImpl
     }
-    type Poset[V] = Poset.GraphLike[V]
+    type Poset[V] = Poset.Graph[V]
 
     object Semilattice extends GraphBuilder(SemilatticeT) {
 
       object Upper extends GraphBuilder(SemilatticeT.UpperT) {
-        object law extends _L with topology.LawImpl
+        object law extends Law_/\ with topology.LawImpl
       }
-      type Upper[V] = Upper.GraphLike[V]
+      type Upper[V] = Upper.Graph[V]
 
-      object law extends _L with topology.LawImpl
+      object law extends Law_/\ with topology.LawImpl
     }
-    type Semilattice[V] = Semilattice.GraphLike[V]
+    type Semilattice[V] = Semilattice.Graph[V]
 
     object Tree extends GraphBuilder(TreeT) {
 
-      object law extends _L with topology.LawImpl
+      object law extends Law_/\ with topology.LawImpl
     }
-    type Tree[V] = Tree.GraphLike[V]
+    type Tree[V] = Tree.Graph[V]
 
   }
 

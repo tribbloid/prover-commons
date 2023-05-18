@@ -39,9 +39,9 @@ object Local extends LocalEngine.Syntax {
 
     implicitly[Local.Tree.law._A <:< Arrow.`~>`.^]
 
-    implicitly[Local.Graph.Outbound.law._A <:< Local.Tree.law._A]
+    implicitly[Local.AnyGraph.Outbound.law._A <:< Local.Tree.law._A]
 
-    val example = Local.Graph.Outbound.empty[Int]
+    val example = Local.AnyGraph.Outbound.empty[Int]
     implicitly[example.law._A <:< Local.Tree.law._A]
   }
 }

@@ -35,6 +35,7 @@ allprojects {
     // Cannot add extension with name 'bloop', as there is an extension already registered with that name
 
     apply(plugin = "scala")
+    apply(plugin = "io.github.cosmicsilence.scalafix")
 
     apply(plugin = "idea")
 

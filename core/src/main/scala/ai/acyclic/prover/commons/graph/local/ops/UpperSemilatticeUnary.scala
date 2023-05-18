@@ -10,7 +10,7 @@ import scala.util.control.Breaks
 trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.Semilattice.Upper._L]
+    implicitly[ArgLaw <:< Local.Semilattice.Upper.Law_/\]
   }
 
   // TODO: will trigger StackOverflow on cyclic graph or infinite acyclic graph
@@ -69,7 +69,7 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
 object UpperSemilatticeUnary {
 
-  case class ^[L <: Local.Semilattice.Upper._L, V](argPlan: LocalEngine.PlanK.Aux[L, V])
+  case class ^[L <: Local.Semilattice.Upper.Law_/\, V](argPlan: LocalEngine.PlanK.Aux[L, V])
       extends UpperSemilatticeUnary {
 
     override type ArgLaw = L

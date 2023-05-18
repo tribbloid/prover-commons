@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 
 trait Visualisations {
 
-  type UB[V] <: Local.Graph[V]
+  type UB[V] <: Local.AnyGraph[V]
 
   trait Format {
 
