@@ -94,16 +94,15 @@ trait Engine {
 //    self: Singleton =>
 
     type Law_/\ = topology.Law_/\
-    val law: Law_/\
 
     trait NodeImpl[V] extends NodeK.AuxEx[Law_/\, V] {
 
-      final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
+      final val law = topology.LawImpl
     }
 
     trait RewriterImpl[V] extends RewriterK.AuxEx[Law_/\, V] {
 
-      final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
+      final val law = topology.LawImpl
     }
 
     def makeTightest[LL <: Law_/\, V](
@@ -116,7 +115,7 @@ trait Engine {
 
     def make[V](
         nodes: NodeK.Compat[Law_/\, V]*
-    ): Graph[V] = makeTightest[Law_/\, V](nodes: _*)(law)
+    ): Graph[V] = makeTightest[Law_/\, V](nodes: _*)(topology.LawImpl)
 
     def apply[LL <: Law_/\, V](
         nodes: NodeK.Compat[LL, V]*
@@ -124,10 +123,6 @@ trait Engine {
         implicit
         tightestLaw: LL
     ): TheGraphK.Aux[LL, V] = makeTightest[LL, V](nodes: _*)
-
-//    def apply[V](
-//        nodes: NodeK.Compat[_L, V]*
-//    ): GraphLike[V] = make(nodes: _*)
 
     def empty[V]: Graph[V] = make[V]()
 
@@ -137,7 +132,7 @@ trait Engine {
       trait UntypedNode extends NodeK.Untyped[Law_/\] {
         self: UntypedDef.this.Node =>
 
-        final val law: GraphBuilder.this.law.type = GraphBuilder.this.law
+        final val law = topology.LawImpl
 
         type Value = UntypedDef.this.Node
       }
@@ -205,35 +200,24 @@ trait Engine {
 
     object AnyGraph extends GraphBuilder(AnyGraphT) {
 
-      object Outbound extends GraphBuilder(AnyGraphT.OutboundT) {
-        object law extends Law_/\ with topology.LawImpl
-      }
+      object Outbound extends GraphBuilder(AnyGraphT.OutboundT) {}
       type Outbound[V] = Outbound.Graph[V]
 
-      object law extends Law_/\ with topology.LawImpl
     }
     type AnyGraph[V] = AnyGraph.Graph[V]
 
-    object Poset extends GraphBuilder(PosetT) {
-      object law extends Law_/\ with topology.LawImpl
-    }
+    object Poset extends GraphBuilder(PosetT) {}
     type Poset[V] = Poset.Graph[V]
 
     object Semilattice extends GraphBuilder(SemilatticeT) {
 
-      object Upper extends GraphBuilder(SemilatticeT.UpperT) {
-        object law extends Law_/\ with topology.LawImpl
-      }
+      object Upper extends GraphBuilder(SemilatticeT.UpperT) {}
       type Upper[V] = Upper.Graph[V]
 
-      object law extends Law_/\ with topology.LawImpl
     }
     type Semilattice[V] = Semilattice.Graph[V]
 
-    object Tree extends GraphBuilder(TreeT) {
-
-      object law extends Law_/\ with topology.LawImpl
-    }
+    object Tree extends GraphBuilder(TreeT) {}
     type Tree[V] = Tree.Graph[V]
 
   }

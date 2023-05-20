@@ -37,11 +37,11 @@ object Local extends LocalEngine.Syntax {
 
     implicitly[Tree[V] <:< Semilattice.Upper[V]]
 
-    implicitly[Local.Tree.law._A <:< Arrow.`~>`.^]
+    implicitly[Local.Tree.topology.LawImpl._A <:< Arrow.`~>`.^]
 
-    implicitly[Local.AnyGraph.Outbound.law._A <:< Local.Tree.law._A]
+    implicitly[Local.AnyGraph.Outbound.topology.LawImpl._A <:< Local.Tree.topology.LawImpl._A]
 
     val example = Local.AnyGraph.Outbound.empty[Int]
-    implicitly[example.law._A <:< Local.Tree.law._A]
+    implicitly[example.law._A <:< Local.Tree.topology.LawImpl._A]
   }
 }

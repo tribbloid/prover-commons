@@ -78,7 +78,7 @@ object NodeK {
     final lazy val value: this.type = this
   }
 
-  case class Mapped[L <: Law, V, V2](
+  case class Mapped[+L <: Law, V, V2](
       original: NodeK.Compat[L, V],
       fn: V => V2
   ) extends AuxEx[L, V2] {

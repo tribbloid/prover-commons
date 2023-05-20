@@ -158,7 +158,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             }
           }
 
-          override protected def inductionC = {
+          override protected def inductionC: Seq[(Arrow.`~>`.^, RefBindingT.Node)] = {
 
             val result = if (!shouldExpand) {
               Nil

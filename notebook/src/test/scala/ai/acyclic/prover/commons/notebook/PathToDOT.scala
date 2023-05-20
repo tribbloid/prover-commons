@@ -22,15 +22,16 @@ object PathToDOT {
 
   object G {
 
-    case class Ops(value: Forward) extends Local.AnyGraph.Outbound.NodeImpl[Forward] {
+    case class Ops(value: Forward) extends Local.Semilattice.Upper.NodeImpl[Forward] {
 
-      override protected def getNodeText: String = value.text
+      override protected def inductionC: Seq[(_A, Ops)] = {
 
-      override protected def getInduction = {
         value.arrowBuffer.toSeq.map { v =>
           v._1 -> Ops(v._2)
         }
       }
+
+      override def nodeTextC: String = value.text
     }
 
     def apply(rootValues: Seq[Forward]) = Local.AnyGraph(
