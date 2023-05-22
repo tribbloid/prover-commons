@@ -13,7 +13,7 @@ class GraphBinarySpec extends BaseSpec {
       val g1 = diamond.graph
       val g2 = Appendage.p1.graph
 
-      val uu = GraphUnary.^(g1).&&(g2).Union().resolve
+      val uu = AnyGraphUnary.^(g1).&&(g2).Union().resolve
 
       uu.diagram_Hasse.graphString.shouldBe(
         """
@@ -49,7 +49,7 @@ class GraphBinarySpec extends BaseSpec {
       val g1 = cyclic.graph
       val g2 = Appendage.p1.graph
 
-      val uu = GraphUnary.^(g1).&&(g2).Union().resolve
+      val uu = AnyGraphUnary.^(g1).&&(g2).Union().resolve
 
       uu.diagram_Hasse.graphString.shouldBe(
         """

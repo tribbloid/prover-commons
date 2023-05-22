@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.local.ops.GraphUnary
+import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
 
 import java.util.UUID
@@ -50,8 +50,8 @@ object LinkedHierarchy extends Visualisations {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def dryRun(tree: Local.Tree[_ <: _RefBinding]): Unit = {
-      GraphUnary
+    override def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit = {
+      AnyGraphUnary
         .^(tree)
         .Traverse(
           maxDepth = backbone.maxDepth,
@@ -64,16 +64,13 @@ object LinkedHierarchy extends Visualisations {
     }
   }
 
-  trait _RefBinding {
+  trait RefBindingLike {
 
     def original: Any
   }
 
-  type SameRefs = mutable.ArrayBuffer[_RefBinding]
-  object SameRefs {
-    def apply(): SameRefs = mutable.ArrayBuffer.empty
-  }
-
+  type SameRefs = mutable.ArrayBuffer[RefBindingLike]
+  def emptySameRefs = mutable.ArrayBuffer.empty[RefBindingLike]
 }
 
 trait LinkedHierarchy extends LinkedHierarchy.Format {
@@ -84,7 +81,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  def dryRun(tree: Local.Tree[_ <: _RefBinding]): Unit
+  def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit
 
   trait TheTextViz[V] extends TextViz[V]
 
@@ -99,13 +96,13 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     case class Viz[V](override val semilattice: UB[V]) extends TheTextViz[V] {
 
-      object RefBindingT extends Local.Tree.UntypedDef {
+      object RefBindings extends Local.Tree.UntypedDef {
 
         case class Node(
             override val original: Local.AnyGraph.Outbound.Node[V],
             id: UUID = UUID.randomUUID()
         ) extends UntypedNode
-            with _RefBinding {
+            with RefBindingLike {
 
           {
             sameRefs_shouldExpand
@@ -130,7 +127,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
                   }
                   .getOrElse {
 
-                    val result = SameRefs()
+                    val result = emptySameRefs
                     result += this
 
                     expanded.put(refKey, result)
@@ -141,13 +138,13 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
             val result = existing
               .getOrElse {
-                SameRefs() -> true
+                emptySameRefs -> true
               }
 
             result
           }
 
-          def sameRefs: SameRefs = sameRefs_shouldExpand._1
+          def sameRefs: SameRefs = sameRefs_shouldExpand._1 // TODO: why not used?
 
           def shouldExpand: Boolean = sameRefs_shouldExpand._2
 
@@ -158,7 +155,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             }
           }
 
-          override protected def inductionC: Seq[(Arrow.`~>`.^, RefBindingT.Node)] = {
+          override protected def inductionC: Seq[(Arrow.`~>`.^, RefBindings.Node)] = {
 
             val result = if (!shouldExpand) {
               Nil
@@ -167,7 +164,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
               original.induction.map { tuple =>
                 val arrow = tuple._1: Arrow.`~>`.^
 
-                val target: RefBindingT.Node = RefBindingT.Node.apply(tuple._2)
+                val target: RefBindings.Node = RefBindings.Node.apply(tuple._2)
 
                 arrow -> target
               }
@@ -191,10 +188,10 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
         }
       }
 
-      lazy val delegates: Seq[Local.Tree[RefBindingT.Node]] = {
+      lazy val delegates: Seq[Local.Tree[RefBindings.Node]] = {
         val roots: Vector[Local.AnyGraph.Outbound.Node[V]] = semilattice.entriesC
         roots.map { node =>
-          val refBinding: RefBindingT.Node = RefBindingT.Node(node)
+          val refBinding: RefBindings.Node = RefBindings.Node(node)
 
           Local.Tree(refBinding)
         }

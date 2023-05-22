@@ -1,8 +1,7 @@
 package ai.acyclic.prover.commons.viz
 
-import ai.acyclic.prover.commons.graph.local.Tree
-import ai.acyclic.prover.commons.graph.plan.local.GraphUnary
-import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy._RefBinding
+import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy.RefBindingLike
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
 import ai.acyclic.prover.commons.meta.format.TypeFormat
 
@@ -20,45 +19,45 @@ case class TypeHierarchy(
 
   object GraphFormat extends LinkedHierarchy.Default(backbone) {
 
-    final override def sameRefBy(node: Any): Option[Any] = {
-      node match {
-        case v: TypeOfMixin#VNode =>
-          v.sameRefBy
-        case _ =>
-          None
-      }
-    }
+//    final override def sameRefBy(node: Any): Option[Any] = {
+//      node match {
+//        case v: TypeOfMixin#VNode =>
+//          v.sameRefBy
+//        case _ =>
+//          None
+//      }
+//    }
 
-    override def dryRun[N <: _RefBinding](g: Tree[N]): Unit = {
+    override def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit = {
 
-      def argDryRun(): Unit = {
+      def recursiveDryRun(): Unit = {
 
-        GraphUnary
-          .make(g)
+        tree
           .Traverse(
-            down = { v: N =>
-              v.original match {
-                case vNode: TypeOfMixin#VNode =>
+            down = { v: Local.Tree.Node[_ <: RefBindingLike] =>
+              v.value.original match {
+                case vNode: TypeOfMixin.VNodeLike =>
                   vNode.argDryRun()
                 case _ => // do nothing
               }
             }
           )
           .DepthFirst
-          .compute
+          .resolve
       }
 
       if (_expandArgsBeforeSubtypes) {
 
-        argDryRun()
-        super.dryRun(g)
+        recursiveDryRun()
+        super.dryRun(tree)
       } else {
 
-        super.dryRun(g)
-        argDryRun()
+        super.dryRun(tree)
+        recursiveDryRun()
       }
     }
   }
+
 }
 
 object TypeHierarchy {

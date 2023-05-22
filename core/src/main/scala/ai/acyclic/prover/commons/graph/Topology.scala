@@ -10,11 +10,11 @@ trait Topology extends Lawful {
   type LawImpl = Law_/\ { type _A = Arrow_/\ }
   def LawImpl: LawImpl
 
-  trait LawMixin extends Law {
+  trait LawImplMixin extends Law {
     override type _A = Arrow_/\
   }
 
-  implicit def summonLaw: Law_/\ = LawImpl
+  implicit def summonLaw: LawImpl = LawImpl
 
   type Graph[V] = GraphK.Aux[Law_/\, V]
 
@@ -28,7 +28,7 @@ object Topology {
     type Arrow_/\ = Arrow
     trait Law_/\ extends Law
 
-    object LawImpl extends Law_/\ with LawMixin
+    object LawImpl extends Law_/\ with LawImplMixin
 
     object OutboundT extends Topology {
 
@@ -37,7 +37,7 @@ object Topology {
         type _A <: Arrow.`~>`.^
       }
 
-      object LawImpl extends Law_/\ with LawMixin
+      object LawImpl extends Law_/\ with LawImplMixin
     }
   }
 
@@ -46,7 +46,7 @@ object Topology {
     type Arrow_/\ = Arrow
     trait Law_/\ extends AnyGraphT.Law_/\
 
-    object LawImpl extends Law_/\ with LawMixin
+    object LawImpl extends Law_/\ with LawImplMixin
   }
 
   object SemilatticeT extends Topology {
@@ -54,14 +54,14 @@ object Topology {
     type Arrow_/\ = Arrow
     trait Law_/\ extends PosetT.Law_/\
 
-    object LawImpl extends Law_/\ with LawMixin
+    object LawImpl extends Law_/\ with LawImplMixin
 
     object UpperT extends Topology {
 
       type Arrow_/\ = Arrow.`~>`.^
       trait Law_/\ extends SemilatticeT.Law_/\ with AnyGraphT.OutboundT.Law_/\
 
-      object LawImpl extends Law_/\ with LawMixin
+      object LawImpl extends Law_/\ with LawImplMixin
 
       implicit class NodeOps[V](n: Node[V]) { // TODO: can be skipped if Law is fold into Node
 
@@ -75,7 +75,7 @@ object Topology {
     type Arrow_/\ = Arrow.`~>`.^
     trait Law_/\ extends SemilatticeT.UpperT.Law_/\
 
-    override object LawImpl extends Law_/\ with LawMixin
+    override object LawImpl extends Law_/\ with LawImplMixin
   }
 
   private def compileTimeCheck[V](): Unit = {

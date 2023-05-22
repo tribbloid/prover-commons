@@ -1,14 +1,19 @@
 package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff
-import ai.acyclic.prover.commons.graph.Topology.GraphT.OutboundT
-import ai.acyclic.prover.commons.graph.local.Graph
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
 
 import scala.collection.mutable
 import scala.language.implicitConversions
 
-object TypeOfMixin {}
+object TypeOfMixin {
+
+  trait VNodeLike {
+
+    def argDryRun(): Unit
+  }
+}
 
 trait TypeOfMixin extends HasReflection {
 
@@ -26,21 +31,22 @@ trait TypeOfMixin extends HasReflection {
 
     lazy val selfGroup: VisualisationGroup = VisualisationGroup()
     lazy val nodes: selfGroup.Nodes = selfGroup.Nodes(typeView.formattedBy(format.typeFormat))
-    lazy val showHierarchy: format.GraphFormat.Group#Viz[VNode] = selfGroup
-      .GraphRepr(Seq(nodes.SuperTypeNode))
-      .diagram_linkedHierarchy(selfGroup.delegateGroup)
+    lazy val showHierarchy: format.GraphFormat.Group#Viz[VisualisationGroup.Node] =
+      Local.AnyGraph
+        .Outbound(nodes.SuperTypeNode)
+        .diagram_linkedHierarchy(selfGroup.delegateGroup)
 
     lazy val typeStr: String = nodes.typeText
 
     override def toString: String = {
 
-      showHierarchy.treeString
+      showHierarchy.graphString
     }
 
     def should_=:=(that: TypeOf[_] = null): Unit = {
 
       val Seq(s1, s2) = Seq(this, that).map { v =>
-        Option(v).map(_.showHierarchy.treeString)
+        Option(v).map(_.showHierarchy.graphString)
       }
 
       val diff = StringDiff(s1, s2, Seq(this.getClass))
@@ -66,18 +72,16 @@ trait TypeOfMixin extends HasReflection {
     implicit def asNodes(v: TypeOf[_]): v.selfGroup.Nodes = v.nodes
   }
 
-  // technically this layer could be collapsed into GraphRepr
-  trait VNode {
+  object VisualisationGroup extends Local.AnyGraph.Outbound.UntypedDef {
 
-    def sameRefBy: Option[Any]
-
-    def children: Seq[VNode]
-
-    def argDryRun(): Unit
+    // technically this layer could be collapsed into GraphRepr
+    trait Node extends UntypedNode with TypeOfMixin.VNodeLike {}
   }
 
   // visualisations in the same group should not display redundant information
   case class VisualisationGroup() {
+
+    import VisualisationGroup._
 
     lazy val delegateGroup: format.GraphFormat.Group = format.GraphFormat.Group()
 
@@ -92,7 +96,7 @@ trait TypeOfMixin extends HasReflection {
         visited += node.reference
       }
 
-      lazy val argGraph: GraphRepr = {
+      lazy val argGraph = {
 
         val equivalentIRs = ir.EquivalentTypes.recursively
 
@@ -101,21 +105,21 @@ trait TypeOfMixin extends HasReflection {
           .flatMap {
             case (_, vs) =>
               val argNode = this.copy(ir = vs.head).ArgNode
-              if (argNode.children.isEmpty) None
+              if (argNode.induction.isEmpty) None
               else Some(argNode)
           }
           .toSeq
 
-        GraphRepr(argNodes)
+        Local.AnyGraph.Outbound(argNodes: _*)
       }
 
       lazy val typeText: String = ir.text
 
-      lazy val argViz: delegateGroup.Viz[VNode] = delegateGroup.Viz(argGraph)
+      lazy val argViz: delegateGroup.Viz[VisualisationGroup.Node] = delegateGroup.Viz(argGraph)
 
       lazy val argText: String = {
 
-        argViz.treeString
+        argViz.graphString
       }
 
       lazy val fullText: String = {
@@ -134,13 +138,13 @@ trait TypeOfMixin extends HasReflection {
         }
       }
 
-      trait ThisVNode extends VNode {}
+      case object SuperTypeNode extends Node {
 
-      case object SuperTypeNode extends ThisVNode {
+        final override lazy val identityKeyC = Some(node.reference)
 
-        final override lazy val sameRefBy = Some(node.reference)
+        override protected val inductionC = {
+          val existing = visited.distinct
 
-        val children: List[VNode] = {
           node.superTypes.flatMap { tt =>
             if (visited.contains(tt.reference)) None
             else {
@@ -157,11 +161,11 @@ trait TypeOfMixin extends HasReflection {
         }
       }
 
-      case object ArgNode extends ThisVNode {
+      case object ArgNode extends Node {
 
-        final override def sameRefBy: Option[Any] = None
+        final override lazy val identityKeyC = None
 
-        lazy val children: List[VNode] = {
+        override protected lazy val inductionC = {
           node.args.map { tt =>
             Nodes(tt.formattedBy(format.typeFormat)).SuperTypeNode
           }
@@ -179,16 +183,6 @@ trait TypeOfMixin extends HasReflection {
         }
 
         override def argDryRun(): Unit = {}
-      }
-    }
-
-    case class GraphRepr(override val rootValues: Seq[VNode]) extends Graph.Outbound[VNode] {
-
-      case class Ops(value: VNode) extends OutboundT.Node[VNode] {
-
-        override protected def getInduction = {
-          value.children.map(v => Ops(v))
-        }
       }
     }
   }

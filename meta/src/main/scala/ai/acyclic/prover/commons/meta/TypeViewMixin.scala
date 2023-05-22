@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.meta
 
-import ai.acyclic.prover.commons.EqualBy
+import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.meta.format.TypeFormat
 
 import scala.collection.mutable
@@ -12,7 +12,7 @@ trait TypeViewMixin extends HasUniverse {
 
   case class TypeID(
       self: Type
-  ) extends EqualBy {
+  ) extends Same.ByEquality.Facade {
 
     lazy val allSymbols: Seq[Symbol] = {
 
@@ -35,7 +35,7 @@ trait TypeViewMixin extends HasUniverse {
 
     lazy val showStr: String = self.toString
 
-    override protected def _equalBy: Any = allSymbols -> showStr
+    override def samenessDelegatedTo: Any = allSymbols -> showStr
   }
 
   case class TypeView(

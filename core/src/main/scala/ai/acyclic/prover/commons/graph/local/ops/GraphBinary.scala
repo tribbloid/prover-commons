@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.graph.local.Local
 
 trait GraphBinary extends Local.AnyGraph.Ops.Binary {
 
-  override type Prev <: GraphUnary
+  override type Prev <: AnyGraphUnary
 
   case class Union[VV]()(
       implicit

@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.viz
 import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.local.ops.GraphUnary
+import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
@@ -49,7 +49,7 @@ trait Hasse extends Hasse.Format {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(override val delegate: Node[V]) extends sameness.Facade {
+    case class NodeWrapper(override val samenessDelegatedTo: Node[V]) extends sameness.Facade {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
@@ -105,7 +105,7 @@ trait Hasse extends Hasse.Format {
           .map(_.rectangular)
 
         val nodeText = {
-          lazy val nodeText = delegate.nodeText
+          lazy val nodeText = samenessDelegatedTo.nodeText
 
           val ss = bindingOpt
             .map { binding =>
@@ -142,7 +142,7 @@ trait Hasse extends Hasse.Format {
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
-      val buildBuffers = GraphUnary
+      val buildBuffers = AnyGraphUnary
         .^(semilattice)
         .Traverse(
           maxDepth = Hasse.this.maxDepth,

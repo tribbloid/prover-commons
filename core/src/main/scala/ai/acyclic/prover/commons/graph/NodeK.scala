@@ -24,14 +24,15 @@ trait NodeK[+L <: Law] extends Lawful.Construct[L] {
     * Only affecting caching mechanism in resolving induction(s). Induction of the same node may be cached and reused
     * instead of being computed twice. If returns None, no computation will ever be cached
     *
-    * CAUTION: this won't affect node representation in diagrams, need to override the following [[identityKey]]
+    * CAUTION: this won't affect node representation in diagrams, need to override the following [[identityKeyC]]
     *
-    * in general, [[evalCacheKey]] equality should be a sufficient condition of [[identityKey]] equality
+    * in general, [[evalCacheKeyC]] equality should be a sufficient condition of [[identityKeyC]] equality
     *
     * @return
     *   key with equality & hashcode
     */
-  lazy val evalCacheKey: Option[Any] = Some(this)
+  protected def evalCacheKeyC: Option[Any] = Some(this)
+  final lazy val evalCacheKey = evalCacheKeyC
 
   /**
     * Due to the inductive nature of this library it is possible to have connectivity information of one node to be
@@ -42,12 +43,13 @@ trait NodeK[+L <: Law] extends Lawful.Construct[L] {
     *
     * this primarily affects visualisation, e.g. in Hasse & Linked hierarchy diagrams
     *
-    * in general, [[identityKey]] equality should be a necessary condition of [[evalCacheKey]] equality
+    * in general, [[identityKeyC]] equality should be a necessary condition of [[evalCacheKeyC]] equality
     *
     * @return
     *   key with equality & hashcode
     */
-  lazy val identityKey: Option[Any] = evalCacheKey
+  protected def identityKeyC: Option[Any] = evalCacheKeyC
+  final lazy val identityKey = identityKeyC
 
   def map[V2](fn: Value => V2): Mapped[L, Value, V2] = Mapped(this: Compat, fn)
 
@@ -96,9 +98,9 @@ object NodeK {
       }
     }
 
-    override lazy val identityKey: Option[Any] = original.identityKey
+    override def identityKeyC: Option[Any] = original.identityKey
 
-    override lazy val evalCacheKey: Option[Any] = original.evalCacheKey
+    override def evalCacheKeyC: Option[Any] = original.evalCacheKey
 
   }
 }

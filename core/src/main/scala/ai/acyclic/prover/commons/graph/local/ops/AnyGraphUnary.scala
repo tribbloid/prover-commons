@@ -1,21 +1,23 @@
 package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.Same
+import ai.acyclic.prover.commons.graph.RewriterK
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Hasse
-import ai.acyclic.prover.commons.graph.{NodeK, RewriterK}
 
 import scala.language.existentials
 
-trait GraphUnary extends Local.AnyGraph.Ops.Unary {
+trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   {
     implicitly[ArgLaw <:< Local.AnyGraph.Law_/\]
   }
 
-  import GraphUnary._
+  import AnyGraphUnary._
 
-  lazy val distinctEntries: Vector[ArgNode] = argPlan.resolve.entries.distinct
+  def isEmpty: Boolean = arg.entries.isEmpty
+
+  lazy val distinctEntries: Vector[ArgNode] = arg.entries.distinct
 
   def diagram_Hasse(
       implicit
@@ -244,11 +246,11 @@ trait GraphUnary extends Local.AnyGraph.Ops.Unary {
 
 }
 
-object GraphUnary {
+object AnyGraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[L <: Local.AnyGraph.Law_/\, V](argPlan: LocalEngine.PlanK.Aux[L, V]) extends GraphUnary {
+  case class ^[L <: Local.AnyGraph.Law_/\, V](argPlan: LocalEngine.PlanK.Aux[L, V]) extends AnyGraphUnary {
 
     override type ArgLaw = L
 

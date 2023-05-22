@@ -21,9 +21,9 @@ object GraphFixture {
 
     override protected def nodeTextC = value.text
 
-    override lazy val evalCacheKey: Option[GV] = Some(value)
+    override def evalCacheKeyC: Option[GV] = Some(value)
 
-    override lazy val identityKey: Option[Any] = Some(value.text)
+    override def identityKeyC: Option[Any] = Some(value.text)
   }
 
   case class Node(override val value: GV) extends OGraphNode {

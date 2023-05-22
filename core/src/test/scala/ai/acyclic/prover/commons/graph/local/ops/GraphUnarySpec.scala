@@ -12,7 +12,7 @@ class GraphUnarySpec extends BaseSpec {
   import GraphFixture._
 
   it("Upcast") {
-    val result = GraphUnary
+    val result = AnyGraphUnary
       .^(cyclic.graph)
       .NodeUpcast[Any]
       .compute
@@ -29,7 +29,7 @@ class GraphUnarySpec extends BaseSpec {
       val down = mutable.Buffer.empty[GV]
       val up = mutable.Buffer.empty[GV]
 
-      GraphUnary
+      AnyGraphUnary
         .^(cyclic.graph)
         .Traverse(
           5,
@@ -71,7 +71,7 @@ class GraphUnarySpec extends BaseSpec {
       val down = mutable.Buffer.empty[GV]
       val up = mutable.Buffer.empty[GV]
 
-      GraphUnary
+      AnyGraphUnary
         .^(cyclic.graph)
         .Traverse(
           5,
@@ -109,7 +109,7 @@ class GraphUnarySpec extends BaseSpec {
 
     def proto = {
       val inc = new AtomicInteger(0)
-      val result = GraphUnary
+      val result = AnyGraphUnary
         .^(diamond.graph: Local.AnyGraph[GV])
         .TransformLinear(
           GVRewriter(v => Node(v)),
