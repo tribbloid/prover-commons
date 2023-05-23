@@ -19,15 +19,6 @@ case class TypeHierarchy(
 
   object GraphFormat extends LinkedHierarchy.Default(backbone) {
 
-//    final override def sameRefBy(node: Any): Option[Any] = {
-//      node match {
-//        case v: TypeOfMixin#VNode =>
-//          v.sameRefBy
-//        case _ =>
-//          None
-//      }
-//    }
-
     override def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit = {
 
       def recursiveDryRun(): Unit = {
