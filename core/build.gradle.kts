@@ -7,12 +7,12 @@ val splainVFallback: String = run {
 }
 
 dependencies {
-    api("org.scalameta:ascii-graphs_${vs.scalaBinaryV}:0.1.2")
-//    api("org.typelevel:cats-effect_${vs.scalaBinaryV}:3.4.5")
+    api("org.scalameta:ascii-graphs_${vs.scala.binaryV}:0.1.2")
+//    api("org.typelevel:cats-effect_${vs.scala.binaryV}:3.4.5")
 
-    api("com.chuusai:shapeless_${vs.scalaBinaryV}:2.3.9")
+    api("com.chuusai:shapeless_${vs.scala.binaryV}:2.3.9")
 
-    testFixturesApi("org.scalatest:scalatest_${vs.scalaBinaryV}:${vs.scalaTestV}")
+    testFixturesApi("org.scalatest:scalatest_${vs.scala.binaryV}:${vs.scalaTestV}")
 
-    testFixturesApi("io.tryp:splain_${vs.scalaV}:${splainVFallback}")
+    testFixturesApi("io.tryp:splain_${vs.scala.v}:${splainVFallback}")
 }

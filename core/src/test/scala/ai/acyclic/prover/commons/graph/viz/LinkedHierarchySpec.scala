@@ -81,7 +81,6 @@ class LinkedHierarchySpec extends BaseSpec {
 
       it("diamond semilattice") {
 
-        // TODO: this is wrong! second line is not flushed
         diamond.graph.diagram_linkedHierarchy.graphString shouldBe
           """
             |+ aaa

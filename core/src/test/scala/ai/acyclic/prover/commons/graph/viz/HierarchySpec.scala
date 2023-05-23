@@ -161,7 +161,6 @@ class HierarchySpec extends BaseSpec {
 
       it("... or not") {
 
-        // TODO: this is wrong! second line is not flushed
         tn2.tree.diagram_hierarchy.graphString shouldBe
           """
             |aaa

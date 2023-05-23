@@ -151,8 +151,8 @@ object Formats1 { // higher-order format constructors
     * T -> base +> (T#Args -> base) +> replace
     */
   case class RecursiveForm(
-                            base: TypeFormat,
-                            transformer: TypeFormat => TypeFormat
+      base: TypeFormat,
+      transformer: TypeFormat => TypeFormat
   ) extends TransformDown {
 
     final def resolve(refl: Reflection): refl.TypeView => IROutput = { tt =>

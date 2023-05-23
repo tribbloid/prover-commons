@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.local.ops
 import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.graph.RewriterK
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
-import ai.acyclic.prover.commons.graph.viz.Hasse
+import ai.acyclic.prover.commons.graph.viz.Flow
 
 import scala.language.existentials
 
@@ -19,9 +19,9 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   lazy val distinctEntries: Vector[ArgNode] = arg.entries.distinct
 
-  def diagram_Hasse(
+  def diagram_Flow(
       implicit
-      format: Hasse
+      format: Flow
   ): format.Viz[ArgV] = format.Viz(arg)
 
   object asIterable extends Iterable[ArgV] {

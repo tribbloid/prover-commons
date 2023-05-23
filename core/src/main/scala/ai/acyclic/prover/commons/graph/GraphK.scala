@@ -20,17 +20,4 @@ object GraphK {
 
   // Acronym of "Less Than"
   type Lt[+C <: Law, +A <: Arrow, +V] = Aux[C, _ <: V]
-
-  // TODO: don't know how to define it in the new architecture`
-//  trait Immutable[+Ops <: Node.Like[_, _]] extends GraphK[Ops] {
-//
-//    // the Memoization appears to confine GraphK to be only applicable to immutable graph
-//    //  can this be lifted?
-//    override lazy val ops: Value => Ops =
-//      sameness
-//        .Memoize[Value, Ops](
-//          Ops
-//        )
-//  }
-
 }

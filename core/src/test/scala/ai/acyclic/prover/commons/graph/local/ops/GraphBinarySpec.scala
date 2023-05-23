@@ -15,7 +15,7 @@ class GraphBinarySpec extends BaseSpec {
 
       val uu = AnyGraphUnary.^(g1).&&(g2).Union().resolve
 
-      uu.diagram_Hasse.graphString.shouldBe(
+      uu.diagram_Flow.graphString.shouldBe(
         """
           |   ┌─────┐
           |   │ aaa │
@@ -51,7 +51,7 @@ class GraphBinarySpec extends BaseSpec {
 
       val uu = AnyGraphUnary.^(g1).&&(g2).Union().resolve
 
-      uu.diagram_Hasse.graphString.shouldBe(
+      uu.diagram_Flow.graphString.shouldBe(
         """
           |    ┌─────────┐
           |    │   bbb   │

@@ -41,7 +41,7 @@ trait NodeK[+L <: Law] extends Lawful.Construct[L] {
     *
     * If returns None, this node will be considered different from any other node
     *
-    * this primarily affects visualisation, e.g. in Hasse & Linked hierarchy diagrams
+    * this primarily affects visualisation, e.g. in Flow & Linked hierarchy diagrams
     *
     * in general, [[identityKeyC]] equality should be a necessary condition of [[evalCacheKeyC]] equality
     *

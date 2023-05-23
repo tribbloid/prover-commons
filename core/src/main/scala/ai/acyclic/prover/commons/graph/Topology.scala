@@ -63,7 +63,7 @@ object Topology {
 
       object LawImpl extends Law_/\ with LawImplMixin
 
-      implicit class NodeOps[V](n: Node[V]) { // TODO: can be skipped if Law is fold into Node
+      implicit class NodeOps[V](n: Node[V]) {
 
         def isLeaf: Boolean = n.induction.isEmpty
       }

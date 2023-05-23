@@ -144,7 +144,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             result
           }
 
-          def sameRefs: SameRefs = sameRefs_shouldExpand._1 // TODO: why not used?
+          def sameRefs: SameRefs = sameRefs_shouldExpand._1
 
           def shouldExpand: Boolean = sameRefs_shouldExpand._2
 

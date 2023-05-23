@@ -13,12 +13,11 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListSet
 import scala.collection.mutable
 
-// TODO: rename to Flow! Hasse diagram is only applicable to poset
-object Hasse extends Visualisations {
+object Flow extends Visualisations {
 
   type UB[V] = Local.AnyGraph[V]
 
-  trait Default extends Hasse {
+  trait Default extends Flow {
 
     override def layoutPreferences: LayoutPrefs = LayoutPrefsImpl.DEFAULT
   }
@@ -28,9 +27,9 @@ object Hasse extends Visualisations {
 
 }
 
-trait Hasse extends Hasse.Format {
+trait Flow extends Flow.Format {
 
-  import Hasse._
+  import Flow._
   import Local.AnyGraph._
 
   lazy val maxDepth = 20
@@ -145,7 +144,7 @@ trait Hasse extends Hasse.Format {
       val buildBuffers = AnyGraphUnary
         .^(semilattice)
         .Traverse(
-          maxDepth = Hasse.this.maxDepth,
+          maxDepth = Flow.this.maxDepth,
           down = { node =>
             val wrapper = nodeID2Wrapper(node)
 

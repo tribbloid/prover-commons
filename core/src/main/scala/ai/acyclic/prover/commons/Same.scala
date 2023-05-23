@@ -68,8 +68,12 @@ object Same {
       if (result)
         require(
           getID(v1).get == getID(v2).get,
-          "if two objects are the same, their IDs should be identical"
-        ) // TODO: need more info
+          s"""
+             |if two objects are the same, their IDs should be identical, however:
+             |Left  ID: ${getID(v1)}
+             |Right ID: ${getID(v2)}
+             |""".stripMargin.trim
+        )
       result
     }
 

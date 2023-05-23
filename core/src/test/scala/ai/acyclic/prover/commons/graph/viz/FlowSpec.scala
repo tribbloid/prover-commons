@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.viz
 import ai.acyclic.prover.commons.graph.GraphFixture
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-class HasseSpec extends BaseSpec {
+class FlowSpec extends BaseSpec {
 
   import GraphFixture._
 
@@ -11,7 +11,7 @@ class HasseSpec extends BaseSpec {
 
     it("cyclic graph") {
 
-      cyclic.graph.diagram_Hasse.graphString shouldBe
+      cyclic.graph.diagram_Flow.graphString shouldBe
         """
           |  ┌───────┐
           |  │  bbb  │
@@ -30,7 +30,7 @@ class HasseSpec extends BaseSpec {
           | └─────┘ └───┘
           |""".stripMargin
 
-      cyclic.graphWithArrowText.diagram_Hasse.graphString shouldBe
+      cyclic.graphWithArrowText.diagram_Flow.graphString shouldBe
         """
           |         ┌──────────────┐
           |         │( aaa |> bbb )│
@@ -57,7 +57,7 @@ class HasseSpec extends BaseSpec {
 
     it("diamond graph") {
 
-      diamond.graph.diagram_Hasse.graphString shouldBe
+      diamond.graph.diagram_Flow.graphString shouldBe
         """
           |  ┌─────┐
           |  │ aaa │
@@ -83,7 +83,7 @@ class HasseSpec extends BaseSpec {
           |   └───┘
           |""".stripMargin
 
-      diamond.graphWithArrowText.diagram_Hasse.graphString shouldBe
+      diamond.graphWithArrowText.diagram_Flow.graphString shouldBe
         """
           |             ┌─────┐
           |             │ aaa │
@@ -116,26 +116,4 @@ class HasseSpec extends BaseSpec {
           |""".stripMargin
     }
   }
-
-//  it("graph with duplicate nodes") {
-//
-//    DuplicatedB.full.graph.diagram_Hasse.treeString shouldBe
-//      """
-//        |    ┌───┐
-//        |    │aaa│
-//        |    └─┬─┘
-//        |      │
-//        |      v
-//        |  ┌───────┐
-//        |  │  bbb  │
-//        |  └┬────┬─┘
-//        |   │ ^  │
-//        |   │ │  └──┐
-//        |   │ │     │
-//        |   v │     v
-//        | ┌───┴─┐ ┌───┐
-//        | │ ccc │ │ddd│
-//        | └─────┘ └───┘
-//        |""".stripMargin
-//  }
 }

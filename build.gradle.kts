@@ -61,11 +61,11 @@ allprojects {
 //        }
 
 //        implementation("${vs.scalaGroup}:scala-compiler:${vs.scalaV}")
-        implementation("${vs.scalaGroup}:scala-library:${vs.scalaV}")
+        implementation("${vs.scala.group}:scala-library:${vs.scala.v}")
 //        implementation("${vs.scalaGroup}:scala-reflect:${vs.scalaV}")
 
         val scalaTestV = "3.2.3"
-        testImplementation("org.scalatest:scalatest_${vs.scalaBinaryV}:${scalaTestV}")
+        testImplementation("org.scalatest:scalatest_${vs.scala.binaryV}:${scalaTestV}")
         testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
         testRuntimeOnly("co.helmethair:scalatest-junit-runner:0.2.0")

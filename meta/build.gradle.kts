@@ -8,8 +8,8 @@ val splainVFallback: String = run {
 
 dependencies {
 
-    implementation("${vs.scalaGroup}:scala-compiler:${vs.scalaV}")
-    implementation("${vs.scalaGroup}:scala-reflect:${vs.scalaV}")
+    implementation("${vs.scala.group}:scala-compiler:${vs.scala.v}")
+    implementation("${vs.scala.group}:scala-reflect:${vs.scala.v}")
 
     api(project(":core"))
     testFixturesApi(testFixtures(project(":core")))
