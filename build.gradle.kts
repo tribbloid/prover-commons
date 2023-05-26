@@ -42,7 +42,6 @@ allprojects {
     apply(plugin = "signing")
     apply(plugin = "maven-publish")
 
-    group = vs.projectGroup
     version = vs.projectV
 
     repositories {
@@ -60,9 +59,7 @@ allprojects {
 //            testFixturesImplementation(constraintNotation)
 //        }
 
-//        implementation("${vs.scalaGroup}:scala-compiler:${vs.scalaV}")
         implementation("${vs.scala.group}:scala-library:${vs.scala.v}")
-//        implementation("${vs.scalaGroup}:scala-reflect:${vs.scalaV}")
 
         val scalaTestV = "3.2.3"
         testImplementation("org.scalatest:scalatest_${vs.scala.binaryV}:${scalaTestV}")
@@ -70,26 +67,6 @@ allprojects {
 
         testRuntimeOnly("co.helmethair:scalatest-junit-runner:0.2.0")
     }
-
-    //TODO: find more comprehensive solution
-//    sourceSets {
-//        main {
-//            scala {
-//                val vn = VersionNumber.parse(vs.scalaV)
-//
-//                val supportedPatchVs = listOf(6, 7)
-//
-//                for (from in supportedPatchVs) {
-//                    if (vn.micro >= from)
-//                        setSrcDirs(srcDirs + listOf("src/main/scala-2.13.${from}+/latest"))
-//                    for (to in supportedPatchVs) {
-//                        if (vn.micro <= to)
-//                            setSrcDirs(srcDirs + listOf("src/main/scala-2.13.${from}+/2.13.${to}"))
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     task("dependencyTree") {
 
@@ -118,7 +95,7 @@ allprojects {
 
                         "-g:vars",
 
-                    )
+                        )
 
                 additionalParameters = compilerOptions
 
@@ -192,9 +169,9 @@ allprojects {
     }
 }
 
-subprojects {
-
-}
+//subprojects {
+//
+//}
 
 idea {
 
@@ -203,7 +180,8 @@ idea {
     module {
 
         excludeDirs = excludeDirs + listOf(
-            file(".gradle")
+            file(".gradle"),
+            file("gradle")
         )
     }
 }

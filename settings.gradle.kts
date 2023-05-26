@@ -6,7 +6,7 @@ project(":prover-commons").projectDir = file("module")
 
 include(
     ":prover-commons:core",
-    ":prover-commons:meta",
+    ":prover-commons:meta2", // should only be working for Scala 2
     ":notebook"
 )
 

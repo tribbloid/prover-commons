@@ -1,8 +1,6 @@
 import org.gradle.api.Project
 
 class Versions(private val self: Project) {
-    val projectGroup = "ai.acyclic"
-    val projectRootID = "prover-commons"
 
     val projectVMajor = "1.0.0"
     val projectV = "$projectVMajor-SNAPSHOT"
