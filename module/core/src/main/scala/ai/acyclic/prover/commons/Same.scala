@@ -92,7 +92,7 @@ object Same {
     }
 
     trait Facade {
-      def samenessDelegatedTo: Any
+      protected def samenessDelegatedTo: Any
 
       final override def hashCode(): Int = {
         idOrConstructionHash(samenessDelegatedTo)
