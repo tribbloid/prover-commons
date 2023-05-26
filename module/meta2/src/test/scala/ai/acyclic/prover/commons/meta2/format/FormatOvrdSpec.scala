@@ -1,8 +1,8 @@
-package ai.acyclic.prover.commons.meta.format
+package ai.acyclic.prover.commons.meta2.format
 
-import ai.acyclic.prover.commons.meta.Reflection
-import ai.acyclic.prover.commons.meta.format.FormatOvrd.{~~, SingletonName}
-import ai.acyclic.prover.commons.meta.format.Formats0.{ClassName, TypeImpl}
+import ai.acyclic.prover.commons.meta2.Reflection
+import ai.acyclic.prover.commons.meta2.format.FormatOvrd.{~~, SingletonName}
+import ai.acyclic.prover.commons.meta2.format.Formats0.{ClassName, TypeImpl}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
 import shapeless.Witness

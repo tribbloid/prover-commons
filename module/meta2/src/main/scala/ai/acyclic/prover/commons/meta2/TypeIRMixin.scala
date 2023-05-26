@@ -1,6 +1,6 @@
-package ai.acyclic.prover.commons.meta
+package ai.acyclic.prover.commons.meta2
 
-import ai.acyclic.prover.commons.meta.format.{IROutput, TypeFormat}
+import ai.acyclic.prover.commons.meta2.format.{IROutput, TypeFormat}
 import ai.acyclic.prover.commons.viz.text.{Padding, TextBlock}
 
 import scala.language.implicitConversions

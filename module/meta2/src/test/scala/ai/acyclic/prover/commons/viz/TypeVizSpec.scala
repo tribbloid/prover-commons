@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff.SuperSet
-import ai.acyclic.prover.commons.meta.Reflection.Runtime.WeakTypeTag
+import ai.acyclic.prover.commons.meta2.Reflection.Runtime.WeakTypeTag
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import shapeless.{syntax, HNil, Witness}
 

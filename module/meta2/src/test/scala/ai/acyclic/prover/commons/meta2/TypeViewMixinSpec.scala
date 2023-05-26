@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.meta
+package ai.acyclic.prover.commons.meta2
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz

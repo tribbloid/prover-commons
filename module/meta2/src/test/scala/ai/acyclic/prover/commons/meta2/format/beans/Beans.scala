@@ -1,6 +1,6 @@
-package ai.acyclic.prover.commons.meta.format.beans
+package ai.acyclic.prover.commons.meta2.format.beans
 
-import ai.acyclic.prover.commons.meta.format.FormatOvrd.SingletonName
+import ai.acyclic.prover.commons.meta2.format.FormatOvrd.SingletonName
 import shapeless.{::, HNil}
 
 trait Beans {

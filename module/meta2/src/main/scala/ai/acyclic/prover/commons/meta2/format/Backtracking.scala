@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.meta.format
+package ai.acyclic.prover.commons.meta2.format
 
 import scala.util.control.NoStackTrace
 

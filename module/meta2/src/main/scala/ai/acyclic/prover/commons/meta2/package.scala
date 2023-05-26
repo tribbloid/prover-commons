@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons
 
-package object meta {
+package object meta2 {
 
   val ScalaReflection: Reflection.Runtime.type = Reflection.Runtime
 

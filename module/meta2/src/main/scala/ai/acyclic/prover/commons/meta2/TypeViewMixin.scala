@@ -1,7 +1,7 @@
-package ai.acyclic.prover.commons.meta
+package ai.acyclic.prover.commons.meta2
 
 import ai.acyclic.prover.commons.Same
-import ai.acyclic.prover.commons.meta.format.TypeFormat
+import ai.acyclic.prover.commons.meta2.format.TypeFormat
 
 import scala.collection.mutable
 import scala.tools.reflect.ToolBox

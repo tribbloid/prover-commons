@@ -1,7 +1,7 @@
-package ai.acyclic.prover.commons.meta.format
+package ai.acyclic.prover.commons.meta2.format
 
-import ai.acyclic.prover.commons.meta.format.Formats0.TypeInfo
-import ai.acyclic.prover.commons.meta.format.Formats1.DeAlias
+import ai.acyclic.prover.commons.meta2.format.Formats0.TypeInfo
+import ai.acyclic.prover.commons.meta2.format.Formats1.DeAlias
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class TypeFormatSpec extends BaseSpec {
