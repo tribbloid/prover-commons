@@ -12,7 +12,5 @@ dependencies {
 
     api("com.chuusai:shapeless_${vs.scala.binaryV}:2.3.9")
 
-    testFixturesApi("org.scalatest:scalatest_${vs.scala.binaryV}:${vs.scalaTestV}")
-
     testFixturesApi("io.tryp:splain_${vs.scala.v}:${splainVFallback}")
 }

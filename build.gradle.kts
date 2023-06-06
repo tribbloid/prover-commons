@@ -61,8 +61,7 @@ allprojects {
 
         implementation("${vs.scala.group}:scala-library:${vs.scala.v}")
 
-        val scalaTestV = "3.2.3"
-        testImplementation("org.scalatest:scalatest_${vs.scala.binaryV}:${scalaTestV}")
+        testFixturesApi("org.scalatest:scalatest_${vs.scala.binaryV}:${vs.scalaTestV}")
         testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
         testRuntimeOnly("co.helmethair:scalatest-junit-runner:0.2.0")
