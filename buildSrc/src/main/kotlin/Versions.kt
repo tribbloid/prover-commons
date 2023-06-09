@@ -6,9 +6,9 @@ class Versions(private val self: Project) {
     val projectV = "$projectVMajor-SNAPSHOT"
 
     inner class Scala {
-        val group: String = self.properties["scala.group"].toString()
+        val group: String = self.properties["scalaGroup"].toString()
 
-        val v: String = self.properties["scala.version"].toString()
+        val v: String = self.properties["scalaVersion"].toString()
         protected val vParts: List<String> = v.split('.')
 
         val binaryV: String = vParts.subList(0, 2).joinToString(".")
@@ -17,5 +17,5 @@ class Versions(private val self: Project) {
     val scala = Scala()
 
     val scalaTestV = "3.2.12"
-    val splainV: String = self.properties["splain.version"]?.toString() ?: ""
+    val splainV: String = self.properties["splainVersion"]?.toString() ?: ""
 }
