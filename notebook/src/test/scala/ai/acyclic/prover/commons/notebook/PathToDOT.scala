@@ -124,7 +124,7 @@ class PathToDOT extends BaseSpec {
 
     val g = G(Seq(LambdaCube.f))
 
-    print_@(g.diagram_Flow.toString)
+    print_@(g.diagram_flow.toString)
 
     print_@(g.diagram_linkedHierarchy.toString)
   }
@@ -133,7 +133,7 @@ class PathToDOT extends BaseSpec {
 
     val g = G(Seq(ToDOT.f))
 
-    print_@(g.diagram_Flow.toString)
+    print_@(g.diagram_flow.toString)
 
     print_@(g.diagram_linkedHierarchy.toString)
   }
