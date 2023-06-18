@@ -11,7 +11,7 @@ class FlowSpec extends BaseSpec {
 
     it("cyclic graph") {
 
-      cyclic.graph.diagram_Flow.toString shouldBe
+      cyclic.graph.diagram_flow.toString shouldBe
         """
           |  ┌───────┐
           |  │  bbb  │
@@ -30,7 +30,7 @@ class FlowSpec extends BaseSpec {
           | └─────┘ └───┘
           |""".stripMargin
 
-      cyclic.graphWithArrowText.diagram_Flow.toString shouldBe
+      cyclic.graphWithArrowText.diagram_flow.toString shouldBe
         """
           |         ┌──────────────┐
           |         │( aaa |> bbb )│
@@ -57,7 +57,7 @@ class FlowSpec extends BaseSpec {
 
     it("diamond graph") {
 
-      diamond.graph.diagram_Flow.toString shouldBe
+      diamond.graph.diagram_flow.toString shouldBe
         """
           |  ┌─────┐
           |  │ aaa │
@@ -83,7 +83,7 @@ class FlowSpec extends BaseSpec {
           |   └───┘
           |""".stripMargin
 
-      diamond.graphWithArrowText.diagram_Flow.toString shouldBe
+      diamond.graphWithArrowText.diagram_flow.toString shouldBe
         """
           |             ┌─────┐
           |             │ aaa │

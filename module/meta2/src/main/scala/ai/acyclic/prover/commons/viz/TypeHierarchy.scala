@@ -17,7 +17,7 @@ case class TypeHierarchy(
 
   lazy val _expandArgsBeforeSubtypes: Boolean = showArgs == TypeHierarchy.ArgsBeforeSuperTypes
 
-  object GraphFormat extends LinkedHierarchy.Default(backbone) {
+  object DelegateFormat extends LinkedHierarchy.Default(backbone) {
 
     override def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit = {
 

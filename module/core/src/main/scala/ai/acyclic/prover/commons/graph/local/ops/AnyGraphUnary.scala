@@ -19,7 +19,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   lazy val distinctEntries: Vector[ArgNode] = arg.entries.distinct
 
-  def diagram_Flow(
+  def diagram_flow(
       implicit
       format: Flow
   ): format.Viz[ArgV] = format.Viz(arg)

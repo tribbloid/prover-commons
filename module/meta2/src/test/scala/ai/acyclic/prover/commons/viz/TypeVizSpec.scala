@@ -14,16 +14,13 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
     TypeViz
       .infer(v)
       .toString
-//      .split('\n')
-//      .filterNot { line =>
-//        line.contains("+ Serializable")
-//      }
-//      .mkString("\n")
   }
 
   it("String") {
 
-    TypeViz[String].toString.shouldBe(
+    val viz = TypeViz[String]
+
+    viz.diagram_hierarchy.toString.shouldBe(
       """
         |+ String .......................................................................... [0]
         |!-- Comparable[String]
@@ -32,6 +29,37 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |!-- java.io.Serializable
         |""".stripMargin,
       mode = SuperSet
+    )
+
+    viz.diagram_flow.toString.shouldBe(
+      """
+        |                           ┌───────┐
+        |                           │String │
+        |                           └─┬───┬┬┘
+        |                             │   ││
+        |                  ┌──────────┘   ││
+        |                  │              ││
+        |                  v              ││
+        |           ┌────────────┐        ││
+        |           │CharSequence│        ││
+        |           └─────┬──────┘        ││
+        |                 │               ││
+        |                 v               ││
+        |             ┌──────┐            ││
+        |             │Object│            ││
+        |             └───┬──┘            ││
+        |                 │               ││
+        |   ┌─────────────┘               ││
+        |   │              ┌──────────────┼┘
+        |   │              │              └─────────────┐
+        |   │              │                            │
+        |   │              │                            v
+        |   v              v           ┌────────────────────────────────┐
+        | ┌───┐ ┌────────────────────┐ │Comparable[String]              │
+        | │Any│ │java.io.Serializable│ │      ┏ + Comparable [ 1 ARG ] :│
+        | └───┘ └────────────────────┘ │      ┃ !-- String ... (see [0])│
+        |                              └────────────────────────────────┘
+        |""".stripMargin
     )
   }
 

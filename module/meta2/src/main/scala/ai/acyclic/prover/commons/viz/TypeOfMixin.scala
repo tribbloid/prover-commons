@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
 import scala.collection.mutable
@@ -29,24 +30,29 @@ trait TypeOfMixin extends HasReflection {
 
     lazy val typeView: TypeView = reflection.typeView(tt)
 
-    lazy val selfGroup: VisualisationGroup = VisualisationGroup()
-    lazy val nodes: selfGroup.Nodes = selfGroup.Nodes(typeView.formattedBy(format.typeFormat))
-    lazy val showHierarchy: format.GraphFormat.Group#Viz[VisualisationGroup.Node] =
-      Local.AnyGraph
-        .Outbound(nodes.SuperTypeNode)
-        .diagram_linkedHierarchy(selfGroup.delegateGroup)
+    lazy val vizGroup: VisualisationGroup = VisualisationGroup()
+    lazy val nodes: vizGroup.Nodes = vizGroup.Nodes(typeView.formattedBy(format.typeFormat))
 
     lazy val typeStr: String = nodes.typeText
 
+    lazy val graph = Local.AnyGraph
+      .Outbound(nodes.SuperTypeNode)
+
+    lazy val diagram_hierarchy: format.DelegateFormat.Group#Viz[VisualisationGroup.Node] =
+      graph.diagram_linkedHierarchy(vizGroup.delegateGroup)
+
+    lazy val diagram_flow =
+      graph.diagram_flow(Flow.Default)
+
     override def toString: String = {
 
-      showHierarchy.toString
+      diagram_hierarchy.toString
     }
 
     def should_=:=(that: TypeOf[_] = null): Unit = {
 
       val Seq(s1, s2) = Seq(this, that).map { v =>
-        Option(v).map(_.showHierarchy.toString)
+        Option(v).map(_.diagram_hierarchy.toString)
       }
 
       val diff = StringDiff(s1, s2, Seq(this.getClass))
@@ -69,7 +75,7 @@ trait TypeOfMixin extends HasReflection {
 
   object TypeOf {
 
-    implicit def asNodes(v: TypeOf[_]): v.selfGroup.Nodes = v.nodes
+    implicit def asNodes(v: TypeOf[_]): v.vizGroup.Nodes = v.nodes
   }
 
   object VisualisationGroup extends Local.AnyGraph.Outbound.UntypedDef {
@@ -83,7 +89,7 @@ trait TypeOfMixin extends HasReflection {
 
     import VisualisationGroup._
 
-    lazy val delegateGroup: format.GraphFormat.Group = format.GraphFormat.Group()
+    lazy val delegateGroup: format.DelegateFormat.Group = format.DelegateFormat.Group()
 
     case class Nodes(
         ir: TypeIR,
