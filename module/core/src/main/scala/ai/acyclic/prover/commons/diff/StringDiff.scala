@@ -58,11 +58,11 @@ case class StringDiff(
 
     val result =
       s"""
-         |"
+         |expected: <
          |${Left.info}
-         |" did not equal "
+         |> but was: <
          |${Right.info}
-         |"
+         |>
       """.stripMargin.trim
 
     result
