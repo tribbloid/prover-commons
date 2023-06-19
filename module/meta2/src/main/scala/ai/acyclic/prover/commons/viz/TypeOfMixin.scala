@@ -92,15 +92,15 @@ trait TypeOfMixin extends HasReflection {
     lazy val delegateGroup: format.DelegateFormat.Group = format.DelegateFormat.Group()
 
     case class Nodes(
-        ir: TypeIR,
-        visited: mutable.ArrayBuffer[TypeID] = mutable.ArrayBuffer.empty
+        ir: TypeIR
+//        visited: mutable.Set[TypeID] = mutable.Set.empty
     ) {
 
       val node: TypeView = ir.typeView
 
-      {
-        visited += node.reference
-      }
+//      {
+//        visited += node.reference
+//      }
 
       lazy val argGraph = {
 
@@ -149,14 +149,14 @@ trait TypeOfMixin extends HasReflection {
         final override lazy val identityKeyC = Some(node.reference)
 
         override protected val inductionC = {
-          val existing = visited.distinct
 
-          node.superTypes.flatMap { tt =>
-            if (visited.contains(tt.reference)) None
-            else {
-              Some(Nodes(tt.formattedBy(format.typeFormat), visited).SuperTypeNode)
+          node.superTypes_nonTransitive
+            .filter { tv =>
+              tv.self.toString != "Any" // skipped for being too trivial
             }
-          }
+            .map { tv =>
+              Nodes(tv.formattedBy(format.typeFormat)).SuperTypeNode
+            }
         }
 
         override lazy val toString: String = fullText

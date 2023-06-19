@@ -73,7 +73,7 @@ case class StringDiff(
     (left.isDefined, right.isDefined) match {
 
       case (true, true) =>
-        """
+        s"""
           |${Left.info}
           |
           |${Right.info}

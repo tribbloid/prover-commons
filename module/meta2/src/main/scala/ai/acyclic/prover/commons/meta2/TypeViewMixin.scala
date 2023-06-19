@@ -268,6 +268,19 @@ trait TypeViewMixin extends HasUniverse {
     lazy val superTypes: List[TypeView] = baseTypes
       .filterNot(tt => tt.reference == this.reference)
 
+    lazy val superTypes_transitive: List[TypeView] = {
+      superTypes.flatMap { tt =>
+        tt.superTypes
+      }.distinct
+    }
+
+    lazy val superTypes_nonTransitive: List[TypeView] = {
+      val transitiveSet = superTypes_transitive.toSet
+      superTypes.filterNot { tt =>
+        transitiveSet.contains(tt)
+      }
+    }
+
     def formattedBy(format: TypeFormat): TypeIR = {
       val result = TypeIR(this, format)
       result.text
