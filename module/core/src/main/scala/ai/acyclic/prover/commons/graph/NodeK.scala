@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
+import scala.language.existentials
+
 trait NodeK[+L <: Law] extends Lawful.Construct[L] {
 
   import NodeK._
