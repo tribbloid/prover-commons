@@ -15,6 +15,6 @@ object Lawful {
     val law: L
     type _A = law._A
 
-    type Value
+    type Value // bound type of values of this node and all its descendants, NOT the type of this value!
   }
 }

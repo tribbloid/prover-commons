@@ -67,7 +67,6 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
   //  need to transcribe to a more constraining graph type
   case class Transform(
       rewriter: ArgRewriter,
-      maxDepth: Int = Int.MaxValue,
       pruning: Pruning[ArgNode] = identity,
       down: ArgNode => Seq[ArgNode] = v => Seq(v),
       up: ArgNode => Seq[ArgNode] = v => Seq(v)
@@ -120,7 +119,6 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
         Transform(
           rewriter,
-          maxDepth,
           pruning = {
             fn =>
               { node =>
@@ -160,7 +158,6 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
         Transform(
           rewriter,
-          maxDepth,
           pruning = {
             fn =>
               { node =>
@@ -196,13 +193,11 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
   object TransformLinear {
     def apply(
         rewriter: ArgRewriter,
-        maxDepth: Int = Int.MaxValue,
         down: ArgNode => ArgNode = v => v,
         pruning: Pruning[ArgNode] = identity,
         up: ArgNode => ArgNode = v => v
     ): Transform = Transform(
       rewriter,
-      maxDepth,
       pruning,
       v => Seq(down(v)),
       v => Seq(up(v))
@@ -213,14 +208,12 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
-      maxDepth: Int = Int.MaxValue,
       down: ArgNode => Unit = { _: ArgNode => {} },
       up: ArgNode => Unit = { _: ArgNode => {} }
   ) {
 
     private val delegate = Transform(
       rewriter = RewriterK.DoNotRewrite(arg.law),
-      maxDepth,
       down = { v => down(v); Seq(v) },
       up = { v => up(v); Seq(v) }
     )
@@ -250,14 +243,18 @@ object AnyGraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[L <: Local.AnyGraph.Law_/\, V](argPlan: LocalEngine.PlanK.Aux[L, V]) extends AnyGraphUnary {
+  case class ^[L <: Local.AnyGraph.Law_/\, V](
+      argPlan: LocalEngine.PlanK.Aux[L, V],
+      override val maxDepth: Int = 20
+  ) extends AnyGraphUnary {
 
     override type ArgLaw = L
 
     override type ArgV = V
 
     case class &&[L2 <: Local.AnyGraph.Law_/\, V2](
-        argPlan: LocalEngine.PlanK.Aux[L2, V2]
+        argPlan: LocalEngine.PlanK.Aux[L2, V2],
+        override val maxDepth: Int = ^.this.maxDepth
     ) extends AnyGraphBinary {
 
       override type Prev = ^.this.type

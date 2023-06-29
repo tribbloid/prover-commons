@@ -30,9 +30,8 @@ class AnyGraphUnarySpec extends BaseSpec {
       val up = mutable.Buffer.empty[GV]
 
       AnyGraphUnary
-        .^(cyclic.graph)
+        .^(cyclic.graph, 5)
         .Traverse(
-          5,
           n => down += n.value,
           n => up += n.value
         )
@@ -72,9 +71,8 @@ class AnyGraphUnarySpec extends BaseSpec {
       val up = mutable.Buffer.empty[GV]
 
       AnyGraphUnary
-        .^(cyclic.graph)
+        .^(cyclic.graph, 5)
         .Traverse(
-          5,
           n => down += n.value,
           n => up += n.value
         )
@@ -110,10 +108,9 @@ class AnyGraphUnarySpec extends BaseSpec {
     def proto = {
       val inc = new AtomicInteger(0)
       val result = AnyGraphUnary
-        .^(diamond.graph: Local.AnyGraph[GV])
+        .^(diamond.graph: Local.AnyGraph[GV], 4)
         .TransformLinear(
           GVRewriter(v => Node(v)),
-          4,
           down = { v =>
             val result = v.value.copy(text = v.value.text + "+" + inc.getAndIncrement(), Nil)
             result.children ++= v.value.children

@@ -53,9 +53,8 @@ object LinkedHierarchy extends Visualisations {
 
     override def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit = {
       AnyGraphUnary
-        .^(tree)
+        .^(tree, backbone.maxDepth)
         .Traverse(
-          maxDepth = backbone.maxDepth,
           down = { n =>
             n.induction
           }

@@ -10,11 +10,18 @@ object LocalEngine extends Engine {
   final type Dataset[+T] = Vector[T]
   def parallelize[T](seq: Seq[T]): Dataset[T] = seq.toVector
 
+  implicit class GraphView[L <: Local.AnyGraph.Law_/\, V](
+      self: LocalEngine.TheGraphK.Aux[L, V]
+  ) {
+
+    lazy val asPlan = new PlanK.LeafPlan[L, V](self)
+  }
+
   implicit def graphAsUnary[L <: Local.AnyGraph.Law_/\, V](
       self: LocalEngine.TheGraphK.Aux[L, V]
   ): AnyGraphUnary.^[L, V] = {
 
-    val leaf = new LocalEngine.PlanK.LeafPlan[L, V](self)
+    val leaf = self.asPlan
 
     AnyGraphUnary.^(leaf)
   }
@@ -23,7 +30,7 @@ object LocalEngine extends Engine {
       self: LocalEngine.TheGraphK.Aux[L, V]
   ): OutboundGraphUnary.^[L, V] = {
 
-    val leaf = new LocalEngine.PlanK.LeafPlan[L, V](self)
+    val leaf = self.asPlan
 
     OutboundGraphUnary.^(leaf)
   }
@@ -32,7 +39,7 @@ object LocalEngine extends Engine {
       self: LocalEngine.TheGraphK.Aux[L, V]
   ): UpperSemilatticeUnary.^[L, V] = {
 
-    val leaf = new LocalEngine.PlanK.LeafPlan[L, V](self)
+    val leaf = self.asPlan
 
     UpperSemilatticeUnary.^(leaf)
   }

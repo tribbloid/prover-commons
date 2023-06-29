@@ -4,6 +4,7 @@ trait Engine {
   self: Singleton =>
 
   import Topology._
+  import Engine._
 
   type Dataset[+T]
   def parallelize[T](seq: Seq[T]): Dataset[T]
@@ -142,7 +143,7 @@ trait Engine {
       type Graph = TheGraphK.Aux[Law_/\, Node]
     }
 
-    trait Ops {
+    trait Ops extends HasMaxRecursionDepth {
 
       def outer = GraphBuilder.this
 
@@ -215,11 +216,22 @@ trait Engine {
     }
     type Semilattice[V] = Semilattice.Graph[V]
 
-    object Tree extends GraphBuilder(TreeT) {}
-    type Tree[V] = Tree.Graph[V]
+    object Tree extends GraphBuilder(TreeT) {
 
+      case class Singleton[V](value: V) extends NodeImpl[V] {
+
+        final override lazy val inductionC = Nil
+      }
+    }
+    type Tree[V] = Tree.Graph[V]
   }
 
 }
 
-object Engine {}
+object Engine {
+
+  trait HasMaxRecursionDepth {
+
+    def maxDepth: Int
+  }
+}

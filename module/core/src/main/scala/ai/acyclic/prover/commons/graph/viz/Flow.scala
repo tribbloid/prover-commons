@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.Same
-import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.graph.{Arrow, Engine}
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
@@ -28,12 +28,12 @@ object Flow extends Visualisations {
 
 }
 
-trait Flow extends Flow.Format {
+trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
   import Flow._
   import Local.AnyGraph._
 
-  lazy val maxDepth = 20
+  override lazy val maxDepth: Int = 20
 
   def layoutPreferences: ascii.layout.prefs.LayoutPrefs
 
@@ -132,20 +132,11 @@ trait Flow extends Flow.Format {
           NodeWrapper(v)
         }
 
-//      val nodeBuffer = mutable.Buffer.empty[NodeWrapper]
-
-//      def wrap(node: NodeCompat[V]): NodeWrapper = {
-//        val result = NodeWrapper(node)
-//        nodeBuffer += result
-//        result
-//      }
-
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
       val buildBuffers = AnyGraphUnary
-        .^(semilattice)
+        .^(semilattice, maxDepth)
         .Traverse(
-          maxDepth = Flow.this.maxDepth,
           down = { node =>
             val wrapper = nodeID2Wrapper(node)
 

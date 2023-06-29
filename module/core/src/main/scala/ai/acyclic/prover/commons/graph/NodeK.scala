@@ -6,7 +6,7 @@ trait NodeK[+L <: Law] extends Lawful.Construct[L] {
 
   import NodeK._
 
-  def value: Value // bound type of values of this node and all its descendants, NOT the type of this value!
+  def value: Value
 
   protected def nodeTextC: String = value.toString
   final lazy val nodeText: String = nodeTextC
@@ -103,6 +103,5 @@ object NodeK {
     override def identityKeyC: Option[Any] = original.identityKey
 
     override def evalCacheKeyC: Option[Any] = original.evalCacheKey
-
   }
 }

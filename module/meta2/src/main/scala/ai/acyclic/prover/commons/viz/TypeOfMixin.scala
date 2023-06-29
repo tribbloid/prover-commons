@@ -5,7 +5,6 @@ import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
-import scala.collection.mutable
 import scala.language.implicitConversions
 
 object TypeOfMixin {

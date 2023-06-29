@@ -56,3 +56,6 @@ foo
 
 #aws key
 **/rootkey.csv
+
+#Doc
+**/.obsidian

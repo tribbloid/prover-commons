@@ -51,6 +51,18 @@ allprojects {
         maven("https://scala-ci.typesafe.com/artifactory/scala-integration/") // scala SNAPSHOT
     }
 
+
+    dependencies {
+
+        // see https://github.com/gradle/gradle/issues/13067
+        fun both(notation: Any) {
+            implementation(notation)
+            testFixturesImplementation(notation)
+        }
+
+        both("${vs.scala.group}:scala-library:${vs.scala.v}")
+    }
+
     task("dependencyTree") {
 
         dependsOn("dependencies")

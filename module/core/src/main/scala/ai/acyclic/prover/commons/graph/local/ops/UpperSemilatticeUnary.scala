@@ -13,8 +13,6 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
     implicitly[ArgLaw <:< Local.Semilattice.Upper.Law_/\]
   }
 
-  // TODO: will trigger StackOverflow on cyclic graph or infinite acyclic graph
-  //  maxDepth may need to be defined
   lazy val maxNodeOpt: Option[ArgNode] = {
 
     val entryIDs = arg.entries
@@ -32,6 +30,8 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
       }
 
       Breaks.breakable {
+
+        AnyGraphUnary.^(arg.asPlan, maxDepth)
 
         arg
           .Traverse(
@@ -69,8 +69,10 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
 object UpperSemilatticeUnary {
 
-  case class ^[L <: Local.Semilattice.Upper.Law_/\, V](argPlan: LocalEngine.PlanK.Aux[L, V])
-      extends UpperSemilatticeUnary {
+  case class ^[L <: Local.Semilattice.Upper.Law_/\, V](
+      argPlan: LocalEngine.PlanK.Aux[L, V],
+      override val maxDepth: Int = 20
+  ) extends UpperSemilatticeUnary {
 
     override type ArgLaw = L
 

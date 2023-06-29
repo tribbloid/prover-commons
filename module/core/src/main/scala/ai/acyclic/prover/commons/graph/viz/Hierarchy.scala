@@ -1,7 +1,9 @@
 package ai.acyclic.prover.commons.graph.viz
 
+import ai.acyclic.prover.commons.graph.Engine
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
+
 import scala.language.existentials
 
 object Hierarchy extends Visualisations {
@@ -24,11 +26,11 @@ object Hierarchy extends Visualisations {
   case object Indent2Minimal extends Indent2Minimal
 }
 
-trait Hierarchy extends Hierarchy.Format {
+trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
 
   import Hierarchy._
 
-  lazy val maxDepth: Int = 20
+  override lazy val maxDepth: Int = 20
 
   lazy val FORK: Padding = Padding.ofHead("+", ":")
   lazy val LEAF: Padding = Padding.ofHead("-", " ")
