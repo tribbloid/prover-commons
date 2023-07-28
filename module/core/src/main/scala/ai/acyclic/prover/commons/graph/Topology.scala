@@ -3,18 +3,10 @@ package ai.acyclic.prover.commons.graph
 trait Topology extends Lawful {
   self: Singleton =>
 
-  type Arrow_/\ <: Arrow
+  override type Law_/\ <: Law.AuxEx[Arrow]
 
-  override type Law_/\ <: Law { type _A <: Arrow_/\ }
-
-  type LawImpl = Law_/\ { type _A = Arrow_/\ }
-  def LawImpl: LawImpl
-
-  trait LawImplMixin extends Law {
-    override type _A = Arrow_/\
-  }
-
-  implicit def summonLaw: LawImpl = LawImpl
+  implicit def summonWitness[A <: Arrow, L <: Law_/\ with Law.AuxEx[A]]: Law.WitnessA[A, L] =
+    Law.WitnessA[A, L]()
 
   type Graph[V] = GraphK.Aux[Law_/\, V]
 
@@ -25,43 +17,26 @@ object Topology {
 
   object AnyGraphT extends Topology {
 
-    type Arrow_/\ = Arrow
-    trait Law_/\ extends Law
-
-    object LawImpl extends Law_/\ with LawImplMixin
+    trait Law_/\ extends Law.AuxEx[Arrow]
 
     object OutboundT extends Topology {
 
-      type Arrow_/\ = Arrow.`~>`.^
-      trait Law_/\ extends AnyGraphT.Law_/\ {
-        type _A <: Arrow.`~>`.^
-      }
-
-      object LawImpl extends Law_/\ with LawImplMixin
+      trait Law_/\ extends AnyGraphT.Law_/\ with Law.AuxEx[Arrow.`~>`.^] {}
     }
   }
 
   object PosetT extends Topology {
 
-    type Arrow_/\ = Arrow
     trait Law_/\ extends AnyGraphT.Law_/\
-
-    object LawImpl extends Law_/\ with LawImplMixin
   }
 
   object SemilatticeT extends Topology {
 
-    type Arrow_/\ = Arrow
     trait Law_/\ extends PosetT.Law_/\
-
-    object LawImpl extends Law_/\ with LawImplMixin
 
     object UpperT extends Topology {
 
-      type Arrow_/\ = Arrow.`~>`.^
       trait Law_/\ extends SemilatticeT.Law_/\ with AnyGraphT.OutboundT.Law_/\
-
-      object LawImpl extends Law_/\ with LawImplMixin
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -72,10 +47,7 @@ object Topology {
 
   object TreeT extends Topology {
 
-    type Arrow_/\ = Arrow.`~>`.^
     trait Law_/\ extends SemilatticeT.UpperT.Law_/\
-
-    override object LawImpl extends Law_/\ with LawImplMixin
   }
 
   private def compileTimeCheck[V](): Unit = {
