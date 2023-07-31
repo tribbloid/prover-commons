@@ -1,5 +1,14 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.util.Summoner
+
+object SpikeHere {
+
+  { // summon witness
+    val witness = Summoner.summon[Law.Witness[Topology.TreeT.Law_/\]](Topology.TreeT.summonWitness)
+  }
+}
+
 trait Topology extends Lawful {
   self: Singleton =>
 
