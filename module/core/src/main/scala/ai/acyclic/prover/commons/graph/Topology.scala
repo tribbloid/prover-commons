@@ -5,7 +5,9 @@ import ai.acyclic.prover.commons.util.Summoner
 object SpikeHere {
 
   { // summon witness
-    val witness = Summoner.summon[Law.Witness[Topology.TreeT.Law_/\]](Topology.TreeT.summonWitness)
+    val w1 = implicitly[Law.Witness[Topology.TreeT.Law_/\]] // (Topology.TreeT.summonWitness1)
+
+    val w2 = Summoner.summon[Law.Witness[Topology.TreeT.Law_/\]] // (Topology.TreeT.summonWitness1)
   }
 }
 
@@ -14,8 +16,14 @@ trait Topology extends Lawful {
 
   override type Law_/\ <: Law.AuxEx[Arrow]
 
-  implicit def summonWitness[A <: Arrow, L <: Law_/\ with Law.AuxEx[A]]: Law.WitnessA[A, L] =
+  implicit def summonWitness1[A <: Arrow, L <: Law_/\ with Law.AuxEx[A]]: Law.WitnessA[A, L] =
     Law.WitnessA[A, L]()
+
+//  object Law_/\ {
+//
+//    implicit def summonWitness2[A <: Arrow, L <: Law_/\ with Law.AuxEx[A]]: Law.WitnessA[A, L] =
+//      Topology.this.summonWitness1[A, L]
+//  }
 
   type Graph[V] = GraphK.Aux[Law_/\, V]
 

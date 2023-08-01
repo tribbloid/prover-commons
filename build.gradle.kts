@@ -61,6 +61,14 @@ allprojects {
         }
 
         both("${vs.scala.group}:scala-library:${vs.scala.v}")
+
+        //https://github.com/tek/splain
+        if (vs.splainV.isNotEmpty()) {
+            val splainD = "io.tryp:splain_${vs.scala.v}:${vs.splainV}"
+            logger.warn("Using " + splainD)
+
+            scalaCompilerPlugins(splainD)
+        }
     }
 
     task("dependencyTree") {
@@ -93,6 +101,14 @@ allprojects {
 
                         )
 
+                if (vs.splainV.isNotEmpty()) {
+                    compilerOptions.addAll(
+                        listOf(
+                            "-Vimplicits", "-Vimplicits-verbose-tree", "-Vtype-diffs"
+                        )
+                    )
+                }
+
                 additionalParameters = compilerOptions
 
                 forkOptions.apply {
@@ -106,6 +122,7 @@ allprojects {
                     )
                 }
             }
+
         }
 
         test {
