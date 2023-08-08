@@ -10,11 +10,16 @@ trait Law {
 
 object Law {
 
-  trait AuxEx[+A <: Arrow] extends Law { type _A <: A }
+  trait AuxEx[+A <: Arrow] extends Law {
+    type _A <: A
+  }
 
-  trait Witness[L <: AuxEx[Arrow]]
+  trait Witness[L <: AuxEx[Arrow]] {
 
-  case class WitnessA[A <: Arrow, L <: AuxEx[A]]() extends Witness[L] {
+    type _A <: Arrow
+  }
+
+  case class WitnessImpl[A <: Arrow, L <: AuxEx[A]]() extends Witness[L] {
 
     type _A = A
   }

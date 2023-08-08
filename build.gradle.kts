@@ -162,6 +162,7 @@ allprojects {
 
                 "target",
                 "out",
+                "build",
 
                 ".idea",
                 ".vscode",
