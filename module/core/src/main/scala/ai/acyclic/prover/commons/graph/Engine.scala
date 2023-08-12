@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.graph.law.Law
+
 trait Engine {
   self: Singleton =>
 
