@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.law.Law
+import ai.acyclic.prover.commons.graph.law.{Lawful, Topology}
 
 trait Engine {
   self: Singleton =>
@@ -81,11 +81,11 @@ trait Engine {
 
   trait TheLawful extends Lawful {
 
-    type Graph[v] = TheGraphK.Aux[Law_/\, v]
+    type Graph[v] = TheGraphK.Aux[_Law, v]
 
-    type Plan[v] = PlanK.Aux[Law_/\, v]
+    type Plan[v] = PlanK.Aux[_Law, v]
 
-    trait PlanEx[v] extends PlanK.AuxEx[Law_/\, v]
+    trait PlanEx[v] extends PlanK.AuxEx[_Law, v]
   }
 
   object GraphBuilder {
@@ -96,19 +96,19 @@ trait Engine {
   abstract class GraphBuilder[T <: Topology](val topology: T) extends TheLawful {
 //    self: Singleton =>
 
-    type Law_/\ = topology.Law_/\
+    type _Law = topology._Law
 
-    trait NodeImpl[V] extends NodeK.AuxEx[Law_/\, V] {
-
-      final val law = topology.LawImpl
-    }
-
-    trait RewriterImpl[V] extends RewriterK.AuxEx[Law_/\, V] {
+    trait NodeImpl[V] extends NodeK.AuxEx[_Law, V] {
 
       final val law = topology.LawImpl
     }
 
-    def makeTightest[LL <: Law_/\, V](
+    trait RewriterImpl[V] extends RewriterK.AuxEx[_Law, V] {
+
+      final val law = topology.LawImpl
+    }
+
+    def makeTightest[LL <: _Law, V](
         nodes: NodeK.Compat[LL, V]*
     )(
         implicit
@@ -117,10 +117,10 @@ trait Engine {
       TheGraphK.Unchecked(parallelize(nodes))
 
     def make[V](
-        nodes: NodeK.Compat[Law_/\, V]*
-    ): Graph[V] = makeTightest[Law_/\, V](nodes: _*)(topology.LawImpl)
+        nodes: NodeK.Compat[_Law, V]*
+    ): Graph[V] = makeTightest[_Law, V](nodes: _*)(topology.LawImpl)
 
-    def apply[LL <: Law_/\, V](
+    def apply[LL <: _Law, V](
         nodes: NodeK.Compat[LL, V]*
     )(
         implicit
@@ -132,7 +132,7 @@ trait Engine {
     trait UntypedDef {
       self: Singleton =>
 
-      trait UntypedNode extends NodeK.Untyped[Law_/\] {
+      trait UntypedNode extends NodeK.Untyped[_Law] {
         self: UntypedDef.this.Node =>
 
         final val law = topology.LawImpl
@@ -142,7 +142,7 @@ trait Engine {
 
       type Node <: UntypedNode
 
-      type Graph = TheGraphK.Aux[Law_/\, Node]
+      type Graph = TheGraphK.Aux[_Law, Node]
     }
 
     trait Ops extends HasMaxRecursionDepth {
@@ -160,13 +160,13 @@ trait Engine {
       type Prev
       val prev: Prev
 
-      type AcceptingLaw = GraphBuilder.this.Law_/\
+      type AcceptingLaw = GraphBuilder.this._Law
       type ArgLaw <: AcceptingLaw
       type ArgV
 
       object Arg extends TheLawful {
 
-        type Law_/\ = ArgLaw
+        type _Law = ArgLaw
       }
 
       type ArgPlan = Arg.Plan[ArgV]

@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy
 trait OutboundGraphUnary extends Local.AnyGraph.Outbound.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.AnyGraph.Outbound.Law_/\]
+    implicitly[ArgLaw <:< Local.AnyGraph.Outbound._Law]
   }
 
   def diagram_linkedHierarchy(
@@ -17,7 +17,7 @@ trait OutboundGraphUnary extends Local.AnyGraph.Outbound.Ops.Unary {
 
 object OutboundGraphUnary {
 
-  case class ^[L <: Local.AnyGraph.Outbound.Law_/\, V](
+  case class ^[L <: Local.AnyGraph.Outbound._Law, V](
       argPlan: LocalEngine.PlanK.Aux[L, V],
       override val maxDepth: Int = 20
   ) extends OutboundGraphUnary {

@@ -1,12 +1,15 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.law.Law
+import ai.acyclic.prover.commons.graph.law.Topology.Law
+import ai.acyclic.prover.commons.graph.law.Lawful
 
 import scala.language.existentials
 
 trait NodeK[+L <: Law] extends Lawful.Construct[L] {
 
   import NodeK._
+
+  type _A <: Arrow
 
   def value: Value
 
