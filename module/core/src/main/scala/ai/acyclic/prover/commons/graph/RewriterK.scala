@@ -1,6 +1,8 @@
 package ai.acyclic.prover.commons.graph
 
-trait RewriterK[L <: Law] extends Lawful.Construct[L] {
+import ai.acyclic.prover.commons.graph.topology.{Law, Lawful}
+
+trait RewriterK[L <: Law] extends Lawful.Struct[L] {
 
   private[this] type NodeV = NodeK.Compat[L, Value]
 
@@ -39,7 +41,7 @@ trait RewriterK[L <: Law] extends Lawful.Construct[L] {
 object RewriterK {
 
   type Aux[L <: Law, V] = RewriterK[L] { type Value = V }
-  trait AuxEx[L <: Law, V] extends RewriterK[L] { type Value = V }
+  trait Impl[L <: Law, V] extends RewriterK[L] { type Value = V }
 
   case class DoNotRewrite[L <: Law, N](override val law: L) extends RewriterK[L] {
 

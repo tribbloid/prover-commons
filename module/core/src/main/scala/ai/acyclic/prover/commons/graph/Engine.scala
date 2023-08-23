@@ -1,9 +1,11 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.graph.topology.{Law, Lawful, Topology}
+
 trait Engine {
   self: Singleton =>
 
-  import Topology._
+  import ai.acyclic.prover.commons.graph.topology.Topology._
   import Engine._
 
   type Dataset[+T]
@@ -26,7 +28,7 @@ trait Engine {
 
     type Aux[+L <: Law, V] = TheGraphK[L] { type Value = V }
 
-    trait AuxEx[+L <: Law, V] extends TheGraphK[L] {
+    trait Impl[+L <: Law, V] extends TheGraphK[L] {
       type Value = V
     }
 
@@ -41,13 +43,13 @@ trait Engine {
     )(
         implicit
         override val law: L
-    ) extends TheGraphK.AuxEx[L, V] {
+    ) extends TheGraphK.Impl[L, V] {
 
       // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
     }
   }
 
-  trait PlanK[+L <: Law] extends Lawful.Construct[L] {
+  trait PlanK[+L <: Law] extends Lawful.Struct[L] {
 
     private[this] type OGraph = TheGraphK.Aux[L, Value]
 //    type ONode = NodeKind.Lt[L, Value]
@@ -63,7 +65,7 @@ trait Engine {
 
     type Aux[L <: Law, V] = PlanK[L] { type Value = V }
 
-    trait AuxEx[L <: Law, V] extends PlanK[L] {
+    trait Impl[L <: Law, V] extends PlanK[L] {
       type Value = V
     }
 
@@ -83,7 +85,7 @@ trait Engine {
 
     type Plan[v] = PlanK.Aux[Law_/\, v]
 
-    trait PlanEx[v] extends PlanK.AuxEx[Law_/\, v]
+    trait PlanImpl[v] extends PlanK.Impl[Law_/\, v]
   }
 
   object GraphBuilder {
@@ -96,14 +98,15 @@ trait Engine {
 
     type Law_/\ = topology.Law_/\
 
-    trait NodeImpl[V] extends NodeK.AuxEx[Law_/\, V] {
+    trait NodeImpl[V] extends NodeK.Impl[Law_/\, V] {
 
-      final val law = topology.LawImpl
+      final val law = topology.self
+      // TODO: cannot compile if self is removed
     }
 
-    trait RewriterImpl[V] extends RewriterK.AuxEx[Law_/\, V] {
+    trait RewriterImpl[V] extends RewriterK.Impl[Law_/\, V] {
 
-      final val law = topology.LawImpl
+      final val law = topology.self
     }
 
     def makeTightest[LL <: Law_/\, V](
@@ -116,7 +119,7 @@ trait Engine {
 
     def make[V](
         nodes: NodeK.Compat[Law_/\, V]*
-    ): Graph[V] = makeTightest[Law_/\, V](nodes: _*)(topology.LawImpl)
+    ): Graph[V] = makeTightest[Law_/\, V](nodes: _*)(topology.self)
 
     def apply[LL <: Law_/\, V](
         nodes: NodeK.Compat[LL, V]*
@@ -133,7 +136,7 @@ trait Engine {
       trait UntypedNode extends NodeK.Untyped[Law_/\] {
         self: UntypedDef.this.Node =>
 
-        final val law = topology.LawImpl
+        final val law = topology.self
 
         type Value = UntypedDef.this.Node
       }
@@ -180,7 +183,6 @@ trait Engine {
     object Ops {
 
       type Aux[P <: PlanK[_]] = Ops { type InputPlan = P }
-      //  trait AuxEx[P <: Plan] extends Ops { type Input = P }
 
       trait Unary extends Ops {
 

@@ -41,9 +41,7 @@ object Formats1 { // higher-order format constructors
   }
 
   /**
-    * T -> base1
-    * -> base2
-    * -> ... +> concat
+    * T -> base1 -> base2 -> ... +> concat
     */
   case class Concat(
       bases: TypeFormat*

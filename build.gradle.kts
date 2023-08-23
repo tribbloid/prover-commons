@@ -61,6 +61,14 @@ allprojects {
         }
 
         both("${vs.scala.group}:scala-library:${vs.scala.v}")
+
+        //https://github.com/tek/splain
+        if (vs.splainV.isNotEmpty()) {
+            val splainD = "io.tryp:splain_${vs.scala.v}:${vs.splainV}"
+            logger.warn("Using " + splainD)
+
+            scalaCompilerPlugins(splainD)
+        }
     }
 
     task("dependencyTree") {
@@ -86,12 +94,25 @@ allprojects {
                         "-unchecked", "-deprecation", "-feature",
 
                         "-language:higherKinds",
+//                        "-Xsource:3",
 
                         "-Xlint:poly-implicit-overload", "-Xlint:option-implicit", "-Wunused:imports",
 
                         "-g:vars",
 
                         )
+
+                if (vs.splainV.isNotEmpty()) {
+                    compilerOptions.addAll(
+                        listOf(
+                            "-Vimplicits", "-Vimplicits-verbose-tree", "-Vtype-diffs",
+                            "-P:splain:Vimplicits-diverging",
+                            "-P:splain:Vtype-reduction",
+                            "-P:splain:Vtype-verbosity:10",
+                            "-P:splain:Vdebug"
+                        )
+                    )
+                }
 
                 additionalParameters = compilerOptions
 

@@ -10,7 +10,7 @@ trait AnyGraphBinary extends Local.AnyGraph.Ops.Binary {
       implicit
       ev1: prev.ArgV <:< VV,
       ev2: ArgV <:< VV
-  ) extends Local.AnyGraph.PlanEx[VV] {
+  ) extends Local.AnyGraph.PlanImpl[VV] {
 
     override def compute: Local.AnyGraph[VV] = {
 

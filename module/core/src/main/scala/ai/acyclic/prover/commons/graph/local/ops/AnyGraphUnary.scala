@@ -39,7 +39,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   case class NodeMap[V2](
       fn: ArgV => V2
-  ) extends Arg.PlanEx[V2] {
+  ) extends Arg.PlanImpl[V2] {
 
     override def compute: Arg.Graph[V2] = {
 
@@ -72,7 +72,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
       up: ArgNode => Seq[ArgNode] = v => Seq(v)
   ) {
 
-    trait TransformPlan extends Arg.PlanEx[ArgV]
+    trait TransformPlan extends Arg.PlanImpl[ArgV]
 
     object DepthFirst extends TransformPlan {
 
@@ -119,26 +119,25 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
         Transform(
           rewriter,
-          pruning = {
-            fn =>
-              { node =>
-                val keyOpt = node.evalCacheKey
+          pruning = { fn =>
+            { node =>
+              val keyOpt = node.evalCacheKey
 
-                val result: Seq[ArgNode] = keyOpt.flatMap { key =>
-                  evaled.get(key)
-                } match {
-                  case Some(n) =>
-                    Seq(n)
-                  case None =>
-                    keyOpt.foreach { key =>
-                      evaled.getOrElseUpdate(key, node)
-                    }
+              val result: Seq[ArgNode] = keyOpt.flatMap { key =>
+                evaled.get(key)
+              } match {
+                case Some(n) =>
+                  Seq(n)
+                case None =>
+                  keyOpt.foreach { key =>
+                    evaled.getOrElseUpdate(key, node)
+                  }
 
-                    fn(node)
-                }
-
-                result
+                  fn(node)
               }
+
+              result
+            }
           },
           down,
           up
@@ -158,26 +157,25 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
         Transform(
           rewriter,
-          pruning = {
-            fn =>
-              { node =>
-                val keyOpt = node.evalCacheKey
+          pruning = { fn =>
+            { node =>
+              val keyOpt = node.evalCacheKey
 
-                val result = keyOpt.flatMap { key =>
-                  evaled.get(key)
-                } match {
-                  case Some(r) =>
-                    r
-                  case None =>
-                    val result = fn(node)
-                    keyOpt.foreach { key =>
-                      evaled.getOrElseUpdate(key, result)
-                    }
-                    result
-                }
-
-                result
+              val result = keyOpt.flatMap { key =>
+                evaled.get(key)
+              } match {
+                case Some(r) =>
+                  r
+                case None =>
+                  val result = fn(node)
+                  keyOpt.foreach { key =>
+                    evaled.getOrElseUpdate(key, result)
+                  }
+                  result
               }
+
+              result
+            }
           },
           down,
           up
@@ -204,7 +202,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
     )
   }
 
-  trait TraversePlan extends Arg.PlanEx[ArgV]
+  trait TraversePlan extends Arg.PlanImpl[ArgV]
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
