@@ -24,7 +24,7 @@ object PathToDOT {
 
     case class Ops(value: Forward) extends Local.Semilattice.Upper.NodeImpl[Forward] {
 
-      override protected def inductionC: Seq[(_A, Ops)] = {
+      override protected def inductionC: Seq[(_Arrow, Ops)] = {
 
         value.arrowBuffer.toSeq.map { v =>
           v._1 -> Ops(v._2)

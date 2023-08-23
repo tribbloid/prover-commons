@@ -47,7 +47,7 @@ trait Engine {
     }
   }
 
-  trait PlanK[+L <: Law] extends Lawful.Construct[L] {
+  trait PlanK[+L <: Law] extends Lawful.Struct[L] {
 
     private[this] type OGraph = TheGraphK.Aux[L, Value]
 //    type ONode = NodeKind.Lt[L, Value]

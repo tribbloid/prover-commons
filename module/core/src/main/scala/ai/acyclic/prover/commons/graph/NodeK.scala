@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph
 
 import scala.language.existentials
 
-trait NodeK[+L <: Law] extends Lawful.Construct[L] {
+trait NodeK[+L <: Law] extends Lawful.Struct[L] {
 
   import NodeK._
 
@@ -11,14 +11,14 @@ trait NodeK[+L <: Law] extends Lawful.Construct[L] {
   protected def nodeTextC: String = value.toString
   final lazy val nodeText: String = nodeTextC
 
-  private[this] type Compat = NodeK.Compat[L, Value]
+  private[this] type Node_~ = NodeK.Compat[L, Value]
 
-  protected def inductionC: Seq[(_A, Compat)]
+  protected def inductionC: Seq[(_Arrow, Node_~)]
   lazy val induction = inductionC
 
-  final lazy val discoverNodes: Seq[Compat] = induction.map(_._2)
+  final lazy val discoverNodes: Seq[Node_~] = induction.map(_._2)
 
-  final lazy val inductionToValues: Seq[(_A, Value)] = induction.map(v => v._1 -> v._2.value)
+  final lazy val inductionToValues: Seq[(_Arrow, Value)] = induction.map(v => v._1 -> v._2.value)
 
   final lazy val discoverValues: Seq[Value] = inductionToValues.map(_._2)
 
@@ -53,7 +53,7 @@ trait NodeK[+L <: Law] extends Lawful.Construct[L] {
   protected def identityKeyC: Option[Any] = evalCacheKeyC
   final lazy val identityKey = identityKeyC
 
-  def map[V2](fn: Value => V2): Mapped[L, Value, V2] = Mapped(this: Compat, fn)
+  def map[V2](fn: Value => V2): Mapped[L, Value, V2] = Mapped(this: Node_~, fn)
 
   def upcast[V2](
       implicit
@@ -72,7 +72,6 @@ object NodeK {
   type Aux[+L <: Law, V] = NodeK[L] { type Value = V }
   trait AuxEx[+L <: Law, V] extends NodeK[L] { type Value = V }
 
-  // Acronym of "Less Than"
   type Compat[+L <: Law, +V] = Aux[L, _ <: V]
 
   trait Untyped[+L <: Law] extends NodeK[L] {
@@ -93,7 +92,7 @@ object NodeK {
 
     override protected def nodeTextC: String = original.nodeText
 
-    override protected def inductionC = {
+    override protected def inductionC: Seq[(_Arrow, Mapped[L, V, V2])] = {
       original.induction.map {
         case (a, n) =>
           a -> Mapped(n, fn)

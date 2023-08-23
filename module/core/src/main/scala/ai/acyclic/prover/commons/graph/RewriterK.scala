@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-trait RewriterK[L <: Law] extends Lawful.Construct[L] {
+trait RewriterK[L <: Law] extends Lawful.Struct[L] {
 
   private[this] type NodeV = NodeK.Compat[L, Value]
 

@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-trait GraphK[+L <: Law] extends Lawful.Construct[L] {
+trait GraphK[+L <: Law] extends Lawful.Struct[L] {
 
   type _E <: Engine
   def engine: _E

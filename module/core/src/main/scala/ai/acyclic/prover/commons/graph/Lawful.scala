@@ -10,10 +10,10 @@ trait Lawful {
 
 object Lawful {
 
-  trait Construct[+L <: Law] {
+  trait Struct[+L <: Law] {
 
     val law: L
-    type _A = law._A
+    type _Arrow = law._A
 
     type Value // bound type of values of this node and all its descendants, NOT the type of this value!
   }
