@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.Law
+import ai.acyclic.prover.commons.graph.topology.{Law, Lawful}
 
 trait RewriterK[L <: Law] extends Lawful.Struct[L] {
 

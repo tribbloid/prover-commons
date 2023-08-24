@@ -1,6 +1,6 @@
-package ai.acyclic.prover.commons.graph
+package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.graph.topology.Law
+import ai.acyclic.prover.commons.graph.{NodeK, RewriterK}
 
 trait Lawful {
   type Law_/\ <: Law

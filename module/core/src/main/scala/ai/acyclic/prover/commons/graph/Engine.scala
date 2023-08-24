@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Law, Topology}
+import ai.acyclic.prover.commons.graph.topology.{Law, Lawful, Topology}
 
 trait Engine {
   self: Singleton =>

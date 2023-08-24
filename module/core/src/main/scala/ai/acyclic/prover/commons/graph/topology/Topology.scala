@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.graph.{Arrow, GraphK, Lawful}
+import ai.acyclic.prover.commons.graph.{Arrow, GraphK}
 
 trait Topology extends Lawful {
   self: Singleton =>
