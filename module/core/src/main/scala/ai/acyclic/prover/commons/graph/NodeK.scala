@@ -88,7 +88,7 @@ object NodeK {
       fn: V => V2
   ) extends AuxEx[L, V2] {
 
-    override val law: original.law.type = original.law
+    override val topology: original.topology.type = original.topology
 
     override def value: V2 = fn(original.value.asInstanceOf)
 

@@ -1,89 +1,54 @@
 package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.graph.{Arrow, GraphK}
+import ai.acyclic.prover.commons.graph.{Arrow, NodeK}
 
-trait Topology extends Lawful {
-  self: Singleton =>
+abstract class Topology[L <: Law](
+    implicit
+    val matching: Lawful.Matching[L]
+) extends Lawful {
 
-  type Arrow_/\ <: Arrow
+  override type Law_/\ = L
+  override type _Arrow = matching._Arrow
 
-  override type Law_/\ <: Law { type _Arrow <: Arrow_/\ }
-
-  type LawImpl = Law_/\ { type _Arrow = Arrow_/\ }
-  def LawImpl: LawImpl
-
-  trait LawImplMixin extends Law {
-    override type _Arrow = Arrow_/\
-  }
-
-  implicit def summonLaw: LawImpl = LawImpl
-
-  type Graph[V] = GraphK.Aux[Law_/\, V]
-
-  implicit def summon: this.type = this
+  implicit def _self: Topology[L] = this
 }
 
 object Topology {
 
-  object AnyGraphT extends Topology {
+  import Lawful.LawImpl
 
-    type Arrow_/\ = Arrow
-    trait Law_/\ extends Law
+  trait AnyGraph extends LawImpl[Arrow]
+  object AnyGraph extends Topology[AnyGraph] {
 
-    object LawImpl extends Law_/\ with LawImplMixin
-
-    object OutboundT extends Topology {
-
-      type Arrow_/\ = Arrow.`~>`.^
-      trait Law_/\ extends AnyGraphT.Law_/\ {
-        type _Arrow <: Arrow.`~>`.^
-      }
-
-      object LawImpl extends Law_/\ with LawImplMixin
-    }
+    trait Outbound extends AnyGraph with LawImpl[Arrow.`~>`.^]
+    object Outbound extends Topology[Outbound]
   }
 
-  object PosetT extends Topology {
+  trait Poset extends AnyGraph
+  object Poset extends Topology[Poset]
 
-    type Arrow_/\ = Arrow
-    trait Law_/\ extends AnyGraphT.Law_/\
+  trait Semilattice extends Poset
+  object Semilattice extends Topology[Semilattice] {
 
-    object LawImpl extends Law_/\ with LawImplMixin
-  }
+    trait Upper extends Semilattice with AnyGraph.Outbound
+    object Upper extends Topology[Upper] {
 
-  object SemilatticeT extends Topology {
-
-    type Arrow_/\ = Arrow
-    trait Law_/\ extends PosetT.Law_/\
-
-    object LawImpl extends Law_/\ with LawImplMixin
-
-    object UpperT extends Topology {
-
-      type Arrow_/\ = Arrow.`~>`.^
-      trait Law_/\ extends SemilatticeT.Law_/\ with AnyGraphT.OutboundT.Law_/\
-
-      object LawImpl extends Law_/\ with LawImplMixin
-
-      implicit class NodeOps[V](n: Node[V]) {
+      implicit class NodeOps[V](n: NodeK.Compat[Law_/\, V]) {
 
         def isLeaf: Boolean = n.induction.isEmpty
       }
     }
   }
 
-  object TreeT extends Topology {
+  trait Tree extends Semilattice.Upper
+  object Tree extends Topology[Tree]
 
-    type Arrow_/\ = Arrow.`~>`.^
-    trait Law_/\ extends SemilatticeT.UpperT.Law_/\
-
-    override object LawImpl extends Law_/\ with LawImplMixin
-  }
-
-  private def compileTimeCheck[V](): Unit = {
-
-    implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
-
-    implicitly[PosetT.Node[V] <:< AnyGraphT.Node[V]]
-  }
+  //  private def __sanity[V]: Unit = {
+  //
+  //    implicitly[Poset.StructKS[Int]#Node_~ <:< AnyGraph.StructKS[Int]#Node_~]
+  //
+  //    implicitly[Poset.StructKS[V]#Node_~ <:< AnyGraph.StructKS[V]#Node_~]
+  //
+  //    implicitly[Topology[Poset]] // can always summon topology
+  //  }
 }

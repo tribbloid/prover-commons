@@ -42,7 +42,7 @@ trait Engine {
         entriesC: Dataset[NodeK.Compat[L, V]]
     )(
         implicit
-        override val law: L
+        override val topology: Topology[L]
     ) extends TheGraphK.AuxEx[L, V] {
 
       // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
@@ -58,7 +58,7 @@ trait Engine {
 
     final lazy val resolve: OGraph = compute
 
-    lazy val law: L = resolve.law
+    lazy val topology: Topology[_ <: L] = resolve.topology
   }
 
   object PlanK {
@@ -88,24 +88,24 @@ trait Engine {
     trait PlanEx[v] extends PlanK.AuxEx[Law_/\, v]
   }
 
-  object GraphBuilder {
+//  object GraphBuilder {
+//
+//    type Aux[L] = GraphBuilder[_] { type _L = L }
+//  }
 
-    type Aux[L] = GraphBuilder[_] { type _L = L }
-  }
-
-  abstract class GraphBuilder[T <: Topology](val topology: T) extends TheLawful {
+  abstract class GraphBuilder[T <: Topology[_]](val topology: T) extends TheLawful {
 //    self: Singleton =>
 
     type Law_/\ = topology.Law_/\
 
     trait NodeImpl[V] extends NodeK.AuxEx[Law_/\, V] {
 
-      final val law = topology.LawImpl
+      final val topology = GraphBuilder.this.topology
     }
 
     trait RewriterImpl[V] extends RewriterK.AuxEx[Law_/\, V] {
 
-      final val law = topology.LawImpl
+      final val topology = GraphBuilder.this.topology
     }
 
     def makeTightest[LL <: Law_/\, V](
@@ -135,7 +135,7 @@ trait Engine {
       trait UntypedNode extends NodeK.Untyped[Law_/\] {
         self: UntypedDef.this.Node =>
 
-        final val law = topology.LawImpl
+        final val topology = topology.LawImpl
 
         type Value = UntypedDef.this.Node
       }
@@ -199,26 +199,26 @@ trait Engine {
 
   trait Syntax {
 
-    object AnyGraph extends GraphBuilder(AnyGraphT) {
+    object AnyGraph extends GraphBuilder(Topology.AnyGraph) {
 
-      object Outbound extends GraphBuilder(AnyGraphT.OutboundT) {}
+      object Outbound extends GraphBuilder(Topology.AnyGraph.Outbound) {}
       type Outbound[V] = Outbound.Graph[V]
 
     }
     type AnyGraph[V] = AnyGraph.Graph[V]
 
-    object Poset extends GraphBuilder(PosetT) {}
+    object Poset extends GraphBuilder(Topology.Poset) {}
     type Poset[V] = Poset.Graph[V]
 
-    object Semilattice extends GraphBuilder(SemilatticeT) {
+    object Semilattice extends GraphBuilder(Topology.Semilattice) {
 
-      object Upper extends GraphBuilder(SemilatticeT.UpperT) {}
+      object Upper extends GraphBuilder(Topology.Semilattice.Upper) {}
       type Upper[V] = Upper.Graph[V]
 
     }
     type Semilattice[V] = Semilattice.Graph[V]
 
-    object Tree extends GraphBuilder(TreeT) {
+    object Tree extends GraphBuilder(Topology.Tree) {
 
       case class Singleton[V](value: V) extends NodeImpl[V] {
 

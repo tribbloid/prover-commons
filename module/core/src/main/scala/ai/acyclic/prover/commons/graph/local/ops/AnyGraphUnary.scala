@@ -51,7 +51,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
           n.map(v => fn(v): V2)
         }
 
-        Local.AnyGraph.makeTightest[ArgLaw, V2](newNode: _*)(argPlan.law)
+        Local.AnyGraph.makeTightest[ArgLaw, V2](newNode: _*)(argPlan.topology)
       }
 
       result
@@ -107,7 +107,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
       override def compute = {
         val transformed: Seq[ArgNode] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
-        Local.AnyGraph.makeTightest[ArgLaw, ArgV](transformed: _*)(argPlan.law)
+        Local.AnyGraph.makeTightest[ArgLaw, ArgV](transformed: _*)(argPlan.topology)
       }
     }
 
@@ -213,7 +213,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
   ) {
 
     private val delegate = Transform(
-      rewriter = RewriterK.DoNotRewrite(arg.law),
+      rewriter = RewriterK.DoNotRewrite(arg.topology),
       down = { v => down(v); Seq(v) },
       up = { v => up(v); Seq(v) }
     )
