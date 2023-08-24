@@ -1,17 +1,19 @@
-package ai.acyclic.prover.commons.graph
+package ai.acyclic.prover.commons.graph.topology
+
+import ai.acyclic.prover.commons.graph.{Arrow, GraphK, Lawful}
 
 trait Topology extends Lawful {
   self: Singleton =>
 
   type Arrow_/\ <: Arrow
 
-  override type Law_/\ <: Law { type _A <: Arrow_/\ }
+  override type Law_/\ <: Law { type _Arrow <: Arrow_/\ }
 
-  type LawImpl = Law_/\ { type _A = Arrow_/\ }
+  type LawImpl = Law_/\ { type _Arrow = Arrow_/\ }
   def LawImpl: LawImpl
 
   trait LawImplMixin extends Law {
-    override type _A = Arrow_/\
+    override type _Arrow = Arrow_/\
   }
 
   implicit def summonLaw: LawImpl = LawImpl
@@ -34,7 +36,7 @@ object Topology {
 
       type Arrow_/\ = Arrow.`~>`.^
       trait Law_/\ extends AnyGraphT.Law_/\ {
-        type _A <: Arrow.`~>`.^
+        type _Arrow <: Arrow.`~>`.^
       }
 
       object LawImpl extends Law_/\ with LawImplMixin

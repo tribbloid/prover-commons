@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.graph.topology.Law
+
 import scala.language.existentials
 
 trait NodeK[+L <: Law] extends Lawful.Struct[L] {

@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.graph.topology.Law
+
 trait Lawful {
   type Law_/\ <: Law
 
@@ -13,7 +15,7 @@ object Lawful {
   trait Struct[+L <: Law] {
 
     val law: L
-    type _Arrow = law._A
+    type _Arrow = law._Arrow
 
     type Value // bound type of values of this node and all its descendants, NOT the type of this value!
   }

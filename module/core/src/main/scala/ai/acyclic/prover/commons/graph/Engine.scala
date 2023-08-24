@@ -1,9 +1,11 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.graph.topology.{Law, Topology}
+
 trait Engine {
   self: Singleton =>
 
-  import Topology._
+  import ai.acyclic.prover.commons.graph.topology.Topology._
   import Engine._
 
   type Dataset[+T]
