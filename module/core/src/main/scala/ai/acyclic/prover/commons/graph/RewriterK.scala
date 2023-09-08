@@ -2,6 +2,8 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.topology.{Law, Lawful, Topology}
 
+import scala.language.existentials
+
 trait RewriterK[L <: Law] extends Lawful.Struct[L] {
 
   private[this] type NodeV = NodeK.Compat[L, Value]
@@ -14,7 +16,7 @@ trait RewriterK[L <: Law] extends Lawful.Struct[L] {
 
     type Value = RewriterK.this.Value
 
-    val topology: Topology[_ <: L] = RewriterK.this.topology
+    val topology: Topology.Aux[_ <: L] = RewriterK.this.topology
 
     override def rewrite(src: NodeV)(discoverNodes: Seq[NodeV]): NodeV = {
 
@@ -43,7 +45,7 @@ object RewriterK {
   type Aux[L <: Law, V] = RewriterK[L] { type Value = V }
   trait AuxEx[L <: Law, V] extends RewriterK[L] { type Value = V }
 
-  case class DoNotRewrite[L <: Law, N](override val topology: Topology[_ <: L]) extends RewriterK[L] {
+  case class DoNotRewrite[L <: Law, N](override val topology: Topology.Aux[_ <: L]) extends RewriterK[L] {
 
     type Value = N
 

@@ -47,9 +47,15 @@ object Lawful {
     implicitly[bounds._Arrow =:= Arrow.`~>`.^]
   }
 
+  { // sanity
+    val bounds = Summoner.summon[Matching[Topology.Tree]]
+
+    implicitly[bounds._Arrow =:= Arrow.`~>`.^]
+  }
+
   trait Struct[+L <: Law] {
 
-    val topology: Topology[_ <: L] // TODO: should use Lt pattern
+    val topology: Topology.Aux[_ <: L] // TODO: should use Lt pattern
     type _Arrow = topology._Arrow
 
     type Value // bound type of values of this node and all its descendants, NOT the type of this value!

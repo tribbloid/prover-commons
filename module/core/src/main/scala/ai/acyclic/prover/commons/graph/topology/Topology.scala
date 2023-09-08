@@ -2,38 +2,63 @@ package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.{Arrow, NodeK}
 
-abstract class Topology[L <: Law](
-    implicit
-    val matching: Lawful.Matching[L]
-) extends Lawful {
+abstract class Topology extends Lawful {
 
-  override type Law_/\ = L
-  override type _Arrow = matching._Arrow
-
-  implicit def _self: Topology[L] = this
+  implicit def _self: Topology.Aux[Law_/\] = this
 }
 
 object Topology {
 
+  type Aux[L <: Law] = Topology { type Law_/\ = L }
+
+  def apply[L <: Law]: Resolver[L] = Resolver()
+
+//  abstract class Impl[L <: Law](
+//      implicit
+//      val matching: Lawful.Matching[L]
+//  ) extends Topology {
+//
+//    override type Law_/\ = L
+//
+//    override type _Arrow = matching._Arrow
+//  }
+
+  case class Resolver[L <: Law]() {
+
+    def resolve(
+        implicit
+        matching: Lawful.Matching[L]
+    ): Topology.Aux[L] { type _Arrow = matching._Arrow } = new Topology {
+
+      override type Law_/\ = L
+
+      override type _Arrow = matching._Arrow
+    }
+  }
+
+  def resolveImplicitly[L <: Law, M <: Lawful.Matching[L]](
+      implicit
+      matching: M
+  ): Aux[L] { type _Arrow = matching._Arrow } = Resolver[L]().resolve
+
   import Lawful.LawImpl
 
   trait AnyGraph extends LawImpl[Arrow]
-  object AnyGraph extends Topology[AnyGraph] {
+  object AnyGraph {
 
     trait Outbound extends AnyGraph with LawImpl[Arrow.`~>`.^]
-    object Outbound extends Topology[Outbound]
+//    object Outbound extends Impl[Outbound]
   }
 
   trait Poset extends AnyGraph
-  object Poset extends Topology[Poset]
 
   trait Semilattice extends Poset
-  object Semilattice extends Topology[Semilattice] {
+  object Semilattice {
 
     trait Upper extends Semilattice with AnyGraph.Outbound
-    object Upper extends Topology[Upper] {
+    object Upper {
 
-      implicit class NodeOps[V](n: NodeK.Compat[Law_/\, V]) {
+      implicit class NodeOps[V](n: NodeK.Compat[Upper, V]) {
 
         def isLeaf: Boolean = n.induction.isEmpty
       }
@@ -41,7 +66,15 @@ object Topology {
   }
 
   trait Tree extends Semilattice.Upper
-  object Tree extends Topology[Tree]
+
+  { // sanity
+
+    val Tree = Topology[Tree].resolve
+
+    implicitly[Tree._Arrow <:< Arrow]
+
+    implicitly[Tree._Arrow <:< Arrow.`~>`.^]
+  }
 
   //  private def __sanity[V]: Unit = {
   //

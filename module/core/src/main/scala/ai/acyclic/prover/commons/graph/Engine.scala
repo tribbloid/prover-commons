@@ -42,7 +42,7 @@ trait Engine {
         entriesC: Dataset[NodeK.Compat[L, V]]
     )(
         implicit
-        override val topology: Topology[L]
+        override val topology: Topology.Aux[L]
     ) extends TheGraphK.AuxEx[L, V] {
 
       // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
@@ -58,7 +58,7 @@ trait Engine {
 
     final lazy val resolve: OGraph = compute
 
-    lazy val topology: Topology[_ <: L] = resolve.topology
+    lazy val topology: Topology.Aux[_ <: L] = resolve.topology
   }
 
   object PlanK {
@@ -93,7 +93,7 @@ trait Engine {
 //    type Aux[L] = GraphBuilder[_] { type _L = L }
 //  }
 
-  abstract class GraphBuilder[T <: Topology[_]](val topology: T) extends TheLawful {
+  abstract class GraphBuilder[T <: Topology](val topology: T) extends TheLawful {
 //    self: Singleton =>
 
     type Law_/\ = topology.Law_/\
@@ -112,19 +112,19 @@ trait Engine {
         nodes: NodeK.Compat[LL, V]*
     )(
         implicit
-        tightestLaw: LL
+        tightestTopology: Topology.Aux[LL]
     ): TheGraphK.Aux[LL, V] =
       TheGraphK.Unchecked(parallelize(nodes))
 
     def make[V](
         nodes: NodeK.Compat[Law_/\, V]*
-    ): Graph[V] = makeTightest[Law_/\, V](nodes: _*)(topology.LawImpl)
+    ): Graph[V] = makeTightest[Law_/\, V](nodes: _*)(topology)
 
     def apply[LL <: Law_/\, V](
         nodes: NodeK.Compat[LL, V]*
     )(
         implicit
-        tightestLaw: LL
+        tightestTopology: Topology.Aux[LL]
     ): TheGraphK.Aux[LL, V] = makeTightest[LL, V](nodes: _*)
 
     def empty[V]: Graph[V] = make[V]()
@@ -135,7 +135,7 @@ trait Engine {
       trait UntypedNode extends NodeK.Untyped[Law_/\] {
         self: UntypedDef.this.Node =>
 
-        final val topology = topology.LawImpl
+        final val topology = GraphBuilder.this.topology
 
         type Value = UntypedDef.this.Node
       }
@@ -199,26 +199,35 @@ trait Engine {
 
   trait Syntax {
 
-    object AnyGraph extends GraphBuilder(Topology.AnyGraph) {
+//    class ShortBuilder1[L <: Law, M <: Lawful.Matching[L]](
+//        implicit
+//        tt: Topology.Aux[L]
+//    ) extends GraphBuilder[Topology.Aux[L]](tt)
 
-      object Outbound extends GraphBuilder(Topology.AnyGraph.Outbound) {}
+    class ShortBuilder[L <: Law](
+        implicit
+        tt: Topology.Aux[L]
+    ) extends GraphBuilder[Topology.Aux[L]](tt) {}
+
+    object AnyGraph extends ShortBuilder[Topology.AnyGraph] {
+
+      object Outbound extends ShortBuilder[Topology.AnyGraph.Outbound] {}
       type Outbound[V] = Outbound.Graph[V]
-
     }
     type AnyGraph[V] = AnyGraph.Graph[V]
 
-    object Poset extends GraphBuilder(Topology.Poset) {}
+    object Poset extends ShortBuilder[Topology.Poset] {}
     type Poset[V] = Poset.Graph[V]
 
-    object Semilattice extends GraphBuilder(Topology.Semilattice) {
+    object Semilattice extends ShortBuilder[Topology.Semilattice] {
 
-      object Upper extends GraphBuilder(Topology.Semilattice.Upper) {}
+      object Upper extends ShortBuilder[Topology.Semilattice.Upper] {}
       type Upper[V] = Upper.Graph[V]
 
     }
     type Semilattice[V] = Semilattice.Graph[V]
 
-    object Tree extends GraphBuilder(Topology.Tree) {
+    object Tree extends ShortBuilder[Topology.Tree] {
 
       case class Singleton[V](value: V) extends NodeImpl[V] {
 
