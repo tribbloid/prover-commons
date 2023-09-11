@@ -23,7 +23,7 @@ trait Lawful {
 
 object Lawful {
 
-  trait LawImpl[+A <: Arrow] extends Lawful {
+  trait LawImpl[+A <: Arrow] extends Lawful { // mark for removal
     type _Law = this.type
     override type _Arrow <: A // TODO: remove
   }
@@ -53,10 +53,15 @@ object Lawful {
     implicitly[bounds._Arrow =:= Arrow.`~>`.^]
   }
 
-  trait Struct[+L <: Law] {
+  trait Struct[+L <: Law] extends Lawful {
 
-    val topology: Topology.Aux[_ <: L] // TODO: should use Lt pattern
-    type _Arrow = topology._Arrow
+//    val ev: Topology.Ev[_ <: L]
+
+//    final val topology = ev.topology
+//
+//    override type Law_/\ = ev.Law_/\
+//
+//    override type _Arrow = ev._Arrow
 
     type Value // bound type of values of this node and all its descendants, NOT the type of this value!
   }

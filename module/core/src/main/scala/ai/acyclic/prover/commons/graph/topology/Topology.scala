@@ -2,61 +2,77 @@ package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.{Arrow, NodeK}
 
-abstract class Topology extends Lawful {
+class Topology[L <: Law]() extends Lawful {
 
-  implicit def _self: Topology.Aux[Law_/\] = this
+  type Law_/\ = L
+
+  implicitly[Law_/\ <:< Law]
 }
 
 object Topology {
 
-  type Aux[L <: Law] = Topology { type Law_/\ = L }
+  def get[L <: Law](
+      implicit
+      matching: Lawful.Matching[L]
+  ): Topology[L] { type _Arrow = matching._Arrow } = new Topology[L] {
 
-  def apply[L <: Law]: Resolver[L] = Resolver()
+    final override type _Arrow = matching._Arrow
+  }
 
-//  abstract class Impl[L <: Law](
+  class Get[L <: Law](
+      implicit
+      matching: Lawful.Matching[L]
+  ) extends Topology[L] {
+
+    final override type _Arrow = matching._Arrow
+  }
+
+//  class EvM[L <: Law, M <: Lawful.Matching[L]]()(
 //      implicit
-//      val matching: Lawful.Matching[L]
-//  ) extends Topology {
+//      val matching: M
+//  ) extends Lawful {
+//
+//    final val topology = Topology.this
 //
 //    override type Law_/\ = L
 //
 //    override type _Arrow = matching._Arrow
 //  }
-
-  case class Resolver[L <: Law]() {
-
-    def resolve(
-        implicit
-        matching: Lawful.Matching[L]
-    ): Topology.Aux[L] { type _Arrow = matching._Arrow } = new Topology {
-
-      override type Law_/\ = L
-
-      override type _Arrow = matching._Arrow
-    }
-  }
-
-  def resolveImplicitly[L <: Law, M <: Lawful.Matching[L]](
-      implicit
-      matching: M
-  ): Aux[L] { type _Arrow = matching._Arrow } = Resolver[L]().resolve
+//
+//  type Ev[L <: Law] = EvM[L, _]
+//
+//  def ev[L <: Law](
+//      implicit
+//      matching: Lawful.Matching[L]
+//  ) = new EvM[L, matching.type]()(matching)
+//
+//  def dummy1[L <: Law, M <: Lawful.Matching[L]](tp: Topology[L])(
+//      implicit
+//      matching: M
+//  ) = new EvM[L, M]
+//
+//  class Dummy2[L <: Law, M <: Lawful.Matching[L]](tp: Topology[L])(
+//      implicit
+//      matching: M
+//  ) extends EvM[L, M]
 
   import Lawful.LawImpl
 
   trait AnyGraph extends LawImpl[Arrow]
-  object AnyGraph {
+  object AnyGraph extends Get[AnyGraph] {
 
     trait Outbound extends AnyGraph with LawImpl[Arrow.`~>`.^]
-//    object Outbound extends Impl[Outbound]
+    object Outbound extends Get[Outbound]
   }
 
   trait Poset extends AnyGraph
+  object Poset extends Get[Poset]
 
   trait Semilattice extends Poset
-  object Semilattice {
+  object Semilattice extends Get[Semilattice] {
 
     trait Upper extends Semilattice with AnyGraph.Outbound
-    object Upper {
+    object Upper extends Get[Upper] {
 
       implicit class NodeOps[V](n: NodeK.Compat[Upper, V]) {
 
@@ -66,15 +82,28 @@ object Topology {
   }
 
   trait Tree extends Semilattice.Upper
+  object Tree extends Get[Tree]
 
   { // sanity
 
-    val Tree = Topology[Tree].resolve
-
-    implicitly[Tree._Arrow <:< Arrow]
-
-    implicitly[Tree._Arrow <:< Arrow.`~>`.^]
+    val t1 = Tree
+    implicitly[t1._Arrow <:< Arrow]
+    implicitly[t1._Arrow <:< Arrow.`~>`.^]
   }
+
+//  { // sanity
+//
+//    val t1 = dummy1(Tree)
+//    implicitly[t1._Arrow <:< Arrow]
+//    implicitly[t1._Arrow <:< Arrow.`~>`.^]
+//  }
+//
+//  { // sanity
+//
+//    val t1 = new Dummy2(Tree)
+//    implicitly[t1._Arrow <:< Arrow]
+//    implicitly[t1._Arrow <:< Arrow.`~>`.^]
+//  }
 
   //  private def __sanity[V]: Unit = {
   //

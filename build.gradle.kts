@@ -94,6 +94,7 @@ allprojects {
                         "-unchecked", "-deprecation", "-feature",
 
                         "-language:higherKinds",
+                        "-Xsource:3",
 
                         "-Xlint:poly-implicit-overload", "-Xlint:option-implicit", "-Wunused:imports",
 
@@ -105,7 +106,10 @@ allprojects {
                     compilerOptions.addAll(
                         listOf(
                             "-Vimplicits", "-Vimplicits-verbose-tree", "-Vtype-diffs",
-                            "-P:splain:Vtype-reduction", "-P:splain:Vimplicits-diverging",
+                            "-P:splain:Vimplicits-diverging",
+                            "-P:splain:Vtype-reduction",
+                            "-P:splain:Vtype-verbosity:10",
+                            "-P:splain:Vdebug"
                         )
                     )
                 }

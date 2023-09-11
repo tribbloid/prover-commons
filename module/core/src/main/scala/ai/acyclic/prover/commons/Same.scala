@@ -16,7 +16,7 @@ object Same {
   protected def rectify(id: Any): Any = {
     val result = id match {
       case aa: Array[_] => aa.toList
-      case _            => id
+      case _ => id
     }
     result
   }
@@ -34,7 +34,7 @@ object Same {
       (getID(v1), getID(v2)) match {
 
         case (Some(id1), Some(id2)) => id1 == id2
-        case _                      => false
+        case _ => false
       }
     }
 
@@ -47,8 +47,8 @@ object Same {
 
       (v1, v2) match {
         case (null, null) => true
-        case (null, _)    => false
-        case (_, null)    => false
+        case (null, _) => false
+        case (_, null) => false
         case (x: AnyRef, y: AnyRef) =>
           if (x.eq(y)) true
           else if (x.getClass == y.getClass && proveNonTrivial(x, y)) true
@@ -101,7 +101,7 @@ object Same {
       final override def equals(that: Any): Boolean = {
         that match {
           case that: Facade => By.this.proveSafely(samenessDelegatedTo, that.samenessDelegatedTo)
-          case _            => false
+          case _ => false
         }
       }
     }
@@ -153,7 +153,7 @@ object Same {
 
     case class Memoize[K, V](fn: K => V) extends (K => V) with HasOuter {
 
-      override lazy val outer = Correspondence[K, V]()
+      final override lazy val outer: Correspondence[K, V] = Correspondence[K, V]()
 
       final def apply(key: K): V = outer.getOrElseUpdate(key, fn(key))
     }
@@ -194,7 +194,7 @@ object Same {
     override def proveNonTrivial(v1: Any, v2: Any): Boolean = {
       (v1, v2) match {
         case (_v1: AnyRef, _v2: AnyRef) => _v1.eq(_v2)
-        case _                          => super.proveNonTrivial(v1, v2)
+        case _ => super.proveNonTrivial(v1, v2)
       }
     }
   }

@@ -16,7 +16,7 @@ trait RewriterK[L <: Law] extends Lawful.Struct[L] {
 
     type Value = RewriterK.this.Value
 
-    val topology: Topology.Aux[_ <: L] = RewriterK.this.topology
+    final override val ev = RewriterK.this.ev
 
     override def rewrite(src: NodeV)(discoverNodes: Seq[NodeV]): NodeV = {
 
@@ -45,7 +45,7 @@ object RewriterK {
   type Aux[L <: Law, V] = RewriterK[L] { type Value = V }
   trait AuxEx[L <: Law, V] extends RewriterK[L] { type Value = V }
 
-  case class DoNotRewrite[L <: Law, N](override val topology: Topology.Aux[_ <: L]) extends RewriterK[L] {
+  case class DoNotRewrite[L <: Law, N](override val ev: Topology.Ev[_ <: L]) extends RewriterK[L] {
 
     type Value = N
 

@@ -16,7 +16,7 @@ trait NodeK[+L <: Law] extends Lawful.Struct[L] {
   private[this] type Node_~ = NodeK.Compat[L, Value]
 
   protected def inductionC: Seq[(_Arrow, Node_~)]
-  lazy val induction = inductionC
+  final lazy val induction = inductionC
 
   final lazy val discoverNodes: Seq[Node_~] = induction.map(_._2)
 
@@ -88,7 +88,7 @@ object NodeK {
       fn: V => V2
   ) extends AuxEx[L, V2] {
 
-    override val topology: original.topology.type = original.topology
+    final override val ev: original.ev.type = original.ev
 
     override def value: V2 = fn(original.value.asInstanceOf)
 
@@ -97,7 +97,11 @@ object NodeK {
     override protected def inductionC: Seq[(_Arrow, Mapped[L, V, V2])] = {
       original.induction.map {
         case (a, n) =>
-          a -> Mapped(n, fn)
+//          val a1: original.ev.matching._Arrow = a
+//          val a2: ev.matching._Arrow = a1
+
+          val mapped: Mapped[L, V, V2] = Mapped[L, V, V2](n, fn)
+          a -> mapped
       }
     }
 
