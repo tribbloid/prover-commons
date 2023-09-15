@@ -2,53 +2,53 @@ package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.{Arrow, GraphK}
 
-trait Topology extends Law with Lawful {
+trait Topology extends Lawful {
   self: Singleton =>
 
-  type Law_/\ >: this.type <: Law
+  type Conj_/\ <: Conj
 
   final def self: this.type = this
 
-  type Graph[V] = GraphK.Aux[Law_/\, V]
+  type Graph[V] = GraphK.Aux[Conj_/\, V]
 
   implicit def summon: this.type = this
 }
 
 object Topology {
 
-  abstract class Of[L <: Law] extends Topology {
-    self: L with Singleton =>
+  abstract class Impl[L <: Conj] extends Topology {
+    self: Singleton =>
 
-    type Law_/\ = L
+    type Conj_/\ = L
   }
 
-  trait AnyGraphT extends Law.Impl[Arrow]
-  object AnyGraphT extends Of[AnyGraphT] with AnyGraphT {
+  trait AnyGraphT extends Conj.Impl[Arrow]
+  object AnyGraphT extends Impl[AnyGraphT] {
 
-    type _Arrow = Arrow
+//    type _Arrow = Arrow
 
-    trait OutboundT extends AnyGraphT with Law.Impl[Arrow.`~>`.^]
-    object OutboundT extends Of[OutboundT] with OutboundT {
+    trait OutboundT extends AnyGraphT with Conj.Impl[Arrow.`~>`.^]
+    object OutboundT extends Impl[OutboundT] {
 
-      type _Arrow = Arrow.`~>`.^
+//      type _Arrow = Arrow.`~>`.^
     }
   }
 
   trait PosetT extends AnyGraphT
-  object PosetT extends Of[PosetT] with PosetT {
+  object PosetT extends Impl[PosetT] {
 
-    type _Arrow = Arrow
+//    type _Arrow = Arrow
   }
 
   trait SemilatticeT extends PosetT
-  object SemilatticeT extends Of[SemilatticeT] with SemilatticeT {
+  object SemilatticeT extends Impl[SemilatticeT] {
 
-    type _Arrow = Arrow
+//    type _Arrow = Arrow
 
     trait UpperT extends SemilatticeT with AnyGraphT.OutboundT
-    object UpperT extends Of[UpperT] with UpperT {
+    object UpperT extends Impl[UpperT] {
 
-      type _Arrow = Arrow.`~>`.^
+//      type _Arrow = Arrow.`~>`.^
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -58,9 +58,9 @@ object Topology {
   }
 
   trait TreeT extends SemilatticeT.UpperT
-  object TreeT extends Of[TreeT] with TreeT {
+  object TreeT extends Impl[TreeT] {
 
-    type _Arrow = Arrow.`~>`.^
+//    type _Arrow = Arrow.`~>`.^
   }
 
   private def compileTimeCheck[V](): Unit = {

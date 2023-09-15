@@ -10,7 +10,7 @@ import scala.language.existentials
 trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.AnyGraph.Law_/\]
+    implicitly[ArgLaw <:< Local.AnyGraph.Conj_/\]
   }
 
   import AnyGraphUnary._
@@ -51,7 +51,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
           n.map(v => fn(v): V2)
         }
 
-        Local.AnyGraph.makeTightest[ArgLaw, V2](newNode: _*)(argPlan.law)
+        Local.AnyGraph.makeTightest[ArgLaw, V2](newNode: _*)(argPlan.assuming)
       }
 
       result
@@ -107,7 +107,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
       override def compute = {
         val transformed: Seq[ArgNode] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
-        Local.AnyGraph.makeTightest[ArgLaw, ArgV](transformed: _*)(argPlan.law)
+        Local.AnyGraph.makeTightest[ArgLaw, ArgV](transformed: _*)(argPlan.assuming)
       }
     }
 
@@ -211,7 +211,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
   ) {
 
     private val delegate = Transform(
-      rewriter = RewriterK.DoNotRewrite(arg.law),
+      rewriter = RewriterK.DoNotRewrite(arg.assuming),
       down = { v => down(v); Seq(v) },
       up = { v => up(v); Seq(v) }
     )
@@ -241,7 +241,7 @@ object AnyGraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[L <: Local.AnyGraph.Law_/\, V](
+  case class ^[L <: Local.AnyGraph.Conj_/\, V](
       argPlan: LocalEngine.PlanK.Aux[L, V],
       override val maxDepth: Int = 20
   ) extends AnyGraphUnary {
@@ -250,7 +250,7 @@ object AnyGraphUnary {
 
     override type ArgV = V
 
-    case class &&[L2 <: Local.AnyGraph.Law_/\, V2](
+    case class &&[L2 <: Local.AnyGraph.Conj_/\, V2](
         argPlan: LocalEngine.PlanK.Aux[L2, V2],
         override val maxDepth: Int = ^.this.maxDepth
     ) extends AnyGraphBinary {

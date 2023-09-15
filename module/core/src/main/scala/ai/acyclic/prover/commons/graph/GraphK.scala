@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Law, Lawful}
+import ai.acyclic.prover.commons.graph.topology.{Conj, Lawful}
 
-trait GraphK[+L <: Law] extends Lawful.Struct[L] {
+trait GraphK[+L <: Conj] extends Lawful.Struct[L] {
 
   type _E <: Engine
   def engine: _E
@@ -14,12 +14,12 @@ trait GraphK[+L <: Law] extends Lawful.Struct[L] {
 
 object GraphK {
 
-  type Aux[+L <: Law, V] = GraphK[L] { type Value = V }
+  type Aux[+L <: Conj, V] = GraphK[L] { type Value = V }
 
-  trait AuxT[+L <: Law, V] extends GraphK[L] {
+  trait AuxT[+L <: Conj, V] extends GraphK[L] {
     type Value = V
   }
 
   // Acronym of "Less Than"
-  type Lt[+C <: Law, +A <: Arrow, +V] = Aux[C, _ <: V]
+  type Lt[+C <: Conj, +A <: Arrow, +V] = Aux[C, _ <: V]
 }

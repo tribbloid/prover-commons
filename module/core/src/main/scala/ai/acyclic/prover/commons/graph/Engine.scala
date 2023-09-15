@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Law, Lawful, Topology}
+import ai.acyclic.prover.commons.graph.topology.{Conj, Lawful, Topology}
 
 trait Engine {
   self: Singleton =>
@@ -11,7 +11,7 @@ trait Engine {
   type Dataset[+T]
   def parallelize[T](seq: Seq[T]): Dataset[T]
 
-  trait TheGraphK[+L <: Law] extends GraphK[L] {
+  trait TheGraphK[+L <: Conj] extends GraphK[L] {
     override type _E = Engine.this.type
     final override def engine: _E = Engine.this
 
@@ -26,30 +26,30 @@ trait Engine {
 
   object TheGraphK {
 
-    type Aux[+L <: Law, V] = TheGraphK[L] { type Value = V }
+    type Aux[+L <: Conj, V] = TheGraphK[L] { type Value = V }
 
-    trait Impl[+L <: Law, V] extends TheGraphK[L] {
+    trait Impl[+L <: Conj, V] extends TheGraphK[L] {
       type Value = V
     }
 
     // Acronym of "Less Than"
-    type Lt[+C <: Law, +V] = Aux[C, _ <: V]
+    type Lt[+C <: Conj, +V] = Aux[C, _ <: V]
 
     /**
       * Graph representation without any validation
       */
-    case class Unchecked[L <: Law, V](
-        entriesC: Dataset[NodeK.Compat[L, V]]
+    case class Unchecked[C <: Conj, V](
+        entriesC: Dataset[NodeK.Compat[C, V]]
     )(
         implicit
-        override val law: L
-    ) extends TheGraphK.Impl[L, V] {
+        override val assuming: C
+    ) extends TheGraphK.Impl[C, V] {
 
       // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
     }
   }
 
-  trait PlanK[+L <: Law] extends Lawful.Struct[L] {
+  trait PlanK[+L <: Conj] extends Lawful.Struct[L] {
 
     private[this] type OGraph = TheGraphK.Aux[L, Value]
 //    type ONode = NodeKind.Lt[L, Value]
@@ -58,20 +58,20 @@ trait Engine {
 
     final lazy val resolve: OGraph = compute
 
-    lazy val law: L = resolve.law
+    lazy val assuming: L = resolve.assuming
   }
 
   object PlanK {
 
-    type Aux[L <: Law, V] = PlanK[L] { type Value = V }
+    type Aux[L <: Conj, V] = PlanK[L] { type Value = V }
 
-    trait Impl[L <: Law, V] extends PlanK[L] {
+    trait Impl[L <: Conj, V] extends PlanK[L] {
       type Value = V
     }
 
 //    type Lt[L <: Law, +V] = PlanKind[_ <: L] { type Value <: V }
 
-    implicit class LeafPlan[L <: Law, V](
+    implicit class LeafPlan[L <: Conj, V](
         override val compute: TheGraphK.Aux[L, V]
     ) extends PlanK[L] {
 
@@ -81,69 +81,83 @@ trait Engine {
 
   trait TheLawful extends Lawful {
 
-    type Graph[v] = TheGraphK.Aux[Law_/\, v]
+    type Graph[v] = TheGraphK.Aux[Conj_/\, v]
 
-    type Plan[v] = PlanK.Aux[Law_/\, v]
+    type Plan[v] = PlanK.Aux[Conj_/\, v]
 
-    trait PlanImpl[v] extends PlanK.Impl[Law_/\, v]
+    trait PlanImpl[v] extends PlanK.Impl[Conj_/\, v]
   }
 
   object GraphBuilder {
 
-    type Aux[L] = GraphBuilder[_] { type _L = L }
+    type Of[C <: Conj] = GraphBuilder[_] { type Conj_/\ <: C }
+
+    def sanity[C <: Conj]: Unit = { // sanity
+
+      val example: Of[C] = ???
+
+      implicitly[example._Conj <:< example.Conj_/\]
+
+      implicitly[example.Conj_/\ <:< C]
+
+      implicitly[example._Conj <:< C]
+    }
   }
 
   abstract class GraphBuilder[T <: Topology](val topology: T) extends TheLawful {
-//    self: Singleton =>
 
-    type Law_/\ = topology.Law_/\
+    type Conj_/\ = topology.Conj_/\
 
-    trait NodeImpl[V] extends NodeK.Impl[Law_/\, V] {
+    type _Arrow <: Arrow
 
-      final val law = topology.self
-      // TODO: cannot compile if self is removed
+    type _Conj = Conj_/\ { type _Arrow = GraphBuilder.this._Arrow }
+
+    protected lazy val _assuming: _Conj = Conj[_Conj]
+
+    implicit def self: this.type = this
+
+    trait StructMixin extends Lawful.Struct[Conj_/\] {
+
+      final lazy val assuming = _assuming
     }
 
-    trait RewriterImpl[V] extends RewriterK.Impl[Law_/\, V] {
+    trait NodeImpl[V] extends NodeK.Impl[Conj_/\, V] with StructMixin {}
 
-      final val law = topology.self
-    }
+    trait RewriterImpl[V] extends RewriterK.Impl[Conj_/\, V] with StructMixin {}
 
-    def makeTightest[LL <: Law_/\, V](
-        nodes: NodeK.Compat[LL, V]*
+    def makeTightest[C <: Conj_/\, V](
+        nodes: NodeK.Compat[C, V]*
     )(
         implicit
-        tightestLaw: LL
-    ): TheGraphK.Aux[LL, V] =
-      TheGraphK.Unchecked(parallelize(nodes))
+        tightest: GraphBuilder.Of[C]
+    ): TheGraphK.Aux[C, V] =
+      TheGraphK.Unchecked[C, V](parallelize(nodes))(tightest._assuming)
 
     def make[V](
-        nodes: NodeK.Compat[Law_/\, V]*
-    ): Graph[V] = makeTightest[Law_/\, V](nodes: _*)(topology.self)
+        nodes: NodeK.Compat[Conj_/\, V]*
+    ): Graph[V] = makeTightest[Conj_/\, V](nodes: _*)(_assuming)
 
-    def apply[LL <: Law_/\, V](
-        nodes: NodeK.Compat[LL, V]*
+    def apply[C <: Conj_/\, V]( // alias of makeTightest
+        nodes: NodeK.Compat[C, V]*
     )(
         implicit
-        tightestLaw: LL
-    ): TheGraphK.Aux[LL, V] = makeTightest[LL, V](nodes: _*)
+        tightest: GraphBuilder.Of[C]
+    ): TheGraphK.Aux[C, V] = makeTightest[C, V](nodes: _*)
 
     def empty[V]: Graph[V] = make[V]()
 
     trait UntypedDef {
       self: Singleton =>
 
-      trait UntypedNode extends NodeK.Untyped[Law_/\] {
+      trait UntypedNode extends NodeK.Untyped[Conj_/\] with StructMixin {
         self: UntypedDef.this.Node =>
-
-        final val law = topology.self
 
         type Value = UntypedDef.this.Node
       }
 
       type Node <: UntypedNode
 
-      type Graph = TheGraphK.Aux[Law_/\, Node]
+      type Graph = TheGraphK.Aux[Conj_/\, Node]
     }
 
     trait Ops extends HasMaxRecursionDepth {
@@ -161,13 +175,13 @@ trait Engine {
       type Prev
       val prev: Prev
 
-      type AcceptingLaw = GraphBuilder.this.Law_/\
+      type AcceptingLaw = GraphBuilder.this.Conj_/\
       type ArgLaw <: AcceptingLaw
       type ArgV
 
       object Arg extends TheLawful {
 
-        type Law_/\ = ArgLaw
+        type Conj_/\ = ArgLaw
       }
 
       type ArgPlan = Arg.Plan[ArgV]
@@ -201,24 +215,39 @@ trait Engine {
 
     object AnyGraph extends GraphBuilder(AnyGraphT) {
 
-      object Outbound extends GraphBuilder(AnyGraphT.OutboundT) {}
+      override type _Arrow = Arrow
+
+      object Outbound extends GraphBuilder(AnyGraphT.OutboundT) {
+
+        override type _Arrow = Arrow.`~>`.^
+      }
       type Outbound[V] = Outbound.Graph[V]
 
     }
     type AnyGraph[V] = AnyGraph.Graph[V]
 
-    object Poset extends GraphBuilder(PosetT) {}
+    object Poset extends GraphBuilder(PosetT) {
+
+      override type _Arrow = Arrow
+    }
     type Poset[V] = Poset.Graph[V]
 
     object Semilattice extends GraphBuilder(SemilatticeT) {
 
-      object Upper extends GraphBuilder(SemilatticeT.UpperT) {}
+      override type _Arrow = Arrow
+
+      object Upper extends GraphBuilder(SemilatticeT.UpperT) {
+
+        override type _Arrow = Arrow.`~>`.^
+      }
       type Upper[V] = Upper.Graph[V]
 
     }
     type Semilattice[V] = Semilattice.Graph[V]
 
     object Tree extends GraphBuilder(TreeT) {
+
+      override type _Arrow = Arrow.`~>`.^
 
       case class Singleton[V](value: V) extends NodeImpl[V] {
 
