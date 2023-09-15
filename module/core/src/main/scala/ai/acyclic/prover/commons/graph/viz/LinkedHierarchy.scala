@@ -83,7 +83,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
   def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit
 
-  trait TheTextViz[V] extends TextViz[V]
+  trait _TextViz[V] extends TextViz[V]
 
   // shared between visualisations of multiple graphs
   case class Group() {
@@ -94,7 +94,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class Viz[V](override val semilattice: Graph_/\[V]) extends TheTextViz[V] {
+    case class Viz[V](override val semilattice: Graph_/\[V]) extends _TextViz[V] {
 
       object RefBindings extends Local.Tree.UntypedDef {
 
@@ -193,7 +193,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
         roots.map { node =>
           val refBinding: RefBindings.Node = RefBindings.Node(node)
 
-          Local.Tree(refBinding)
+          Local.Tree.makeExact(refBinding)
         }
       }
 

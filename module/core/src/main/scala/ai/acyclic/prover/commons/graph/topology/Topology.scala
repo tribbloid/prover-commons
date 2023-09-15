@@ -1,72 +1,34 @@
 package ai.acyclic.prover.commons.graph.topology
 
+import ai.acyclic.prover.commons.graph.topology.Axiom.MatchSub
 import ai.acyclic.prover.commons.graph.{Arrow, GraphK}
 
-trait Topology extends Law with Lawful {
-  self: Singleton =>
+trait Topology[X <: Axiom] extends Lawful {
 
-  type Law_/\ >: this.type <: Law
+  override type Axiom_/\ = X
+  type _Arrow <: Arrow
+  type _Axiom = Axiom_/\ { type _Arrow = Topology.this._Arrow }
 
-  final def self: this.type = this
-
-  type Graph[V] = GraphK.Aux[Law_/\, V]
-
-  implicit def summon: this.type = this
+  final def axiom: _Axiom = Axiom.apply[_Axiom]
 }
 
 object Topology {
 
-  abstract class Of[L <: Law] extends Topology {
-    self: L with Singleton =>
+  abstract class HasTopology[X <: Axiom] extends Lawful {
+    self: Singleton =>
 
-    type Law_/\ = L
-  }
+    type Graph[v] = GraphK.Aux[Axiom_/\, v]
 
-  trait AnyGraphT extends Law.Impl[Arrow]
-  object AnyGraphT extends Of[AnyGraphT] with AnyGraphT {
+    override type Axiom_/\ = X
 
-    type _Arrow = Arrow
+    abstract class _Topology extends Topology[X] {}
 
-    trait OutboundT extends AnyGraphT with Law.Impl[Arrow.`~>`.^]
-    object OutboundT extends Of[OutboundT] with OutboundT {
-
-      type _Arrow = Arrow.`~>`.^
+    implicit def top(
+        implicit
+        matching: MatchSub[X]
+    ): _Topology { type _Arrow = matching._Arrow } = new _Topology {
+      override type _Arrow = matching._Arrow
     }
   }
 
-  trait PosetT extends AnyGraphT
-  object PosetT extends Of[PosetT] with PosetT {
-
-    type _Arrow = Arrow
-  }
-
-  trait SemilatticeT extends PosetT
-  object SemilatticeT extends Of[SemilatticeT] with SemilatticeT {
-
-    type _Arrow = Arrow
-
-    trait UpperT extends SemilatticeT with AnyGraphT.OutboundT
-    object UpperT extends Of[UpperT] with UpperT {
-
-      type _Arrow = Arrow.`~>`.^
-
-      implicit class NodeOps[V](n: Node[V]) {
-
-        def isLeaf: Boolean = n.induction.isEmpty
-      }
-    }
-  }
-
-  trait TreeT extends SemilatticeT.UpperT
-  object TreeT extends Of[TreeT] with TreeT {
-
-    type _Arrow = Arrow.`~>`.^
-  }
-
-  private def compileTimeCheck[V](): Unit = {
-
-    implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
-
-    implicitly[PosetT.Node[V] <:< AnyGraphT.Node[V]]
-  }
 }

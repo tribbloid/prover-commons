@@ -34,22 +34,25 @@ object __Glossary {
     *     examples
     *   - `Lt`, same as `Lt` as a type name but can appear anywhere
     *   - `Compat` for compatible type, same as `Compat` as a type name but can appear anywhere
-    *   - `Conj` for conjecture type that are instantiated only for compile-time verification and carry no runtime data.
-    *     Consequently, they have no constructor, can be instantiated from a singleton, and can be safely cast into each
-    *     other or mixed into other classes, `shapeless.labelled.KeyTag` is a good example.
-    *     - the name "conjecture" is a convention by Curry-Horward correspondence: referring to a type/assumption with a
-    *       fake constructive proof on the fly
-    *     - "Phantom types" (types that will never be instantiated in runtime) are special cases of Conjecture types,
-    *       but not vice versa: The type system of Scala 3 removed type projection and instead relies heavily on
-    *       dependent types, which make instantiation unavoidable in many logical reasoning.
+    *   - `Axiom` for axiom type that can be constructed arbitrarily, but only for compile-time verification and carry
+    *     no runtime data. Consequently, they can be safely cast into each other (IF permitted at runtime, w/o
+    *     triggering ClassCastException) or mixed into other classes, many of they have no constructor and all instances
+    *     are casted from null/singleton, `shapeless.labelled.KeyTag` is a typical axiom type
+    *     - the name "Axiom" refers to a convention by CHL correspondence (a.k.a. computational trinitarianism), an
+    *       assumption with a "fake" constructive proof
+    *     - "Phantom types" (types that will never be constructed/instantiated in runtime) are special cases of Axiom
+    *       types, but not vice versa: The type system of Scala 3 removed type projection and instead relies heavily on
+    *       dependent types, which make construction unavoidable in many logical reasoning
+    *   - `Law` for `Axiom` type that also has a shortcut for runtime testing, most classes in `cats-law` are dedicated
+    *     for this purpose
     *   - `_/\` for type upper bound
     *   - `_\/` for type lower bound
     *
     * type or class name prefixes:
     *
+    *   - `_` (Inside a object) for a specific subtype that depends on this object
     *   - `__` for documentation object, an empty object indexed by IDE for documentation lookup
     *   - `Has` for classes that have an inner definition of the same name
-    *   - (Under a object) `The` for a specific subtype that depends on this object
     *
     * function name:
     *

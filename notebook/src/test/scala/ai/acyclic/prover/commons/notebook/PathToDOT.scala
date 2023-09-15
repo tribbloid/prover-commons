@@ -34,7 +34,7 @@ object PathToDOT {
       override def nodeTextC: String = value.text
     }
 
-    def apply(rootValues: Seq[Forward]) = Local.AnyGraph(
+    def apply(rootValues: Seq[Forward]) = Local.AnyGraph.makeTightest(
       rootValues.map { v =>
         Ops(v)
       }: _*
