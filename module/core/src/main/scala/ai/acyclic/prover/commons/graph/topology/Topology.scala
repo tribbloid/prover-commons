@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph.topology
 
+import ai.acyclic.prover.commons.graph.topology.Axiom.Matching
 import ai.acyclic.prover.commons.graph.{Arrow, GraphK}
 
 trait Topology extends Lawful {
@@ -27,50 +28,32 @@ object Topology {
 
     abstract class _Topology extends Impl[X] {}
 
-    type _Top <: _Topology
-    def _Top: () => _Top
+    implicit def top(
+        implicit
+        matching: Matching[X]
+    ): _Topology { type _Arrow = matching._Arrow } = new _Topology {
+      override type _Arrow = matching._Arrow
+    }
 
-    implicit lazy val top: _Top = _Top.apply()
+//    implicit lazy val top: _Top = _Top.apply()
   }
 
   trait AnyGraphT extends Axiom.Impl[Arrow]
   object AnyGraphT extends HasTopology[AnyGraphT] {
 
-    case class _Top() extends _Topology {
-      type _Arrow = Arrow
-    }
-
     trait OutboundT extends AnyGraphT with Axiom.Impl[Arrow.`~>`.^]
-    object OutboundT extends HasTopology[OutboundT] {
-
-      case class _Top() extends _Topology {
-        type _Arrow = Arrow.`~>`.^
-      }
-    }
+    object OutboundT extends HasTopology[OutboundT] {}
 
   }
 
   trait PosetT extends AnyGraphT
-  object PosetT extends HasTopology[PosetT] {
-
-    case class _Top() extends _Topology {
-      type _Arrow = Arrow
-    }
-  }
+  object PosetT extends HasTopology[PosetT] {}
 
   trait SemilatticeT extends PosetT
   object SemilatticeT extends HasTopology[SemilatticeT] {
 
-    case class _Top() extends _Topology {
-      type _Arrow = Arrow
-    }
-
     trait UpperT extends SemilatticeT with AnyGraphT.OutboundT
     object UpperT extends HasTopology[UpperT] {
-
-      case class _Top() extends _Topology {
-        type _Arrow = Arrow.`~>`.^
-      }
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -80,12 +63,7 @@ object Topology {
   }
 
   trait TreeT extends SemilatticeT.UpperT
-  object TreeT extends HasTopology[TreeT] {
-
-    case class _Top() extends _Topology {
-      type _Arrow = Arrow.`~>`.^
-    }
-  }
+  object TreeT extends HasTopology[TreeT] {}
 
   private def sanity[V](): Unit = {
 
