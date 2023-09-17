@@ -12,9 +12,9 @@ trait Axiom {
 
 object Axiom {
 
-  object ^ extends Axiom
+//  object ^ extends Axiom
 
-  def apply[T <: Axiom]: T = ^.asInstanceOf[T]
+  def apply[T <: Axiom]: T = null.asInstanceOf[T]
 
   trait Impl[+A <: Arrow] extends Axiom { type _Arrow <: A }
 }
