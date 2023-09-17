@@ -37,11 +37,11 @@ object __Glossary {
     *   - `Axiom` for axiom type that can be constructed arbitrarily, but only for compile-time verification and carry
     *     no runtime data. Consequently, they can be safely cast into each other (IF permitted at runtime, w/o
     *     triggering ClassCastException) or mixed into other classes, many of they have no constructor and all instances
-    *     are casted from a singleton, `shapeless.labelled.KeyTag` is a typical axiom type
+    *     are casted from null/singleton, `shapeless.labelled.KeyTag` is a typical axiom type
     *     - the name "Axiom" refers to a convention by CHL correspondence (a.k.a. computational trinitarianism), an
     *       assumption with a "fake" constructive proof
     *     - "Phantom types" (types that will never be constructed/instantiated in runtime) are special cases of Axiom
-    *       types, but not the same: The type system of Scala 3 removed type projection and instead relies heavily on
+    *       types, but not vice versa: The type system of Scala 3 removed type projection and instead relies heavily on
     *       dependent types, which make construction unavoidable in many logical reasoning
     *   - `Law` for `Axiom` type that also has a shortcut for runtime testing, most classes in `cats-law` are dedicated
     *     for this purpose
