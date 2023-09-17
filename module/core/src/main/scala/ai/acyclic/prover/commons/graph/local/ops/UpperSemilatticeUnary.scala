@@ -10,7 +10,7 @@ import scala.util.control.Breaks
 trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.Semilattice.Upper.Conj_/\]
+    implicitly[ArgLaw <:< Local.Semilattice.Upper.Axiom_/\]
   }
 
   lazy val maxNodeOpt: Option[ArgNode] = {
@@ -69,7 +69,7 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
 object UpperSemilatticeUnary {
 
-  case class ^[L <: Local.Semilattice.Upper.Conj_/\, V](
+  case class ^[L <: Local.Semilattice.Upper.Axiom_/\, V](
       argPlan: LocalEngine.PlanK.Aux[L, V],
       override val maxDepth: Int = 20
   ) extends UpperSemilatticeUnary {

@@ -3,52 +3,74 @@ package ai.acyclic.prover.commons.graph.topology
 import ai.acyclic.prover.commons.graph.{Arrow, GraphK}
 
 trait Topology extends Lawful {
-  self: Singleton =>
 
-  type Conj_/\ <: Conj
+  type _Arrow <: Arrow
+  type _Axiom = Axiom_/\ { type _Arrow = Topology.this._Arrow }
 
-  final def self: this.type = this
-
-  type Graph[V] = GraphK.Aux[Conj_/\, V]
-
-  implicit def summon: this.type = this
+  final def axiom: _Axiom = Axiom.apply[_Axiom]
+  //      final def self: this.type = this
 }
 
 object Topology {
 
-  abstract class Impl[L <: Conj] extends Topology {
-    self: Singleton =>
+  abstract class Impl[X <: Axiom] extends Topology {
 
-    type Conj_/\ = L
+    override type Axiom_/\ = X
   }
 
-  trait AnyGraphT extends Conj.Impl[Arrow]
-  object AnyGraphT extends Impl[AnyGraphT] {
+  abstract class HasTopology[X <: Axiom] extends Lawful {
+    self: Singleton =>
 
-//    type _Arrow = Arrow
+    type Graph[v] = GraphK.Aux[Axiom_/\, v]
 
-    trait OutboundT extends AnyGraphT with Conj.Impl[Arrow.`~>`.^]
-    object OutboundT extends Impl[OutboundT] {
+    override type Axiom_/\ = X
 
-//      type _Arrow = Arrow.`~>`.^
+    abstract class _Topology extends Impl[X] {}
+
+    type _Top <: _Topology
+    def _Top: () => _Top
+
+    implicit lazy val top: _Top = _Top.apply()
+  }
+
+  trait AnyGraphT extends Axiom.Impl[Arrow]
+  object AnyGraphT extends HasTopology[AnyGraphT] {
+
+    case class _Top() extends _Topology {
+      type _Arrow = Arrow
     }
+
+    trait OutboundT extends AnyGraphT with Axiom.Impl[Arrow.`~>`.^]
+    object OutboundT extends HasTopology[OutboundT] {
+
+      case class _Top() extends _Topology {
+        type _Arrow = Arrow.`~>`.^
+      }
+    }
+
   }
 
   trait PosetT extends AnyGraphT
-  object PosetT extends Impl[PosetT] {
+  object PosetT extends HasTopology[PosetT] {
 
-//    type _Arrow = Arrow
+    case class _Top() extends _Topology {
+      type _Arrow = Arrow
+    }
   }
 
   trait SemilatticeT extends PosetT
-  object SemilatticeT extends Impl[SemilatticeT] {
+  object SemilatticeT extends HasTopology[SemilatticeT] {
 
-//    type _Arrow = Arrow
+    case class _Top() extends _Topology {
+      type _Arrow = Arrow
+    }
 
     trait UpperT extends SemilatticeT with AnyGraphT.OutboundT
-    object UpperT extends Impl[UpperT] {
+    object UpperT extends HasTopology[UpperT] {
 
-//      type _Arrow = Arrow.`~>`.^
+      case class _Top() extends _Topology {
+        type _Arrow = Arrow.`~>`.^
+      }
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -58,15 +80,20 @@ object Topology {
   }
 
   trait TreeT extends SemilatticeT.UpperT
-  object TreeT extends Impl[TreeT] {
+  object TreeT extends HasTopology[TreeT] {
 
-//    type _Arrow = Arrow.`~>`.^
+    case class _Top() extends _Topology {
+      type _Arrow = Arrow.`~>`.^
+    }
   }
 
-  private def compileTimeCheck[V](): Unit = {
+  private def sanity[V](): Unit = {
+
+    implicitly[Topology.Impl[TreeT]]
 
     implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
 
     implicitly[PosetT.Node[V] <:< AnyGraphT.Node[V]]
+
   }
 }

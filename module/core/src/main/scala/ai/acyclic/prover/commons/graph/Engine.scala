@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Conj, Lawful, Topology}
+import ai.acyclic.prover.commons.graph.topology.{Axiom, Lawful, Topology}
 
 trait Engine {
   self: Singleton =>
@@ -11,207 +11,209 @@ trait Engine {
   type Dataset[+T]
   def parallelize[T](seq: Seq[T]): Dataset[T]
 
-  trait TheGraphK[+L <: Conj] extends GraphK[L] {
+  trait _GraphK[+X <: Axiom] extends GraphK[X] {
     override type _E = Engine.this.type
     final override def engine: _E = Engine.this
 
     override type Dataset[+v] = Engine.this.Dataset[v]
 
-    def entriesC: Dataset[NodeK.Compat[L, Value]]
+    def entriesC: Dataset[NodeK.Compat[X, Value]]
 
-    lazy val entries: Dataset[NodeK.Compat[L, Value]] = {
+    lazy val entries: Dataset[NodeK.Compat[X, Value]] = {
       entriesC
     }
   }
 
-  object TheGraphK {
+  object _GraphK {
 
-    type Aux[+L <: Conj, V] = TheGraphK[L] { type Value = V }
+    type Aux[+X <: Axiom, V] = _GraphK[X] { type Value = V }
 
-    trait Impl[+L <: Conj, V] extends TheGraphK[L] {
+    trait Impl[+X <: Axiom, V] extends _GraphK[X] {
       type Value = V
     }
 
     // Acronym of "Less Than"
-    type Lt[+C <: Conj, +V] = Aux[C, _ <: V]
+    type Lt[+X <: Axiom, +V] = Aux[X, _ <: V]
 
     /**
       * Graph representation without any validation
       */
-    case class Unchecked[C <: Conj, V](
-        entriesC: Dataset[NodeK.Compat[C, V]]
+    case class Unchecked[X <: Axiom, V](
+        entriesC: Dataset[NodeK.Compat[X, V]]
     )(
-        implicit
-        override val assuming: C
-    ) extends TheGraphK.Impl[C, V] {
+        override val assuming: X
+    ) extends _GraphK.Impl[X, V] {
 
       // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
     }
   }
 
-  trait PlanK[+L <: Conj] extends Lawful.Struct[L] {
+  trait PlanK[+X <: Axiom] extends Lawful.Struct[X] {
 
-    private[this] type OGraph = TheGraphK.Aux[L, Value]
+    private[this] type OGraph = _GraphK.Aux[X, Value]
 //    type ONode = NodeKind.Lt[L, Value]
 
     def compute: OGraph
 
     final lazy val resolve: OGraph = compute
 
-    lazy val assuming: L = resolve.assuming
+    lazy val assuming: X = resolve.assuming
   }
 
   object PlanK {
 
-    type Aux[L <: Conj, V] = PlanK[L] { type Value = V }
+    type Aux[X <: Axiom, V] = PlanK[X] { type Value = V }
 
-    trait Impl[L <: Conj, V] extends PlanK[L] {
+    trait Impl[X <: Axiom, V] extends PlanK[X] {
       type Value = V
     }
 
 //    type Lt[L <: Law, +V] = PlanKind[_ <: L] { type Value <: V }
 
-    implicit class LeafPlan[L <: Conj, V](
-        override val compute: TheGraphK.Aux[L, V]
-    ) extends PlanK[L] {
+    implicit class LeafPlan[X <: Axiom, V](
+        override val compute: _GraphK.Aux[X, V]
+    ) extends PlanK[X] {
 
       override type Value = V
     }
   }
 
-  trait TheLawful extends Lawful {
+  trait _Lawful extends Lawful {
 
-    type Graph[v] = TheGraphK.Aux[Conj_/\, v]
+    type Graph[v] = _GraphK.Aux[Axiom_/\, v]
 
-    type Plan[v] = PlanK.Aux[Conj_/\, v]
+    type Plan[v] = PlanK.Aux[Axiom_/\, v]
 
-    trait PlanImpl[v] extends PlanK.Impl[Conj_/\, v]
-  }
-
-  object GraphBuilder {
-
-    type Of[C <: Conj] = GraphBuilder[_] { type Conj_/\ <: C }
-
-    def sanity[C <: Conj]: Unit = { // sanity
-
-      val example: Of[C] = ???
-
-      implicitly[example._Conj <:< example.Conj_/\]
-
-      implicitly[example.Conj_/\ <:< C]
-
-      implicitly[example._Conj <:< C]
-    }
-  }
-
-  abstract class GraphBuilder[T <: Topology](val topology: T) extends TheLawful {
-
-    type Conj_/\ = topology.Conj_/\
-
-    type _Arrow <: Arrow
-
-    type _Conj = Conj_/\ { type _Arrow = GraphBuilder.this._Arrow }
-
-    protected lazy val _assuming: _Conj = Conj[_Conj]
-
-    implicit def self: this.type = this
-
-    trait StructMixin extends Lawful.Struct[Conj_/\] {
-
-      final lazy val assuming = _assuming
-    }
-
-    trait NodeImpl[V] extends NodeK.Impl[Conj_/\, V] with StructMixin {}
-
-    trait RewriterImpl[V] extends RewriterK.Impl[Conj_/\, V] with StructMixin {}
-
-    def makeTightest[C <: Conj_/\, V](
-        nodes: NodeK.Compat[C, V]*
-    )(
-        implicit
-        tightest: GraphBuilder.Of[C]
-    ): TheGraphK.Aux[C, V] =
-      TheGraphK.Unchecked[C, V](parallelize(nodes))(tightest._assuming)
-
-    def make[V](
-        nodes: NodeK.Compat[Conj_/\, V]*
-    ): Graph[V] = makeTightest[Conj_/\, V](nodes: _*)(_assuming)
-
-    def apply[C <: Conj_/\, V]( // alias of makeTightest
-        nodes: NodeK.Compat[C, V]*
-    )(
-        implicit
-        tightest: GraphBuilder.Of[C]
-    ): TheGraphK.Aux[C, V] = makeTightest[C, V](nodes: _*)
-
-    def empty[V]: Graph[V] = make[V]()
-
-    trait UntypedDef {
-      self: Singleton =>
-
-      trait UntypedNode extends NodeK.Untyped[Conj_/\] with StructMixin {
-        self: UntypedDef.this.Node =>
-
-        type Value = UntypedDef.this.Node
-      }
-
-      type Node <: UntypedNode
-
-      type Graph = TheGraphK.Aux[Conj_/\, Node]
-    }
-
-    trait Ops extends HasMaxRecursionDepth {
-
-      def outer = GraphBuilder.this
-
-      // invariant type
-      // like `Plan`
-      //  all following types refers to the tightest bound of the actual graph structure
-
-      // UNLIKE `Plan`
-      //  implementation of `Ops` is subclass-compatible
-      //  e.g. it is possible to create a `GraphUnary` from a Tree
-
-      type Prev
-      val prev: Prev
-
-      type AcceptingLaw = GraphBuilder.this.Conj_/\
-      type ArgLaw <: AcceptingLaw
-      type ArgV
-
-      object Arg extends TheLawful {
-
-        type Conj_/\ = ArgLaw
-      }
-
-      type ArgPlan = Arg.Plan[ArgV]
-      def argPlan: ArgPlan
-
-      type Arg = Arg.Graph[ArgV]
-      def arg: Arg = argPlan.resolve
-
-      type ArgNode = Arg.Node[ArgV]
-      type ArgRewriter = Arg.Rewriter[ArgV]
-    }
-
-    object Ops {
-
-      type Aux[P <: PlanK[_]] = Ops { type InputPlan = P }
-
-      trait Unary extends Ops {
-
-        type Prev = Unit
-        val prev: Unit = {}
-      }
-
-      trait Binary extends Ops {
-
-        type Prev <: Unary
-      }
-    }
+    trait PlanImpl[v] extends PlanK.Impl[Axiom_/\, v]
   }
 
   trait Syntax {
+
+    // TODO: split into another class
+    trait GraphBuilderLike[X <: Axiom] extends _Lawful {
+
+      override type Axiom_/\ = X
+
+      type _Arrow <: Arrow
+
+      type _Axiom = Axiom_/\ { type _Arrow = GraphBuilderLike.this._Arrow }
+      lazy val axiom: _Axiom = Axiom[_Axiom]
+
+//      implicit def self: GraphBuilderLike[Axiom_/\] = this
+    }
+
+    object GraphBuilderLike {
+
+//      type Of[X <: Axiom] = GraphBuilderLike[X]
+
+    }
+
+    abstract class GraphBuilder[X <: Axiom, T <: Topology.HasTopology[X]](val topology: Topology.HasTopology[X] with T)
+        extends GraphBuilderLike[X] {
+
+      trait StructMixin extends Lawful.Struct[Axiom_/\] {
+
+        final lazy val assuming = axiom
+      }
+
+      trait NodeImpl[V] extends NodeK.Impl[Axiom_/\, V] with StructMixin {}
+
+      trait RewriterImpl[V] extends RewriterK.Impl[Axiom_/\, V] with StructMixin {}
+
+      def makeTightestWIthAxiom[XX <: Axiom_/\, V](
+          nodes: NodeK.Compat[XX, V]*
+      )(
+          axiom: XX
+      ): _GraphK.Unchecked[XX, V] =
+        _GraphK.Unchecked[XX, V](parallelize(nodes))(axiom)
+
+      def makeTightest[XX <: Axiom_/\, V](
+          nodes: NodeK.Compat[XX, V]*
+      )(
+          implicit
+          tightest: Topology.Impl[XX]
+      ): _GraphK.Unchecked[XX, V] =
+        _GraphK.Unchecked[XX, V](parallelize(nodes))(tightest.axiom)
+
+      def makeExact[V](
+          nodes: NodeK.Compat[Axiom_/\, V]*
+      ): Graph[V] = makeTightestWIthAxiom[Axiom_/\, V](nodes: _*)(this.axiom)
+
+      def apply[X <: Axiom_/\, V]( // alias of makeTightest
+          nodes: NodeK.Compat[X, V]*
+      )(
+          implicit
+          tightest: Topology.Impl[X]
+      ): _GraphK.Aux[X, V] = makeTightest[X, V](nodes: _*)
+
+      def empty[V]: Graph[V] = makeExact[V]()
+
+      trait UntypedDef {
+        self: Singleton =>
+
+        trait UntypedNode extends NodeK.Untyped[Axiom_/\] with StructMixin {
+          self: UntypedDef.this.Node =>
+
+          type Value = UntypedDef.this.Node
+        }
+
+        type Node <: UntypedNode
+
+        type Graph = _GraphK.Aux[Axiom_/\, Node]
+      }
+
+      trait Ops extends HasMaxRecursionDepth {
+
+        def outer = GraphBuilder.this
+
+        // invariant type
+        // like `Plan`
+        //  all following types refers to the tightest bound of the actual graph structure
+
+        // UNLIKE `Plan`
+        //  implementation of `Ops` is subclass-compatible
+        //  e.g. it is possible to create a `GraphUnary` from a Tree
+
+        type Prev
+        val prev: Prev
+
+        type AcceptingLaw = GraphBuilder.this.Axiom_/\
+        type ArgLaw <: AcceptingLaw
+        type ArgV
+
+        object Arg extends _Lawful {
+
+          type Axiom_/\ = ArgLaw
+        }
+
+        type ArgPlan = Arg.Plan[ArgV]
+
+        def argPlan: ArgPlan
+
+        type Arg = Arg.Graph[ArgV]
+
+        def arg: Arg = argPlan.resolve
+
+        type ArgNode = Arg.Node[ArgV]
+        type ArgRewriter = Arg.Rewriter[ArgV]
+      }
+
+      object Ops {
+
+        type Aux[P <: PlanK[_]] = Ops { type InputPlan = P }
+
+        trait Unary extends Ops {
+
+          type Prev = Unit
+          val prev: Unit = {}
+        }
+
+        trait Binary extends Ops {
+
+          type Prev <: Unary
+        }
+      }
+    }
 
     object AnyGraph extends GraphBuilder(AnyGraphT) {
 
@@ -255,8 +257,16 @@ trait Engine {
       }
     }
     type Tree[V] = Tree.Graph[V]
-  }
 
+    private def sanity[C <: Axiom]: Unit = { // sanity
+
+      val example: GraphBuilderLike[C] = ???
+
+      implicitly[example._Axiom <:< example.Axiom_/\]
+      implicitly[example.Axiom_/\ <:< C]
+      implicitly[example._Axiom <:< C]
+    }
+  }
 }
 
 object Engine {

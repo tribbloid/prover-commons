@@ -5,16 +5,16 @@ import ai.acyclic.prover.commons.graph.Arrow
 /**
   * a container of graph constraints
   */
-trait Conj {
+trait Axiom {
 
   type _Arrow <: Arrow
 }
 
-object Conj {
+object Axiom {
 
-  object ^ extends Conj
+  object ^ extends Axiom
 
-  def apply[T <: Conj]: T = ^.asInstanceOf[T]
+  def apply[T <: Axiom]: T = ^.asInstanceOf[T]
 
-  trait Impl[+A <: Arrow] extends Conj { type _Arrow <: A }
+  trait Impl[+A <: Arrow] extends Axiom { type _Arrow <: A }
 }

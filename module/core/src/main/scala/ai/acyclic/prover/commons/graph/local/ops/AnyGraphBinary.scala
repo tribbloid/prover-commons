@@ -20,7 +20,7 @@ trait AnyGraphBinary extends Local.AnyGraph.Ops.Binary {
       val roots1: Seq[prev.Arg.Node[VV]] = e1.map(n => n.upcast[VV])
       val roots2: Seq[Arg.Node[VV]] = e2.map(n => n.upcast[VV])
 
-      Local.AnyGraph.make(
+      Local.AnyGraph.makeExact(
         (roots1 ++ roots2).distinct: _*
       )
     }
