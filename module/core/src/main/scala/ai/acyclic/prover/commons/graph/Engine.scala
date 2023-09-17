@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.graph.topology.{Axiom, Lawful, Topology}
 trait Engine {
   self: Singleton =>
 
-  import ai.acyclic.prover.commons.graph.topology.Topology._
+  import Axiom._
   import Engine._
 
   type Dataset[+T]
@@ -131,7 +131,7 @@ trait Engine {
           nodes: NodeK.Compat[XX, V]*
       )(
           implicit
-          tightest: Topology.Impl[XX]
+          tightest: Topology[XX]
       ): _GraphK.Unchecked[XX, V] =
         _GraphK.Unchecked[XX, V](parallelize(nodes))(tightest.axiom)
 
@@ -143,7 +143,7 @@ trait Engine {
           nodes: NodeK.Compat[X, V]*
       )(
           implicit
-          tightest: Topology.Impl[X]
+          tightest: Topology[X]
       ): _GraphK.Aux[X, V] = makeTightest[X, V](nodes: _*)
 
       def empty[V]: Graph[V] = makeExact[V]()
