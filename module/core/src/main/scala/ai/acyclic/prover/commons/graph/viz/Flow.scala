@@ -61,7 +61,11 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
       def bindInboundArrows(): Unit = {
 
-        val numArrowInboundWithText = arrowsFrom.count(v => v._2.nonEmpty)
+        val numArrowInboundWithText = arrowsFrom
+          .filter(v => v._2.nonEmpty)
+          .map(_._1)
+          .distinct
+          .size
 
         if (numArrowInboundWithText >= 2) {
 
@@ -74,7 +78,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
       final override lazy val toString = {
 
-        val showBinding = arrowsFrom.size >= 2
+        val showBinding = arrowsFrom.map(_._1).distinct.size >= 2
 
         val arrowBlocks = arrowsFrom
           .flatMap {
