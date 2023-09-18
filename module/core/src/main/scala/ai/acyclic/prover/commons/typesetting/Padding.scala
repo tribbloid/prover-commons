@@ -47,15 +47,15 @@ object Padding {
 
   val leftCurved: Padding = Padding(
     "⎛ ",
-    "│ ",
+    "⎢ ",
     "⎝ ",
     "( "
   )
 
   val rightCurved: Padding = Padding(
-    " ⎫",
-    " │",
-    " ⎭",
+    " ⎞",
+    " ⎟",
+    " ⎠",
     " )"
   )
 

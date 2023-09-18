@@ -101,8 +101,8 @@ class FlowSpec extends BaseSpec {
           |            │         │
           |            v         v
           |  ┌────────────────────────────┐
-          |  │⎛ from [0]   ⎫⎛ from [1]   ⎫│
-          |  │⎝ bbb |> ddd ⎭⎝ ccc |> ddd ⎭│
+          |  │⎛ from [0]   ⎞⎛ from [1]   ⎞│
+          |  │⎝ bbb |> ddd ⎠⎝ ccc |> ddd ⎠│
           |  ├────────────────────────────┤
           |  │            ddd             │
           |  └──────────────┬─────────────┘
