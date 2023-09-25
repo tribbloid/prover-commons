@@ -108,7 +108,8 @@ allprojects {
                             "-Vimplicits", "-Vimplicits-verbose-tree", "-Vtype-diffs",
                             "-P:splain:Vimplicits-diverging",
                             "-P:splain:Vtype-reduction",
-                            "-P:splain:Vtype-verbosity:10",
+                            "-P:splain:Vtype-detail:3",
+                            "-P:splain:Vtype-diffs-detail:3",
                             "-P:splain:Vdebug"
                         )
                     )

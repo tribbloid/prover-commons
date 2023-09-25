@@ -4,11 +4,11 @@ import ai.acyclic.prover.commons.graph.{Arrow, NodeK, RewriterK}
 import ai.acyclic.prover.commons.util.Summoner
 
 trait Lawful {
-  type Axiom_/\ <: Axiom
+  type _Axiom <: Axiom
 
-  type Node[v] = NodeK.Compat[Axiom_/\, v]
+  type Node[v] = NodeK.Compat[_Axiom, v]
 
-  type Rewriter[v] = RewriterK.Aux[Axiom_/\, v]
+  type Rewriter[v] = RewriterK.Aux[_Axiom, v]
 
 }
 
@@ -48,7 +48,9 @@ object Lawful {
     implicitly[bounds._Arrow =:= Arrow.`~>`.^]
   }
 
-  trait Struct[+X <: Axiom] {
+  trait Struct[+X <: Axiom] extends Lawful {
+
+    override type _Axiom <: X
 
     val assuming: X
     type _Arrow = assuming._Arrow

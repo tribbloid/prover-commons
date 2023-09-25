@@ -10,15 +10,15 @@ object LocalEngine extends Engine {
   final type Dataset[+T] = Vector[T]
   def parallelize[T](seq: Seq[T]): Dataset[T] = seq.toVector
 
-  implicit class GraphView[L <: Local.AnyGraph.Axiom_/\, V](
-      self: LocalEngine._GraphK.Aux[L, V]
+  implicit class GraphView[L <: Local.AnyGraph._Axiom, V](
+      self: LocalEngine._GraphK.Compat[L, V]
   ) {
 
     lazy val asPlan = new PlanK.LeafPlan[L, V](self)
   }
 
-  implicit def graphAsUnary[L <: Local.AnyGraph.Axiom_/\, V](
-      self: LocalEngine._GraphK.Aux[L, V]
+  implicit def graphAsUnary[L <: Local.AnyGraph._Axiom, V](
+      self: LocalEngine._GraphK.Compat[L, V]
   ): AnyGraphUnary.^[L, V] = {
 
     val leaf = self.asPlan
@@ -26,8 +26,8 @@ object LocalEngine extends Engine {
     AnyGraphUnary.^(leaf)
   }
 
-  implicit def outboundGraphAsUnary[L <: Local.AnyGraph.Outbound.Axiom_/\, V](
-      self: LocalEngine._GraphK.Aux[L, V]
+  implicit def outboundGraphAsUnary[L <: Local.AnyGraph.Outbound._Axiom, V](
+      self: LocalEngine._GraphK.Compat[L, V]
   ): OutboundGraphUnary.^[L, V] = {
 
     val leaf = self.asPlan
@@ -35,8 +35,8 @@ object LocalEngine extends Engine {
     OutboundGraphUnary.^(leaf)
   }
 
-  implicit def upperSemilatticeAsUnary[L <: Local.Semilattice.Upper.Axiom_/\, V](
-      self: LocalEngine._GraphK.Aux[L, V]
+  implicit def upperSemilatticeAsUnary[L <: Local.Semilattice.Upper._Axiom, V](
+      self: LocalEngine._GraphK.Compat[L, V]
   ): UpperSemilatticeUnary.^[L, V] = {
 
     val leaf = self.asPlan

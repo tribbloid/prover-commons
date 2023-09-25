@@ -10,7 +10,7 @@ import scala.language.existentials
 trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.AnyGraph.Axiom_/\]
+    implicitly[ArgLaw <:< Local.AnyGraph._Axiom]
   }
 
   import AnyGraphUnary._
@@ -241,8 +241,8 @@ object AnyGraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[L <: Local.AnyGraph.Axiom_/\, V](
-      argPlan: LocalEngine.PlanK.Aux[L, V],
+  case class ^[L <: Local.AnyGraph._Axiom, V](
+      argPlan: LocalEngine.PlanK.Compat[L, V],
       override val maxDepth: Int = 20
   ) extends AnyGraphUnary {
 
@@ -250,8 +250,8 @@ object AnyGraphUnary {
 
     override type ArgV = V
 
-    case class &&[L2 <: Local.AnyGraph.Axiom_/\, V2](
-        argPlan: LocalEngine.PlanK.Aux[L2, V2],
+    case class &&[L2 <: Local.AnyGraph._Axiom, V2](
+        argPlan: LocalEngine.PlanK.Compat[L2, V2],
         override val maxDepth: Int = ^.this.maxDepth
     ) extends AnyGraphBinary {
 

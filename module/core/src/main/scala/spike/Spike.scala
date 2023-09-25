@@ -1,7 +1,7 @@
-//package ai.acyclic.prover.commons.unused
-//
-//object Spike {
-//
+package spike
+
+object Spike {
+
 //  trait Axiom
 //
 //  trait Topology
@@ -32,4 +32,4 @@
 //      implicitly[example._Axiom <:< X]
 //    }
 //  }
-//}
+}

@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.graph.topology.Topology.HasTopology
 import ai.acyclic.prover.commons.util.Summoner
 
 /**
@@ -14,11 +13,11 @@ trait Axiom {
 
 object Axiom {
 
-  def apply[T <: Axiom]: T = null.asInstanceOf[T]
+  def assume[X <: Axiom]: X = null.asInstanceOf[X]
 
   trait Impl[+A <: Arrow] extends Axiom { type _Arrow <: A }
 
-  trait Match[L <: Axiom] extends Lawful { type _Arrow <: Arrow }
+  trait Match[X <: Axiom] extends Lawful { type _Arrow <: Arrow }
 
   object Match {
 
@@ -38,22 +37,22 @@ object Axiom {
 
   trait AnyGraphT extends Axiom.Impl[Arrow]
 
-  object AnyGraphT extends HasTopology[AnyGraphT] {
+  object AnyGraphT extends Topology[AnyGraphT] {
 
     trait OutboundT extends AnyGraphT with Axiom.Impl[Arrow.`~>`.^]
 
-    object OutboundT extends HasTopology[OutboundT] {}
+    object OutboundT extends Topology[OutboundT] {}
 
   }
 
   trait PosetT extends AnyGraphT
-  object PosetT extends HasTopology[PosetT] {}
+  object PosetT extends Topology[PosetT] {}
 
   trait SemilatticeT extends PosetT
-  object SemilatticeT extends HasTopology[SemilatticeT] {
+  object SemilatticeT extends Topology[SemilatticeT] {
 
     trait UpperT extends SemilatticeT with AnyGraphT.OutboundT
-    object UpperT extends HasTopology[UpperT] {
+    object UpperT extends Topology[UpperT] {
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -63,11 +62,9 @@ object Axiom {
   }
 
   trait TreeT extends SemilatticeT.UpperT
-  object TreeT extends HasTopology[TreeT] {}
+  object TreeT extends Topology[TreeT] {}
 
   private def sanity[V](): Unit = {
-
-    implicitly[Topology[TreeT]]
 
     implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
 
