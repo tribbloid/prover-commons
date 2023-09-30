@@ -35,24 +35,27 @@ object Axiom {
     implicitly[bounds._Arrow =:= Arrow.`~>`.^]
   }
 
-  trait AnyGraphT extends Axiom.Impl[Arrow]
+  trait AnyGraphX extends Axiom.Impl[Arrow]
 
-  object AnyGraphT extends Topology[AnyGraphT] {
+  object AnyGraphX extends Topology[AnyGraphX] {}
 
-    trait OutboundT extends AnyGraphT with Axiom.Impl[Arrow.`~>`.^]
+  trait NormalisedX extends AnyGraphX
 
-    object OutboundT extends Topology[OutboundT] {}
+  object NormalisedX extends Topology[AnyGraphX] {
 
+    trait ForwardX extends NormalisedX with Axiom.Impl[Arrow.`~>`.^]
+
+    object ForwardX extends Topology[ForwardX] {}
   }
 
-  trait PosetT extends AnyGraphT
-  object PosetT extends Topology[PosetT] {}
+  trait PosetX extends AnyGraphX
+  object PosetX extends Topology[PosetX] {}
 
-  trait SemilatticeT extends PosetT
-  object SemilatticeT extends Topology[SemilatticeT] {
+  trait SemilatticeX extends PosetX
+  object SemilatticeX extends Topology[SemilatticeX] {
 
-    trait UpperT extends SemilatticeT with AnyGraphT.OutboundT
-    object UpperT extends Topology[UpperT] {
+    trait UpperX extends SemilatticeX with NormalisedX.ForwardX
+    object UpperX extends Topology[UpperX] {
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -61,13 +64,13 @@ object Axiom {
     }
   }
 
-  trait TreeT extends SemilatticeT.UpperT
-  object TreeT extends Topology[TreeT] {}
+  trait TreeX extends SemilatticeX.UpperX
+  object TreeX extends Topology[TreeX] {}
 
   private def sanity[V](): Unit = {
 
-    implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
+    implicitly[PosetX.Node[Int] <:< NormalisedX.Node[Int]]
 
-    implicitly[PosetT.Node[V] <:< AnyGraphT.Node[V]]
+    implicitly[PosetX.Node[V] <:< NormalisedX.Node[V]]
   }
 }

@@ -35,7 +35,7 @@ trait TypeOfMixin extends HasReflection {
     lazy val typeStr: String = nodes.typeText
 
     lazy val graph = Local.AnyGraph
-      .Outbound(nodes.SuperTypeNode)
+      .Forward(nodes.SuperTypeNode)
 
     lazy val diagram_hierarchy: format.DelegateFormat.Group#Viz[VisualisationGroup.Node] =
       graph.diagram_linkedHierarchy(vizGroup.delegateGroup)
@@ -77,7 +77,7 @@ trait TypeOfMixin extends HasReflection {
     implicit def asNodes(v: TypeOf[_]): v.vizGroup.Nodes = v.nodes
   }
 
-  object VisualisationGroup extends Local.AnyGraph.Outbound.UntypedDef {
+  object VisualisationGroup extends Local.AnyGraph.Forward.UntypedDef {
 
     // technically this layer could be collapsed into GraphRepr
     trait Node extends UntypedNode with TypeOfMixin.VNodeLike {}
@@ -115,7 +115,7 @@ trait TypeOfMixin extends HasReflection {
           }
           .toSeq
 
-        Local.AnyGraph.Outbound(argNodes: _*)
+        Local.AnyGraph.Forward(argNodes: _*)
       }
 
       lazy val typeText: String = ir.text

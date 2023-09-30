@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.Engine
-import ai.acyclic.prover.commons.graph.local.ops.{AnyGraphUnary, OutboundGraphUnary, UpperSemilatticeUnary}
+import ai.acyclic.prover.commons.graph.local.ops.{AnyGraphUnary, ForwardUnary, UpperSemilatticeUnary}
 
 import scala.language.implicitConversions
 
@@ -26,13 +26,13 @@ object LocalEngine extends Engine {
     AnyGraphUnary.^(leaf)
   }
 
-  implicit def outboundGraphAsUnary[L <: Local.AnyGraph.Outbound._Axiom, V](
+  implicit def outboundGraphAsUnary[L <: Local.AnyGraph.Forward._Axiom, V](
       self: LocalEngine._GraphK.Compat[L, V]
-  ): OutboundGraphUnary.^[L, V] = {
+  ): ForwardUnary.^[L, V] = {
 
     val leaf = self.asPlan
 
-    OutboundGraphUnary.^(leaf)
+    ForwardUnary.^(leaf)
   }
 
   implicit def upperSemilatticeAsUnary[L <: Local.Semilattice.Upper._Axiom, V](

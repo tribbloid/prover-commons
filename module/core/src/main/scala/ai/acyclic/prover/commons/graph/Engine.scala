@@ -202,26 +202,26 @@ trait Engine {
       }
     }
 
-    object AnyGraph extends GraphBuilder(AnyGraphT) {
+    object AnyGraph extends GraphBuilder(AnyGraphX) {
 
-      object Outbound extends GraphBuilder(AnyGraphT.OutboundT) {}
-      type Outbound[V] = Outbound.Graph[V]
+      object Forward extends GraphBuilder(NormalisedX.ForwardX) {}
+      type Outbound[V] = Forward.Graph[V]
 
     }
     type AnyGraph[V] = AnyGraph.Graph[V]
 
-    object Poset extends GraphBuilder(PosetT) {}
+    object Poset extends GraphBuilder(PosetX) {}
     type Poset[V] = Poset.Graph[V]
 
-    object Semilattice extends GraphBuilder(SemilatticeT) {
+    object Semilattice extends GraphBuilder(SemilatticeX) {
 
-      object Upper extends GraphBuilder(SemilatticeT.UpperT) {}
+      object Upper extends GraphBuilder(SemilatticeX.UpperX) {}
       type Upper[V] = Upper.Graph[V]
 
     }
     type Semilattice[V] = Semilattice.Graph[V]
 
-    object Tree extends GraphBuilder(TreeT) {
+    object Tree extends GraphBuilder(TreeX) {
 
       case class Singleton[V](value: V) extends NodeImpl[V] {
 
