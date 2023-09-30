@@ -26,7 +26,7 @@ object LocalEngine extends Engine {
     AnyGraphUnary.^(leaf)
   }
 
-  implicit def outboundGraphAsUnary[L <: Local.AnyGraph.Forward._Axiom, V](
+  implicit def outboundGraphAsUnary[L <: Local.Forward._Axiom, V](
       self: LocalEngine._GraphK.Compat[L, V]
   ): ForwardUnary.^[L, V] = {
 

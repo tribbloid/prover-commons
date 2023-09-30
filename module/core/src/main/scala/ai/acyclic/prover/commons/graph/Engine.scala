@@ -202,13 +202,11 @@ trait Engine {
       }
     }
 
-    object AnyGraph extends GraphBuilder(AnyGraphX) {
-
-      object Forward extends GraphBuilder(NormalisedX.ForwardX) {}
-      type Outbound[V] = Forward.Graph[V]
-
-    }
+    object AnyGraph extends GraphBuilder(AnyGraphX) {}
     type AnyGraph[V] = AnyGraph.Graph[V]
+
+    object Forward extends GraphBuilder(NormalisedX.ForwardX) {}
+    type Forward[V] = Forward.Graph[V]
 
     object Poset extends GraphBuilder(PosetX) {}
     type Poset[V] = Poset.Graph[V]

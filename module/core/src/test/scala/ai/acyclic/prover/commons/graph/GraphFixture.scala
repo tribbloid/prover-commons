@@ -17,7 +17,7 @@ object GraphFixture {
     val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren: _*)
   }
 
-  trait OGraphNode extends Local.AnyGraph.Forward.NodeImpl[GV] {
+  trait OGraphNode extends Local.Forward.NodeImpl[GV] {
 
     override protected def nodeTextC = value.text
 
@@ -120,9 +120,9 @@ object GraphFixture {
   implicit class GVsView(self: Seq[GV]) {
 
     def graph =
-      AnyGraph.Forward(self.map(v => Node(v)): _*)
+      Local.Forward(self.map(v => Node(v)): _*)
 
     def graphWithArrowText =
-      AnyGraph.Forward(self.map(v => NodeWithArrowText(v)): _*)
+      Local.Forward(self.map(v => NodeWithArrowText(v)): _*)
   }
 }
