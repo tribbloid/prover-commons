@@ -99,8 +99,8 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
       object RefBindings extends Local.Tree.UntypedDef {
 
         case class Node(
-                         override val original: Local.Forward.Node[V],
-                         id: UUID = UUID.randomUUID()
+            override val original: Local.Forward.Node[V],
+            id: UUID = UUID.randomUUID()
         ) extends UntypedNode
             with RefBindingLike {
 
@@ -163,12 +163,10 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
               original.induction.map { tuple =>
                 val arrow = tuple._1: Arrow.`~>`.^
-
                 val target: RefBindings.Node = RefBindings.Node.apply(tuple._2)
 
                 arrow -> target
               }
-
             }
 
             result

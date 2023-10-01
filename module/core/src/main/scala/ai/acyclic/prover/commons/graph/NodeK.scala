@@ -76,17 +76,17 @@ object NodeK {
 
   type Compat[+L <: Axiom, +V] = Aux[L, _ <: V]
 
-  trait Untyped[+L <: Axiom] extends NodeK[L] {
-    // actually self typed, but that doesn't convey any extra information
+//  trait Untyped[+L <: Axiom] extends NodeK[L] {
+//    // actually self typed, but that doesn't convey any extra information
+//
+//    type Value >: this.type
+//    final lazy val value: this.type = this
+//  }
 
-    type Value >: this.type
-    final lazy val value: this.type = this
-  }
-
-  case class Mapped[+L <: Axiom, V, V2](
-      original: NodeK.Compat[L, V],
+  case class Mapped[+X <: Axiom, V, V2](
+      original: NodeK.Compat[X, V],
       fn: V => V2
-  ) extends Impl[L, V2] {
+  ) extends Impl[X, V2] {
 
     override val assuming: original.assuming.type = original.assuming
 
@@ -94,15 +94,33 @@ object NodeK {
 
     override protected def nodeTextC: String = original.nodeText
 
-    override protected def inductionC: Seq[(_Arrow, Mapped[L, V, V2])] = {
+    override protected def inductionC: Seq[(_Arrow, Mapped[X, V, V2])] = {
       original.induction.map {
         case (a, n) =>
           a -> Mapped(n, fn)
       }
     }
 
-    override def identityKeyC: Option[Any] = original.identityKey
+    override def identityKeyC: Option[Any] = original.identityKeyC
 
-    override def evalCacheKeyC: Option[Any] = original.evalCacheKey
+    override def evalCacheKeyC: Option[Any] = original.evalCacheKeyC
+  }
+
+  case class Rekeyed[+X <: Axiom, V](
+      original: NodeK.Compat[X, V],
+      keyMap: Any => Any
+  ) extends Impl[X, V] {
+
+    override type _Axiom = original._Axiom
+    override val assuming: original.assuming.type = original.assuming
+
+    override def value: V = original.value
+
+    override protected def inductionC: Seq[(_Arrow, Rekeyed[X, V])] = {
+      original.induction.map {
+        case (a, n) =>
+          a -> Rekeyed(n, keyMap)
+      }
+    }
   }
 }

@@ -107,7 +107,7 @@ trait Engine {
 
       trait RewriterImpl[V] extends RewriterK.Impl[_Axiom, V] with StructMixin {}
 
-      def makeTightestWIthAxiom[XX <: _Axiom, V](
+      def makeTightestAssuming[XX <: _Axiom, V](
           nodes: NodeK.Compat[XX, V]*
       )(
           assuming: XX
@@ -124,7 +124,7 @@ trait Engine {
 
       def makeExact[V](
           nodes: NodeK.Compat[_Axiom, V]*
-      ): Graph[V] = makeTightestWIthAxiom[_Axiom, V](nodes: _*)(assuming)
+      ): Graph[V] = makeTightestAssuming[_Axiom, V](nodes: _*)(assuming)
 
       def apply[XX <: _Axiom, V]( // alias of makeTightest
           nodes: NodeK.Compat[XX, V]*
@@ -138,10 +138,10 @@ trait Engine {
       trait UntypedDef {
         self: Singleton =>
 
-        trait UntypedNode extends NodeK.Untyped[_Axiom] with StructMixin {
+        trait UntypedNode extends NodeK.Impl[_Axiom, UntypedDef.this.Node] with StructMixin {
           self: UntypedDef.this.Node =>
 
-          type Value = UntypedDef.this.Node
+          final lazy val value: this.type = this
         }
 
         type Node <: UntypedNode
