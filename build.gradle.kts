@@ -65,7 +65,7 @@ allprojects {
         //https://github.com/tek/splain
         if (vs.splainV.isNotEmpty()) {
             val splainD = "io.tryp:splain_${vs.scala.v}:${vs.splainV}"
-            logger.warn("Using " + splainD)
+            logger.warn("${project.displayName} / scalaCompilerPlugins:\n\t --- using ${splainD}")
 
             scalaCompilerPlugins(splainD)
         }
@@ -167,6 +167,10 @@ allprojects {
 
                 "target",
                 "out",
+
+                ".cache",
+                ".history",
+                ".lib",
 
                 ".idea",
                 ".vscode",
