@@ -3,7 +3,14 @@ val vs = versions()
 val splainVRelease: String = "1.0.2"
 
 val splainVFallback: String = run {
+
     vs.splainV.ifEmpty { splainVRelease }
+}
+
+val splainD: String = run {
+    val splainD = "io.tryp:splain_${vs.scala.v}:${splainVFallback}"
+    logger.warn("${project.displayName} / scalaCompilerPlugins:\n\t --- using ${splainD}")
+    splainD
 }
 
 dependencies {
@@ -12,5 +19,5 @@ dependencies {
 
     api("com.chuusai:shapeless_${vs.scala.binaryV}:2.3.9")
 
-    testFixturesApi("io.tryp:splain_${vs.scala.v}:${splainVFallback}")
+    testFixturesApi(splainD)
 }
