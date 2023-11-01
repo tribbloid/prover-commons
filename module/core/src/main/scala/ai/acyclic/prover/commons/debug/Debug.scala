@@ -73,7 +73,7 @@ object Debug {
               val atStack = Class.forName(element.getClassName)
               atStack.isAssignableFrom(v)
             } catch {
-              case e: Exception =>
+              case _: Exception =>
                 false
             }
 

@@ -12,7 +12,6 @@ import org.scalameta.ascii.layout.prefs.{LayoutPrefs, LayoutPrefsImpl}
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListSet
 import scala.collection.mutable
-import scala.language.existentials
 
 object Flow extends Visualisations {
 
