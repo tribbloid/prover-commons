@@ -9,7 +9,7 @@ val splainVFallback: String = run {
 
 val splainD: String = run {
     val splainD = "io.tryp:splain_${vs.scala.v}:${splainVFallback}"
-    logger.warn("${project.displayName} / dependencies:\n\t --- using ${splainD}")
+    logger.warn("using ${splainD} ...\t in ${project.displayName} / dependencies")
     splainD
 }
 
