@@ -8,7 +8,6 @@ import ai.acyclic.prover.commons.typesetting.TextBlock
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
-import scala.language.existentials
 
 object LinkedHierarchy extends Visualisations {
 

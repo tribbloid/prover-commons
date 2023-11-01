@@ -4,7 +4,6 @@ import ai.acyclic.prover.commons.graph.Engine
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
-import scala.language.existentials
 
 object Hierarchy extends Visualisations {
 

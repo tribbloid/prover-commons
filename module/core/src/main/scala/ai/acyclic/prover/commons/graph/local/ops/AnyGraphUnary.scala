@@ -5,7 +5,6 @@ import ai.acyclic.prover.commons.graph.RewriterK
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Flow
 
-import scala.language.existentials
 
 trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 

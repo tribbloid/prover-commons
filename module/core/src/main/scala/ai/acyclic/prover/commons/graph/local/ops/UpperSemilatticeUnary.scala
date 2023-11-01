@@ -38,7 +38,7 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
             down = { n =>
               val counterOpt = id_counters.get(n.identityKey)
               counterOpt.foreach {
-                case (nn, cc) =>
+                case (_, cc) =>
                   val ccv = cc.incrementAndGet()
 
                   if (ccv >= 2) id_counters.remove(n)
