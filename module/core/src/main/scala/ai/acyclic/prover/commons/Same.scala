@@ -43,7 +43,7 @@ object Same {
      - reflexivity: if (v1 eq v2), then areSame(v1, v2)
      - symmetry: if areSame(v1, v2) then areSame(v2, v2)
      */
-    final def prove(v1: Any, v2: Any): Boolean = {
+    final def check(v1: Any, v2: Any): Boolean = {
 
       (v1, v2) match {
         case (null, null) => true
@@ -58,12 +58,12 @@ object Same {
       }
     }
 
-    final def refute(v1: Any, v2: Any): Boolean = !prove(v1, v2)
+    final def checkNot(v1: Any, v2: Any): Boolean = !check(v1, v2)
 
-    final def proveSafely(v1: Any, v2: Any): Boolean = {
+    final def checkSafely(v1: Any, v2: Any): Boolean = {
 
-      val result = prove(v1, v2)
-      val swapped = prove(v2, v1)
+      val result = check(v1, v2)
+      val swapped = check(v2, v1)
       require(result == swapped, "sameness should be symmetric")
       if (result)
         require(
@@ -100,7 +100,7 @@ object Same {
 
       final override def equals(that: Any): Boolean = {
         that match {
-          case that: Facade => By.this.proveSafely(samenessDelegatedTo, that.samenessDelegatedTo)
+          case that: Facade => By.this.checkSafely(samenessDelegatedTo, that.samenessDelegatedTo)
           case _            => false
         }
       }
