@@ -10,7 +10,7 @@ import java.util.regex.Pattern
 
 trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
 
-  @transient implicit class testStringView(str: String) {
+  @transient implicit class _StringView(str: String) {
 
     val _print = new print_@(
       Seq(

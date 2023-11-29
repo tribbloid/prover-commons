@@ -14,7 +14,7 @@ case class StringDiff(
 
   import StringDiff._
 
-  val _print = new print_@(
+  private val _printFn = new print_@(
     classes :+
       this.getClass
   )
@@ -28,7 +28,7 @@ case class StringDiff(
 
     def isDefined: Boolean = raw.isDefined
 
-    val trimmed = raw.map(v => trim(TextBlock(v)))
+    val trimmed: Option[TextBlock] = raw.map(v => trim(TextBlock(v)))
 
     val rows: List[String] = trimmed.toList.flatMap { raw =>
       raw.lines
@@ -89,7 +89,7 @@ case class StringDiff(
   }
 
   def show(): Unit = {
-    _print(info)
+    _printFn(info)
   }
 
   def assert(
@@ -148,7 +148,7 @@ object StringDiff {
   object SuperSet extends ComparisonMode
   object SubSet extends ComparisonMode
 
-  lazy val defaultTrim = { v: TextBlock =>
+  lazy val defaultTrim: TextBlock => TextBlock = { v: TextBlock =>
     v.trim.top_bottom
   }
 }
