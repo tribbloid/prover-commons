@@ -51,17 +51,17 @@ case class StringDiff(
 
   }
 
-  object Left extends Rows(left, "[ACTUAL   /  LEFT]")
   object Right extends Rows(right, "[EXPECTED / RIGHT]")
+  object Left extends Rows(left, "[ACTUAL   /  LEFT]")
 
   lazy val errorStr: String = {
 
     val result =
       s"""
          |expected: <
-         |${Left.info}
-         |> but was: <
          |${Right.info}
+         |> but was: <
+         |${Left.info}
          |>
       """.stripMargin.trim
 
