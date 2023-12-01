@@ -32,7 +32,7 @@ trait TermAndTypeOfMixin extends TypeOfMixin {
         case (true, true) =>
           Predef.assert(
             this.rtValue == that.rtValue,
-            diff.errorStr
+            diff.ErrorDiffClue
           )
 
         case _ =>

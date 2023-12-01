@@ -21,7 +21,7 @@ case class StringDiff(
 
   case class Rows(
       raw: Option[String],
-      meta: String
+      header: String
   ) {
 
     def outer: StringDiff = StringDiff.this
@@ -45,7 +45,7 @@ case class StringDiff(
 
     lazy val str: String = effective.mkString("\n")
     lazy val info: String = (
-      s"\n=============================== $meta ================================\n\n" +
+      s"\n=============================== $header ================================\n\n" +
         str
     ).trim
 
@@ -54,18 +54,63 @@ case class StringDiff(
   object Right extends Rows(right, "[EXPECTED / RIGHT]")
   object Left extends Rows(left, "[ACTUAL   /  LEFT]")
 
-  lazy val errorStr: String = {
+  object ErrorDiffClue {
 
-    val result =
+    lazy val error1: String = {
+
       s"""
-         |expected: <
-         |${Right.info}
-         |> but was: <
+           |expected: <
+           |${Left.info}
+           |> but was: <
+           |${Right.info}
+           |>
+      """.stripMargin.trim
+    }
+
+    lazy val error1b: String = {
+
+      s"""
+         |expected: "
          |${Left.info}
+         |" but was: "
+         |${Right.info}
+         |"
+      """.stripMargin.trim
+    }
+
+    lazy val error2: String = {
+
+      s"""
+         |<
+         |${Left.info}
+         |> did not equal <
+         |${Right.info}
          |>
       """.stripMargin.trim
+    }
 
-    result
+    lazy val error2b: String = {
+
+      s"""
+           |"
+           |${Left.info}
+           |" did not equal "
+           |${Right.info}
+           |"
+      """.stripMargin.trim
+    }
+
+    override lazy val toString: String = error2
+
+    def isEqual = Left.effective == Right.effective
+  }
+
+  lazy val plainDiffClue: String = {
+    s"""
+       |${Left.info}
+       |
+       |${Right.info}
+       |""".stripMargin.trim
   }
 
   lazy val info: String = {
@@ -73,12 +118,7 @@ case class StringDiff(
     (left.isDefined, right.isDefined) match {
 
       case (true, true) =>
-        s"""
-          |${Left.info}
-          |
-          |${Right.info}
-          |""".stripMargin.trim
-
+        plainDiffClue
       case (false, false) =>
         throw new UnsupportedOperationException("both left and right operands are missing")
       case (true, false) =>
@@ -94,29 +134,31 @@ case class StringDiff(
 
   def assert(
       mode: StringDiff.ComparisonMode = StringDiff.Equal,
-      fuzzyRight: Boolean = false
+      fuzzyRight: Boolean = false,
+      usingFn: (Boolean, Any) => Unit = Predef.assert(_, _)
   ): Unit = {
 
     def assertEqual(left: Seq[String], right: Seq[String]): Unit = {
 
       if (fuzzyRight) {
+        // TODO: need improvement using some simple parser
 
         left.zipAll(right, null, null).foreach { tuple =>
           val fixes = tuple._2.split("[.]{6,}", 2)
-          Predef.assert(
+          usingFn(
             tuple._1.startsWith(fixes.head),
-            errorStr
+            ErrorDiffClue
           )
-          Predef.assert(
+          usingFn(
             tuple._1.endsWith(fixes.last),
-            errorStr
+            ErrorDiffClue
           )
         }
       } else {
 
-        Predef.assert(
+        usingFn(
           left == right,
-          errorStr
+          ErrorDiffClue
         )
       }
     }

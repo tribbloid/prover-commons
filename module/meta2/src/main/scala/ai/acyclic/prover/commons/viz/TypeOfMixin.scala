@@ -61,7 +61,7 @@ trait TypeOfMixin extends HasReflection {
         case (true, true) =>
           Predef.assert(
             this.tt =:= that.tt,
-            diff.errorStr
+            diff.ErrorDiffClue
           )
 
         case _ =>

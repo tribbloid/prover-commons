@@ -6,7 +6,7 @@ case class print_@(
     exclusion: Seq[Class[_]]
 ) {
 
-  def dryRun[T](
+  def wrapInfo[T](
       v: T
   ): String = {
 
@@ -25,7 +25,7 @@ case class print_@(
       v: T
   ): Unit = {
 
-    val result = dryRun(v)
+    val result = wrapInfo(v)
 
     println(result)
   }

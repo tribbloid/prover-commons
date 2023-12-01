@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.testlib
 
-import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalatest.funspec.AnyFunSpec
@@ -11,12 +10,6 @@ import java.util.regex.Pattern
 trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
 
   @transient implicit class _StringView(str: String) {
-
-    val _print = new print_@(
-      Seq(
-        this.getClass
-      )
-    )
 
     // TODO: use reflection to figure out test name and annotate
     def shouldBe(
@@ -48,7 +41,13 @@ trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
         mode: StringDiff.ComparisonMode = StringDiff.Equal
     ): Unit = {
 
-      StringDiff(Option(str), Option(groundTruth), Seq(this.getClass), sort, ignoreCase).assert(mode, fuzzyRight = true)
+      StringDiff(
+        Option(str),
+        Option(groundTruth),
+        Seq(this.getClass),
+        sort,
+        ignoreCase
+      ).assert(mode, fuzzyRight = true)
     }
 
     def rowsShouldBeLike(gd: String = null): Unit = shouldBeLike(gd, sort = true)
