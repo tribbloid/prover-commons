@@ -17,20 +17,4 @@ object __ImplicitSearchOrder {
   Outer objects for nested types
   Other dimensions
    */
-
-  /*
-  scala operator priority
-  LOWEST!
-  (all letters)
-  |
-  ^
-  &
-  = !
-  < >
-  :
-  + -
-   * / %
-  (all other special characters)
-  HIGHEST!
-   */
 }

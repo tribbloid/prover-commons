@@ -34,10 +34,15 @@ object __Glossary {
     *     examples
     *   - `Lt`, same as `Lt` as a type name but can appear anywhere
     *   - `Compat` for compatible type, same as `Compat` as a type name but can appear anywhere
-    *   - `Axiom` for axiom type that can be constructed arbitrarily, but only for compile-time verification and carry
-    *     no runtime data. Consequently, they can be safely cast into each other (IF permitted at runtime, w/o
-    *     triggering ClassCastException) or mixed into other classes, many of they have no constructor and all instances
-    *     are casted from null/singleton, `shapeless.labelled.KeyTag` is a typical axiom type
+    *   - `Cap`/`Tag` for capability tracking tag (see Scala 3 project Caprese for a definition of capability tracking),
+    *     they are Mixin type of which the main type can be cast into to emulate reasoning of a substructural type
+    *     system. E.g. definition `trait XXCap {self: CC =>}` allows any variable `val cc: CC` to be assigned to another
+    *     variable `val ccWithCap: CC with XXCap = cc.asInstanceOf[CC with XXCap]`, or vice versa. A typical instance is
+    *     `shapeless.labelled.KeyTag`, it is also heavily used in asynchronous computing library Kyo.
+    *   - `Axiom` for axiom type that can be constructed arbitrarily (assumed to have a constructive proof), but only
+    *     for compile-time verification and carry no runtime data. Consequently, they can be safely cast into each other
+    *     (IF permitted at runtime, w/o triggering ClassCastException) or mixed into other classes, many of they have no
+    *     constructor and all instances are casted from null/singleton.
     *     - the name "Axiom" refers to a convention by CHL correspondence (a.k.a. computational trinitarianism), an
     *       assumption with a "fake" constructive proof
     *     - "Phantom types" (types that will never be constructed/instantiated in runtime) are special cases of Axiom
