@@ -50,6 +50,10 @@ object __Glossary {
     *       dependent types, which make construction unavoidable in many logical reasoning
     *   - `Law` for `Axiom` type that also has a shortcut for runtime testing, most classes in `cats-law` are dedicated
     *     for this purpose
+    *   - `ImpX` (where X is an integer) for low-priority implicit definitions, Scala compiler will throw an error when
+    *     multiple implicit functions/values with same priority can be summoned, in this case they need to be spread
+    *     into a hierarchy of traits (e.g. `object Ops extends OpsImp0`, `OpsImp0 extends OPsImp1` ...) to have
+    *     different priorities, see [[__ImplicitSearchOrder]] for the exact rule of implicit priority
     *   - `_/\` for type upper bound
     *   - `_\/` for type lower bound
     *
