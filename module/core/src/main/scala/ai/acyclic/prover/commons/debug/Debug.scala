@@ -59,17 +59,16 @@ object Debug {
   }
 
   case class CallStackRef(
-      depth: Int = 0,
-      exclude: Seq[Class[_]] = Nil
+      startingFromDepth: Int = 0,
+      blacklistedClasses: Seq[Class[_]] = Nil
   ) {
 
     val stackInfo: Array[StackTraceElement] = {
-      val bp = getBreakpointInfo()
+      val bp: Array[StackTraceElement] = getBreakpointInfo()
       val filteredIndex = bp.toSeq.indexWhere(
         { element =>
-          val isIncluded = !exclude.exists { v =>
+          val isIncluded = !blacklistedClasses.exists { v =>
             try {
-
               val atStack = Class.forName(element.getClassName)
               atStack.isAssignableFrom(v)
             } catch {
@@ -81,7 +80,7 @@ object Debug {
 
           isIncluded
         },
-        depth
+        startingFromDepth
       )
       bp.slice(filteredIndex, Int.MaxValue)
     }
@@ -90,16 +89,15 @@ object Debug {
       stackTracesShowStr(stackInfo)
     }
 
-    lazy val stackTop: StackTraceElement = stackInfo.head
+    lazy val head: StackTraceElement = stackInfo.head
 
     def fnName: String = {
-      assert(!stackTop.isNativeMethod, "can only get fnName in def & lazy val blocks")
-      stackTop.getMethodName
+      assert(!head.isNativeMethod, "can only get fnName in def & lazy val blocks")
+      head.getMethodName
     }
 
     def className: String = {
-
-      stackTop.getClassName
+      head.getClassName
     }
   }
 
