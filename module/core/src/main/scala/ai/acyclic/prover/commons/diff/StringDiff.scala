@@ -132,10 +132,10 @@ case class StringDiff(
     _printFn(info)
   }
 
-  def assert(
+  def assert[T](
       mode: StringDiff.ComparisonMode = StringDiff.Equal,
       fuzzyRight: Boolean = false,
-      usingFn: (Boolean, Any) => Unit = Predef.assert(_, _)
+      usingFn: (Boolean, Any) => Any = Predef.assert(_, _)
   ): Unit = {
 
     def assertEqual(left: Seq[String], right: Seq[String]): Unit = {

@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.util
 object Summoner {
 
   // backported from Scala 3, tighter than scala 2's `implicitly[T]`
+  // TODO: all invocation of `implicitly` should be replaced with this
   def summon[T](
       implicit
       x: T
@@ -18,11 +19,11 @@ object Summoner {
 
     {
       val foo = summon[Foo]
-      val foo1: Foo.Foo1 = foo
+      foo
     }
 
     {
-      val foo = implicitly[Foo]
+      implicitly[Foo]
 //      val foo1: Foo.Foo1 = foo // fail to compile
     }
   }

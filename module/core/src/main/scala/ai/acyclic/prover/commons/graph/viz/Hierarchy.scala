@@ -4,7 +4,6 @@ import ai.acyclic.prover.commons.graph.Engine
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
-
 object Hierarchy extends Visualisations {
 
   type Graph_/\[V] = Local.Semilattice.Upper[V]
@@ -105,10 +104,14 @@ trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
       }
     }
 
-    override lazy val toString: String = semilattice.maxNodeOpt
-      .map { nn =>
-        SubViz(nn).treeString
-      }
-      .mkString("\n")
+    lazy val treeText: String = {
+      semilattice.maxNodeOpt
+        .map { nn =>
+          SubViz(nn).treeString
+        }
+        .mkString("\n")
+    }
+
+    override def toString: String = treeText
   }
 }

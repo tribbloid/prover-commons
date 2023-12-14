@@ -227,7 +227,13 @@ trait Engine {
 
         final override lazy val inductionC = Nil
       }
+
+      implicit class TreeNodeOps[V](n: NodeImpl[V]) {
+
+        def mkTree: Tree[V] = Tree(n)
+      }
     }
+
     type Tree[V] = Tree.Graph[V]
 
 //    private def sanity[C <: Axiom]: Unit = { // sanity

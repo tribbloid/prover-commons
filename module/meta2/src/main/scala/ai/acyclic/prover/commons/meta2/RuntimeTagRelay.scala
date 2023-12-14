@@ -16,7 +16,7 @@ trait RuntimeTagRelay {
     val classSymbols = actualType.baseClasses
     val firstClassSymbol = classSymbols.head.asInstanceOf[universe.ClassSymbol]
 
-    lazy val classFromType = ev.mirror.runtimeClass(actualType)
+//    ev.mirror.runtimeClass(actualType)
     lazy val classFromSymbol = ev.mirror.runtimeClass(firstClassSymbol)
 
     val cTag: ClassTag[T] = ClassTag(classFromSymbol.asInstanceOf[Class[T]])

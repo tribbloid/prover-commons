@@ -19,5 +19,10 @@ dependencies {
 
     api("com.chuusai:shapeless_${vs.scala.binaryV}:2.3.10")
 
+    api("com.github.ben-manes.caffeine:caffeine:3.1.8")
+
     testFixturesApi(splainD)
+
+//    api("org.apache.logging.log4j:log4j:2.11.2")
+    api("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
 }

@@ -1,9 +1,9 @@
 package ai.acyclic.prover.commons
 
-import ai.acyclic.prover.commons.util.ConstructionID
+import ai.acyclic.prover.commons.function.Thunk
+import ai.acyclic.prover.commons.util.{CacheView, Caching, ConstructionID}
 
-import scala.collection.concurrent.TrieMap
-import scala.collection.mutable
+import java.util.concurrent.atomic.AtomicInteger
 import scala.reflect.ClassTag
 
 trait Same[T] {
@@ -21,11 +21,11 @@ object Same {
     result
   }
 
-  trait By {
+  trait By extends Serializable {
 
     protected def _getID(v1: Any): Option[Any]
 
-    @transient final def getID(v1: Any): Option[Any] = {
+    final def getID(v1: Any): Option[Any] = {
       _getID(rectify(v1))
     }
 
@@ -111,51 +111,71 @@ object Same {
       final override def toString: String = "" + samenessDelegatedTo
     }
 
-    case class Correspondence[K, V]() {
+    case class Lookup[K, V](
+        underlying: CacheView[Wrapper[K], (Thunk[V], Long)] = Caching.Soft.build[Wrapper[K], (Thunk[V], Long)]()
+    ) {
 
-      case class Thunk(fn: () => V) {
+      private val serialID: AtomicInteger = new AtomicInteger(0)
+      @volatile var locked: Boolean = false
 
-        lazy val value: V = fn()
+      def nextSerialID: Int = {
+        require(
+          !locked, {
+            locked
+            "cannot write, lookup is locked"
+          }
+        )
+        serialID.getAndIncrement()
       }
 
-      val lookup: TrieMap[Wrapper[K], Thunk] = TrieMap.empty
-      val collection: mutable.Buffer[Thunk] = mutable.Buffer.empty
-
-      def values: Seq[V] = collection.map(_.value).toSeq
+      def values: Seq[V] = underlying.values.toSeq.sortBy(_._2).map(_._1.value)
 
       final def getOrElseUpdate(key: K, getValue: => V): V = {
 
-        val inMemoryId = Wrapper(key)
-        val w =
-          this.synchronized {
-            lookup.getOrElseUpdate(
-              inMemoryId, {
-                val created = Thunk(() => getValue)
-                collection += created
-                created
-              }
-            ) // should be fast
-          }
-        w.value
+        val id = Wrapper(key)
+        val w = this.synchronized {
+          underlying.getOrElseUpdate(
+            id, {
+              val t = Thunk(_ => getValue)
+              (t, nextSerialID)
+            }
+          ) // should be fast
+        }
+        w._1.value
         // TODO: this may cause stackoverflow
         //  if [[getOrElseUpdate]] is called again within the thunk
         //  may need a trampoline to avoid it, maybe switch to cats
       }
 
+      final def updateOverride(key: K, getValue: => V): Unit = {
+
+        val id = Wrapper(key)
+        this.synchronized {
+          underlying.update(
+            id, {
+              val t = Thunk(_ => getValue)
+              (t, nextSerialID)
+            }
+          )
+        }
+      }
+
+      final def remove(key: K): Unit = {
+        val id = Wrapper(key)
+        this.synchronized {
+          underlying.remove(id)
+        }
+      }
+
+      final def isEmpty: Boolean = underlying.isEmpty
+
       final def get(key: K): Option[V] = {
         val inMemoryId = Wrapper(key)
 
-        lookup
+        underlying.repr
           .get(inMemoryId)
-          .map(_.value)
+          .map(_._1.value)
       }
-    }
-
-    case class Memoize[K, V](fn: K => V) extends (K => V) with HasOuter {
-
-      override lazy val outer = Correspondence[K, V]()
-
-      final def apply(key: K): V = outer.getOrElseUpdate(key, fn(key))
     }
 
     case class Of[T: ClassTag](fn: T => Option[Any]) extends By {

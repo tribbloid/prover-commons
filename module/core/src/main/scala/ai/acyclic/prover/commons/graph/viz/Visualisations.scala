@@ -23,7 +23,7 @@ trait Visualisations {
 
     val semilattice: Graph_/\[N]
 
-    override lazy val toString: String = "[MISSING]"
+//    override lazy val toString: String = "[MISSING]"
   }
 
   object _TextViz {
