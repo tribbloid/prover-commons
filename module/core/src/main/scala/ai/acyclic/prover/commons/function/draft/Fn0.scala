@@ -1,6 +1,7 @@
-package ai.acyclic.prover.commons.compose
+package ai.acyclic.prover.commons.function.draft
 
-import scala.language.implicitConversions
+import ai.acyclic.prover.commons.function.FnLike
+
 
 trait Fn0[+R] extends Function0[R] with FnLike {
 

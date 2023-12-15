@@ -1,4 +1,6 @@
-package ai.acyclic.prover.commons.compose
+package ai.acyclic.prover.commons.function.draft
+
+import ai.acyclic.prover.commons.function.FnLike
 
 import scala.language.implicitConversions
 
@@ -13,9 +15,6 @@ trait Fn1[-T, +R] extends Function1[T, R] with FnLike {
       bc
     )
   }
-
-  case class Curried()
-
 }
 
 object Fn1 {

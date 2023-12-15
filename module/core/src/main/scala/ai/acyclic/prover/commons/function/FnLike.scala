@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.compose
+package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.util.DefinedAtMixin
 
@@ -15,6 +15,7 @@ trait FnLike extends DefinedAtMixin {
     }
   }
 }
+
 object FnLike {
 
   trait PureTag {
