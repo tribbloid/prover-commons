@@ -4,10 +4,8 @@ import shapeless.HNil
 
 object T0 extends Tier {
 
-  type IUB = HNil
+  type HUB = HNil
 
-  //  trait Fn[+R] extends Function0[R] with Function[IUB, R] {
-  //
-  //    def apply(): R = hForm(Args(HNil))
-  //  }
+//  lazy val onlyArg: Args[HNil] = Args(HNil)
+
 }

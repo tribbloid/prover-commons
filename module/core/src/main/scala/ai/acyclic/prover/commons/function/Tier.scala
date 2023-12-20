@@ -1,60 +1,28 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.function.FnLike.Derived
 import shapeless.{HList, SingletonProductArgs}
-import shapeless.ops.hlist.Tupler
-import shapeless.ops.record.Selector
-import shapeless.tag.@@
-
-import scala.language.{dynamics, implicitConversions}
 
 abstract class Tier {
-  self: Singleton =>
+//  self: Singleton =>
   // CAUTION: DO NOT use Scala 2 tuple form!
   // Scala 3 tuple is equivalent to HList (which itself will be ported to Scala 3 soon)
   // HList also has the extra benefit of being capable of naming its field(s)
 
-  type IUB <: HList
+  type HUB <: HList
 
-  trait DynamicArgsOps[H <: IUB] extends Dynamic {
-    self: Args[H] =>
-
-    def selectDynamic(key: String)(
-        implicit
-        selector: Selector[H, Symbol @@ key.type]
-    ): selector.Out = selector(this.self)
-  }
-
-  case class Args[H <: IUB](self: H) extends ArgsLike with DynamicArgsOps[H] {
-    // dynamic API, safety delegated to macro
-
-    def asTuple[TT](
-        implicit
-        tupler: Tupler.Aux[H, TT]
-    ): TT = tupler(self)
-  }
-
-  object Args {
-
-    implicit def unbox[H <: IUB](v: Args[H]): H = v.self
-
-    implicit def asTuple[H <: IUB, TT](v: Args[H])(
-        implicit
-        tupler: Tupler.Aux[H, TT]
-    ): TT = tupler(v)
-  }
-
-  trait DynamicFnOps[I <: IUB, +R] extends SingletonProductArgs {
-    self: Function[I, R] =>
+  trait FnDynamics[-H <: HUB, +R] extends SingletonProductArgs {
+    self: Function[H, R] =>
 
     final def applyProduct(
-        args: I
+        args: H
     ): R = {
 
-      self.hApply(Args(args))
+      self.argsGet(Args(args))
     }
   }
 
-  trait Function[I <: IUB, +R] extends FnLike with DynamicFnOps[I, R] {
+  trait Function[-H <: HUB, +R] extends FnLike with FnDynamics[H, R] {
     // always has implicit conversion to a Scala function
 
     /**
@@ -63,39 +31,25 @@ abstract class Tier {
       *   always in Args form
       * @return
       */
-    def hApply(args: Args[I]): R
+    protected def argsApply(args: Args[H]): R
+
+    def argsGet(args: Args[H]): R = argsApply(args)
   }
 
-  abstract class Derived[I <: IUB, +R](val from: FnLike)(original: Function[I, R]) extends Function[I, R] with Product {
-
-    final override lazy val productPrefix: String = {
-      s"${from}.${this.getClass.getSimpleName}"
-    }
-
-    /**
-      * the only Single Abstract Method interface
-      */
-    final override def hApply(args: Args[I]): R = original.hApply(args)
+  object Function {
+    // TODO: obviously, function is a morphism
   }
 
-  sealed trait PureTag {
-    self: FnLike =>
+  abstract class DerivedFunction[H <: HUB, +R](val impl: Function[H, R])(
+      implicit
+      val derivedFrom: FnLike = impl
+  ) extends Function[H, R]
+      with Derived {
+
+    final override def argsApply(args: Args[H]): R = impl.argsGet(args)
   }
-  trait Pure[T <: IUB, +R] extends Function[T, R] with PureTag {}
 
-  trait Cached[T <: IUB, +R] extends Pure[T, R] {}
-
-  trait Morphism[T] extends shapeless.Poly with FnLike {}
-  // shapeless Poly is discontinued in Scala 3, we don't know when it will become available
-
-  trait Transformation[T] extends Morphism[T] {} // as in "natural transformation"
-
-  trait Dependent[T] extends Morphism[T] {}
+  type Fn[H <: HUB, +R] = Function[H, R]
 }
 
 object Tier {}
-
-//object Tier2 extends Tier with Tier.HigherTier {
-//
-//  override val lower: Tier1.type = Tier1
-//}

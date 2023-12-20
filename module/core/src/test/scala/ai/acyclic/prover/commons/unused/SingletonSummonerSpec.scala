@@ -8,6 +8,8 @@ class SingletonSummonerSpec extends BaseSpec {
   it("without") {
     object S0 extends AnyRef
 
+    implicitly[ValueOf[S0.type]]
+
     shouldNotCompile(
       "implicitly[S0.type]"
     )

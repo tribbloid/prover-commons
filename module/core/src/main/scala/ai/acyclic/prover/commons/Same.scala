@@ -113,13 +113,8 @@ object Same {
 
     case class Correspondence[K, V]() {
 
-      case class Thunk(fn: () => V) {
-
-        lazy val value: V = fn()
-      }
-
-      val lookup: TrieMap[Wrapper[K], Thunk] = TrieMap.empty
-      val collection: mutable.Buffer[Thunk] = mutable.Buffer.empty
+      val lookup: TrieMap[Wrapper[K], Thunk[V]] = TrieMap.empty
+      val collection: mutable.Buffer[Thunk[V]] = mutable.Buffer.empty
 
       def values: Seq[V] = collection.map(_.value).toSeq
 

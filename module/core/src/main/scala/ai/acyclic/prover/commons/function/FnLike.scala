@@ -1,24 +1,36 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.util.DefinedAtMixin
+import ai.acyclic.prover.commons.util.{Capabilities, DefinedAtMixin}
 
 import scala.runtime.ScalaRunTime
 
-trait FnLike extends DefinedAtMixin {
+trait FnLike extends DefinedAtMixin with FnLike.NoCap {
+  import FnLike._
 
-  override def toString: String = {
-    this match {
-      case p: Product =>
-        ScalaRunTime._toString(p) // TODO: use tree string
+  override lazy val toString: String = {
+    val body = this match {
+      case v: Product =>
+        ScalaRunTime._toString(v) // TODO: use tree string
       case _ =>
-        "(defined at: " + definedAt + ")"
+        s"<defined at: $definedAt>"
     }
+
+    val prefix = this match {
+
+      case v: Derived => v.derivedFrom.toString + "."
+      case _          => ""
+    }
+    prefix + body
   }
 }
 
-object FnLike {
+/**
+  * can mixin [[Capabilities.Cap]], but so far, the only [[Cap]] is for refining candidates of polymorphic cases
+  */
+object FnLike extends Capabilities {
 
-  trait PureTag {
-    self: FnLike =>
+  trait Derived extends FnLike {
+
+    def derivedFrom: FnLike
   }
 }

@@ -1,11 +1,21 @@
 package ai.acyclic.prover.commons.function
 
-import shapeless.HNil
+import shapeless.{::, HNil}
 
-object Symbolic {
-  import shapeless.::
+trait Symbolic {
 
   type :=[+R] = T0.Function[HNil, R]
+  type Fn0[+R] = :=[R]
 
-  type :=>[T, +R] = T1.Function[T :: HNil, R]
+  type :=>[-I, +R] = T1.Function[I :: HNil, R]
+  type Fn1[-I, +R] = :=>[I, R]
+
+  type :|=>[-I, +R[_]] = T1.Dependent[I :: HNil, R]
+
+  type :|~>[-I[_], +R[_]] = T1.Morphism[Lambda[t => I[t] :: HNil], R]
+
+  type Poly1 = T1.Poly
+
 }
+
+object Symbolic extends Symbolic {}

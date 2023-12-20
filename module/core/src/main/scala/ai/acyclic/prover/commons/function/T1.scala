@@ -1,33 +1,33 @@
 package ai.acyclic.prover.commons.function
 
-import shapeless.HNil
+object T1 extends HigherTier {
 
-import scala.language.implicitConversions
-
-object T1 extends TierHigher {
-
-  import shapeless.::
+  import Symbolic._
 
   override val lower: T0.type = T0
 
-  implicit def unboxDirectly[T](v: Args[T :: HNil]): T = v.self.head
+  implicit class Fn1Ops[H <: HUB, R](self: Function[H, R]) {
 
-  //  trait Fn[-T, +R] extends Function1[T, R] with Function[IUB, R] {
-  //    def apply(v1: T): R = hForm(Args(v1 :: HNil))
-  ////    def apply(): R = hForm(Args(HNil))
-  //  }
-
-  implicit class Fn1Ops[T <: IUB, R](self: Function[T, R]) {
-
-    //    override def andThen[R2](g: R => R2): Fn1[T, R2] = {
-    //      val ab: Fn1[T, R] = this
-    //      val bc: Fn1[R, R2] = box1(g)
-    //      AndThen(
-    //        ab,
-    //        bc
-    //      )
-    //    }
-
+    case class andThen[R2](g: R :=> R2)
+        extends DerivedFunction[H, R2](
+          { args =>
+            val r = self.argsGet(args)
+            val r2 = g.apply(r)
+            r2
+          }
+        )(self)
   }
 
+  implicit class Poly1Ops(self: Poly) {
+
+//    object AsShapelessPoly1 extends shapeless.Poly1 {
+//
+//      implicit def delegate[I, R](
+//          implicit
+//          _case: self.Case[I :=> R]
+//      ): Case.Aux[I, R] = at[I] { ii =>
+//        _case.repr.argsGet(Args(ii :: HNil))
+//      }
+//    }
+  }
 }
