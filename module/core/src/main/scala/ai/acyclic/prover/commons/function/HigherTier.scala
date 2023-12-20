@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.Thunk
 import ai.acyclic.prover.commons.function.FnLike.Derived
+import ai.acyclic.prover.commons.util.NamedArgs
 import shapeless.HNil
 
 trait HigherTier extends HasMorphism with HasPoly {
@@ -19,13 +20,13 @@ trait HigherTier extends HasMorphism with HasPoly {
         ev: (HH :: HT) =:= H
     ) extends lower.DerivedFunction[HT, R](
           { args =>
-            val thisArgs = Args[H](ev(args.repr.::(v)))
+            val thisArgs = NamedArgs[H](ev(args.asHList.::(v)))
 
             self.argsGet(thisArgs)
           }
         )(self)
 
-    case class memoize(args: Args[H])
+    case class memoize(args: NamedArgs[H])
         extends T0.DerivedFunction[HNil, Thunk[R]](
           { _ =>
             Thunk(() => self.argsGet(args))
@@ -58,14 +59,14 @@ trait HigherTier extends HasMorphism with HasPoly {
       extends Poly
       with Derived {
 
-    implicit def only[T]: Case[Function[H[T], R[T]]] = forAll[H[T], Any] {
+    implicit def _onlyCase[T]: Case[Function[H[T], R[T]]] = forAll[H[T], Any] {
       derivedFrom.specific[T]
     }
   }
 
   implicit class functionIsPoly[H <: HUB, R](val derivedFrom: Function[H, R]) extends Poly with Derived {
 
-    implicit def only[T]: Case[Function[H, R]] = forAll[H, Any] {
+    implicit def _onlyCase[T]: Case[Function[H, R]] = forAll[H, Any] {
       derivedFrom.specific[T]
     }
   }

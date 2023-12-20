@@ -8,7 +8,7 @@ object T1 extends HigherTier {
 
   implicit class Fn1Ops[H <: HUB, R](self: Function[H, R]) {
 
-    case class andThen[R2](g: R :=> R2)
+    case class AndThen[R2](g: R :=> R2)
         extends DerivedFunction[H, R2](
           { args =>
             val r = self.argsGet(args)
@@ -16,6 +16,10 @@ object T1 extends HigherTier {
             r2
           }
         )(self)
+
+    def andThen[R2](g: R :=> R2): AndThen[R2] = AndThen(g)
+
+    def andThen2[R2](g: R => R2): AndThen[R2] = ???
   }
 
   implicit class Poly1Ops(self: Poly) {

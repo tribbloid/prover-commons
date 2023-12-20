@@ -1,5 +1,8 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.util.NamedArgs
+import shapeless.SingletonProductArgs
+
 trait HasMorphism extends Tier {
 
   // section dedicated to polymorphic functions
@@ -23,13 +26,25 @@ trait HasMorphism extends Tier {
 
       def specific[T >: \/ <: /\]: Function[H[T], R[T]]
 
-      final def argsApply[T >: \/ <: /\](args: Args[H[T]]): R[T] = specific[T].argsGet(args)
+      final def argsApply[T >: \/ <: /\](args: NamedArgs[H[T]]): R[T] = specific[T].argsGet(args)
     }
   }
 
   object NoBound extends Bound {
     type /\ = Any
     type \/ = Nothing
+  }
+
+  trait MorphismDynamics[
+      -H[_] <: HUB,
+      +R[_]
+  ] extends SingletonProductArgs {
+    self: Morphism[H, R] =>
+
+    final def applyProduct[T](args: H[T]): R[T] = {
+
+      self.argsApply(NamedArgs(args))
+    }
   }
 
   /**
@@ -50,7 +65,8 @@ trait HasMorphism extends Tier {
   trait Morphism[
       -H[_] <: HUB,
       +R[_]
-  ] extends NoBound.Morphic[H, R] {}
+  ] extends NoBound.Morphic[H, R]
+      with MorphismDynamics[H, R] {}
 
   /**
     * function with dependent type

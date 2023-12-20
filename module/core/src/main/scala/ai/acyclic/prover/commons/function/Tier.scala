@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.function.FnLike.Derived
+import ai.acyclic.prover.commons.util.NamedArgs
 import shapeless.{HList, SingletonProductArgs}
 
 abstract class Tier {
@@ -18,7 +19,7 @@ abstract class Tier {
         args: H
     ): R = {
 
-      self.argsGet(Args(args))
+      self.argsGet(NamedArgs(args))
     }
   }
 
@@ -31,9 +32,9 @@ abstract class Tier {
       *   always in Args form
       * @return
       */
-    protected def argsApply(args: Args[H]): R
+    protected def argsApply(args: NamedArgs[H]): R
 
-    def argsGet(args: Args[H]): R = argsApply(args)
+    def argsGet(args: NamedArgs[H]): R = argsApply(args)
   }
 
   object Function {
@@ -46,7 +47,7 @@ abstract class Tier {
   ) extends Function[H, R]
       with Derived {
 
-    final override def argsApply(args: Args[H]): R = impl.argsGet(args)
+    final override def argsApply(args: NamedArgs[H]): R = impl.argsGet(args)
   }
 
   type Fn[H <: HUB, +R] = Function[H, R]

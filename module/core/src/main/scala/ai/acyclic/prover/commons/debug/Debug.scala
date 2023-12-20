@@ -63,8 +63,10 @@ object Debug {
       blacklistedClasses: Seq[Class[_]] = Nil
   ) {
 
+    val stackInfo_raw: Array[StackTraceElement] = getBreakpointInfo()
+
     val stackInfo: Array[StackTraceElement] = {
-      val bp: Array[StackTraceElement] = getBreakpointInfo()
+      val bp: Array[StackTraceElement] = stackInfo_raw
       val filteredIndex = bp.toSeq.indexWhere(
         { element =>
           val isIncluded = !blacklistedClasses.exists { v =>

@@ -7,6 +7,10 @@ import scala.runtime.ScalaRunTime
 trait FnLike extends DefinedAtMixin with FnLike.NoCap {
   import FnLike._
 
+  {
+    toString // force lazy val
+  }
+
   override lazy val toString: String = {
     val body = this match {
       case v: Product =>

@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.util.NamedArgs
 import shapeless.SingletonProductArgs
 
 trait HasPoly extends Tier {
@@ -12,7 +13,7 @@ trait HasPoly extends Tier {
         _case: Case[Function[H, R]]
     ): R = {
 
-      self.argsApply(Args(args))(_case)
+      self.argsApply(NamedArgs(args))(_case)
     }
   }
 
@@ -63,7 +64,7 @@ trait HasPoly extends Tier {
         _case: Case[Function[I, _]]
     ): _case.type = _case
 
-    def argsApply[I <: HUB, R](v: Args[I])(
+    def argsApply[I <: HUB, R](v: NamedArgs[I])(
         implicit
         _case: Case[Function[I, R]]
     ): R = _case.argsGet(v)
