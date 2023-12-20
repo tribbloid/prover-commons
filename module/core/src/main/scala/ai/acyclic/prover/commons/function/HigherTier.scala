@@ -13,21 +13,21 @@ trait HigherTier extends HasMorphism with HasPoly {
   val lower: Tier
   type HUB = Any :: lower.HUB
 
-  implicit class FnHigherOps[H <: HUB, +R](self: Function[H, R]) {
+  implicit class FnHigherOps[I <: HUB, +R](self: Fn[I, R]) {
 
     case class curry[HH, HT <: lower.HUB](v: HH)(
         implicit
-        ev: (HH :: HT) =:= H
-    ) extends lower.DerivedFunction[HT, R](
+        ev: (HH :: HT) =:= I
+    ) extends lower.DerivedFn[HT, R](
           { args =>
-            val thisArgs = NamedArgs[H](ev(args.asHList.::(v)))
+            val thisArgs = NamedArgs[I](ev(args.asHList.::(v)))
 
             self.argsGet(thisArgs)
           }
         )(self)
 
-    case class memoize(args: NamedArgs[H])
-        extends T0.DerivedFunction[HNil, Thunk[R]](
+    case class memoize(args: NamedArgs[I])
+        extends T0.DerivedFn[HNil, Thunk[R]](
           { _ =>
             Thunk(() => self.argsGet(args))
           }
@@ -45,11 +45,11 @@ trait HigherTier extends HasMorphism with HasPoly {
     // TODO: don't know how to do it
   }
 
-  implicit class functionIsMorphism[H <: HUB, R](val derivedFrom: Function[H, R])
-      extends Morphism[Lambda[t => H], Lambda[t => R]]
+  implicit class functionIsMorphism[I <: HUB, R](val derivedFrom: Fn[I, R])
+      extends Morphism[Lambda[t => I], Lambda[t => R]]
       with Derived {
 
-    override def specific[T]: Function[H, R] = derivedFrom
+    override def specific[T]: Fn[I, R] = derivedFrom
   }
 
   implicit class morphismIsPoly[
@@ -59,14 +59,14 @@ trait HigherTier extends HasMorphism with HasPoly {
       extends Poly
       with Derived {
 
-    implicit def _onlyCase[T]: Case[Function[H[T], R[T]]] = forAll[H[T], Any] {
+    implicit def _onlyCase[T]: Case[Fn[H[T], R[T]]] = forAll[H[T], Any] {
       derivedFrom.specific[T]
     }
   }
 
-  implicit class functionIsPoly[H <: HUB, R](val derivedFrom: Function[H, R]) extends Poly with Derived {
+  implicit class functionIsPoly[I <: HUB, R](val derivedFrom: Fn[I, R]) extends Poly with Derived {
 
-    implicit def _onlyCase[T]: Case[Function[H, R]] = forAll[H, Any] {
+    implicit def _onlyCase[T]: Case[Fn[I, R]] = forAll[I, Any] {
       derivedFrom.specific[T]
     }
   }

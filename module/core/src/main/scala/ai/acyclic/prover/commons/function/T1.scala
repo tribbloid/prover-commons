@@ -6,10 +6,10 @@ object T1 extends HigherTier {
 
   override val lower: T0.type = T0
 
-  implicit class Fn1Ops[H <: HUB, R](self: Function[H, R]) {
+  implicit class Fn1Ops[I <: HUB, R](self: Fn[I, R]) {
 
     case class AndThen[R2](g: R :=> R2)
-        extends DerivedFunction[H, R2](
+        extends DerivedFn[I, R2](
           { args =>
             val r = self.argsGet(args)
             val r2 = g.apply(r)
@@ -19,7 +19,7 @@ object T1 extends HigherTier {
 
     def andThen[R2](g: R :=> R2): AndThen[R2] = AndThen(g)
 
-    def andThen2[R2](g: R => R2): AndThen[R2] = ???
+    def andThen_direct[R2](g: R => R2): AndThen[R2] = ???
   }
 
   implicit class Poly1Ops(self: Poly) {

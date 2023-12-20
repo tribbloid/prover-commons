@@ -20,13 +20,13 @@ trait HasMorphism extends Tier {
     // TODO: can this be simplified?
 
     trait Morphic[
-        -H[_ >: \/ <: /\] <: HUB,
+        -I[_ >: \/ <: /\] <: HUB,
         +R[_ >: \/ <: /\]
     ] extends PolyLike {
 
-      def specific[T >: \/ <: /\]: Function[H[T], R[T]]
+      def specific[T >: \/ <: /\]: Fn[I[T], R[T]]
 
-      final def argsApply[T >: \/ <: /\](args: NamedArgs[H[T]]): R[T] = specific[T].argsGet(args)
+      final def argsApply[T >: \/ <: /\](args: NamedArgs[I[T]]): R[T] = specific[T].argsGet(args)
     }
   }
 
@@ -36,12 +36,12 @@ trait HasMorphism extends Tier {
   }
 
   trait MorphismDynamics[
-      -H[_] <: HUB,
+      -I[_] <: HUB,
       +R[_]
   ] extends SingletonProductArgs {
-    self: Morphism[H, R] =>
+    self: Morphism[I, R] =>
 
-    final def applyProduct[T](args: H[T]): R[T] = {
+    final def applyProduct[T](args: I[T]): R[T] = {
 
       self.argsApply(NamedArgs(args))
     }
@@ -50,35 +50,35 @@ trait HasMorphism extends Tier {
   /**
     * a.k.a. parametric polymorphism, e.g. natural transformation
     *
-    * can take a type argument and generate a specific [[Function]]
+    * can take a type argument and generate a specific [[Fn]]
     *
-    * obviously, [[Function]] itself is a trivial case of morphic that always generates itself (which explained the
-    * implicit cast from it)
+    * obviously, [[Fn]] itself is a trivial case of morphic that always generates itself (which explained the implicit
+    * cast from it)
     *
     * serve as the basis of functions with dependent type
     *
-    * @tparam H
+    * @tparam I
     *   type constructor(s) of input arg(s)
     * @tparam R
     *   type constructor of output
     */
   trait Morphism[
-      -H[_] <: HUB,
+      -I[_] <: HUB,
       +R[_]
-  ] extends NoBound.Morphic[H, R]
-      with MorphismDynamics[H, R] {}
+  ] extends NoBound.Morphic[I, R]
+      with MorphismDynamics[I, R] {}
 
   /**
     * function with dependent type
     *
     * equivalent to `def(v: A): v.R` or `def[T <: A](v: T): T#R` in terms of capability
-    * @tparam H
+    * @tparam I
     *   type(s) of input arg(s)
     * @tparam R
     *   type constructor of output
     */
   trait Dependent[
-      -H <: HUB,
+      -I <: HUB,
       +R[_]
-  ] extends Morphism[Lambda[t => H], R]
+  ] extends Morphism[Lambda[t => I], R]
 }

@@ -63,13 +63,15 @@ class T1Spec extends BaseSpec {
       val chainedSelf = Fixtures._fn1.andThen(_fn1)
       assert(chainedSelf(1) == 3)
 
-      val chainedOthers = fn.andThen { v =>
+      val chainedOthers = fn.andThen[String] { v =>
+        // TODO: why [String] is need here, but not in alt?
         v.value1 + "b"
       }
 
-      val chainedOthers2 = fn.andThen2 { v =>
+      def alt = fn.andThen_direct { v =>
         v + "b"
       }
+
       assert(chainedOthers(1) == "1b")
     }
   }

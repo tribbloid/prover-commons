@@ -12,18 +12,18 @@ abstract class Tier {
 
   type HUB <: HList
 
-  trait FnDynamics[-H <: HUB, +R] extends SingletonProductArgs {
-    self: Function[H, R] =>
+  trait FnDynamics[-I <: HUB, +R] extends SingletonProductArgs {
+    self: Fn[I, R] =>
 
     final def applyProduct(
-        args: H
+        args: I
     ): R = {
 
       self.argsGet(NamedArgs(args))
     }
   }
 
-  trait Function[-H <: HUB, +R] extends FnLike with FnDynamics[H, R] {
+  trait Fn[-I <: HUB, +R] extends FnLike with FnDynamics[I, R] {
     // always has implicit conversion to a Scala function
 
     /**
@@ -32,25 +32,23 @@ abstract class Tier {
       *   always in Args form
       * @return
       */
-    protected def argsApply(args: NamedArgs[H]): R
+    protected def argsApply(args: NamedArgs[I]): R
 
-    def argsGet(args: NamedArgs[H]): R = argsApply(args)
+    def argsGet(args: NamedArgs[I]): R = argsApply(args)
   }
 
-  object Function {
+  object Fn {
     // TODO: obviously, function is a morphism
   }
 
-  abstract class DerivedFunction[H <: HUB, +R](val impl: Function[H, R])(
+  abstract class DerivedFn[I <: HUB, +R](val impl: Fn[I, R])(
       implicit
       val derivedFrom: FnLike = impl
-  ) extends Function[H, R]
+  ) extends Fn[I, R]
       with Derived {
 
-    final override def argsApply(args: NamedArgs[H]): R = impl.argsGet(args)
+    final override def argsApply(args: NamedArgs[I]): R = impl.argsGet(args)
   }
-
-  type Fn[H <: HUB, +R] = Function[H, R]
 }
 
 object Tier {}
