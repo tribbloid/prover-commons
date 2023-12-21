@@ -4,7 +4,6 @@ import ai.acyclic.prover.commons.graph.Engine
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
-
 object Hierarchy extends Visualisations {
 
   type Graph_/\[V] = Local.Semilattice.Upper[V]

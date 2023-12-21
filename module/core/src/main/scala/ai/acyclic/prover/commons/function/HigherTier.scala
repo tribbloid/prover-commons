@@ -13,7 +13,7 @@ trait HigherTier extends HasMorphism with HasPoly {
   val lower: Tier
   type HUB = Any :: lower.HUB
 
-  implicit class FnHigherOps[I <: HUB, +R](self: Fn[I, R]) {
+  implicit class FnHigherOps[I <: HUB, R](self: FnCompat[I, R]) {
 
     case class curry[HH, HT <: lower.HUB](v: HH)(
         implicit
@@ -34,7 +34,7 @@ trait HigherTier extends HasMorphism with HasPoly {
         )(self)
   }
 
-  implicit class MorphismHigherOps[H[_] <: HUB, +R[_]](self: Morphism[H, R]) {
+  implicit class MorphismHigherOps[H[_] <: HUB, R[_]](self: Morphism[H, R]) {
 
     //    case class curry[T, HH[_], HT[_] <: lower.HUB](v: HH[T])(
     //        implicit
@@ -45,11 +45,11 @@ trait HigherTier extends HasMorphism with HasPoly {
     // TODO: don't know how to do it
   }
 
-  implicit class functionIsMorphism[I <: HUB, R](val derivedFrom: Fn[I, R])
+  implicit class fnIsMorphism[I <: HUB, R](val derivedFrom: FnCompat[I, R])
       extends Morphism[Lambda[t => I], Lambda[t => R]]
       with Derived {
 
-    override def specific[T]: Fn[I, R] = derivedFrom
+    override def specific[T]: FnCompat[I, R] = derivedFrom
   }
 
   implicit class morphismIsPoly[
@@ -59,15 +59,15 @@ trait HigherTier extends HasMorphism with HasPoly {
       extends Poly
       with Derived {
 
-    implicit def _onlyCase[T]: Case[Fn[H[T], R[T]]] = forAll[H[T], Any] {
-      derivedFrom.specific[T]
+    implicit def _onlyCase[T]: Case[FnCompat[H[T], R[T]]] = {
+      derivedFrom.specific[T].enable[BeACase]
     }
   }
 
-  implicit class functionIsPoly[I <: HUB, R](val derivedFrom: Fn[I, R]) extends Poly with Derived {
+  implicit class functionIsPoly[I <: HUB, R](val derivedFrom: FnCompat[I, R]) extends Poly with Derived {
 
-    implicit def _onlyCase[T]: Case[Fn[I, R]] = forAll[I, Any] {
-      derivedFrom.specific[T]
+    implicit def _onlyCase[T]: Case[FnCompat[I, R]] = {
+      derivedFrom.specific[T].enable[BeACase]
     }
   }
 }

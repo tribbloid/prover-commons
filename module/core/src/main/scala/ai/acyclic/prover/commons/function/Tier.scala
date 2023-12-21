@@ -13,7 +13,7 @@ abstract class Tier {
   type HUB <: HList
 
   trait FnDynamics[-I <: HUB, +R] extends SingletonProductArgs {
-    self: Fn[I, R] =>
+    self: FnCompat[I, R] =>
 
     final def applyProduct(
         args: I
@@ -23,8 +23,11 @@ abstract class Tier {
     }
   }
 
-  trait Fn[-I <: HUB, +R] extends FnLike with FnDynamics[I, R] {
+  trait FnCompat[-I <: HUB, +R] extends FnLike with FnDynamics[I, R] {
     // always has implicit conversion to a Scala function
+
+    type I_/\ >: I
+    type R_\/ <: R
 
     /**
       * the only Single Abstract Method interface
@@ -37,14 +40,16 @@ abstract class Tier {
     def argsGet(args: NamedArgs[I]): R = argsApply(args)
   }
 
-  object Fn {
-    // TODO: obviously, function is a morphism
+  trait Fn[I <: HUB, R] extends FnCompat[I, R] {
+
+    type I_/\ = I
+    type R_\/ = R
   }
 
-  abstract class DerivedFn[I <: HUB, +R](val impl: Fn[I, R])(
+  abstract class DerivedFn[I <: HUB, R](val impl: Fn[I, R])(
       implicit
       val derivedFrom: FnLike = impl
-  ) extends Fn[I, R]
+  ) extends FnCompat[I, R]
       with Derived {
 
     final override def argsApply(args: NamedArgs[I]): R = impl.argsGet(args)

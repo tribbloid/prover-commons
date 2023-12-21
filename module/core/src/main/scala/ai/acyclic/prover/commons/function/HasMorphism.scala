@@ -24,7 +24,7 @@ trait HasMorphism extends Tier {
         +R[_ >: \/ <: /\]
     ] extends PolyLike {
 
-      def specific[T >: \/ <: /\]: Fn[I[T], R[T]]
+      def specific[T >: \/ <: /\]: FnCompat[I[T], R[T]]
 
       final def argsApply[T >: \/ <: /\](args: NamedArgs[I[T]]): R[T] = specific[T].argsGet(args)
     }
@@ -50,9 +50,9 @@ trait HasMorphism extends Tier {
   /**
     * a.k.a. parametric polymorphism, e.g. natural transformation
     *
-    * can take a type argument and generate a specific [[Fn]]
+    * can take a type argument and generate a specific [[FnCompat]]
     *
-    * obviously, [[Fn]] itself is a trivial case of morphic that always generates itself (which explained the implicit
+    * obviously, [[FnCompat]] itself is a trivial case of morphic that always generates itself (which explained the implicit
     * cast from it)
     *
     * serve as the basis of functions with dependent type

@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.function.ArgsLike
 import shapeless.ops.hlist.Tupler
 import shapeless.ops.record.Selector
 import shapeless.tag.@@
@@ -36,14 +35,14 @@ object NamedArgs {
 
     def selectDynamic[HH >: H <: HList](key: String)(
         implicit
-        selector: Selector[HH, Symbol @@ key.type]
-    ): selector.Out = selector(asHList)
+        ev: Selector[HH, Symbol @@ key.type]
+    ): ev.Out = ev(asHList)
   }
 
   implicit def unbox1Directly[T](v: NamedArgs[T :: HNil]): T = v.value1
 
   implicit def asTuple[H <: HList, TT](v: NamedArgs[H])(
       implicit
-      tupler: Tupler.Aux[H, TT]
+      ev: Tupler.Aux[H, TT]
   ): TT = v.asTuple
 }

@@ -4,11 +4,11 @@ import shapeless.{::, HNil}
 
 trait Symbolic {
 
-  type :=[+R] = T0.Fn[HNil, R]
-  type Fn0[+R] = :=[R]
+  type :=[R] = T0.Fn[HNil, R]
+  type Fn0[R] = :=[R]
 
-  type :=>[-I, +R] = T1.Fn[I :: HNil, R]
-  type Fn1[-I, +R] = :=>[I, R]
+  type :=>[I, R] = T1.Fn[I :: HNil, R]
+  type Fn1[I, R] = :=>[I, R]
 
   type :|=>[-I, +R[_]] = T1.Dependent[I :: HNil, R]
 
