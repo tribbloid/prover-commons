@@ -5,13 +5,15 @@ import shapeless.SingletonProductArgs
 
 trait HasMorphism extends Tier {
 
-  // section dedicated to polymorphic functions
-  // obviously, T0 doesn't have it
+  // dedicated to polymorphic functions
+  // Morphism takes type argument, Poly takes an implicit type class
   // relying heavily on kind-projector plugin: https://github.com/typelevel/kind-projector
   // please refrain from using shortened syntax as it is very different from that of Scala3
   // TODO: Unfortunately, from this point, shapeless Poly & DepFn are almost useless
-  //  just like Scala2 Function is useless
-  //  Poly is unbounded, and DepFn is not really a function with dependent type
+  //  just like Scala2 Function is almost useless
+  //  DepFn is not really a function with dependent type
+  //  Poly is unbounded, doesn't have impl for Morphism, has poor compatibility with Scala3,
+  //  also, each case doesn't have an output dependent type (like DepFn)
 
   trait Bound {
 
@@ -52,8 +54,8 @@ trait HasMorphism extends Tier {
     *
     * can take a type argument and generate a specific [[FnCompat]]
     *
-    * obviously, [[FnCompat]] itself is a trivial case of morphic that always generates itself (which explained the implicit
-    * cast from it)
+    * obviously, [[FnCompat]] itself is a trivial case of morphic that always generates itself (which explained the
+    * implicit cast from it)
     *
     * serve as the basis of functions with dependent type
     *
