@@ -1,6 +1,6 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.named
 
-import ai.acyclic.prover.commons.function.Symbolic.{:=>, :|~>}
+import ai.acyclic.prover.commons.function.PreDef.Named.{:=>, :|~>}
 
 trait MorphismFixture {
 

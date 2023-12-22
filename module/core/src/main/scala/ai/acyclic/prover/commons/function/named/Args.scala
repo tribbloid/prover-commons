@@ -1,5 +1,6 @@
-package ai.acyclic.prover.commons.util
+package ai.acyclic.prover.commons.function.named
 
+import ai.acyclic.prover.commons.util.ArgsLike
 import shapeless.ops.hlist.Tupler
 import shapeless.ops.record.Selector
 import shapeless.tag.@@
@@ -14,24 +15,26 @@ import scala.language.{dynamics, implicitConversions}
   * @tparam H
   *   ... and compile-time
   */
-case class NamedArgs[+H <: HList](asHList: H) extends ArgsLike with NamedArgs.Dynamics[H] {
+case class Args[+H <: HList](asHList: H) extends ArgsLike with Args.Dynamics[H] {
 
   final def asTuple[HH >: H <: HList, TT](
       implicit
       tupler: Tupler.Aux[HH, TT]
   ): TT = tupler(asHList)
 
-  final def value1[T](
+  final def unbox[T](
       implicit
       is: H <:< (T :: HNil)
   ): T = asHList.head
 }
 
-object NamedArgs {
+object Args {
+
+  type NoArg = Args[HNil] // phantom type, do not instantiate it
 
   // dynamic API, safety delegated to macro
   sealed trait Dynamics[+H <: HList] extends Dynamic {
-    self: NamedArgs[H] =>
+    self: Args[H] =>
 
     def selectDynamic[HH >: H <: HList](key: String)(
         implicit
@@ -39,9 +42,9 @@ object NamedArgs {
     ): ev.Out = ev(asHList)
   }
 
-  implicit def unbox1Directly[T](v: NamedArgs[T :: HNil]): T = v.value1
+  implicit def unbox1Directly[T](v: Args[T :: HNil]): T = v.unbox
 
-  implicit def asTuple[H <: HList, TT](v: NamedArgs[H])(
+  implicit def asTuple[H <: HList, TT](v: Args[H])(
       implicit
       ev: Tupler.Aux[H, TT]
   ): TT = v.asTuple

@@ -1,23 +1,8 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.util.NamedArgs
-import shapeless.SingletonProductArgs
+import ai.acyclic.prover.commons.function.FnLike.Transparent1
 
-import scala.language.implicitConversions
-
-trait HasPoly extends Tier {
-
-  trait PolyDynamics extends SingletonProductArgs {
-    self: Poly =>
-
-    final def applyProduct[I <: HUB, R](args: I)(
-        implicit
-        _case: Case[FnCompat[I, R]]
-    ): R = {
-
-      self.argsApply(NamedArgs(args))(_case)
-    }
-  }
+trait HasPoly extends HasFn {
 
   /**
     * Ad-hoc polymorphic function, the most flexible polymorphism
@@ -30,46 +15,49 @@ trait HasPoly extends Tier {
     *
     * obviously, both [[HasMorphism.Morphism]] and [[FnCompat]] are its trivial examples that only has 1 case
     */
-  trait Poly extends PolyLike with PolyDynamics {
+  trait Poly extends PolyLike {
+    // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
 
-    trait BeACase extends FnLike.Cap
+    trait BeCase extends FnLike.Cap
 
-    type Case[+FF <: FnCompat[_, _]] = FF with FnLike.Can[BeACase]
+    type Case[+FF <: FnCompat[_, _]] = FF with FnLike.Can[BeCase]
+    type =>>[I <: IUB, O] = Case[Fn[I, O]]
 
-    def at[FF <: FnCompat[_, _]] = new At[FF]() // same as `at` in Poly1?
-    class At[+FF <: FnCompat[_, _]] {}
+    class CaseBuilder[F <: FnCompat[_, _]] {
 
-    implicit def _matchAt[
-        I <: HUB,
-        R
-    ](
-        at: At[FnCompat[I, R]]
-    ): ForIO[I, R] = new ForIO[I, R]()
+      def =>>[FF <: F](fn: FF): Case[FF] = fn.enable[BeCase]
 
-    def forIO[I <: HUB, R] = new ForIO[I, R]
-    def forI[I <: HUB] = new ForIO[I, Any]
+      def apply[FF <: F](fn: FF): Case[FF] = =>>(fn)
 
-    class ForIO[I <: HUB, R] {
-
-      def =>>[RR <: R](fn: Fn[I, RR]): Case[Fn[I, RR]] = fn.enable[BeACase]
-
-      def apply[RR <: R](fn: Fn[I, RR]): Case[Fn[I, RR]] = =>>(fn)
+      def summon(
+          implicit
+          _case: Case[F]
+      ): _case.type = _case
     }
 
-    def summon[I <: HUB](
+    def forCase[F <: FnCompat[_, _]] = new CaseBuilder[F]()
+
+    // similar to `at` in shapeless Poly1
+    def at[I <: IUB]: CaseBuilder[Fn[I, _]] = forCase[Fn[I, _]]
+
+    def under[I <: IUB]: CaseBuilder[FnCompat[I, _]] = forCase[FnCompat[I, _]]
+
+    def summonFor[I <: IUB](v: I)(
         implicit
         _case: Case[FnCompat[I, _]]
     ): _case.type = _case
 
-    def summonFor[I <: HUB](v: I)(
-        implicit
-        _case: Case[FnCompat[I, _]]
-    ): _case.type = _case
-
-    def argsApply[I <: HUB, R](v: NamedArgs[I])(
+    def argApply[I <: IUB, R](v: I)(
         implicit
         _case: Case[FnCompat[I, R]]
-    ): R = _case.argsGet(v)
+    ): R = _case.argApply(v)
+  }
+
+  implicit class functionIsPoly[I <: IUB, R](val reference: FnCompat[I, R]) extends Poly with Transparent1 {
+
+    implicit def _onlyCase[T]: Case[FnCompat[I, R]] = {
+      reference.enable[BeCase]
+    }
   }
 
 }

@@ -1,9 +1,8 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.util.NamedArgs
-import shapeless.SingletonProductArgs
+import ai.acyclic.prover.commons.function.FnLike.Transparent1
 
-trait HasMorphism extends Tier {
+trait HasMorphism extends HasFn {
 
   // dedicated to polymorphic functions
   // Morphism takes type argument, Poly takes an implicit type class
@@ -22,13 +21,13 @@ trait HasMorphism extends Tier {
     // TODO: can this be simplified?
 
     trait Morphic[
-        -I[_ >: \/ <: /\] <: HUB,
+        -I[_ >: \/ <: /\] <: IUB,
         +R[_ >: \/ <: /\]
     ] extends PolyLike {
 
       def specific[T >: \/ <: /\]: FnCompat[I[T], R[T]]
 
-      final def argsApply[T >: \/ <: /\](args: NamedArgs[I[T]]): R[T] = specific[T].argsGet(args)
+      final def argApply[T >: \/ <: /\](arg: I[T]): R[T] = specific[T].argApply(arg)
     }
   }
 
@@ -37,24 +36,12 @@ trait HasMorphism extends Tier {
     type \/ = Nothing
   }
 
-  trait MorphismDynamics[
-      -I[_] <: HUB,
-      +R[_]
-  ] extends SingletonProductArgs {
-    self: Morphism[I, R] =>
-
-    final def applyProduct[T](args: I[T]): R[T] = {
-
-      self.argsApply(NamedArgs(args))
-    }
-  }
-
   /**
     * a.k.a. parametric polymorphism, e.g. natural transformation
     *
-    * can take a type argument and generate a specific [[FnCompat]]
+    * can take a type argument and generate a specific [[FnNamed]]
     *
-    * obviously, [[FnCompat]] itself is a trivial case of morphic that always generates itself (which explained the
+    * obviously, [[FnNamed]] itself is a trivial case of morphic that always generates itself (which explained the
     * implicit cast from it)
     *
     * serve as the basis of functions with dependent type
@@ -65,10 +52,9 @@ trait HasMorphism extends Tier {
     *   type constructor of output
     */
   trait Morphism[
-      -I[_] <: HUB,
+      -I[_] <: IUB,
       +R[_]
-  ] extends NoBound.Morphic[I, R]
-      with MorphismDynamics[I, R] {}
+  ] extends NoBound.Morphic[I, R] {}
 
   /**
     * function with dependent type
@@ -79,8 +65,15 @@ trait HasMorphism extends Tier {
     * @tparam R
     *   type constructor of output
     */
-  trait Dependent[
-      -I <: HUB,
+  type Dependent[
+      -I <: IUB,
       +R[_]
-  ] extends Morphism[Lambda[t => I], R]
+  ] = Morphism[Lambda[t => I], R]
+
+  implicit class fnIsMorphism[I <: IUB, R](val reference: FnCompat[I, R])
+      extends Morphism[Lambda[t => I], Lambda[t => R]]
+      with Transparent1 {
+
+    override def specific[T]: FnCompat[I, R] = reference
+  }
 }

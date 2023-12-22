@@ -1,19 +1,18 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.Symbolic.{:=>, Poly1}
+import ai.acyclic.prover.commons.function.PreDef.{:=>, Poly}
 
 trait PolyFixture {
 
-  object _poly extends Poly1 {
+  object _poly extends Poly {
 
-    implicit def int: Case[Int :=> Int] = {
+    implicit lazy val int: Case[Int :=> Int] = {
 
-      val at1 = at[Int :=> Int]
-      at1.=>>[Int](v => v.value1 + 1)
+      at[Int](v => v + 1)
     }
 
-    implicit def str: Case[String :=> String] = {
-      at[String :=> _](v => v.value1 + "1")
+    implicit lazy val str: Case[String :=> String] = {
+      forCase[String :=> String](v => v + "1")
     }
   }
 }

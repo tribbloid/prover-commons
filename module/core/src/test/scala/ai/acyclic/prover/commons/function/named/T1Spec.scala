@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.named
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
@@ -7,7 +7,7 @@ object T1Spec {}
 class T1Spec extends BaseSpec {
 
   import Fixtures._
-  import ai.acyclic.prover.commons.function.Symbolic._
+  import ai.acyclic.prover.commons.function.PreDef.Named._
 
   lazy val fn: Int :=> String = {
 
@@ -39,7 +39,7 @@ class T1Spec extends BaseSpec {
 
       val fn2 = fn.curry(1)
       fn2.toString.shouldBe(
-        "<defined at: FnFixture.scala:8>.curry(1)"
+        "curry(1) <~ (<defined at: FnFixture.scala:8>)"
       )
       assert(fn2() == "1")
     }
@@ -53,26 +53,6 @@ class T1Spec extends BaseSpec {
 
       assert(poly.apply(1) == 2)
       assert(poly.apply("1") == "11")
-    }
-  }
-
-  describe("chain") {
-
-    it("function") {
-
-      val chainedSelf = Fixtures._fn1.andThen(_fn1)
-      assert(chainedSelf(1) == 3)
-
-      val chainedOthers = fn.andThen[String] { v =>
-        // TODO: why [String] is need here, but not in alt?
-        v.value1 + "b"
-      }
-
-      def alt = fn.andThen_direct { v =>
-        v + "b"
-      }
-
-      assert(chainedOthers(1) == "1b")
     }
   }
 

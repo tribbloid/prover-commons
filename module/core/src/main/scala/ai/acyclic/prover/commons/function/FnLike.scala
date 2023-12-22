@@ -19,12 +19,12 @@ trait FnLike extends DefinedAtMixin with FnLike.NoCap {
         s"<defined at: $definedAt>"
     }
 
-    val prefix = this match {
+    val suffix = this match {
 
-      case v: Derived => v.derivedFrom.toString + "."
-      case _          => ""
+      case v: Transparent => s" <~ (${v.references.mkString(" , ")})"
+      case _              => ""
     }
-    prefix + body
+    body + suffix
   }
 }
 
@@ -33,8 +33,15 @@ trait FnLike extends DefinedAtMixin with FnLike.NoCap {
   */
 object FnLike extends Capabilities {
 
-  trait Derived extends FnLike {
+  trait Transparent extends FnLike {
 
-    def derivedFrom: FnLike
+    def references: Seq[FnLike]
+  }
+
+  trait Transparent1 extends Transparent {
+
+    def reference: FnLike
+
+    final lazy val references = Seq(reference)
   }
 }
