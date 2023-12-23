@@ -27,20 +27,23 @@ trait HasFn {
     def apply(arg: I): Out = _argApplySAM(arg)
   }
 
+  object FnBase {
+
+    implicit def vanillaToFn[I <: IUB, R](
+        fn: I => R
+    ): Fn[I, R] = {
+      new Fn[I, R] {
+        override protected def _argApplySAM(arg: I): R = fn(arg)
+      }
+    }
+  }
+
   type FnCompat[-I <: IUB, +R] = FnBase[I] { type Out <: R }
 
   trait Fn[I <: IUB, R] extends FnBase[I] { // most specific
 
     final type In = I
     final type Out = R
-  }
-
-  implicit def vanillaToFn[I <: IUB, R](
-      fn: I => R
-  ): Fn[I, R] = {
-    new Fn[I, R] {
-      override protected def _argApplySAM(arg: I): R = fn(arg)
-    }
   }
 
   abstract class DerivedFn[I <: IUB, R](val impl: Fn[I, R])(

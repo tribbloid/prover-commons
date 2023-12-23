@@ -20,12 +20,12 @@ trait HasPoly extends HasFn {
 
     trait BeCase extends FnLike.Cap
 
-    type Case[+FF <: FnCompat[_, _]] = FF with FnLike.Can[BeCase]
+    type Case[+FF <: FnBase[_]] = FF with FnLike.Can[BeCase]
 
     type =>>[I <: IUB, O] = Case[Fn[I, O]]
-    type CaseFrom[I <: IUB] = Case[Fn[I, _]]
+    type CaseFrom[I <: IUB] = Case[FnBase[I]]
 
-    class CaseBuilder[F <: FnCompat[_, _]] {
+    class CaseBuilder[F <: FnBase[_]] {
 
       def apply[FF <: F](fn: FF): Case[FF] = fn.enable[BeCase]
 
@@ -37,16 +37,28 @@ trait HasPoly extends HasFn {
       ): _case.type = _case
     }
 
-    def forCase[F <: FnCompat[_, _]] = new CaseBuilder[F]()
+    def forCase[F <: FnBase[_]] = new CaseBuilder[F]()
 
     // similar to `at` in shapeless Poly1
-    def at[I <: IUB]: CaseBuilder[FnCompat[I, Any]] = forCase[FnCompat[I, Any]]
+    def at[I <: IUB]: CaseBuilder[FnBase[I]] = forCase[FnBase[I]]
 
-    def under[I <: IUB]: CaseBuilder[FnCompat[I, _]] = forCase[FnCompat[I, _]]
+    class BackupCaseBuilder[I <: IUB, F <: FnBase[I]] {
+
+      def =>>[R](fn: I => R)(
+          implicit
+          ev: Fn[I, R] <:< F
+      ): Case[Fn[I, R]] = FnBase.vanillaToFn(fn).enable[BeCase]
+
+    }
+
+    // TODO: this is only for backward compatibility, remove it
+    def forAll[I <: IUB] = new BackupCaseBuilder[I, FnBase[I]]
+
+    def under[I <: IUB]: CaseBuilder[FnBase[I]] = forCase[FnBase[I]]
 
     def summonFor[I <: IUB](v: I)(
         implicit
-        _case: Case[FnCompat[I, _]]
+        _case: Case[FnBase[I]]
     ): _case.type = _case
 
     def apply[I <: IUB, R](v: I)(

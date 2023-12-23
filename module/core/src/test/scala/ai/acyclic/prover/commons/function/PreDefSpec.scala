@@ -21,12 +21,12 @@ class PreDefSpec extends BaseSpec {
 
     it("function") {
 
-      val chainedSelf = fn.andThen(fn)
+      val chainedSelf: AndThen[Int, Int, Int] = fn.andThen(fn)
       val r1 = chainedSelf(1)
 
       assert(r1 == 3)
 
-      val chainedOthers = fn.andThen { v: Int =>
+      val chainedOthers: AndThen[Int, Int, String] = fn.andThen { v: Int =>
         v + "b"
       }
       val r2 = chainedOthers.apply(1)
