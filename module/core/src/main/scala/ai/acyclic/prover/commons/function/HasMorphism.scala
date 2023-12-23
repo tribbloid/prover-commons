@@ -27,7 +27,7 @@ trait HasMorphism extends HasFn {
 
       def specific[T >: \/ <: /\]: FnCompat[I[T], R[T]]
 
-      final def argApply[T >: \/ <: /\](arg: I[T]): R[T] = specific[T].argApply(arg)
+      final def apply[T >: \/ <: /\](arg: I[T]): R[T] = specific[T].apply(arg)
     }
   }
 

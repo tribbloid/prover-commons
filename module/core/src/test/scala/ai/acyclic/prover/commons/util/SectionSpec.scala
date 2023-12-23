@@ -21,6 +21,8 @@ object SectionSpec {
 
     case class Fn[R]()
 
-    val _: Fn[Int] = ??? : For[T]#Fn[Int] // works because of the implicit conversion
+    locally {
+      val _: Fn[Int] = ??? : For[T]#Fn[Int] // works because of the implicit conversion
+    }
   }
 }

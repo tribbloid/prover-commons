@@ -21,13 +21,15 @@ trait HasPoly extends HasFn {
     trait BeCase extends FnLike.Cap
 
     type Case[+FF <: FnCompat[_, _]] = FF with FnLike.Can[BeCase]
+
     type =>>[I <: IUB, O] = Case[Fn[I, O]]
+    type CaseFrom[I <: IUB] = Case[Fn[I, _]]
 
     class CaseBuilder[F <: FnCompat[_, _]] {
 
-      def =>>[FF <: F](fn: FF): Case[FF] = fn.enable[BeCase]
+      def apply[FF <: F](fn: FF): Case[FF] = fn.enable[BeCase]
 
-      def apply[FF <: F](fn: FF): Case[FF] = =>>(fn)
+      def =>>[FF <: F](fn: FF): Case[FF] = fn.enable[BeCase]
 
       def summon(
           implicit
@@ -38,7 +40,7 @@ trait HasPoly extends HasFn {
     def forCase[F <: FnCompat[_, _]] = new CaseBuilder[F]()
 
     // similar to `at` in shapeless Poly1
-    def at[I <: IUB]: CaseBuilder[Fn[I, _]] = forCase[Fn[I, _]]
+    def at[I <: IUB]: CaseBuilder[FnCompat[I, Any]] = forCase[FnCompat[I, Any]]
 
     def under[I <: IUB]: CaseBuilder[FnCompat[I, _]] = forCase[FnCompat[I, _]]
 
@@ -47,10 +49,10 @@ trait HasPoly extends HasFn {
         _case: Case[FnCompat[I, _]]
     ): _case.type = _case
 
-    def argApply[I <: IUB, R](v: I)(
+    def apply[I <: IUB, R](v: I)(
         implicit
         _case: Case[FnCompat[I, R]]
-    ): R = _case.argApply(v)
+    ): R = _case.apply(v)
   }
 
   implicit class functionIsPoly[I <: IUB, R](val reference: FnCompat[I, R]) extends Poly with Transparent1 {

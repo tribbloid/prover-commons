@@ -22,16 +22,16 @@ class PreDefSpec extends BaseSpec {
     it("function") {
 
       val chainedSelf = fn.andThen(fn)
-      assert(chainedSelf(1) == 3)
+      val r1 = chainedSelf(1)
 
-      val chainedOthers = {
+      assert(r1 == 3)
 
-        fn.andThen[String] { v =>
-          v + "b"
-        }
+      val chainedOthers = fn.andThen { v: Int =>
+        v + "b"
       }
+      val r2 = chainedOthers.apply(1)
 
-      assert(chainedOthers(1) == "2b")
+      assert(r2 == "2b")
     }
   }
 
@@ -40,7 +40,7 @@ class PreDefSpec extends BaseSpec {
     it("with input & output types") {
 
       val v = _poly.forCase[Int :=> Int].summon
-      val v2 = _poly.forCase[PreDef.Adjoint.FnCompat[String, String]].summon
+      val v2 = _poly.forCase[PreDef.FnCompat[String, String]].summon
     }
 
     it("with input type only") {

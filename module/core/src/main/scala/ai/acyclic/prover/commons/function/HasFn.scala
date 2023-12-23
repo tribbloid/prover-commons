@@ -2,6 +2,8 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.function.FnLike.Transparent1
 
+import scala.language.implicitConversions
+
 trait HasFn {
 
   /**
@@ -9,26 +11,36 @@ trait HasFn {
     */
   type IUB
 
-  trait FnCompat[-I <: IUB, +R] extends FnLike {
+  trait FnBase[-I <: IUB] extends FnLike {
 
-    type I_/\ >: I
-    type O_\/ <: R
+    type In >: I <: IUB
+    type Out
 
     /**
       * the only Single Abstract Method interface
-      * @param args
+      * @param arg
       *   always in Args form
       * @return
       */
-    protected def doArgApply(args: I): R
+    protected def _argApplySAM(arg: I): Out
 
-    def argApply(args: I): R = doArgApply(args)
+    def apply(arg: I): Out = _argApplySAM(arg)
   }
 
-  trait Fn[I <: IUB, R] extends FnCompat[I, R] { // most specific
+  type FnCompat[-I <: IUB, +R] = FnBase[I] { type Out <: R }
 
-    type I_/\ = I
-    type O_\/ = R
+  trait Fn[I <: IUB, R] extends FnBase[I] { // most specific
+
+    final type In = I
+    final type Out = R
+  }
+
+  implicit def vanillaToFn[I <: IUB, R](
+      fn: I => R
+  ): Fn[I, R] = {
+    new Fn[I, R] {
+      override protected def _argApplySAM(arg: I): R = fn(arg)
+    }
   }
 
   abstract class DerivedFn[I <: IUB, R](val impl: Fn[I, R])(
@@ -37,7 +49,7 @@ trait HasFn {
   ) extends Fn[I, R]
       with Transparent1 {
 
-    final override def doArgApply(args: I): R = impl.argApply(args)
+    final override def _argApplySAM(arg: I): R = impl.apply(arg)
   }
 
 //  type Fn[I <: IUB, R] <: FnBase[I, R]

@@ -13,25 +13,38 @@ trait HigherTier extends NamedTier {
 
   implicit class FnHigherOps[I <: HUB, R](self: Fn[I, R]) {
 
-    case class curry[HH, HT <: lower.HUB](v: HH)(
+    def curry[HH, HT <: lower.HUB](v: HH)(
         implicit
         ev: (HH :: HT) =:= I
-    ) extends lower.Adjoint.DerivedFn[Args[HT], R](
-          { args =>
-            val thisArgs = Args[I](ev(args.asHList.::(v)))
+    ) = lower.Fn {
 
-            self.argApply(thisArgs)
-          }
-        )(self)
-        with lower.Fn[HT, R]
+      val src = self.self
+      case object curry
+          extends lower.Adjoint.DerivedFn[Args[HT], R](
+            { args =>
+              val thisArgs = Args[I](ev(args.asHList.::(v)))
 
-    case class memoize(args: Args[I])
-        extends T0.Adjoint.DerivedFn[Args[HNil], Thunk[R]](
-          { _ =>
-            Thunk(() => self.argApply(args))
-          }
-        )(self)
-        with T0.Fn[HNil, Thunk[R]]
+              src(thisArgs)
+            }
+          )(src)
+
+      curry
+    }
+
+    def memoize(args: Args[I]) = T0.Fn {
+
+      val src = self.self
+
+      case object memoize
+          extends T0.Adjoint.DerivedFn[Args[HNil], Thunk[R]](
+            { _ =>
+              Thunk(() => src.apply(args))
+            }
+          )(src)
+
+      memoize
+    }
+
   }
 
   implicit class MorphismHigherOps[H[_] <: HUB, R[_]](self: Morphism[H, R]) {

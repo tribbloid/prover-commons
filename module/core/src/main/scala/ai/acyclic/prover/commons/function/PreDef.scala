@@ -3,46 +3,47 @@ package ai.acyclic.prover.commons.function
 import ai.acyclic.prover.commons.function.named.{T0, T1}
 import shapeless.{::, HNil}
 
-object PreDef {
+object PreDef extends FnSystem {
 
-  object Adjoint extends FnSystem {
-    type IUB = Any
-  }
+  type IUB = Any
 
-  trait Fn[I, R] extends Adjoint.Fn[I, R] {
-
-    def apply(args: I): R = argApply(args)
-  }
   type :=>[I, R] = Fn[I, R]
 
-  implicit class _AndThenOps[I, R](self: Adjoint.FnCompat[I, R]) {
+  implicit class FnOps[I, R](val self: FnCompat[I, R]) {
 
-    case class andThen[R2](g: Adjoint.FnCompat[R, R2])
-        extends Adjoint.DerivedFn[I, R2](
-          { ii =>
-            val r = self.argApply(ii)
-            val r2 = g.argApply(r)
-            r2
-          }
-        )(self)
-        with Fn[I, R2]
+    def apply(args: I): R = self.apply(args)
+
+    def andThen[R2](g: FnCompat[R, R2]): AndThen[I, R, R2] = {
+      AndThen(self, g)
+    }
   }
 
-  trait Morphism[-I[_], +R[_]] extends Adjoint.Morphism[I, R] {
+  case class AndThen[I, R, R2](
+      f: FnCompat[I, R],
+      g: FnCompat[R, R2]
+  ) extends DerivedFn[I, R2](
+        { ii =>
+          val r: R = f.apply(ii)
+          val r2: R2 = g.apply(r.asInstanceOf[R with IUB])
+          r2: R2
+        }
+      )(f)
+      with Fn[I, R2]
 
-    def apply[T](args: I[T]): R[T] = argApply(args)
-  }
-  type :|~>[-I[_], +R[_]] = Morphism[I, R]
-
-  type Dependent[-I, +R[_]] = Morphism[Lambda[t => I], R]
+  type :|~>[-I[_] <: IUB, +R[_]] = Morphism[I, R]
   type :|=>[-I, +R[_]] = Dependent[I, R]
 
-  trait Poly extends Adjoint.Poly {
+  implicit class MorphismOps[-I[_] <: IUB, +R[_]](self: Morphism[I, R]) {
+
+    def apply[T](args: I[T]): R[T] = self.apply(args)
+  }
+
+  implicit class PolyOps(self: Poly) {
 
     def apply[I, R](arg: I)(
         implicit
-        _case: Case[Adjoint.FnCompat[I, R]]
-    ): R = argApply(arg)(_case)
+        _case: self.Case[FnCompat[I, R]]
+    ): R = self.apply(arg)(_case)
   }
 
   trait Named {
