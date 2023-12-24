@@ -17,20 +17,20 @@ object Axiom {
 
   trait Impl[+A <: Arrow] extends Axiom { type _Arrow <: A }
 
-  trait Match[X <: Axiom] extends Lawful { type _Arrow <: Arrow }
+  trait ImplUnpack[X <: Axiom] extends Lawful { type _Arrow <: Arrow }
 
-  object Match {
+  object ImplUnpack {
 
-    implicit def onlyCase[A <: Arrow]: Match[Impl[A]] { type _Arrow = A } =
-      new Match[Impl[A]] {
+    type Gt[L <: Axiom] = ImplUnpack[_ >: L]
+
+    implicit def onlyCase[A <: Arrow]: ImplUnpack[Impl[A]] { type _Arrow = A } =
+      new ImplUnpack[Impl[A]] {
         override type _Arrow = A
       }
   }
 
-  type MatchSub[L <: Axiom] = Match[_ >: L]
-
   { // sanity
-    val bounds = Summoner.summon[MatchSub[Impl[Arrow.`~>`.^]]]
+    val bounds = Summoner.summon[ImplUnpack.Gt[Impl[Arrow.`~>`.^]]]
 
     implicitly[bounds._Arrow =:= Arrow.`~>`.^]
   }

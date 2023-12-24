@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.function
 
-import shapeless.{::, HNil}
 
 object PreDef extends FnSystem {
 
