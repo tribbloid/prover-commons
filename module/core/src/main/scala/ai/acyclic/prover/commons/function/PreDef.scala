@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.function
 
-
 object PreDef extends FnSystem {
 
   type IUB = Any

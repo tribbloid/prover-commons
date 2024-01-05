@@ -25,11 +25,22 @@ trait HasPoly extends HasFn {
     type =>>[I <: IUB, O] = Case[Fn[I, O]]
     type CaseFrom[I <: IUB] = Case[FnBase[I]]
 
-    class CaseBuilder[F <: FnBase[_]] {
+    class CaseBuilder[I <: IUB, F <: FnBase[I]] {
 
-      def apply[FF <: F](fn: FF): Case[FF] = fn.enable[BeCase]
+      def to[O]: CaseBuilder[I, FnCompat[I, O]] = new CaseBuilder[I, FnCompat[I, O]]
+      def =>>[O]: CaseBuilder[I, FnCompat[I, O]] = to[O]
 
-      def =>>[FF <: F](fn: FF): Case[FF] = fn.enable[BeCase]
+      def defining[FF <: F](fn: FF): Case[FF] = fn.enable[BeCase]
+      def apply[FF <: F](fn: FF): Case[FF] = defining(fn)
+
+      def defining[R](fn: I => R)(
+          implicit
+          ev: Fn[I, R] <:< F
+      ): Case[Fn[I, R]] = FnBase.vanillaToFn(fn).enable[BeCase]
+      def apply[R](fn: I => R)(
+          implicit
+          ev: Fn[I, R] <:< F
+      ): Case[Fn[I, R]] = defining(fn)
 
       def summon(
           implicit
@@ -37,26 +48,13 @@ trait HasPoly extends HasFn {
       ): _case.type = _case
     }
 
-    def forCase[F <: FnBase[_]] = new CaseBuilder[F]()
-
     // similar to `at` in shapeless Poly1
-    def at[I <: IUB]: CaseBuilder[FnBase[I]] = forCase[FnBase[I]]
-
-    class BackupCaseBuilder[I <: IUB, F <: FnBase[I]] {
-
-      def =>>[R](fn: I => R)(
-          implicit
-          ev: Fn[I, R] <:< F
-      ): Case[Fn[I, R]] = FnBase.vanillaToFn(fn).enable[BeCase]
-
-    }
+    def at[I <: IUB] = new CaseBuilder[I, FnBase[I]]
 
     // TODO: this is only for backward compatibility, remove it
-    def forAll[I <: IUB] = new BackupCaseBuilder[I, FnBase[I]]
+    def forAll[I <: IUB] = new CaseBuilder[I, FnBase[I]]
 
-    def under[I <: IUB]: CaseBuilder[FnBase[I]] = forCase[FnBase[I]]
-
-    def summonFor[I <: IUB](v: I)(
+    def getCaseFor[I <: IUB](v: I)(
         implicit
         _case: Case[FnBase[I]]
     ): _case.type = _case

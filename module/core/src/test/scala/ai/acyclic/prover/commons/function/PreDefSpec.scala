@@ -39,13 +39,12 @@ class PreDefSpec extends BaseSpec {
 
     it("with input & output types") {
 
-      val v = _poly.forCase[Int :=> Int].summon
-      val v2 = _poly.forCase[PreDef.FnCompat[String, String]].summon
+      val v = _poly.at[Int].to[Int].summon
     }
 
     it("with input type only") {
       val v = _poly.at[Int].summon
-      val v2 = _poly.under[Int].summon
+      val v2 = _poly.at[Int].summon
 
       implicitly[v.type <:< _poly.Case[Int :=> Int]]
       assert(v == v2)
