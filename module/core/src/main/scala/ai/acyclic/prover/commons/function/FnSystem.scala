@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.function.FnLike.Transparent1
 
-abstract class FnSystem extends HasMorphism with HasPoly {
+abstract class FnSystem extends HasMorphism with HasPoly with Serializable {
 
   implicit class morphismIsPoly[
       I[_] <: IUB,

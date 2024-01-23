@@ -131,7 +131,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
       val nodeID2Wrapper = sameness
-        .Memoize { v =>
+        .CachedFn { v =>
           NodeWrapper(v)
         }
 

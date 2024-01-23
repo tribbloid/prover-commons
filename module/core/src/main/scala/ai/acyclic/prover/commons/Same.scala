@@ -1,8 +1,9 @@
 package ai.acyclic.prover.commons
 
-import ai.acyclic.prover.commons.util.ConstructionID
+import ai.acyclic.prover.commons.function.PreDef.FnCompat
+import ai.acyclic.prover.commons.function.{PreDef, Thunk}
+import ai.acyclic.prover.commons.util.{Caching, ConstructionID}
 
-import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
@@ -113,8 +114,11 @@ object Same {
 
     case class Correspondence[K, V]() {
 
-      val lookup: TrieMap[Wrapper[K], Thunk[V]] = TrieMap.empty
-      val collection: mutable.Buffer[Thunk[V]] = mutable.Buffer.empty
+      lazy val lookup: Caching.Weak.ConcurrentCache[Wrapper[K], Thunk[V]] =
+        Caching.Weak.ConcurrentCache[Wrapper[K], Thunk[V]]()
+
+      // TODO: how to remove it? it is slow
+      lazy val collection: mutable.Buffer[Thunk[V]] = mutable.Buffer.empty
 
       def values: Seq[V] = collection.map(_.value).toSeq
 
@@ -125,7 +129,7 @@ object Same {
           this.synchronized {
             lookup.getOrElseUpdate(
               inMemoryId, {
-                val created = Thunk(() => getValue)
+                val created = Thunk(_ => getValue)
                 collection += created
                 created
               }
@@ -146,11 +150,32 @@ object Same {
       }
     }
 
-    case class Memoize[K, V](fn: K => V) extends (K => V) with HasOuter {
+    case class CachedFn[K, V](fn: FnCompat[K, V]) extends PreDef.Fn[K, V] with HasOuter {
 
-      override lazy val outer = Correspondence[K, V]()
+      override lazy val outer: Correspondence[K, V] = Correspondence[K, V]()
 
-      final def apply(key: K): V = outer.getOrElseUpdate(key, fn(key))
+      final def apply(key: K): V = {
+        outer.getOrElseUpdate(key, fn(key))
+      }
+    }
+
+    case class CachedMorphism[
+        -I[_],
+        +R[_]
+    ](
+        raw: PreDef.Morphism[I, R]
+    ) extends PreDef.Morphism[I, R] {
+
+      private lazy val cache = Caching.Weak.ConcurrentCache[Any, Any]()
+
+      override def specific[T >: Nothing <: Any]: PreDef.FnCompat[I[T], R[T]] = {
+        raw.specific[T]
+      }
+
+      override def apply[T >: Nothing <: Any](arg: I[T]): R[T] = {
+
+        cache.getOrElseUpdate(arg, raw.apply(arg)).asInstanceOf[R[T]]
+      }
     }
 
     case class Of[T: ClassTag](fn: T => Option[Any]) extends By {

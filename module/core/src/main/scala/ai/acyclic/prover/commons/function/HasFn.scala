@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.FnLike.Transparent1
+import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 
 import scala.language.implicitConversions
 
@@ -22,18 +22,21 @@ trait HasFn {
       *   always in Args form
       * @return
       */
-    protected def _argApplySAM(arg: I): Out
-
-    def apply(arg: I): Out = _argApplySAM(arg)
+    def apply(arg: I): Out
   }
 
   object FnBase {
 
     implicit def vanillaToFn[I <: IUB, R](
         fn: I => R
+    )(
+        implicit
+        _definedAt: CallStackRef = CallStackRef.below()
     ): Fn[I, R] = {
       new Fn[I, R] {
-        override protected def _argApplySAM(arg: I): R = fn(arg)
+        override lazy val definedAt: CallStackRef = _definedAt
+
+        override def apply(arg: I): R = fn(arg)
       }
     }
   }
@@ -46,15 +49,27 @@ trait HasFn {
     final type Out = R
   }
 
-  abstract class DerivedFn[I <: IUB, R](val impl: Fn[I, R])(
-      implicit
-      val reference: FnLike = impl
-  ) extends Fn[I, R]
-      with Transparent1 {
+  object Fn {
 
-    final override def _argApplySAM(arg: I): R = impl.apply(arg)
+    def apply[I <: IUB, R](
+        fn: I => R
+    )(
+        implicit
+        _definedAt: CallStackRef = CallStackRef.below()
+    ): Fn[I, R] = {
+      FnBase.vanillaToFn(fn)
+    }
+
+    case class MadeFrom[I <: IUB, R](raw: FnCompat[I, R])(
+        override val references: Seq[FnLike],
+        override val name: String
+    ) extends Fn[I, R]
+        with FnLike.Transparent
+        with FnLike.Named {
+
+      def apply(arg: I): R = raw.apply(arg)
+    }
+
+    def identity[I <: IUB]: Fn[I, I] = apply(v => v)
   }
-
-//  type Fn[I <: IUB, R] <: FnBase[I, R]
-
 }

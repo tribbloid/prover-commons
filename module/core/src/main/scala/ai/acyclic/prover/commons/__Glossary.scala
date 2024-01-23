@@ -58,6 +58,10 @@ object __Glossary {
     *     different priorities, see [[__ImplicitSearchOrder]] for the exact rule of implicit priority
     *   - `_/\` for type upper bound
     *   - `_\/` for type lower bound
+    *   - `Magnet` for types armed with native implicit conversions that automatically coerce other types into it when
+    *     necessary
+    *
+    * types of function arguments that can be implicitly converted from other types
     *
     * type or class name prefixes:
     *
@@ -74,5 +78,9 @@ object __Glossary {
     *
     *   - `C` for computational effect, should only be called once and cached for the lifespan of the embedded object,
     *     definition should be `protected`
+    *
+    * comments:
+    *   - `TODO` for future work
+    *   - `FIXME` for part that may have room for further optimisations
     */
 }

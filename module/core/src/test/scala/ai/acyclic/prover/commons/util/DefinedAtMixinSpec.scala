@@ -25,14 +25,22 @@ object DefinedAtMixinSpec {
 class DefinedAtMixinSpec extends BaseSpec {
 
   import DefinedAtMixinSpec._
-  describe("defPosition of instances") {
+  describe("of instances") {
 
-    t1.definedAt.shouldBe("DefinedAtMixinSpec.scala:8")
+    it("ad-hoc class") {
+      t1.definedAt.atLine.shouldBe("DefinedAtMixinSpec.scala:8")
+    }
 
-    t2.definedAt.shouldBe("DefinedAtMixinSpec.scala:12")
+    it("class") {
+      t2.definedAt.atLine.shouldBe("DefinedAtMixinSpec.scala:12")
+    }
 
-    T3.definedAt.shouldBe("DefinedAtMixinSpec.scala:15")
+    it("object") {
+      T3.definedAt.atLine.shouldBe("DefinedAtMixinSpec.scala:14")
+    }
 
-    sam1.definedAt.shouldBe("DefinedAtMixinSpec.scala:22")
+    it("single-abstract method") {
+      sam1.definedAt.atLine.shouldBe("DefinedAtMixinSpec.scala:22")
+    }
   }
 }

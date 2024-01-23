@@ -104,10 +104,14 @@ trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
       }
     }
 
-    override lazy val toString: String = semilattice.maxNodeOpt
-      .map { nn =>
-        SubViz(nn).treeString
-      }
-      .mkString("\n")
+    lazy val treeText: String = {
+      semilattice.maxNodeOpt
+        .map { nn =>
+          SubViz(nn).treeString
+        }
+        .mkString("\n")
+    }
+
+    override def toString: String = treeText
   }
 }

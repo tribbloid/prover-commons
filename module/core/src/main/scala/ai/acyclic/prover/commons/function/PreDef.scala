@@ -1,30 +1,44 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.Same
+import ai.acyclic.prover.commons.debug.Debug.CallStackRef
+
 object PreDef extends FnSystem {
 
   type IUB = Any
 
   type :=>[I, R] = Fn[I, R]
 
-  implicit class FnOps[I, R](val self: FnCompat[I, R]) {
+  implicit class FnOps[I, R](val self: FnCompat[I, R]) extends Serializable {
 
-    def apply(args: I): R = self.apply(args)
+    // TODO: enable for all FnLike
+    def madeFrom(_name: String)(
+        refs: FnLike*
+    ): Fn.MadeFrom[I, R] = {
 
-    def andThen[R2](g: FnCompat[R, R2]): AndThen[I, R, R2] = {
-      AndThen(self, g)
+      val result = Fn.MadeFrom[I, R](self)(refs, _name)
+      result
     }
-  }
 
-  case class AndThen[I, R, R2](
-      f: FnCompat[I, R],
-      g: FnCompat[R, R2]
-  ) extends DerivedFn[I, R2](
-        { ii =>
-          val r: R = f.apply(ii)
-          val r2: R2 = g.apply(r.asInstanceOf[R with IUB])
-          r2: R2
-        }
-      )(f)
+    def andThen[R2](g: FnCompat[R, R2])(
+        implicit
+        _definedAt: CallStackRef = CallStackRef.below(),
+        ev: R <:< (R with IUB)
+    ): PreDef.Fn[I, R2] = {
+
+      val base: Fn[I, R2] = { ii =>
+        val r: R = self.apply(ii)
+        val r2: R2 = g.apply(r)
+        r2: R2
+      }
+
+      base.madeFrom("andThen")(self, g)
+    }
+
+    type Cached = Same.ByEquality.CachedFn[I, R]
+
+    def cached: Cached = Same.ByEquality.CachedFn(self)
+  }
 
   type :|~>[-I[_] <: IUB, +R[_]] = Morphism[I, R]
   type :|=>[-I, +R[_]] = Dependent[I, R]

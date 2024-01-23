@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.viz.Hierarchy
 import ai.acyclic.prover.commons.util.{Capabilities, DefinedAtMixin}
 
 import scala.runtime.ScalaRunTime
@@ -7,25 +9,20 @@ import scala.runtime.ScalaRunTime
 trait FnLike extends DefinedAtMixin with FnLike.NoCap {
   import FnLike._
 
-  {
-    toString // force lazy val
+  private lazy val node = TreeNode(this)
+
+  lazy val nodeText: String = {
+
+    node.nodeText
   }
 
-  override lazy val toString: String = {
-    val body = this match {
-      case v: Product =>
-        ScalaRunTime._toString(v) // TODO: use tree string
-      case _ =>
-        s"<defined at: $definedAt>"
-    }
+  lazy val treeText: String = {
 
-    val suffix = this match {
-
-      case v: Transparent => s" <~ (${v.references.mkString(" , ")})"
-      case _              => ""
-    }
-    body + suffix
+    val viz = Hierarchy.default.apply(node.mkTree)
+    viz.treeText
   }
+
+  override def toString: String = nodeText
 }
 
 /**
@@ -42,6 +39,40 @@ object FnLike extends Capabilities {
 
     def reference: FnLike
 
-    final lazy val references = Seq(reference)
+    @transient final lazy val references = Seq(reference)
+  }
+
+  trait Named extends FnLike {
+
+    def name: String
+  }
+
+  case class TreeNode(value: FnLike) extends Local.Tree.NodeImpl[FnLike] {
+
+    override def nodeTextC: String = {
+
+      val body = value match {
+
+        case v: Named =>
+          v.name
+        case v: Product =>
+          ScalaRunTime._toString(v)
+        case _ =>
+          s"${value.definedAt.toString}"
+
+      }
+
+      body
+    }
+
+    override protected def inductionC: Seq[(_Arrow, TreeNode)] = {
+
+      val children = value match {
+        case v: Transparent => v.references
+        case _              => Nil
+      }
+
+      children.map(v => TreeNode(v))
+    }
   }
 }

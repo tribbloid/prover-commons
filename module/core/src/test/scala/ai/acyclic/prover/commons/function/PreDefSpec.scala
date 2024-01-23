@@ -11,8 +11,8 @@ class PreDefSpec extends BaseSpec {
 
   lazy val fn: Int :=> Int = {
 
-    Fixtures._fn0.toString.shouldBe(
-      "<defined at: FnFixture.scala:8>"
+    Fixtures._fn0.treeText.shouldBe(
+      "- _fn0 <at FnFixture.scala:8>"
     )
     _fn0
   }
@@ -21,15 +21,30 @@ class PreDefSpec extends BaseSpec {
 
     it("function") {
 
-      val chainedSelf: AndThen[Int, Int, Int] = fn.andThen(fn)
+      val chainedSelf: PreDef.Fn[Int, Int] = fn.andThen(fn)
       val r1 = chainedSelf(1)
+
+      chainedSelf.treeText.shouldBe(
+        """
+          |+ andThen
+          |!-- _fn0 <at FnFixture.scala:8>
+          |""".stripMargin
+      )
 
       assert(r1 == 3)
 
-      val chainedOthers: AndThen[Int, Int, String] = fn.andThen { v: Int =>
+      val chainedOthers: PreDef.Fn[Int, String] = fn.andThen { v: Int =>
         v + "b"
       }
       val r2 = chainedOthers.apply(1)
+
+      chainedOthers.treeText.shouldBe(
+        """
+          |+ andThen
+          |!-- _fn0 <at FnFixture.scala:8>
+          |!--  <at PreDefSpec.scala:36>
+          |""".stripMargin
+      )
 
       assert(r2 == "2b")
     }

@@ -1,22 +1,8 @@
 package ai.acyclic.prover.commons.debug
 
-object Debug {
+import scala.language.implicitConversions
 
-  //  def cartesianProductSet[T](xss: Seq[Set[T]]): Set[List[T]] = xss match {
-  //    case Nil => Set(Nil)
-  //    case h :: t =>
-  //      for (xh <- h;
-  //           xt <- cartesianProductSet(t))
-  //        yield xh :: xt
-  //  }
-  //
-  //  def cartesianProductList[T](xss: Seq[Seq[T]]): Seq[List[T]] = xss match {
-  //    case Nil => List(Nil)
-  //    case h :: t =>
-  //      for (xh <- h;
-  //           xt <- cartesianProductList(t))
-  //        yield xh :: xt
-  //  }
+object Debug {
 
   private lazy val LZYCOMPUTE = "$lzycompute"
   private lazy val INIT = "<init>"
@@ -59,51 +45,117 @@ object Debug {
   }
 
   case class CallStackRef(
-      startingFromDepth: Int = 0,
-      blacklistedClasses: Seq[Class[_]] = Nil
+      stack: Vector[StackTraceElement],
+      below: Int = 0
   ) {
 
-    val stackInfo_raw: Array[StackTraceElement] = getBreakpointInfo()
+    import CallStackRef._
 
-    val stackInfo: Array[StackTraceElement] = {
-      val bp: Array[StackTraceElement] = stackInfo_raw
-      val filteredIndex = bp.toSeq.indexWhere(
-        { element =>
-          val isIncluded = !blacklistedClasses.exists { v =>
-            try {
-              val atStack = Class.forName(element.getClassName)
-              atStack.isAssignableFrom(v)
-            } catch {
-              case _: Exception =>
-                false
-            }
-
-          }
-
-          isIncluded
-        },
-        startingFromDepth
-      )
-      bp.slice(filteredIndex, Int.MaxValue)
-    }
+    lazy val effectiveStack: Vector[StackTraceElement] = stack.drop(below)
 
     def showStr: String = {
-      stackTracesShowStr(stackInfo)
+      stackTracesShowStr(effectiveStack.toArray)
     }
 
-    lazy val head: StackTraceElement = stackInfo.head
+    lazy val head: StackTraceElement = effectiveStack.head
 
-    def fnName: String = {
-      assert(!head.isNativeMethod, "can only get fnName in def & lazy val blocks")
-      head.getMethodName
+    def pop(depth: Int): CallStackRef = this.copy(below = below + depth)
+
+    def pop(
+        condition: ConditionMagnet
+    ): CallStackRef = {
+
+      val filteredIndex = effectiveStack.lastIndexWhere(
+        condition
+      )
+
+      this.copy(below = below + filteredIndex + 1)
     }
 
     def className: String = {
       head.getClassName
     }
+
+    lazy val fnName: String = {
+      if (head.isNativeMethod) {
+        className
+      } else {
+        val name = head.getMethodName
+
+        if (name.startsWith("<")) {
+          s"$className.$name"
+        } else if (name.startsWith("$")) {
+          ""
+        } else {
+          name
+        }
+      }
+    }
+
+    lazy val atLine: String = {
+      s"${head.getFileName}:${head.getLineNumber}"
+    }
+
+    override lazy val toString: String = {
+      s"${fnName} <at $atLine>"
+    }
+  }
+
+  object CallStackRef {
+
+    def here: CallStackRef = {
+
+      val stackInfo_raw: Array[StackTraceElement] = getBreakpointInfo()
+      CallStackRef(stackInfo_raw.toVector)
+    }
+
+    def below(
+        depth: Int = 1,
+        condition: ConditionMagnet = ConditionMagnet.OfPaths(Nil)
+    ): CallStackRef = {
+
+      here.pop(depth).pop(condition)
+    }
+
+    trait ConditionMagnet extends (StackTraceElement => Boolean) {}
+
+    object ConditionMagnet {
+
+      def nameIsUnderPath(name: String, path: String): Boolean = {
+
+        (name.startsWith(path)) && {
+
+          val nextOpt = name.stripPrefix(path).headOption
+
+          nextOpt match {
+            case None    => true
+            case Some(v) => v == '.' || v == '$'
+          }
+        }
+      }
+
+      implicit class OfPaths(
+          paths: Seq[String]
+      ) extends ConditionMagnet {
+
+        override def apply(v: StackTraceElement): Boolean = {
+          paths.exists { path =>
+            // TODO: doesn't work in case class name is a substring
+            val matchClass = Option(v.getClassName).exists(v => nameIsUnderPath(v, path))
+            val matchModule = Option(v.getModuleName).exists(v => nameIsUnderPath(v, path))
+            matchClass || matchModule
+          }
+        }
+      }
+
+      implicit def ofClass(
+          classes: Seq[Class[_]]
+      ): ConditionMagnet = {
+        OfPaths(classes.map(_.getName))
+      }
+    }
   }
 
   def liftCamelCase(str: String): String = str.head.toUpper.toString + str.substring(1)
   def toCamelCase(str: String): String = str.head.toLower.toString + str.substring(1)
-
 }

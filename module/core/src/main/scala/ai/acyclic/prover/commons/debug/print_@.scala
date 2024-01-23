@@ -3,14 +3,14 @@ package ai.acyclic.prover.commons.debug
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 
 case class print_@(
-    blacklistedClasses: Seq[Class[_]]
+    belowClasses: Seq[Class[_]]
 ) {
 
   def wrapInfo[T](
       v: T
   ): String = {
 
-    val ref: CallStackRef = CallStackRef(blacklistedClasses = Seq(this.getClass) ++ blacklistedClasses)
+    val ref: CallStackRef = CallStackRef.below(condition = Seq(this.getClass) ++ belowClasses)
 
     val result: String =
       s"""

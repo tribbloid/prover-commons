@@ -36,7 +36,7 @@ trait HasPoly extends HasFn {
       def defining[R](fn: I => R)(
           implicit
           ev: Fn[I, R] <:< F
-      ): Case[Fn[I, R]] = FnBase.vanillaToFn(fn).enable[BeCase]
+      ): Case[Fn[I, R]] = Fn(fn).enable[BeCase]
       def apply[R](fn: I => R)(
           implicit
           ev: Fn[I, R] <:< F

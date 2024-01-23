@@ -41,9 +41,9 @@ object Lawful {
   }
 
   { // sanity
-    trait Dummy extends Axiom.Impl[Arrow.`~>`.^] {}
+    trait _Dummy extends Axiom.Impl[Arrow.`~>`.^] {}
 
-    val bounds = Summoner.summon[Bound[_ >: Dummy]]
+    val bounds = Summoner.summon[Bound[_ >: _Dummy]]
 
     implicitly[bounds._Arrow =:= Arrow.`~>`.^]
   }
