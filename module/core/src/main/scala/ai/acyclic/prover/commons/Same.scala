@@ -164,8 +164,6 @@ object Same {
         }
       }
 
-
-
       final def isEmpty: Boolean = lookup.isEmpty
 
       final def get(key: K): Option[V] = {
