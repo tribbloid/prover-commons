@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.Same
+import ai.acyclic.prover.commons.function.PreDef
 import ai.acyclic.prover.commons.graph.{Arrow, Engine}
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
@@ -130,10 +131,11 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeID2Wrapper = sameness
-        .CachedFn { v =>
+      val nodeID2Wrapper = PreDef
+        .Fn { v =>
           NodeWrapper(v)
         }
+        .cached()
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
@@ -165,7 +167,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
       buildBuffers.resolve
 
-      val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.outer.values
+      val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.correspondence.values
         .map { nodeWrapper =>
           nodeWrapper.bindInboundArrows()
           nodeWrapper

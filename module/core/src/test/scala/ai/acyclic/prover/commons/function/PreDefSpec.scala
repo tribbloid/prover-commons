@@ -17,18 +17,18 @@ class PreDefSpec extends BaseSpec {
     _fn0
   }
 
-  describe("chaining") {
+  describe("Fn") {
 
-    it("function") {
+    it("chaining") {
 
       val chainedSelf: PreDef.Fn[Int, Int] = fn.andThen(fn)
       val r1 = chainedSelf(1)
 
       chainedSelf.treeText.shouldBe(
         """
-          |+ andThen
-          |!-- _fn0 <at FnFixture.scala:8>
-          |""".stripMargin
+            |+ andThen
+            |!-- _fn0 <at FnFixture.scala:8>
+            |""".stripMargin
       )
 
       assert(r1 == 3)
@@ -40,34 +40,41 @@ class PreDefSpec extends BaseSpec {
 
       chainedOthers.treeText.shouldBe(
         """
-          |+ andThen
-          |!-- _fn0 <at FnFixture.scala:8>
-          |!--  <at PreDefSpec.scala:36>
-          |""".stripMargin
+            |+ andThen
+            |!-- _fn0 <at FnFixture.scala:8>
+            |!--  <at PreDefSpec.scala:36>
+            |""".stripMargin
       )
 
       assert(r2 == "2b")
+
     }
   }
 
-  describe("summoning Poly cases") {
+  describe("Morphism") {}
 
-    it("with input & output types") {
+  describe("Poly") {
 
-      val v = _poly.at[Int].to[Int].summon
-    }
+    describe("summoning cases") {
 
-    it("with input type only") {
-      val v = _poly.at[Int].summon
-      val v2 = _poly.at[Int].summon
+      it("with input & output types") {
 
-      implicitly[v.type <:< _poly.Case[Int :=> Int]]
-      assert(v == v2)
+        val v = _poly.at[Int].to[Int].summon
+      }
 
-      val r = v(1)
-      val t: Int = r
+      it("with input type only") {
+        val v = _poly.at[Int].summon
+        val v2 = _poly.at[Int].summon
+
+        implicitly[v.type <:< _poly.Case[Int :=> Int]]
+        assert(v == v2)
+
+        val r = v(1)
+        val t: Int = r
+      }
     }
   }
+
 //  describe("Single Abstract Method definition for") {
 //
 //    it("function") {

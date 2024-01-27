@@ -1,8 +1,12 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.function.FnLike.Transparent1
 
-trait HasMorphism extends HasFn {
+
+object HasMorphism {}
+
+trait HasMorphism extends HasPolyLike {
 
   // dedicated to polymorphic functions
   // Morphism takes type argument, Poly takes an implicit type class
@@ -14,47 +18,61 @@ trait HasMorphism extends HasFn {
   //  Poly is unbounded, doesn't have impl for Morphism, has poor compatibility with Scala3,
   //  also, each case doesn't have an output dependent type (like DepFn)
 
-  trait Bound {
-
-    type /\
-    type \/ <: /\
-    // TODO: can this be simplified?
-
-    trait Morphic[
-        -I[_ >: \/ <: /\] <: IUB,
-        +R[_ >: \/ <: /\]
-    ] extends PolyLike {
-
-      def specific[T >: \/ <: /\]: FnCompat[I[T], R[T]]
-
-      def apply[T >: \/ <: /\](arg: I[T]): R[T] = specific[T].apply(arg)
-    }
-  }
-
-  object NoBound extends Bound {
-    type /\ = Any
-    type \/ = Nothing
-  }
-
   /**
     * a.k.a. parametric polymorphism, e.g. natural transformation
     *
-    * can take a type argument and generate a specific [[FnNamed]]
-    *
-    * obviously, [[FnNamed]] itself is a trivial case of morphic that always generates itself (which explained the
-    * implicit cast from it)
-    *
     * serve as the basis of functions with dependent type
     *
+    * @tparam T_/\
+    *   parameter's upper bound
     * @tparam I
     *   type constructor(s) of input arg(s)
-    * @tparam R
-    *   type constructor of output
     */
   trait Morphism[
-      -I[_] <: IUB,
-      +R[_]
-  ] extends NoBound.Morphic[I, R] {}
+      -T_/\
+  ] extends FnLike {
+
+    type In[_ <: T_/\] <: IUB
+    type Out[T <: T_/\]
+
+    def apply[T <: T_/\](arg: In[T]): Out[T]
+  }
+
+  object Morphism {
+
+    trait Cached[T_/\, SS <: Morphism[T_/\]] extends Morphism[T_/\] with FnLike.Transparent1 {
+
+      val reference: SS
+
+      override type In[T <: T_/\] = reference.In[T]
+      override type Out[T <: T_/\] = reference.Out[T]
+
+      lazy val sameness: Same.By = Same.ByEquality
+      lazy val correspondence = sameness.Correspondence[Any, Any]()
+
+      override def apply[T <: T_/\](arg: In[T]): Out[T] = {
+
+        correspondence
+          .getOrElseUpdate(
+            arg,
+            reference.apply(arg)
+          )
+          .asInstanceOf[Out[T]]
+      }
+    }
+  }
+
+  type MorphismCompat[T_/\, -I[_ <: T_/\] <: IUB, +O[_ <: T_/\]] = Morphism[T_/\] {
+    type In[T <: T_/\] >: I[T]
+    type Out[T <: T_/\] <: O[T]
+  }
+
+  trait Dependent[
+      T_/\ <: IUB
+  ] extends Morphism[T_/\] {
+
+    type In[+T <: T_/\] = T
+  }
 
   /**
     * function with dependent type
@@ -65,18 +83,15 @@ trait HasMorphism extends HasFn {
     * @tparam R
     *   type constructor of output
     */
-  type Dependent[
-      -I <: IUB,
-      +R[_]
-  ] = Morphism[Lambda[t => I], R]
-
-  implicit class fnIsMorphism[I <: IUB, R](val reference: FnCompat[I, R])
-      extends Morphism[Lambda[t => I], Lambda[t => R]]
-      with Transparent1 {
-
-    override def specific[T]: FnCompat[I, R] = reference
+  type DependentCompat[T_/\ <: IUB, +O[_ <: T_/\]] = Dependent[T_/\] {
+    type Out[T <: T_/\] <: O[T]
   }
 
-  object Morphism {}
+  implicit class fnIsMorphism[I <: IUB, O](val reference: FnCompat[I, O]) extends Morphism[Any] with Transparent1 {
 
+    override type In[+_] = I
+    override type Out[+_] = O
+
+    override def apply[_](arg: I): O = reference.apply(arg)
+  }
 }

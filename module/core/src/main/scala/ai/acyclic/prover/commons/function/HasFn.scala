@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 
 import scala.language.implicitConversions
@@ -11,6 +12,7 @@ trait HasFn {
     */
   type IUB
 
+  // TODO: should be protected
   trait FnBase[-I <: IUB] extends FnLike {
 
     type In >: I <: IUB
@@ -71,5 +73,18 @@ trait HasFn {
     }
 
     def identity[I <: IUB]: Fn[I, I] = apply(v => v)
+
+    trait Cached[I <: IUB, R] extends Fn[I, R] with FnLike.Transparent1 {
+
+      lazy val sameness: Same.By = Same.ByEquality
+
+      val reference: FnCompat[I, R]
+
+      lazy val correspondence = sameness.Correspondence[I, R]()
+
+      final def apply(key: I): R = {
+        correspondence.getOrElseUpdate(key, reference(key))
+      }
+    }
   }
 }

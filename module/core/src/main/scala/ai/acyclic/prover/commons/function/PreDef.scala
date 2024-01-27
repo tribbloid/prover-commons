@@ -35,25 +35,55 @@ object PreDef extends FnSystem {
       base.madeFrom("andThen")(self, g)
     }
 
-    type Cached = Same.ByEquality.CachedFn[I, R]
+    def cached(_sameness: Same.By = Same.ByEquality): Fn.Cached[I, R] = {
 
-    def cached: Cached = Same.ByEquality.CachedFn(self)
+      this match {
+        case c: Fn.Cached[_, _] =>
+          c.asInstanceOf[Fn.Cached[I, R]]
+        case _ =>
+          new Fn.Cached[I, R] {
+            override val reference = self
+            override lazy val sameness: Same.By = _sameness
+          }
+      }
+    }
   }
 
-  type :|~>[-I[_] <: IUB, +R[_]] = Morphism[I, R]
-  type :|=>[-I, +R[_]] = Dependent[I, R]
+  type :|~>[-I[_] <: IUB, +R[_]] = MorphismCompat[Any, I, R]
+  type :|=>[-I, +R[_]] = DependentCompat[Any, R]
 
-  implicit class MorphismOps[-I[_] <: IUB, +R[_]](self: Morphism[I, R]) {
+  implicit class MorphismOps[
+      T_/\,
+      SS <: Morphism[T_/\]
+  ](val self: SS) {
 
-    def apply[T](args: I[T]): R[T] = self.apply(args)
+    def cached(
+        _sameness: Same.By = Same.ByEquality
+    ): Morphism.Cached[T_/\, SS] = {
+
+      type Result = Morphism.Cached[T_/\, SS]
+
+      this match {
+        case c: Morphism.Cached[_, _] =>
+          c.asInstanceOf[Result]
+        case _ =>
+          val result: Result =
+            new Morphism.Cached[T_/\, SS] {
+              final override val reference = self
+              override lazy val sameness = _sameness
+            }
+          result
+      }
+    }
   }
 
-  implicit class PolyOps(self: Poly) {
+  implicit class PolyOps[P <: Poly](self: P) {
 
     def apply[I, R](arg: I)(
         implicit
         _case: self.Case[FnCompat[I, R]]
     ): R = self.apply(arg)(_case)
-  }
 
+//    def cached: Same.ByEquality.CachedPoly[P] = Same.ByEquality.CachedPoly(self)
+  }
 }

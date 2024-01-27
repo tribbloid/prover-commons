@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons
 
-import ai.acyclic.prover.commons.function.PreDef.FnCompat
-import ai.acyclic.prover.commons.function.{PreDef, Thunk}
+import ai.acyclic.prover.commons.function.Thunk
 import ai.acyclic.prover.commons.util.{Caching, ConstructionID}
 
 import scala.collection.mutable
@@ -114,24 +113,24 @@ object Same {
 
     case class Correspondence[K, V]() {
 
-      lazy val lookup: Caching.Weak.ConcurrentCache[Wrapper[K], Thunk[V]] =
-        Caching.Weak.ConcurrentCache[Wrapper[K], Thunk[V]]()
+      lazy val lookup: Caching.Soft.ConcurrentCache[Wrapper[K], Thunk[V]] =
+        Caching.Soft.ConcurrentCache[Wrapper[K], Thunk[V]]()
 
       // TODO: how to remove it? it is slow
-      lazy val collection: mutable.Buffer[Thunk[V]] = mutable.Buffer.empty
+      lazy val collection: mutable.Buffer[Wrapper[K]] = mutable.Buffer.empty
 
-      def values: Seq[V] = collection.map(_.value).toSeq
+      def values: Seq[V] = collection.map(k => lookup(k).value).toSeq
 
       final def getOrElseUpdate(key: K, getValue: => V): V = {
 
-        val inMemoryId = Wrapper(key)
+        val id = Wrapper(key)
         val w =
           this.synchronized {
             lookup.getOrElseUpdate(
-              inMemoryId, {
-                val created = Thunk(_ => getValue)
-                collection += created
-                created
+              id, {
+                val t = Thunk(_ => getValue)
+                collection += id
+                t
               }
             ) // should be fast
           }
@@ -141,40 +140,40 @@ object Same {
         //  may need a trampoline to avoid it, maybe switch to cats
       }
 
+      final def updateOverride(key: K, getValue: => V): Unit = {
+
+        val id = Wrapper(key)
+        this.synchronized {
+          lookup.update(
+            id, {
+              val t = Thunk(_ => getValue)
+              collection += id
+              t
+            }
+          )
+        }
+      }
+
+      final def remove(key: K): Unit = {
+        val id = Wrapper(key)
+        this.synchronized {
+          lookup.remove(id)
+          collection.remove(
+            collection.indexOf(id)
+          )
+        }
+      }
+
+
+
+      final def isEmpty: Boolean = lookup.isEmpty
+
       final def get(key: K): Option[V] = {
         val inMemoryId = Wrapper(key)
 
         lookup
           .get(inMemoryId)
           .map(_.value)
-      }
-    }
-
-    case class CachedFn[K, V](fn: FnCompat[K, V]) extends PreDef.Fn[K, V] with HasOuter {
-
-      override lazy val outer: Correspondence[K, V] = Correspondence[K, V]()
-
-      final def apply(key: K): V = {
-        outer.getOrElseUpdate(key, fn(key))
-      }
-    }
-
-    case class CachedMorphism[
-        -I[_],
-        +R[_]
-    ](
-        raw: PreDef.Morphism[I, R]
-    ) extends PreDef.Morphism[I, R] {
-
-      private lazy val cache = Caching.Weak.ConcurrentCache[Any, Any]()
-
-      override def specific[T >: Nothing <: Any]: PreDef.FnCompat[I[T], R[T]] = {
-        raw.specific[T]
-      }
-
-      override def apply[T >: Nothing <: Any](arg: I[T]): R[T] = {
-
-        cache.getOrElseUpdate(arg, raw.apply(arg)).asInstanceOf[R[T]]
       }
     }
 
