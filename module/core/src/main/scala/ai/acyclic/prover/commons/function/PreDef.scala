@@ -41,8 +41,7 @@ object PreDef extends FnSystem {
         case c: Fn.Cached[_, _] =>
           c.asInstanceOf[Fn.Cached[I, R]]
         case _ =>
-          new Fn.Cached[I, R] {
-            override val reference = self
+          new Fn.Cached[I, R](self) {
             override lazy val sameness: Same.By = _sameness
           }
       }
@@ -68,8 +67,7 @@ object PreDef extends FnSystem {
           c.asInstanceOf[Result]
         case _ =>
           val result: Result =
-            new Morphism.Cached[T_/\, SS] {
-              final override val reference = self
+            new Morphism.Cached[T_/\, SS](self) {
               override lazy val sameness = _sameness
             }
           result

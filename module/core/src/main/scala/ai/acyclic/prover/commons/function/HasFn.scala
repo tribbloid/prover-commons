@@ -74,11 +74,9 @@ trait HasFn {
 
     def identity[I <: IUB]: Fn[I, I] = apply(v => v)
 
-    trait Cached[I <: IUB, R] extends Fn[I, R] with FnLike.Transparent1 {
+    class Cached[I <: IUB, R](val reference: FnCompat[I, R]) extends Fn[I, R] with FnLike.Transparent1 {
 
       lazy val sameness: Same.By = Same.ByEquality
-
-      val reference: FnCompat[I, R]
 
       lazy val correspondence = sameness.Correspondence[I, R]()
 

@@ -3,7 +3,6 @@ package ai.acyclic.prover.commons.function
 import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.function.FnLike.Transparent1
 
-
 object HasMorphism {}
 
 trait HasMorphism extends HasPolyLike {
@@ -40,9 +39,7 @@ trait HasMorphism extends HasPolyLike {
 
   object Morphism {
 
-    trait Cached[T_/\, SS <: Morphism[T_/\]] extends Morphism[T_/\] with FnLike.Transparent1 {
-
-      val reference: SS
+    class Cached[T_/\, SS <: Morphism[T_/\]](val reference: SS) extends Morphism[T_/\] with FnLike.Transparent1 {
 
       override type In[T <: T_/\] = reference.In[T]
       override type Out[T <: T_/\] = reference.Out[T]
