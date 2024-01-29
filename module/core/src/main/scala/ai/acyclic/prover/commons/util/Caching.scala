@@ -4,7 +4,6 @@ import ai.acyclic.prover.commons.util.CacheView.{MapRepr, SetRepr}
 import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.language.implicitConversions
 
 trait Caching extends Serializable {
 

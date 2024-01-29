@@ -122,7 +122,7 @@ object Same {
         require(
           !locked, {
             locked
-            "cannot write, Correspondence is locked"
+            "cannot write, lookup is locked"
           }
         )
         serialID.getAndIncrement()

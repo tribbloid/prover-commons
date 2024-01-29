@@ -23,6 +23,17 @@ trait CacheView[K, V] {
       implicit
       ev: Default[V]
   ): SetRepr[K] = asSet(ev.default)
+
+  def getOrElseUpdateSynchronously(key: K)(value: => V): V = {
+
+    asMap.getOrElse(
+      key, {
+        this.synchronized {
+          asMap.getOrElseUpdate(key, value)
+        }
+      }
+    )
+  }
 }
 
 object CacheView {
