@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.function.FnLike.Transparent1
+import ai.acyclic.prover.commons.function.PreDef.IUB
 
 object HasMorphism {}
 
@@ -39,17 +40,19 @@ trait HasMorphism extends HasPolyLike {
 
   object Morphism {
 
-    class Cached[T_/\, SS <: Morphism[T_/\]](val reference: SS) extends Morphism[T_/\] with FnLike.Transparent1 {
+    class Cached[T_/\, SS <: Morphism[T_/\]](
+        val reference: SS
+    ) extends Morphism[T_/\]
+        with FnLike.Transparent1 {
 
       override type In[T <: T_/\] = reference.In[T]
       override type Out[T <: T_/\] = reference.Out[T]
 
-      lazy val sameness: Same.By = Same.ByEquality
-      lazy val correspondence = sameness.Correspondence[Any, Any]()
+      lazy val lookup: Same.By#Lookup[IUB, Any] = Same.ByEquality.Lookup[IUB, Any]()
 
       override def apply[T <: T_/\](arg: In[T]): Out[T] = {
 
-        correspondence
+        lookup
           .getOrElseUpdate(
             arg,
             reference.apply(arg)

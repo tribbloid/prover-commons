@@ -57,7 +57,7 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
     describe("should remove value on garbage collection") {
 
       it("if the value is de-referenced") {
-        val cache = Caching.Weak.ConcurrentCache[String, CacheTestData]()
+        val cache = Caching.Weak.View[String, CacheTestData]()
 
         var myVal = CacheTestData("myString")
 
@@ -72,7 +72,7 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
 
       it("if the value is not in scope") {
 
-        val cache = Caching.Weak.ConcurrentCache[String, CacheTestData]()
+        val cache = Caching.Weak.View[String, CacheTestData]()
 
         val f: Future[Unit] = Future {
 

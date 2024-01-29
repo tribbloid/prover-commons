@@ -74,14 +74,15 @@ trait HasFn {
 
     def identity[I <: IUB]: Fn[I, I] = apply(v => v)
 
-    class Cached[I <: IUB, R](val reference: FnCompat[I, R]) extends Fn[I, R] with FnLike.Transparent1 {
+    class Cached[I <: IUB, R](
+        val reference: FnCompat[I, R]
+    ) extends Fn[I, R]
+        with FnLike.Transparent1 {
 
-      lazy val sameness: Same.By = Same.ByEquality
-
-      lazy val correspondence = sameness.Correspondence[I, R]()
+      lazy val lookup: Same.By#Lookup[I, R] = Same.ByEquality.Lookup[I, R]()
 
       final def apply(key: I): R = {
-        correspondence.getOrElseUpdate(key, reference(key))
+        lookup.getOrElseUpdate(key, reference(key))
       }
     }
   }

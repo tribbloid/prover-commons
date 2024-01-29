@@ -35,15 +35,12 @@ object PreDef extends FnSystem {
       base.madeFrom("andThen")(self, g)
     }
 
-    def cached(_sameness: Same.By = Same.ByEquality): Fn.Cached[I, R] = {
+    def cachedBy(
+        _lookup: Same.By#Lookup[I, R] = Same.ByEquality.Lookup[I, R]()
+    ): Fn.Cached[I, R] = {
+      new Fn.Cached[I, R](self) {
 
-      this match {
-        case c: Fn.Cached[_, _] =>
-          c.asInstanceOf[Fn.Cached[I, R]]
-        case _ =>
-          new Fn.Cached[I, R](self) {
-            override lazy val sameness: Same.By = _sameness
-          }
+        override lazy val lookup: Same.By#Lookup[I, R] = _lookup
       }
     }
   }
@@ -56,22 +53,19 @@ object PreDef extends FnSystem {
       SS <: Morphism[T_/\]
   ](val self: SS) {
 
-    def cached(
-        _sameness: Same.By = Same.ByEquality
+    def cachedBy(
+        _lookup: Same.By#Lookup[IUB, Any] = Same.ByEquality.Lookup()
     ): Morphism.Cached[T_/\, SS] = {
 
       type Result = Morphism.Cached[T_/\, SS]
 
-      this match {
-        case c: Morphism.Cached[_, _] =>
-          c.asInstanceOf[Result]
-        case _ =>
-          val result: Result =
-            new Morphism.Cached[T_/\, SS](self) {
-              override lazy val sameness = _sameness
-            }
-          result
-      }
+      val result: Result =
+        new Morphism.Cached[T_/\, SS](self) {
+
+          override lazy val lookup: Same.By#Lookup[IUB, Any] = _lookup
+        }
+      result
+
     }
   }
 

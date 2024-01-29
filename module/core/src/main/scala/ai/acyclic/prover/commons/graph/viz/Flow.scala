@@ -135,7 +135,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
         .Fn { v =>
           NodeWrapper(v)
         }
-        .cached()
+        .cachedBy()
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
@@ -167,7 +167,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
       buildBuffers.resolve
 
-      val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.correspondence.values
+      val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.lookup.values
         .map { nodeWrapper =>
           nodeWrapper.bindInboundArrows()
           nodeWrapper

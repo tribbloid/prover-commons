@@ -1,9 +1,9 @@
 package ai.acyclic.prover.commons
 
 import ai.acyclic.prover.commons.function.Thunk
-import ai.acyclic.prover.commons.util.{Caching, ConstructionID}
+import ai.acyclic.prover.commons.util.{CacheView, Caching, ConstructionID}
 
-import scala.collection.mutable
+import java.util.concurrent.atomic.AtomicInteger
 import scala.reflect.ClassTag
 
 trait Same[T] {
@@ -21,11 +21,11 @@ object Same {
     result
   }
 
-  trait By {
+  trait By extends Serializable {
 
     protected def _getID(v1: Any): Option[Any]
 
-    @transient final def getID(v1: Any): Option[Any] = {
+    final def getID(v1: Any): Option[Any] = {
       _getID(rectify(v1))
     }
 
@@ -111,30 +111,37 @@ object Same {
       final override def toString: String = "" + samenessDelegatedTo
     }
 
-    case class Correspondence[K, V]() {
+    case class Lookup[K, V](
+        underlying: CacheView[Wrapper[K], (Thunk[V], Long)] = Caching.Soft.build[Wrapper[K], (Thunk[V], Long)]()
+    ) {
 
-      lazy val lookup: Caching.Soft.ConcurrentCache[Wrapper[K], Thunk[V]] =
-        Caching.Soft.ConcurrentCache[Wrapper[K], Thunk[V]]()
+      private val serialID: AtomicInteger = new AtomicInteger(0)
+      @volatile var locked: Boolean = false
 
-      // TODO: how to remove it? it is slow
-      lazy val collection: mutable.Buffer[Wrapper[K]] = mutable.Buffer.empty
+      def nextSerialID: Int = {
+        require(
+          !locked, {
+            locked
+            "cannot write, Correspondence is locked"
+          }
+        )
+        serialID.getAndIncrement()
+      }
 
-      def values: Seq[V] = collection.map(k => lookup(k).value).toSeq
+      def values: Seq[V] = underlying.values.toSeq.sortBy(_._2).map(_._1.value)
 
       final def getOrElseUpdate(key: K, getValue: => V): V = {
 
         val id = Wrapper(key)
-        val w =
-          this.synchronized {
-            lookup.getOrElseUpdate(
-              id, {
-                val t = Thunk(_ => getValue)
-                collection += id
-                t
-              }
-            ) // should be fast
-          }
-        w.value
+        val w = this.synchronized {
+          underlying.getOrElseUpdate(
+            id, {
+              val t = Thunk(_ => getValue)
+              (t, nextSerialID)
+            }
+          ) // should be fast
+        }
+        w._1.value
         // TODO: this may cause stackoverflow
         //  if [[getOrElseUpdate]] is called again within the thunk
         //  may need a trampoline to avoid it, maybe switch to cats
@@ -144,11 +151,10 @@ object Same {
 
         val id = Wrapper(key)
         this.synchronized {
-          lookup.update(
+          underlying.update(
             id, {
               val t = Thunk(_ => getValue)
-              collection += id
-              t
+              (t, nextSerialID)
             }
           )
         }
@@ -157,21 +163,18 @@ object Same {
       final def remove(key: K): Unit = {
         val id = Wrapper(key)
         this.synchronized {
-          lookup.remove(id)
-          collection.remove(
-            collection.indexOf(id)
-          )
+          underlying.remove(id)
         }
       }
 
-      final def isEmpty: Boolean = lookup.isEmpty
+      final def isEmpty: Boolean = underlying.isEmpty
 
       final def get(key: K): Option[V] = {
         val inMemoryId = Wrapper(key)
 
-        lookup
+        underlying.repr
           .get(inMemoryId)
-          .map(_.value)
+          .map(_._1.value)
       }
     }
 

@@ -1,89 +1,86 @@
 package ai.acyclic.prover.commons.util
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import ai.acyclic.prover.commons.util.CacheView.{MapRepr, SetRepr}
+import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 
-import scala.collection.mutable
+import java.util.concurrent.ConcurrentHashMap
 import scala.language.implicitConversions
 
-trait Caching {
-
-  import scala.jdk.CollectionConverters._
+trait Caching extends Serializable {
 
   trait CacheTag
 
-  def toBuilder(proto: Caffeine[Any, Any]): Caffeine[Any, Any]
-
-  lazy val builder: Caffeine[Any, Any] = {
-    val proto: Caffeine[Any, Any] = Caffeine.newBuilder()
-    toBuilder(proto)
-  }
-
-  /**
-    * A cache designed for multithreaded usage in cases where values (not keys) contained in this map will not
-    * necessarily be cleanly removed. This map uses weak references for contained values (not keys) in order to ensure
-    * that the existance of a reference to that object in this cache will not prevent the garbage collection of the
-    * contained object.
-    *
-    * <p><b>Warning:</b> DO NOT use .weakKeys()!. Otherwise, the resulting map will use identity ({@code ==}) comparison
-    * to determine equality of keys, which is a technical violation of the {@link Map} specification, and may not be
-    * what you expect.
-    *
-    * @throws IllegalStateException
-    *   if the key strength was already set
-    * @see
-    *   WeakReference
-    */
-  type ConcurrentCache[K, V] = mutable.Map[K, V] with CacheTag
-
-  def ConcurrentCache[K, V](): ConcurrentCache[K, V] = {
-
-    // TODO: switching to ben-mane's caffeine, the fastest JVM caching library
-    //  and move to prover-commons
-    val base = builder
-      .build[K, V]()
-      .asMap()
-
-    val asScala: mutable.Map[K, V] = base.asScala
-
-    asScala.asInstanceOf[ConcurrentCache[K, V]]
-  }
+  def build[K, V](): CacheView[K, V] with CacheTag
 }
 
 object Caching {
 
   import scala.jdk.CollectionConverters._
 
-  trait ConcurrentTag
+  object Maps extends Caching {
 
-  def javaConcurrentMap[K, V]() = new java.util.concurrent.ConcurrentHashMap[K, V]()
+    private def javaConcurrentMap[K, V]() = new java.util.concurrent.ConcurrentHashMap[K, V]()
 
-  type ConcurrentMap[K, V] = mutable.Map[K, V] with ConcurrentTag
-  def ConcurrentMap[K, V](): ConcurrentMap[K, V] = {
-    val result: mutable.Map[K, V] = javaConcurrentMap[K, V]().asScala
-    result.asInstanceOf[ConcurrentMap[K, V]]
+    case class View[K, V]() extends CacheView[K, V] with CacheTag {
+
+      val underlying: ConcurrentHashMap[K, V] = {
+        javaConcurrentMap[K, V]()
+      }
+
+      @transient lazy val asMap: MapRepr[K, V] = underlying.asScala
+
+      override def asSet(default: V): SetRepr[K] = underlying.keySet(default).asScala
+    }
+
+    override def build[K, V](): View[K, V] = View()
   }
 
-  type ConcurrentSet[V] = mutable.Set[V] with ConcurrentTag
-  def ConcurrentSet[V](): ConcurrentSet[V] = {
+  trait CaffeineCaching extends Caching {
 
-    val proto: mutable.Set[V] = javaConcurrentMap[V, Unit]().keySet(()).asScala
-    proto.asInstanceOf[ConcurrentSet[V]]
+    def toBuilder(proto: Caffeine[Any, Any]): Caffeine[Any, Any]
+
+    lazy val underlyingBuilder: Caffeine[Any, Any] = {
+      val proto: Caffeine[Any, Any] = Caffeine.newBuilder()
+      toBuilder(proto)
+    }
+
+    case class View[K, V]() extends CacheView[K, V] with CacheTag {
+
+      val underlying: Cache[K, V] = underlyingBuilder.build[K, V]()
+
+      @transient lazy val asMap: MapRepr[K, V] =
+        underlying.asMap().asScala
+
+      override def asSet(default: V): SetRepr[K] = {
+        // TODO: default not used, not cool!
+        underlying.asMap().keySet().asScala
+      }
+    }
+
+    override def build[K, V](): View[K, V] = View[K, V]()
   }
 
-  object Strong extends Caching {
+  object Strong extends CaffeineCaching {
     override def toBuilder(proto: Caffeine[Any, Any]): Caffeine[Any, Any] = proto
+
   }
 
-  object Weak extends Caching {
+  object Weak extends CaffeineCaching {
 
     override def toBuilder(proto: Caffeine[Any, Any]): Caffeine[Any, Any] = proto.weakValues()
   }
 
-  object Soft extends Caching {
+  object Soft extends CaffeineCaching {
 
     override def toBuilder(proto: Caffeine[Any, Any]): Caffeine[Any, Any] = proto.softValues()
   }
 
-  type ConcurrentCache[K, V] = Soft.ConcurrentCache[K, V]
-  implicit def defaultImpl(v: this.type): Soft.type = Soft
+  type ConcurrentCache[K, V] = Soft.View[K, V]
+  def ConcurrentCache[K, V](): ConcurrentCache[K, V] = Soft.build[K, V]()
+
+  type ConcurrentMap[K, V] = Maps.View[K, V]
+  def ConcurrentMap[K, V](): ConcurrentMap[K, V] = Maps.build[K, V]()
+
+  type ConcurrentSet[K] = SetRepr[K]
+  def ConcurrentSet[K](): SetRepr[K] = Maps.build[K, Unit]().asSet()
 }
