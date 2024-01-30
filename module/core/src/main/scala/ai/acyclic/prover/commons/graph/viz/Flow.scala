@@ -49,7 +49,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(override val samenessDelegatedTo: Node[V]) extends sameness.Aspect {
+    case class NodeWrapper(override val samenessDelegatedTo: Node[V]) extends sameness.IWrapper {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)

@@ -27,6 +27,8 @@ object __Glossary {
     * dependent type or class name suffixes:
     *
     *   - Should contains at least 2 characters to differentiate from higher-kind-arguments
+    *   - `Like` (also `I` prefix, as in Java & C#) for closest interface that defines all members/methods of a class,
+    *     usually used to bypass the limitation that only trait supports mixin & lazy initialisation
     *   - `T` for type classes (can be omitted if it is a companion object)
     *   - `K` for generic type that has too many type parameters, only their much shorter aliases are supposed to be
     *     used
@@ -61,10 +63,11 @@ object __Glossary {
     *   - `Magnet` for types armed with native implicit conversions that automatically coerce other types into it when
     *     necessary
     *   - `Ops`/`Ext` for type extensions in Scala 3, or wrapper types that mimic this feature, in later case, implicit
-    *     functions should be defined in the associated scope of such type, see [[__ImplicitSearchOrder]] for an
-    *     explanation of the associated scope
-    *   - `View` is a special kind of `Ops`/`Ext` classes that also contains custom members for resource allocation or
-    *     serialisation. For historical reasons, a `Ops`/`Ext` class can also be named `View`
+    *     functions are usually defined in the associated scope of such type (see [[__ImplicitSearchOrder]] for an
+    *     explanation of the associated scope), but not always.
+    *   - `View`/`Wrapper` is a special kind of `Ops`/`Ext` classes that also contains custom members/methods for
+    *     resource allocation, serialisation, equality, or other constructs that affects its runtime behaviour. For
+    *     historical reasons, a `Ops`/`Ext` class can also be named `View`
     *
     * type or class name prefixes:
     *

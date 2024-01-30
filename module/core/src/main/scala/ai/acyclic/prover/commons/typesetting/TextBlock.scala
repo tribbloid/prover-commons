@@ -126,7 +126,7 @@ case class TextBlock(lines: Seq[String]) {
     }
 
     val zipped = expanded.head.rectangular.lines.zip(expanded(1).lines).map { v =>
-      v._1 + v._2
+      (v._1 + v._2).stripTrailing()
     }
 
     TextBlock(zipped)

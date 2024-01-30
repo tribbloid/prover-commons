@@ -12,7 +12,7 @@ trait TypeViewMixin extends HasUniverse {
 
   case class TypeID(
       self: Type
-  ) extends Same.ByEquality.Aspect {
+  ) extends Same.ByEquality.IWrapper {
 
     lazy val allSymbols: Seq[Symbol] = {
 

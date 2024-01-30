@@ -101,7 +101,7 @@ object Same {
       }
     }
 
-    trait Aspect {
+    trait IWrapper {
       protected def samenessDelegatedTo: Any
 
       final override def hashCode(): Int = {
@@ -110,15 +110,15 @@ object Same {
 
       final override def equals(that: Any): Boolean = {
         that match {
-          case that: Aspect => By.this.checkSafely(samenessDelegatedTo, that.samenessDelegatedTo)
-          case _            => false
+          case that: IWrapper => By.this.checkSafely(samenessDelegatedTo, that.samenessDelegatedTo)
+          case _              => false
         }
       }
     }
 
-    case class Wrapper[T](override val samenessDelegatedTo: T) extends Aspect {
+    case class Wrapper[T](override val samenessDelegatedTo: T) extends IWrapper {
 
-      final override def toString: String = "" + samenessDelegatedTo
+      override def toString: String = "" + samenessDelegatedTo
     }
 
     case class Lookup[K, V](
