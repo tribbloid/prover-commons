@@ -59,7 +59,7 @@ class PreDefSpec extends BaseSpec {
 
       it("with input & output types") {
 
-        val v = _poly.at[Int].to[Int].summon
+        _poly.at[Int].to[Int].summon
       }
 
       it("with input type only") {
@@ -70,7 +70,7 @@ class PreDefSpec extends BaseSpec {
         assert(v == v2)
 
         val r = v(1)
-        val t: Int = r
+        r: Int
       }
     }
   }

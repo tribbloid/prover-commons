@@ -16,7 +16,7 @@ class HasInnerSpec extends BaseSpec {
   it(" ... NOT if the path is lost") {
 
     val ff = new Family
-    val mm = ff.Magnet(1): Family#Magnet
+    ff.Magnet(1): Family#Magnet
 
     shouldNotCompile(
       """implicitly[TypeCls[mm.type]]"""

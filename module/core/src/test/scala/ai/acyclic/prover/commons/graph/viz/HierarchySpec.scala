@@ -8,7 +8,7 @@ class HierarchySpec extends BaseSpec {
   import TreeFixture._
 
   describe(Hierarchy.Indent2.productPrefix) {
-    lazy val format = Hierarchy.Indent2
+    Hierarchy.Indent2
 
     describe("treeString") {
 
