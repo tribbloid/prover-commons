@@ -32,12 +32,14 @@ object Debug {
   }
 
   def getBreakpointInfo(
+      filterAnon: Boolean = true,
       filterInitializer: Boolean = true,
       filterLazyCompute: Boolean = true
   ): Array[StackTraceElement] = {
     val stackTraceElements: Array[StackTraceElement] = Thread.currentThread().getStackTrace
     var effectiveElements = breakpointInfoFilter(stackTraceElements)
 
+    if (filterAnon) effectiveElements = effectiveElements.filter(v => !v.getMethodName.contains('$'))
     if (filterInitializer) effectiveElements = effectiveElements.filter(v => !(v.getMethodName == INIT))
     if (filterLazyCompute) effectiveElements = effectiveElements.filter(v => !v.getMethodName.endsWith(LZYCOMPUTE))
 
