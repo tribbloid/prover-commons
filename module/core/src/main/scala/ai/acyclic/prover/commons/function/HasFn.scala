@@ -84,6 +84,11 @@ trait HasFn {
       final def apply(key: I): R = {
         lookup.getOrElseUpdate(key, reference(key))
       }
+
+      final def getExisting(arg: I): Option[R] = {
+        lookup
+          .get(arg)
+      }
     }
   }
 }

@@ -58,6 +58,14 @@ trait HasMorphism extends HasPolyLike {
           )
           .asInstanceOf[Out[T]]
       }
+
+      final def getExisting[T <: T_/\](arg: In[T]): Option[Out[T]] = {
+        lookup
+          .get(arg)
+          .map { v =>
+            v.asInstanceOf[Out[T]]
+          }
+      }
     }
   }
 
