@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.debug
 
-import scala.language.implicitConversions
 
 object Debug {
 
@@ -118,7 +117,7 @@ object Debug {
 
     def below(
         depth: Int = 1,
-        condition: ElementView => Boolean = { v =>
+        condition: ElementView => Boolean = { _ =>
           false
         }
     ): CallStackRef = {
