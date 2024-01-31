@@ -10,7 +10,9 @@ case class print_@(
       v: T
   ): String = {
 
-    val ref: CallStackRef = CallStackRef.below(condition = Seq(this.getClass) ++ belowClasses)
+    val ref: CallStackRef = CallStackRef.below(condition = { v =>
+      v.isUnder(classes = Seq(this.getClass) ++ belowClasses)
+    })
 
     val result: String =
       s"""

@@ -23,7 +23,7 @@ case class BenchmarkResults[T](
 
   def log(): Unit = {
 
-    val ref: CallStackRef = CallStackRef.below(condition = Seq(this.getClass))
+    val ref: CallStackRef = CallStackRef.below(condition = v => v.isUnderClasses(this.getClass))
 
     val info =
       s"${ref.className} - avg: ${Duration.fromNanos(avg).toUnit(TimeUnit.MILLISECONDS)}ms"

@@ -6,6 +6,7 @@ object Debug {
 
   private lazy val LZYCOMPUTE = "$lzycompute"
   private lazy val INIT = "<init>"
+  private lazy val ARG_DEFAULT = "$default$"
 
   def stackTracesShowStr(
       vs: Array[StackTraceElement],
@@ -31,29 +32,22 @@ object Debug {
     }
   }
 
-  def getBreakpointInfo(
-      filterAnon: Boolean = true,
-      filterInitializer: Boolean = true,
-      filterLazyCompute: Boolean = true
-  ): Array[StackTraceElement] = {
-    val stackTraceElements: Array[StackTraceElement] = Thread.currentThread().getStackTrace
-    var effectiveElements = breakpointInfoFilter(stackTraceElements)
+  def getBreakpointInfo(): Array[StackTraceElement] = {
 
-    if (filterAnon) effectiveElements = effectiveElements.filter(v => !v.getMethodName.contains('$'))
-    if (filterInitializer) effectiveElements = effectiveElements.filter(v => !(v.getMethodName == INIT))
-    if (filterLazyCompute) effectiveElements = effectiveElements.filter(v => !v.getMethodName.endsWith(LZYCOMPUTE))
+    val stackTraceElements: Array[StackTraceElement] = Thread.currentThread().getStackTrace
+    val effectiveElements = breakpointInfoFilter(stackTraceElements)
 
     effectiveElements
   }
 
   case class CallStackRef(
       stack: Vector[StackTraceElement],
-      below: Int = 0
+      belowIndex: Int = 0
   ) {
 
     import CallStackRef._
 
-    lazy val effectiveStack: Vector[StackTraceElement] = stack.drop(below)
+    lazy val effectiveStack: Vector[StackTraceElement] = stack.drop(belowIndex)
 
     def showStr: String = {
       stackTracesShowStr(effectiveStack.toArray)
@@ -61,17 +55,28 @@ object Debug {
 
     lazy val head: StackTraceElement = effectiveStack.head
 
-    def pop(depth: Int): CallStackRef = this.copy(below = below + depth)
-
     def pop(
-        condition: ConditionMagnet
+        condition: ElementView => Boolean
     ): CallStackRef = {
 
-      val filteredIndex = effectiveStack.lastIndexWhere(
-        condition
-      )
+      val firstNotI = effectiveStack.indexWhere { v =>
+        !condition(ElementView(v))
+      }
 
-      this.copy(below = below + filteredIndex + 1)
+      this.copy(belowIndex = belowIndex + firstNotI)
+    }
+
+    def below(depth: Int): CallStackRef = this.copy(belowIndex = belowIndex + depth)
+
+    def below(
+        condition: ElementView => Boolean
+    ): CallStackRef = {
+
+      val belowI = effectiveStack.lastIndexWhere { v =>
+        condition(ElementView(v))
+      } + 1
+
+      this.copy(belowIndex = belowIndex + belowI)
     }
 
     def className: String = {
@@ -113,49 +118,74 @@ object Debug {
 
     def below(
         depth: Int = 1,
-        condition: ConditionMagnet = ConditionMagnet.OfPaths(Nil)
+        condition: ElementView => Boolean = { v =>
+          false
+        }
     ): CallStackRef = {
 
-      here.pop(depth).pop(condition)
+      here.below(depth).below(condition)
     }
 
-    trait ConditionMagnet extends (StackTraceElement => Boolean) {}
+    case class ElementView(
+        self: StackTraceElement
+    ) {
 
-    object ConditionMagnet {
+      def isArgDefault: Boolean = {
 
-      def nameIsUnderPath(name: String, path: String): Boolean = {
-
-        (name.startsWith(path)) && {
-
-          val nextOpt = name.stripPrefix(path).headOption
-
-          nextOpt match {
-            case None    => true
-            case Some(v) => v == '.' || v == '$'
-          }
-        }
+        self.getMethodName.contains(ARG_DEFAULT)
       }
 
-      implicit class OfPaths(
-          paths: Seq[String]
-      ) extends ConditionMagnet {
-
-        override def apply(v: StackTraceElement): Boolean = {
-          paths.exists { path =>
-            // TODO: doesn't work in case class name is a substring
-            val matchClass = Option(v.getClassName).exists(v => nameIsUnderPath(v, path))
-            val matchModule = Option(v.getModuleName).exists(v => nameIsUnderPath(v, path))
-            matchClass || matchModule
-          }
-        }
+      def isInit: Boolean = {
+        self.getMethodName == INIT
       }
 
-      implicit def ofClass(
-          classes: Seq[Class[_]]
-      ): ConditionMagnet = {
-        OfPaths(classes.map(_.getName))
+      def isLazyCompute: Boolean = {
+        self.getMethodName.endsWith(LZYCOMPUTE)
+      }
+
+      def isUnder(
+          paths: Seq[String] = Nil,
+          classes: Seq[Class[_]] = Nil
+      ): Boolean = {
+
+        val _paths = paths ++ classes.map(_.getName)
+
+        def nameIsUnderPath(name: String, path: String): Boolean = {
+
+          (name.startsWith(path)) && {
+
+            val nextOpt = name.stripPrefix(path).headOption
+
+            nextOpt match {
+              case None    => true
+              case Some(v) => v == '.' || v == '$'
+            }
+          }
+        }
+
+        val pathsMatch = _paths.exists { path =>
+          // TODO: doesn't work in case class name is a substring
+          val matchClass = Option(self.getClassName).exists(v => nameIsUnderPath(v, path))
+          val matchModule = Option(self.getModuleName).exists(v => nameIsUnderPath(v, path))
+          matchClass || matchModule
+        }
+
+        pathsMatch
+      }
+
+      def isUnderPaths(
+          paths: String*
+      ): Boolean = {
+        isUnder(paths = paths)
+      }
+
+      def isUnderClasses(
+          classes: Class[_]*
+      ): Boolean = {
+        isUnder(classes = classes)
       }
     }
+
   }
 
   def liftCamelCase(str: String): String = str.head.toUpper.toString + str.substring(1)

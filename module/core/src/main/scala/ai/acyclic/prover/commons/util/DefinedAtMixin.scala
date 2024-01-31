@@ -11,6 +11,15 @@ trait DefinedAtMixin extends Serializable {
   lazy val definedAt: CallStackRef = {
 
     val thisClass = classOf[DefinedAtMixin]
-    CallStackRef.below(1, condition = Seq(thisClass))
+    CallStackRef
+      .below(
+        1,
+        condition = { v =>
+          v.isUnderClasses(thisClass)
+        }
+      )
+      .pop { v =>
+        v.isLazyCompute || v.isInit
+      }
   }
 }
