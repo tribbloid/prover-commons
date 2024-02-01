@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.meta2
 
-import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.meta2.format.TypeFormat
+import ai.acyclic.prover.commons.same.Same
 
 import scala.collection.mutable
 import scala.tools.reflect.ToolBox
@@ -12,7 +12,7 @@ trait TypeViewMixin extends HasUniverse {
 
   case class TypeID(
       self: Type
-  ) extends Same.ByEquality.Facade {
+  ) extends Same.ByEquality.Aspect {
 
     lazy val allSymbols: Seq[Symbol] = {
 

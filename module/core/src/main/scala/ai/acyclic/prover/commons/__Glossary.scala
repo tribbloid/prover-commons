@@ -60,6 +60,7 @@ object __Glossary {
     *   - `_\/` for type lower bound
     *   - `Magnet` for types armed with native implicit conversions that automatically coerce other types into it when
     *     necessary
+    *   - `Ops`/`Ext` for extension or implicit class that mimic, historically, `View` was used for similar purpose
     *
     * types of function arguments that can be implicitly converted from other types
     *

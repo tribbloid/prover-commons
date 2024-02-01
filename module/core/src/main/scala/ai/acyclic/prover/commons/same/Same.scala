@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons
+package ai.acyclic.prover.commons.same
 
 import ai.acyclic.prover.commons.function.Thunk
 import ai.acyclic.prover.commons.util.{CacheView, Caching, ConstructionID}
@@ -91,7 +91,7 @@ object Same {
       }
     }
 
-    trait Facade {
+    trait Aspect {
       protected def samenessDelegatedTo: Any
 
       final override def hashCode(): Int = {
@@ -100,13 +100,13 @@ object Same {
 
       final override def equals(that: Any): Boolean = {
         that match {
-          case that: Facade => By.this.checkSafely(samenessDelegatedTo, that.samenessDelegatedTo)
+          case that: Aspect => By.this.checkSafely(samenessDelegatedTo, that.samenessDelegatedTo)
           case _            => false
         }
       }
     }
 
-    case class Wrapper[T](override val samenessDelegatedTo: T) extends Facade {
+    case class Wrapper[T](override val samenessDelegatedTo: T) extends Aspect {
 
       final override def toString: String = "" + samenessDelegatedTo
     }

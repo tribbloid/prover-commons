@@ -1,10 +1,10 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.function.PreDef
 import ai.acyclic.prover.commons.graph.{Arrow, Engine}
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
+import ai.acyclic.prover.commons.same.Same
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
@@ -49,7 +49,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(override val samenessDelegatedTo: Node[V]) extends sameness.Facade {
+    case class NodeWrapper(override val samenessDelegatedTo: Node[V]) extends sameness.Aspect {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)

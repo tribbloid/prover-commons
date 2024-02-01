@@ -1,10 +1,10 @@
-package ai.acyclic.prover.commons
+package ai.acyclic.prover.commons.same
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class SameSpec extends BaseSpec {
 
-  import ai.acyclic.prover.commons.Same._
+  import Same._
   import SameSpec._
 
   it(ByConstruction.getClass.getSimpleName) {

@@ -1,9 +1,9 @@
 package ai.acyclic.prover.commons.graph.local.ops
 
-import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.graph.RewriterK
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Flow
+import ai.acyclic.prover.commons.same.Same
 
 
 trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.Same
 import ai.acyclic.prover.commons.function.FnLike.Transparent1
+import ai.acyclic.prover.commons.same.Same
 
 object HasMorphism {}
 
