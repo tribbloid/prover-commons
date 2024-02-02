@@ -9,7 +9,7 @@ import java.util.regex.Pattern
 
 trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
 
-  @transient implicit class _StringView(str: String) {
+  @transient implicit class _StringOps(str: String) {
 
     // TODO: use reflection to figure out test name and annotate
     def shouldBe(
@@ -51,6 +51,20 @@ trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
     }
 
     def rowsShouldBeLike(gd: String = null): Unit = shouldBeLike(gd, sort = true)
+  }
+
+  @transient implicit class StringSeqOps[F[_]](self: F[String])(
+      implicit
+      ev: F[String] => Seq[String]
+  ) {
+
+    def shouldBeIdentical(): Unit = {
+
+      self.reduce { (v1, v2) =>
+        v1 shouldBe v2
+        v2
+      }
+    }
   }
 
   /**
