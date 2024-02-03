@@ -9,41 +9,51 @@ class PreDefSpec extends BaseSpec {
   import ai.acyclic.prover.commons.function.Fixtures._
   import ai.acyclic.prover.commons.function.PreDef._
 
-  lazy val fn: Int :=> Int = {
+  lazy val fn: Int :=> Int = { Fixtures._fn0 }
 
-    Fixtures._fn0.treeText.shouldBe(
-      "- _fn0$ <at FnFixture.scala:8>"
+  lazy val chainedSelf: Impl.Fn[Int, Int] = fn.andThen(fn)
+
+  lazy val chainedOthers: Impl.Fn[Int, String] = fn.andThen { v: Int =>
+    v + "b"
+  }
+
+  lazy val fnText: String = {
+
+    val result = fn.nodeText
+
+    result.shouldBe(
+      "_fn0 <at FnFixture.scala:7>"
     )
 
-    _fn0
+    fn.treeText.shouldBe(
+      s"- ${result}"
+    )
+
+    result
   }
 
   describe("Fn") {
 
     it("chaining") {
 
-      val chainedSelf: Impl.Fn[Int, Int] = fn.andThen(fn)
       val r1 = chainedSelf.apply(1)
 
       chainedSelf.treeText.shouldBe(
-        """
+        s"""
             |+ andThen
-            |!-- _fn0$ <at FnFixture.scala:8>
+            |!-- ${fnText}
             |""".stripMargin
       )
 
       assert(r1 == 3)
 
-      val chainedOthers: Impl.Fn[Int, String] = fn.andThen { v: Int =>
-        v + "b"
-      }
       val r2 = chainedOthers.apply(1)
 
       chainedOthers.treeText.shouldBe(
-        """
+        s"""
             |+ andThen
-            |!-- _fn0$ <at FnFixture.scala:8>
-            |!--  <at PreDefSpec.scala:37>
+            |!-- ${fnText}
+            |!-- chainedOthers <at PreDefSpec.scala:16>
             |""".stripMargin
       )
 

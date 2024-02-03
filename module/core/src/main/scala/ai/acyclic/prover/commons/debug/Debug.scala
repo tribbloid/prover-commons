@@ -90,10 +90,8 @@ object Debug {
 
         if (name.startsWith("<")) {
           s"$className.$name"
-        } else if (name.startsWith("$")) {
-          ""
         } else {
-          name
+          name.stripSuffix(LZYCOMPUTE).stripSuffix("$")
         }
       }
     }
