@@ -1,6 +1,6 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.api
 
-import ai.acyclic.prover.commons.function.FnLike.Transparent1
+import FnLike.Transparent1
 import ai.acyclic.prover.commons.same.Same
 
 object HasMorphism {}
@@ -74,6 +74,11 @@ trait HasMorphism extends HasPolyLike {
     type Out[T <: T_/\] <: O[T]
   }
 
+  trait MorphismImpl[T_/\, I[_ <: T_/\] <: IUB, O[_ <: T_/\]] extends Morphism[T_/\] {
+    type In[T <: T_/\] = I[T]
+    type Out[T <: T_/\] = O[T]
+  }
+
   trait Dependent[
       T_/\ <: IUB
   ] extends Morphism[T_/\] {
@@ -92,6 +97,10 @@ trait HasMorphism extends HasPolyLike {
     */
   type DependentCompat[T_/\ <: IUB, +O[_ <: T_/\]] = Dependent[T_/\] {
     type Out[T <: T_/\] <: O[T]
+  }
+
+  trait DependentImpl[T_/\ <: IUB, O[_ <: T_/\]] extends Dependent[T_/\] {
+    type Out[T <: T_/\] = O[T]
   }
 
   implicit class fnIsMorphism[I <: IUB, O](val reference: FnCompat[I, O]) extends Morphism[Any] with Transparent1 {

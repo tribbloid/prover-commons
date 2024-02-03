@@ -1,10 +1,10 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.PreDef.:=>
+import Impl._
 
-case class Thunk[V](fn: Unit :=> V) extends PreDef.Fn[Unit, V] {
+case class Thunk[V](fn: Unit => V) extends (Unit :=> V) {
 
-  lazy val value: V = fn(())
+  lazy val value: Out = fn.apply((): Unit)
 
-  override def apply(arg: Unit): V = value
+  override def apply(arg: Unit): Out = value
 }

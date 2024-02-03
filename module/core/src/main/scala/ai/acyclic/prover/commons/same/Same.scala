@@ -136,7 +136,7 @@ object Same {
         val w = this.synchronized {
           underlying.getOrElseUpdate(
             id, {
-              val t = Thunk(_ => getValue)
+              val t = Thunk((_: Unit) => getValue)
               (t, nextSerialID)
             }
           ) // should be fast

@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.api
 
 trait HasPolyLike extends HasFn {
 
@@ -7,12 +7,12 @@ trait HasPolyLike extends HasFn {
     trait IsCase extends FnLike.Cap
     // TODO: should be a type
 
-    type Case[+FF <: FnBase[_]] = FF with FnLike.Can[IsCase]
+    type Case[+FF <: Fn[_]] = FF with FnLike.Can[IsCase]
 
-    type =>>[I <: IUB, O] = Case[Fn[I, O]]
-    type CaseFrom[I <: IUB] = Case[FnBase[I]]
+    type =>>[I <: IUB, O] = Case[FnImpl[I, O]]
+    type CaseFrom[I <: IUB] = Case[Fn[I]]
 
-    class CaseBuilder[I <: IUB, F <: FnBase[I]] {
+    class CaseBuilder[I <: IUB, F <: Fn[I]] {
 
       def to[O]: CaseBuilder[I, FnCompat[I, O]] = new CaseBuilder[I, FnCompat[I, O]]
       def =>>[O]: CaseBuilder[I, FnCompat[I, O]] = to[O]
@@ -22,12 +22,12 @@ trait HasPolyLike extends HasFn {
 
       def defining[R](fn: I => R)(
           implicit
-          ev: Fn[I, R] <:< F
-      ): Case[Fn[I, R]] = Fn(fn).enable[IsCase]
+          ev: FnImpl[I, R] <:< F
+      ): Case[FnImpl[I, R]] = Fn(fn).enable[IsCase]
       def apply[R](fn: I => R)(
           implicit
-          ev: Fn[I, R] <:< F
-      ): Case[Fn[I, R]] = defining(fn)
+          ev: FnImpl[I, R] <:< F
+      ): Case[FnImpl[I, R]] = defining(fn)
 
       def summon(
           implicit
@@ -36,11 +36,11 @@ trait HasPolyLike extends HasFn {
     }
 
     // similar to `at` in shapeless Poly1
-    def at[I <: IUB] = new CaseBuilder[I, FnBase[I]]
+    def at[I <: IUB] = new CaseBuilder[I, Fn[I]]
 
     def getCaseFor[I <: IUB](v: I)(
         implicit
-        _case: Case[FnBase[I]]
+        _case: Case[Fn[I]]
     ): _case.type = _case
   }
 }

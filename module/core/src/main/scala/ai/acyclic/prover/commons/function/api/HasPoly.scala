@@ -1,6 +1,6 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.api
 
-import ai.acyclic.prover.commons.function.FnLike.Transparent1
+import FnLike.Transparent1
 
 trait HasPoly extends HasPolyLike {
 

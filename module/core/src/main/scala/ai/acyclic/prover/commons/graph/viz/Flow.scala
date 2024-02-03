@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.function.PreDef
+import ai.acyclic.prover.commons.function.Impl
 import ai.acyclic.prover.commons.graph.{Arrow, Engine}
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
@@ -131,10 +131,9 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeID2Wrapper = PreDef
-        .Fn { v =>
-          NodeWrapper(v)
-        }
+      val nodeID2Wrapper = Impl { v =>
+        NodeWrapper(v)
+      }
         .cachedBy()
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]

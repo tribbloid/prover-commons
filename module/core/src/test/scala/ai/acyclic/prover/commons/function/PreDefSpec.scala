@@ -12,8 +12,9 @@ class PreDefSpec extends BaseSpec {
   lazy val fn: Int :=> Int = {
 
     Fixtures._fn0.treeText.shouldBe(
-      "- _fn0 <at FnFixture.scala:8>"
+      "- _fn0$ <at FnFixture.scala:8>"
     )
+
     _fn0
   }
 
@@ -21,19 +22,19 @@ class PreDefSpec extends BaseSpec {
 
     it("chaining") {
 
-      val chainedSelf: PreDef.Fn[Int, Int] = fn.andThen(fn)
-      val r1 = chainedSelf(1)
+      val chainedSelf: Impl.Fn[Int, Int] = fn.andThen(fn)
+      val r1 = chainedSelf.apply(1)
 
       chainedSelf.treeText.shouldBe(
         """
             |+ andThen
-            |!-- _fn0 <at FnFixture.scala:8>
+            |!-- _fn0$ <at FnFixture.scala:8>
             |""".stripMargin
       )
 
       assert(r1 == 3)
 
-      val chainedOthers: PreDef.Fn[Int, String] = fn.andThen { v: Int =>
+      val chainedOthers: Impl.Fn[Int, String] = fn.andThen { v: Int =>
         v + "b"
       }
       val r2 = chainedOthers.apply(1)
@@ -41,8 +42,8 @@ class PreDefSpec extends BaseSpec {
       chainedOthers.treeText.shouldBe(
         """
             |+ andThen
-            |!-- _fn0 <at FnFixture.scala:8>
-            |!--  <at PreDefSpec.scala:36>
+            |!-- _fn0$ <at FnFixture.scala:8>
+            |!--  <at PreDefSpec.scala:37>
             |""".stripMargin
       )
 
@@ -69,7 +70,7 @@ class PreDefSpec extends BaseSpec {
         implicitly[v.type <:< _poly.Case[Int :=> Int]]
         assert(v == v2)
 
-        val r = v(1)
+        val r = v.apply(1)
         r: Int
       }
     }

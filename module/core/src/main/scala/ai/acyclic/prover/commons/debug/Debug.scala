@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.debug
 
-
 object Debug {
 
   private lazy val LZYCOMPUTE = "$lzycompute"
   private lazy val INIT = "<init>"
   private lazy val ARG_DEFAULT = "$default$"
+  private lazy val LAMBDA = "$Lambda$"
 
   def stackTracesShowStr(
       vs: Array[StackTraceElement],
@@ -31,7 +31,7 @@ object Debug {
     }
   }
 
-  def getBreakpointInfo(): Array[StackTraceElement] = {
+  def getBreakpointInfo: Array[StackTraceElement] = {
 
     val stackTraceElements: Array[StackTraceElement] = Thread.currentThread().getStackTrace
     val effectiveElements = breakpointInfoFilter(stackTraceElements)
@@ -111,7 +111,7 @@ object Debug {
 
     def here: CallStackRef = {
 
-      val stackInfo_raw: Array[StackTraceElement] = getBreakpointInfo()
+      val stackInfo_raw: Array[StackTraceElement] = getBreakpointInfo
       CallStackRef(stackInfo_raw.toVector)
     }
 
@@ -138,11 +138,15 @@ object Debug {
         self.getMethodName == INIT
       }
 
+      def isLambda: Boolean = {
+        self.getMethodName contains LAMBDA
+      }
+
       def isLazyCompute: Boolean = {
         self.getMethodName.endsWith(LZYCOMPUTE)
       }
 
-      def isUnder(
+      def isDefinedAt(
           paths: Seq[String] = Nil,
           classes: Seq[Class[_]] = Nil
       ): Boolean = {
@@ -172,16 +176,16 @@ object Debug {
         pathsMatch
       }
 
-      def isUnderPaths(
+      def isDefinedAtPaths(
           paths: String*
       ): Boolean = {
-        isUnder(paths = paths)
+        isDefinedAt(paths = paths)
       }
 
-      def isUnderClasses(
+      def isDefinedAtClasses(
           classes: Class[_]*
       ): Boolean = {
-        isUnder(classes = classes)
+        isDefinedAt(classes = classes)
       }
     }
 

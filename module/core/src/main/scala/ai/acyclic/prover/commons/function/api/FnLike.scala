@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.api
 
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.Hierarchy

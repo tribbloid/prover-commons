@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.unused
 
 /**
   * structural refinement types that are supertypes of case class constructors generated automatically by Scala compiler

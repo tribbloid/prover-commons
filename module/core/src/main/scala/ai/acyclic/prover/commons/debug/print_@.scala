@@ -11,7 +11,7 @@ case class print_@(
   ): String = {
 
     val ref: CallStackRef = CallStackRef.below(condition = { v =>
-      v.isUnder(classes = Seq(this.getClass) ++ belowClasses)
+      v.isDefinedAt(classes = Seq(this.getClass) ++ belowClasses)
     })
 
     val result: String =
