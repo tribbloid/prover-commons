@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.same
 
 import ai.acyclic.prover.commons.function.Thunk
-import ai.acyclic.prover.commons.util.{CacheView, Caching, ConstructionID}
+import ai.acyclic.prover.commons.util.{CacheView, Caching}
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.reflect.ClassTag
@@ -19,6 +19,16 @@ object Same {
       case _            => id
     }
     result
+  }
+
+  object ConstructionID {
+
+    protected object Impl extends (Any => Int) {
+      override def apply(v1: Any): Int = System.identityHashCode(v1)
+    }
+
+    def apply[T]: T => Int = Impl.asInstanceOf[T => Int]
+
   }
 
   trait By extends Serializable {

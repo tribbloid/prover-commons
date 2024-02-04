@@ -55,14 +55,16 @@ object __Glossary {
     *   - `ImpX` (where X is an integer) for low-priority implicit definitions, Scala compiler will throw an error when
     *     multiple implicit functions/values with same priority can be summoned, in this case they need to be spread
     *     into a hierarchy of traits (e.g. `object Ops extends OpsImp0`, `OpsImp0 extends OPsImp1` ...) to have
-    *     different priorities, see [[__ImplicitSearchOrder]] for the exact rule of implicit priority
+    *     different priorities, see [[__ImplicitSearchOrder]] for the rule of implicit priority
     *   - `_/\` for type upper bound
     *   - `_\/` for type lower bound
     *   - `Magnet` for types armed with native implicit conversions that automatically coerce other types into it when
     *     necessary
-    *   - `Ops`/`Ext` for extension or implicit class that mimic, historically, `View` was used for similar purpose
-    *
-    * types of function arguments that can be implicitly converted from other types
+    *   - `Ops`/`Ext` for type extensions in Scala 3, or wrapper types that mimic this feature, in later case, implicit
+    *     functions should be defined in the associated scope of such type, see [[__ImplicitSearchOrder]] for an
+    *     explanation of the associated scope
+    *   - `View` is a special kind of `Ops`/`Ext` classes that also contains custom members for resource allocation or
+    *     serialisation. For historical reasons, a `Ops`/`Ext` class can also be named `View`
     *
     * type or class name prefixes:
     *
