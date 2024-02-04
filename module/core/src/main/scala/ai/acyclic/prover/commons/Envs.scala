@@ -17,6 +17,8 @@ object Envs {
     def :/(part: String): Dir = append("/")(part)
     def :\(part: String): Dir = append(File.separatorChar.toString)(part)
     def dot(part: String): Dir = append(".")(part)
+
+    override def toString: String = parts
   }
 
   object Dir {
