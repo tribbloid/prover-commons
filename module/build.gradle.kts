@@ -9,5 +9,6 @@ allprojects {
 //        TODO: enable for all project as it is an important syntax
 
 //        TODO: use "-P:kind-projector:underscore-placeholders" once migrated to source:3
+
     }
 }
