@@ -86,7 +86,7 @@ class PathToDOT extends BaseSpec {
 
   it("lambda cube") {
 
-    val g = G(Seq(LambdaCube.f))
+    val g = LambdaCube.f.make
 
     print_@(g.diagram_flow.toString)
 
@@ -95,7 +95,7 @@ class PathToDOT extends BaseSpec {
 
   it("DOT") {
 
-    val g = G(Seq(ToDOT.f))
+    val g = ToDOT.f.make
 
     print_@(g.diagram_flow.toString)
 

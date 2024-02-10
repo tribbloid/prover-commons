@@ -95,12 +95,12 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     case class Viz[V](override val semilattice: Graph_/\[V]) extends _TextViz[V] {
 
-      object RefBindings extends Local.Tree.UntypedDef {
+      object RefBindings extends Local.Tree.Group {
 
         case class Node(
             override val original: Local.AnyGraph.Outbound.Node[V],
             id: UUID = UUID.randomUUID()
-        ) extends UntypedNode
+        ) extends INode
             with RefBindingLike {
 
           {
@@ -154,7 +154,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             }
           }
 
-          override protected def inductionC: Seq[(Arrow.`~>`.^, RefBindings.Node)] = {
+          override protected def getInduction: Seq[(Arrow.`~>`.^, RefBindings.Node)] = {
 
             val result = if (!shouldExpand) {
               Nil
@@ -173,7 +173,7 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             result
           }
 
-          override protected def nodeTextC: String = {
+          override protected def getNodeText: String = {
 
             val originalText = original.nodeText
 

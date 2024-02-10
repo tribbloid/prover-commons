@@ -2,6 +2,8 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.topology.{Axiom, Lawful, Topology}
 
+import scala.language.implicitConversions
+
 trait Engine {
   self: Singleton =>
 
@@ -89,7 +91,7 @@ trait Engine {
 
   trait _Struct[+X <: Axiom] extends Lawful.Struct[X] with _Lawful {}
 
-  trait Syntax {
+  trait Module {
 
     abstract class GraphBuilder[X <: Axiom, Y <: X](topology: Topology[X])(
         implicit
@@ -103,7 +105,66 @@ trait Engine {
         final lazy val assuming = GraphBuilder.this.assuming
       }
 
-      trait NodeImpl[V] extends NodeK.Impl[_Axiom, V] with StructMixin {}
+      /**
+        * 1st API, most universal
+        * @tparam V
+        *   value tyupe
+        */
+      trait NodeImpl[V] extends NodeK.Impl[_Axiom, V] with StructMixin {
+
+        def make = makeExact[V](this)
+      }
+
+      /**
+        * 2nd API, all [[Node]] under the same group can be connected to other [[Node]]
+        */
+      trait Group {
+
+        trait INode extends NodeK.Untyped[_Axiom] with StructMixin {
+          self: Group.this.Node =>
+
+          type Value = Group.this.Node
+        }
+
+        type Node <: INode
+
+        type Graph = _GraphK.Compat[_Axiom, Node]
+      }
+
+      /**
+        * 3rd API, define a [[Node]] constructor that works on every [[V]]
+        *
+        * implicit function allows [[Node]] to act as an extension of [[V]]
+        * @tparam V
+        *   value type
+        */
+      trait Wiring[V] {
+
+        trait INode extends NodeImpl[V]
+
+        type Node <: NodeImpl[V]
+        val Node: V => Node
+
+        type Graph = _GraphK.Compat[_Axiom, V]
+
+        implicit class ValuesOps(vs: IterableOnce[V]) {
+
+          def make: Graph = {
+            val nodes = vs.iterator.to(Seq).map(_.asNode)
+            makeExact(nodes: _*)
+          }
+        }
+
+        implicit class ValueOps(v: V) extends ValuesOps(Seq(v)) {
+
+          def asNode: Node = Node(v)
+        }
+
+        Seq(1, 2).to(List)
+
+        Array(1, 2).to(List)
+
+      }
 
       trait RewriterImpl[V] extends RewriterK.Impl[_Axiom, V] with StructMixin {}
 
@@ -134,20 +195,6 @@ trait Engine {
       ): _GraphK.Compat[XX, V] = makeTightest[XX, V](nodes: _*)
 
       def empty[V]: Graph[V] = makeExact[V]()
-
-      trait UntypedDef {
-        self: Singleton =>
-
-        trait UntypedNode extends NodeK.Untyped[_Axiom] with StructMixin {
-          self: UntypedDef.this.Node =>
-
-          type Value = UntypedDef.this.Node
-        }
-
-        type Node <: UntypedNode
-
-        type Graph = _GraphK.Compat[_Axiom, Node]
-      }
 
       trait Ops extends HasMaxRecursionDepth {
 
@@ -225,7 +272,7 @@ trait Engine {
 
       case class Singleton[V](value: V) extends NodeImpl[V] {
 
-        final override lazy val inductionC = Nil
+        final override lazy val getInduction = Nil
       }
 
       implicit class TreeNodeOps[V](n: NodeImpl[V]) {

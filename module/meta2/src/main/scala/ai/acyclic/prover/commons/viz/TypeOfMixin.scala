@@ -77,10 +77,10 @@ trait TypeOfMixin extends HasReflection {
     implicit def asNodes(v: TypeOf[_]): v.vizGroup.Nodes = v.nodes
   }
 
-  object VisualisationGroup extends Local.AnyGraph.Outbound.UntypedDef {
+  object VisualisationGroup extends Local.AnyGraph.Outbound.Group {
 
     // technically this layer could be collapsed into GraphRepr
-    trait Node extends UntypedNode with TypeOfMixin.VNodeLike {}
+    trait Node extends INode with TypeOfMixin.VNodeLike {}
   }
 
   // visualisations in the same group should not display redundant information
@@ -92,16 +92,11 @@ trait TypeOfMixin extends HasReflection {
 
     case class Nodes(
         ir: TypeIR
-//        visited: mutable.Set[TypeID] = mutable.Set.empty
     ) {
 
       val node: TypeView = ir.typeView
 
-//      {
-//        visited += node.reference
-//      }
-
-      lazy val argGraph = {
+      lazy val argGraph: Local.AnyGraph.Outbound[VisualisationGroup.Node] = {
 
         val equivalentIRs = ir.EquivalentTypes.recursively
 
@@ -147,7 +142,7 @@ trait TypeOfMixin extends HasReflection {
 
         final override lazy val identityKeyC = Some(node.reference)
 
-        override protected val inductionC = {
+        override protected val getInduction = {
 
           node.superTypes_nonTransitive
             .filter { tv =>
@@ -170,7 +165,7 @@ trait TypeOfMixin extends HasReflection {
 
         final override lazy val identityKeyC = None
 
-        override protected lazy val inductionC = {
+        override protected lazy val getInduction = {
           node.args.map { tt =>
             Nodes(tt.formattedBy(format.typeFormat)).SuperTypeNode
           }

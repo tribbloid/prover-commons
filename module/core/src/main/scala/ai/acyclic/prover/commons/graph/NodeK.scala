@@ -8,13 +8,13 @@ trait NodeK[+L <: Axiom] extends Lawful.Struct[L] {
 
   def value: Value
 
-  protected def nodeTextC: String = value.toString
-  final lazy val nodeText: String = nodeTextC
+  protected def getNodeText: String = value.toString
+  final lazy val nodeText: String = getNodeText
 
   private[this] type Node_~ = NodeK.Compat[L, Value]
 
-  protected def inductionC: Seq[(_Arrow, Node_~)]
-  lazy val induction = inductionC
+  protected def getInduction: Seq[(_Arrow, Node_~)]
+  lazy val induction: Seq[(_Arrow, Node_~)] = getInduction
 
   final lazy val discoverNodes: Seq[Node_~] = induction.map(_._2)
 
@@ -90,9 +90,9 @@ object NodeK {
 
     override def value: V2 = fn(original.value.asInstanceOf)
 
-    override protected def nodeTextC: String = original.nodeText
+    override protected def getNodeText: String = original.nodeText
 
-    override protected def inductionC: Seq[(_Arrow, Mapped[L, V, V2])] = {
+    override protected def getInduction: Seq[(_Arrow, Mapped[L, V, V2])] = {
       original.induction.map {
         case (a, n) =>
           a -> Mapped(n, fn)

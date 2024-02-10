@@ -34,17 +34,17 @@ object TreeFixture {
 
   trait TreeNode extends Local.Tree.NodeImpl[TV] {
 
-    final override protected def nodeTextC = value.text
+    final override protected def getNodeText = value.text
   }
 
   case class Node(value: TV) extends TreeNode {
 
-    override protected def inductionC = value.children.map(v => Node(v)).toSeq
+    override protected def getInduction = value.children.map(v => Node(v)).toSeq
   }
 
   case class NodeWithArrowText(value: TV) extends TreeNode {
 
-    override protected def inductionC = {
+    override protected def getInduction = {
 
       val children = value.children
       val result = children.map { child =>

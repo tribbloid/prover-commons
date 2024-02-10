@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.Arrow
 
-object Local extends LocalEngine.Syntax {
+object Local extends LocalEngine.Module {
 
   private def compileTimeCheck[V](): Unit = {
 

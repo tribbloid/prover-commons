@@ -68,6 +68,8 @@ object __Glossary {
     *   - `View`/`Wrapper` is a special kind of `Ops`/`Ext` classes that also contains custom members/methods for
     *     resource allocation, serialisation, equality, or other constructs that affects its runtime behaviour. For
     *     historical reasons, a `Ops`/`Ext` class can also be named `View`
+    *   - `Case` for type class (as in Haskell terminology, not always a JVM class), and object/term that can bind (be
+    *     summoned from) type(s) and nothing else, required by any type system that contains system F
     *
     * type or class name prefixes:
     *
