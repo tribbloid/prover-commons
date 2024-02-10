@@ -27,7 +27,7 @@ class SplainPluginVersions extends BaseSpec {
 
   it("plot") {
 
-    val g = G(Seq(scalaV))
+    val g = scalaV.make
 
     print_@(g.diagram_flow.toString)
 

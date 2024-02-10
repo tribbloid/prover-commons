@@ -14,12 +14,12 @@ class AnyGraphUnarySpec extends BaseSpec {
 
   it("Upcast") {
     val result = AnyGraphUnary
-      .^(cyclic.graph)
+      .^(cyclic.make)
       .NodeUpcast[Any]
       .compute
 
     result.diagram_flow.toString.shouldBe(
-      cyclic.graph.diagram_flow.toString
+      cyclic.make.diagram_flow.toString
     )
   }
 
@@ -31,7 +31,7 @@ class AnyGraphUnarySpec extends BaseSpec {
       val up = mutable.Buffer.empty[GV]
 
       AnyGraphUnary
-        .^(cyclic.graph, 5)
+        .^(cyclic.make, 5)
         .Traverse(
           n => down += n.value,
           n => up += n.value
@@ -72,7 +72,7 @@ class AnyGraphUnarySpec extends BaseSpec {
       val up = mutable.Buffer.empty[GV]
 
       AnyGraphUnary
-        .^(cyclic.graph, 5)
+        .^(cyclic.make, 5)
         .Traverse(
           n => down += n.value,
           n => up += n.value
@@ -109,7 +109,7 @@ class AnyGraphUnarySpec extends BaseSpec {
     def proto = {
       val inc = new AtomicInteger(0)
       val result = AnyGraphUnary
-        .^(diamond.graph: Local.AnyGraph[GV], 4)
+        .^(diamond.make: Local.AnyGraph[GV], 4)
         .TransformLinear(
           GVRewriter(v => Node(v)),
           down = { v =>

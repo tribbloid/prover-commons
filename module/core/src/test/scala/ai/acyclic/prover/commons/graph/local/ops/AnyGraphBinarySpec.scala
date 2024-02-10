@@ -11,8 +11,8 @@ class AnyGraphBinarySpec extends BaseSpec {
 
     it("of semilattice") {
 
-      val g1 = diamond.graph
-      val g2 = Appendage.p1.graph
+      val g1 = diamond.make
+      val g2 = Appendage.p1.make
 
       val uu = AnyGraphUnary.^(g1).&&(g2).Union().resolve
 
@@ -47,8 +47,8 @@ class AnyGraphBinarySpec extends BaseSpec {
 
     it("of graph") {
 
-      val g1 = cyclic.graph
-      val g2 = Appendage.p1.graph
+      val g1 = cyclic.make
+      val g2 = Appendage.p1.make
 
       val uu = AnyGraphUnary.^(g1).&&(g2).Union().resolve
 

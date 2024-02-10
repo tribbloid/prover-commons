@@ -140,6 +140,8 @@ trait Engine {
         */
       trait Wiring[V] {
 
+        trait INode extends NodeImpl[V]
+
         type Node <: NodeImpl[V]
         val Node: V => Node
 
@@ -147,7 +149,7 @@ trait Engine {
 
         implicit class ValuesOps(vs: IterableOnce[V]) {
 
-          def graph: Graph = {
+          def make: Graph = {
             val nodes = vs.iterator.to(Seq).map(_.asNode)
             makeExact(nodes: _*)
           }
