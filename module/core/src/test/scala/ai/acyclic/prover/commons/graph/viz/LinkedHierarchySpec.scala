@@ -22,7 +22,7 @@ class LinkedHierarchySpec extends BaseSpec {
             |  !-- ddd
             |""".stripMargin
 
-        cyclic.graphWithArrowText.diagram_linkedHierarchy.toString shouldBe
+        cyclic.withArrows.graph.diagram_linkedHierarchy.toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-: ( aaa |> bbb )
@@ -52,7 +52,7 @@ class LinkedHierarchySpec extends BaseSpec {
             |      %%%%
             |""".stripMargin
 
-        cyclic2.graphWithArrowText.diagram_linkedHierarchy.toString shouldBe
+        cyclic2.withArrows.graph.diagram_linkedHierarchy.toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%

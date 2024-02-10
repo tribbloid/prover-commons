@@ -49,7 +49,7 @@ object FnLike extends Capabilities {
 
   case class TreeNode(value: FnLike) extends Local.Tree.NodeImpl[FnLike] {
 
-    override def nodeTextC: String = {
+    override def getNodeText: String = {
 
       val body = value match {
 
@@ -65,7 +65,7 @@ object FnLike extends Capabilities {
       body
     }
 
-    override protected def inductionC: Seq[(_Arrow, TreeNode)] = {
+    override protected def getInduction: Seq[(_Arrow, TreeNode)] = {
 
       val children = value match {
         case v: Transparent => v.references

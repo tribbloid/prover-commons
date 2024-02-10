@@ -10,7 +10,6 @@ trait HasPolyLike extends HasFn {
     type Case[+FF <: Fn[_]] = FF with FnLike.Can[IsCase]
 
     type =>>[I <: IUB, O] = Case[FnImpl[I, O]]
-    type CaseFrom[I <: IUB] = Case[Fn[I]]
 
     class CaseBuilder[I <: IUB, F <: Fn[I]] {
 

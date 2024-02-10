@@ -23,9 +23,9 @@ object ProductDiscovery {
 
   case class FallbackOps(value: Any) extends Node {
 
-    final override protected def nodeTextC = value.toString
+    final override protected def getNodeText = value.toString
 //
-    final override protected def inductionC = Nil
+    final override protected def getInduction = Nil
 
   }
 
@@ -70,7 +70,7 @@ object ProductDiscovery {
       }
     }
 
-    final override protected def nodeTextC = {
+    final override protected def getNodeText = {
 
       if (_args.isEmpty) {
 
@@ -89,7 +89,7 @@ object ProductDiscovery {
       }
     }
 
-    final override protected def inductionC = {
+    final override protected def getInduction = {
 
       _children.map { v =>
         apply[ACCEPT](v)

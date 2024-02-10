@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.GraphFixture
+import ai.acyclic.prover.commons.graph.GraphFixture.GV.Node
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.testlib.BaseSpec
 

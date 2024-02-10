@@ -30,7 +30,7 @@ class FlowSpec extends BaseSpec {
           | └─────┘ └───┘
           |""".stripMargin
 
-      cyclic.graphWithArrowText.diagram_flow.toString shouldBe
+      cyclic.withArrows.graph.diagram_flow.toString shouldBe
         """
           |         ┌──────────────┐
           |         │( aaa |> bbb )│
@@ -83,7 +83,7 @@ class FlowSpec extends BaseSpec {
           |   └───┘
           |""".stripMargin
 
-      diamond.graphWithArrowText.diagram_flow.toString shouldBe
+      diamond.withArrows.graph.diagram_flow.toString shouldBe
         """
           |             ┌─────┐
           |             │ aaa │

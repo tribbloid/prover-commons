@@ -8,6 +8,7 @@ class AnyGraphBinarySpec extends BaseSpec {
   import GraphFixture._
 
   describe("Union") {
+
     it("of semilattice") {
 
       val g1 = diamond.graph

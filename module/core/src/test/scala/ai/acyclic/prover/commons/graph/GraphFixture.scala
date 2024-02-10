@@ -17,30 +17,42 @@ object GraphFixture {
     val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren: _*)
   }
 
+  object GV extends Local.AnyGraph.Outbound.Wiring[GV] {
+
+    case class Node(override val value: GV) extends OGraphNode {
+
+      override protected def getInduction =
+        value.children.toSeq.map(v => Node(v))
+    }
+
+    object WithArrows extends Local.AnyGraph.Outbound.Wiring[GV] {
+
+      case class Node(override val value: GV) extends OGraphNode {
+
+        override protected def getInduction = {
+          val children = value.children.toSeq
+          val result = children.map { child =>
+            Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Node(child)
+          }
+          result
+        }
+      }
+    }
+
+    implicit class GVOps(vs: Seq[GV]) {
+
+      def withArrows: WithArrows.ValuesOps = WithArrows.ValuesOps(vs: Seq[GV])
+
+    }
+  }
+
   trait OGraphNode extends Local.AnyGraph.Outbound.NodeImpl[GV] {
 
-    override protected def nodeTextC = value.text
+    override protected def getNodeText = value.text
 
     override def evalCacheKeyC: Option[GV] = Some(value)
 
     override def identityKeyC: Option[Any] = Some(value.text)
-  }
-
-  case class Node(override val value: GV) extends OGraphNode {
-
-    override protected def inductionC =
-      value.children.toSeq.map(v => Node(v))
-  }
-
-  case class NodeWithArrowText(override val value: GV) extends OGraphNode {
-
-    override protected def inductionC = {
-      val children = value.children.toSeq
-      val result = children.map { child =>
-        Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
-      }
-      result
-    }
   }
 
   case class GVRewriter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.RewriterImpl[GV] {
@@ -117,12 +129,4 @@ object GraphFixture {
     }
   }
 
-  implicit class GVsView(self: Seq[GV]) {
-
-    def graph =
-      AnyGraph.Outbound(self.map(v => Node(v)): _*)
-
-    def graphWithArrowText =
-      AnyGraph.Outbound(self.map(v => NodeWithArrowText(v)): _*)
-  }
 }
