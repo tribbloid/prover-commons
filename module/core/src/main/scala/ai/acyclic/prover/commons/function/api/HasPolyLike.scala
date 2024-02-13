@@ -5,16 +5,21 @@ trait HasPolyLike extends HasFn {
   trait PolyLike extends FnLike {
 
     trait IsCase extends FnLike.Cap
-    // TODO: should be a type
 
     type Case[+FF <: Fn[_]] = FF with FnLike.Can[IsCase]
 
+    type CaseFrom[I <: IUB] = Case[Fn[I]]
+
     type =>>[I <: IUB, O] = Case[FnImpl[I, O]]
+
+    /**
+      * CAUTION: cannot be defined for [[FnCompat]], implicit search will fail
+      */
 
     class CaseBuilder[I <: IUB, F <: Fn[I]] {
 
-      def to[O]: CaseBuilder[I, FnCompat[I, O]] = new CaseBuilder[I, FnCompat[I, O]]
-      def =>>[O]: CaseBuilder[I, FnCompat[I, O]] = to[O]
+      def to[O]: CaseBuilder[I, FnImpl[I, O]] = new CaseBuilder[I, FnImpl[I, O]]
+      def =>>[O]: CaseBuilder[I, FnImpl[I, O]] = to[O]
 
       def defining[FF <: F](fn: FF): Case[FF] = fn.enable[IsCase]
       def apply[FF <: F](fn: FF): Case[FF] = defining(fn)
