@@ -1,7 +1,8 @@
 package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.HasOuter
-import ai.acyclic.prover.commons.meta2.{Reflection, ScalaReflection}
+import ai.acyclic.prover.commons.meta.ScalaReflection
+import ai.acyclic.prover.commons.refl.Reflection
 
 class TypeVizBuilder[R <: Reflection](
     val reflection: R,

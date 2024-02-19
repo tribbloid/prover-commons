@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.viz
 
-import ai.acyclic.prover.commons.meta2.ScalaReflection
+import ai.acyclic.prover.commons.meta.ScalaReflection
 
 import scala.language.implicitConversions
 

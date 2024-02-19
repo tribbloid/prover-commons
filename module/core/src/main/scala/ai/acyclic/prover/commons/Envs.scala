@@ -1,29 +1,23 @@
 package ai.acyclic.prover.commons
 
 import java.io.File
-import scala.language.implicitConversions
 
 object Envs {
 
-  case class Dir(parts: String) {
+  case class Dir(protected val delegate: String) extends Delegating[String] {
 
     def append(splitter: String)(part: String): Dir = {
       require(!part.startsWith(splitter), "cannot append a part that starts with the splitter")
 
-      if (parts.endsWith(splitter)) Dir(parts + part)
-      else Dir(parts + splitter + part)
+      if (delegate.endsWith(splitter)) Dir(delegate + part)
+      else Dir(delegate + splitter + part)
     }
 
     def :/(part: String): Dir = append("/")(part)
     def :\(part: String): Dir = append(File.separator)(part)
     def dot(part: String): Dir = append(".")(part)
 
-    override def toString: String = parts
-  }
-
-  object Dir {
-
-    implicit def unbox(dir: Dir): String = dir.parts
+    override def toString: String = delegate
   }
 
   val USER_HOME: Dir = Dir(System.getProperty("user.home"))

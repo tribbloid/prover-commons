@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.viz
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.Flow
+import ai.acyclic.prover.commons.refl.HasReflection
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
 import scala.language.implicitConversions
@@ -19,6 +20,8 @@ trait TypeOfMixin extends HasReflection {
 
   import reflection._
 
+  val format: TypeHierarchy
+
   class TypeOf[T](
       //  TODO: this API won't work for multiple types (e.g. showing common join & meet in heyting algebra)
       //   it should be replaced by a more general construct
@@ -27,10 +30,10 @@ trait TypeOfMixin extends HasReflection {
 
     type TT = T
 
-    lazy val typeView: TypeView = reflection.typeView(tt)
+    lazy val typeOps: TypeOps = TypeOps(reflection.typeView(tt))
 
     lazy val vizGroup: VisualisationGroup = VisualisationGroup()
-    lazy val nodes: vizGroup.Nodes = vizGroup.Nodes(typeView.formattedBy(format.typeFormat))
+    lazy val nodes: vizGroup.Nodes = vizGroup.Nodes(typeOps.formattedBy(format.typeFormat))
 
     lazy val typeStr: String = nodes.typeText
 
@@ -94,14 +97,14 @@ trait TypeOfMixin extends HasReflection {
         ir: TypeIR
     ) {
 
-      val node: TypeView = ir.typeView
+      val node: TypeOps = ir.typeOps
 
       lazy val argGraph: Local.AnyGraph.Outbound[VisualisationGroup.Node] = {
 
         val equivalentIRs = ir.EquivalentTypes.recursively
 
         val argNodes = equivalentIRs
-          .groupBy(_.typeView)
+          .groupBy(_.typeOps)
           .flatMap {
             case (_, vs) =>
               val argNode = this.copy(ir = vs.head).ArgNode
@@ -146,10 +149,10 @@ trait TypeOfMixin extends HasReflection {
 
           node.superTypes_nonTransitive
             .filter { tv =>
-              tv.self.toString != "Any" // skipped for being too trivial
+              tv.toString != "Any" // skipped for being too trivial
             }
             .map { tv =>
-              Nodes(tv.formattedBy(format.typeFormat)).SuperTypeNode
+              Nodes(TypeOps(tv).formattedBy(format.typeFormat)).SuperTypeNode
             }
         }
 
@@ -167,13 +170,13 @@ trait TypeOfMixin extends HasReflection {
 
         override protected lazy val getInduction = {
           node.args.map { tt =>
-            Nodes(tt.formattedBy(format.typeFormat)).SuperTypeNode
+            Nodes(TypeOps(tt).formattedBy(format.typeFormat)).SuperTypeNode
           }
         }
 
         override lazy val toString: String = {
 
-          val ttStr = node.self.typeConstructor.toString
+          val ttStr = node.unbox.typeConstructor.toString
 
           val size = node.args.size
 

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.viz
 
-import ai.acyclic.prover.commons.meta2.Reflection
-import ai.acyclic.prover.commons.meta2.format.Formats0
+import ai.acyclic.prover.commons.refl.Reflection
+import ai.acyclic.prover.commons.viz.format.Formats0
 
 import scala.language.implicitConversions
 

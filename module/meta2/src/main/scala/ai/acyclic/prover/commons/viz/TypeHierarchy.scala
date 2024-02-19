@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.viz
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy.RefBindingLike
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
-import ai.acyclic.prover.commons.meta2.format.TypeFormat
+import ai.acyclic.prover.commons.viz.format.TypeFormat
 
 import scala.language.implicitConversions
 

@@ -1,8 +1,9 @@
 package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff.SuperSet
-import ai.acyclic.prover.commons.meta2.Reflection.Runtime.WeakTypeTag
+import ai.acyclic.prover.commons.meta.ScalaReflection.WeakTypeTag
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.viz.TypeViz
 import shapeless.{syntax, HNil, Witness}
 
 class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
