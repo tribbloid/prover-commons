@@ -17,7 +17,7 @@ trait Engine {
     override type _E = Engine.this.type
     final override def engine: _E = Engine.this
 
-    override type Dataset[+v] = Engine.this.Dataset[v]
+    override type Dataset[+V] = Engine.this.Dataset[V]
 
     def entriesC: Dataset[NodeK.Compat[X, Value]]
 
@@ -93,7 +93,7 @@ trait Engine {
 
   trait Module {
 
-    abstract class GraphBuilder[X <: Axiom, Y <: X](topology: Topology[X])(
+    abstract class GraphCase[X <: Axiom, Y <: X](topology: Topology[X])(
         implicit
         val assuming: Y
     ) extends _Struct[X] {
@@ -102,7 +102,7 @@ trait Engine {
 
       trait StructMixin extends _Struct[_Axiom] {
 
-        final lazy val assuming = GraphBuilder.this.assuming
+        final lazy val assuming = GraphCase.this.assuming
       }
 
       /**
@@ -198,7 +198,7 @@ trait Engine {
 
       trait Ops extends HasMaxRecursionDepth {
 
-        def outer = GraphBuilder.this
+        def outer = GraphCase.this
 
         // invariant type
         // like `Plan`
@@ -211,7 +211,7 @@ trait Engine {
         type Prev
         val prev: Prev
 
-        type AcceptingLaw = GraphBuilder.this._Axiom
+        type AcceptingLaw = GraphCase.this._Axiom
         type ArgLaw <: AcceptingLaw
         type ArgV
 
@@ -249,26 +249,26 @@ trait Engine {
       }
     }
 
-    object AnyGraph extends GraphBuilder(AnyGraphT) {
+    object AnyGraph extends GraphCase(AnyGraphT) {
 
-      object Outbound extends GraphBuilder(AnyGraphT.OutboundT) {}
+      object Outbound extends GraphCase(AnyGraphT.OutboundT) {}
       type Outbound[V] = Outbound.Graph[V]
 
     }
     type AnyGraph[V] = AnyGraph.Graph[V]
 
-    object Poset extends GraphBuilder(PosetT) {}
+    object Poset extends GraphCase(PosetT) {}
     type Poset[V] = Poset.Graph[V]
 
-    object Semilattice extends GraphBuilder(SemilatticeT) {
+    object Semilattice extends GraphCase(SemilatticeT) {
 
-      object Upper extends GraphBuilder(SemilatticeT.UpperT) {}
+      object Upper extends GraphCase(SemilatticeT.UpperT) {}
       type Upper[V] = Upper.Graph[V]
 
     }
     type Semilattice[V] = Semilattice.Graph[V]
 
-    object Tree extends GraphBuilder(TreeT) {
+    object Tree extends GraphCase(TreeT) {
 
       case class Singleton[V](value: V) extends NodeImpl[V] {
 

@@ -11,7 +11,7 @@ object __Glossary {
     *     bind to current scope
     *   - arguments in a type projector (`type F[x] => List[x]`) can starts with lower-case.
     *
-    * type or class names in a companion object:
+    * type or class names in/of a companion object:
     *
     *   - `Aux` for auxiliary type condition: introduced in shapeless as a shorthand definition for duck type
     *   - `AuxImpl` / `Impl` for extendable trait that satisfies `Aux`, Scala won't allow inheriting duck type,
@@ -19,6 +19,7 @@ object __Glossary {
     *   - `Lt` for "less than" type condition: same as above, but for type refinement that is a subtype of `Aux`
     *   - `LtImpl` for extendable trait that satisfies `Lt`, similar to `AuxImpl`
     *   - `Gt` for "greater than" type condition, enough said
+    *   - `GtImpl` for extendable trait that satisfies `Gt`, similar to `AuxImpl`
     *   - `Compat` for compatible type condition, instances that satisfy such condition can be implicitly converted to
     *     `Aux`, it could be an alias of `Lt`, `Gt` or `Aux` depending on situations
     *   - `Top` for supertype of all reifications of a generic type
@@ -68,8 +69,9 @@ object __Glossary {
     *   - `View`/`Wrapper` is a special kind of `Ops`/`Ext` classes that also contains custom members/methods for
     *     resource allocation, serialisation, equality, or other constructs that affects its runtime behaviour. For
     *     historical reasons, a `Ops`/`Ext` class can also be named `View`
-    *   - `Case` for type class (as in Haskell terminology, not always a JVM class), and object/term that can bind (be
-    *     summoned from) type(s) and nothing else, required by any type system that contains system F
+    *   - `Case`/`TypeCase` for type class (as in Haskell terminology, this name should be avoided in code, as it is not
+    *     a JVM class in OOP), and object/term that can bind (be summoned from) type(s) and nothing else, required by
+    *     any type system that contains system F
     *
     * type or class name prefixes:
     *
