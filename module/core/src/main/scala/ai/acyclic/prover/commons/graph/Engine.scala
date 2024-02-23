@@ -102,6 +102,8 @@ trait Engine {
 
       trait StructMixin extends _Struct[_Axiom] {
 
+        final override type _Axiom = GraphCase.this._Axiom
+
         final lazy val assuming = GraphCase.this.assuming
       }
 
@@ -112,7 +114,7 @@ trait Engine {
         */
       trait NodeImpl[V] extends NodeK.Impl[_Axiom, V] with StructMixin {
 
-        def make = makeExact[V](this)
+        def make: Graph[V] = makeExact[V](this)
       }
 
       /**
