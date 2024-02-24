@@ -19,6 +19,7 @@ trait Reflection extends ITyper with TypeIRMixin {
 object Reflection {
 
   trait Runtime extends Reflection with HasUniverse.Runtime {}
+  object Runtime extends Runtime
 
   trait CompileTime extends Reflection
 }

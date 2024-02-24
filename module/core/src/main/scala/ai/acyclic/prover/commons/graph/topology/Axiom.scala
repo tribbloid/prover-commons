@@ -64,7 +64,7 @@ object Axiom {
   trait TreeT extends SemilatticeT.UpperT
   object TreeT extends Topology[TreeT] {}
 
-  private def sanity[V](): Unit = {
+  private def __sanity[V](): Unit = {
 
     implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
 

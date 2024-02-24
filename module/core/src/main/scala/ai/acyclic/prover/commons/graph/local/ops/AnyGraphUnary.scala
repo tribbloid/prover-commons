@@ -248,6 +248,11 @@ object AnyGraphUnary {
 
     override type ArgV = V
 
+    def &&[L2 <: Local.AnyGraph._Axiom, V2](
+        argPlan: LocalEngine.PlanK.Compat[L2, V2],
+        maxDepth: Int = ^.this.maxDepth
+    ) = new &&[L2, V2](argPlan, maxDepth)
+
     case class &&[L2 <: Local.AnyGraph._Axiom, V2](
         argPlan: LocalEngine.PlanK.Compat[L2, V2],
         override val maxDepth: Int = ^.this.maxDepth

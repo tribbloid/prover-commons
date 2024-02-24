@@ -46,8 +46,8 @@ trait HasFn {
     })
     .below(1)
 
-  implicit def _fromVanilla[F[A, B] <: A => B, I <: IUB, R](
-      vanilla: F[I, R]
+  implicit def _fromVanilla[I <: IUB, R](
+      vanilla: I => R
   ): FnImpl[I, R] = {
     implicit val definedAt: CallStackRef = definedHere
     Fn[I, R](vanilla)

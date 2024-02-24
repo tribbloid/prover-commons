@@ -11,9 +11,9 @@ class PreDefSpec extends BaseSpec {
 
   lazy val fn: Int :=> Int = { Fixtures._fn0 }
 
-  lazy val chainedSelf: Impl.Fn[Int, Int] = fn.andThen(fn)
+  lazy val chainedSelf = fn.andThen(fn)
 
-  lazy val chainedOthers: Impl.Fn[Int, String] = fn.andThen { v: Int =>
+  lazy val chainedOthers = fn.andThen[String] { v: Int =>
     s"${v}b"
   }
 

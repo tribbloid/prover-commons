@@ -138,8 +138,9 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
-      val buildBuffers = AnyGraphUnary
-        .^(semilattice, maxDepth)
+      val unary = AnyGraphUnary.^(semilattice, maxDepth)
+
+      val buildBuffers = unary
         .Traverse(
           down = { node =>
             val wrapper = nodeID2Wrapper(node)

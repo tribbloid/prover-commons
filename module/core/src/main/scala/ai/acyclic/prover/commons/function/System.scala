@@ -22,7 +22,7 @@ object System extends HasMorphism with HasPoly with Serializable {
       result
     }
 
-    def andThen[R2](g: FnCompat[R, R2])(
+    def andThen[R2](g: Fn[R] { type Out = R2 })(
         implicit
         _definedAt: CallStackRef = CallStackRef.below(),
         ev: R <:< (R with IUB)

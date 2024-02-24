@@ -228,7 +228,7 @@ trait Engine {
 
         type Arg = Arg.Graph[ArgV]
 
-        def arg: Arg = argPlan.resolve
+        lazy val arg: Arg = argPlan.resolve
 
         type ArgNode = Arg.Node[ArgV]
         type ArgRewriter = Arg.Rewriter[ArgV]

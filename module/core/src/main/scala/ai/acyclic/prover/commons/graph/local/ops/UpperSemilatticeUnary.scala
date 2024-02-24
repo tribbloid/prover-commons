@@ -31,9 +31,9 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
       Breaks.breakable {
 
-        AnyGraphUnary.^(arg.asPlan, maxDepth)
+        val unary = AnyGraphUnary.^(arg.asPlan, maxDepth)
 
-        arg
+        unary
           .Traverse(
             down = { n =>
               val counterOpt = id_counters.get(n.identityKey)
@@ -52,6 +52,7 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
           )
           .DepthFirst
           .resolve
+
       }
 
       require(id_counters.size == 1, "NOT a semilattice!")

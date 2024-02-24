@@ -16,10 +16,6 @@ object GraphK {
 
   type Aux[+X <: Axiom, V] = GraphK[X] { type Value = V }
 
-//  trait AuxT[+L <: Axiom, V] extends GraphK[L] {
-//    type Value = V
-//  }
-
   // Acronym of "Less Than"
   type Lt[+X <: Axiom, +A <: Arrow, +V] = Aux[X, _ <: V]
 }
