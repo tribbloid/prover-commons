@@ -30,11 +30,11 @@ case class StringDiff(
 
     val trimmed: Option[TextBlock] = raw.map(v => trim(TextBlock(v)))
 
-    val rows: List[String] = trimmed.toList.flatMap { raw =>
+    val rows: Vector[String] = trimmed.toVector.flatMap { raw =>
       raw.lines
     }
 
-    val effective: List[String] = {
+    val effective: Vector[String] = {
 
       var a = rows.map(v => ("|" + v).trim.stripPrefix("|"))
 
@@ -43,12 +43,23 @@ case class StringDiff(
       a
     }
 
-    lazy val str: String = effective.mkString("\n")
-    lazy val info: String = (
-      s"\n=============================== $header ================================\n\n" +
-        str
-    ).trim
+    object info {
 
+      lazy val rows: Vector[String] = {
+        Vector(
+          s"\n=============================== $header ================================",
+          ""
+        ) ++ effective
+      }
+
+      def stringWithMargin(margin: String): String = {
+        rows
+          .map(v => margin + v)
+          .mkString("\n")
+      }
+
+      override lazy val toString: String = stringWithMargin("|")
+    }
   }
 
   object Right extends Rows(right, "[EXPECTED / RIGHT]")
@@ -60,57 +71,57 @@ case class StringDiff(
 
       s"""
            |expected: <
-           |${Left.info}
+           ${Left.info}
            |> but was: <
-           |${Right.info}
+           ${Right.info}
            |>
-      """.stripMargin.trim
+      """.stripMargin
     }
 
     lazy val error1b: String = {
 
       s"""
-         |expected: "
-         |${Left.info}
-         |" but was: "
-         |${Right.info}
-         |"
-      """.stripMargin.trim
+           |expected: "
+           ${Left.info}
+           |" but was: "
+           ${Right.info}
+           |"
+      """.stripMargin
     }
 
     lazy val error2: String = {
 
       s"""
-         |<
-         |${Left.info}
-         |> did not equal <
-         |${Right.info}
-         |>
-      """.stripMargin.trim
+           |<
+           ${Left.info}
+           |> did not equal <
+           ${Right.info}
+           |>
+      """.stripMargin
     }
 
     lazy val error2b: String = {
 
       s"""
            |"
-           |${Left.info}
+           ${Left.info}
            |" did not equal "
-           |${Right.info}
+           ${Right.info}
            |"
-      """.stripMargin.trim
+      """.stripMargin
     }
 
-    override lazy val toString: String = error2
+    override lazy val toString: String = error2.trim
 
-    def isEqual = Left.effective == Right.effective
+    def isEqual: Boolean = Left.effective == Right.effective
   }
 
   lazy val plainDiffClue: String = {
     s"""
-       |${Left.info}
-       |
-       |${Right.info}
-       |""".stripMargin.trim
+         ${Left.info}
+         |
+         ${Right.info}
+         |""".stripMargin.trim
   }
 
   lazy val info: String = {
@@ -122,9 +133,9 @@ case class StringDiff(
       case (false, false) =>
         throw new UnsupportedOperationException("both left and right operands are missing")
       case (true, false) =>
-        Left.info
+        Left.info.toString
       case (false, true) =>
-        Right.info
+        Right.info.toString
     }
   }
 
