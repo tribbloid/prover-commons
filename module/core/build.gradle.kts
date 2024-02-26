@@ -5,6 +5,7 @@ dependencies {
     api(project(":prover-commons:infra"))
     testFixturesApi(testFixtures(project(":prover-commons:infra")))
 
+    api("${vs.scala.group}:scala-reflect:${vs.scala.v}")
     api("org.scalameta:ascii-graphs_${vs.scala.binaryV}:0.1.2")
 //    api("org.typelevel:cats-effect_${vs.scala.binaryV}:3.4.5")
 
@@ -13,4 +14,9 @@ dependencies {
 //    api("com.bondlink:formless_${vs.scala.binaryV}:0.5.1")
 
     api("com.github.ben-manes.caffeine:caffeine:3.2.3")
+
+
+    val zioV = "2.1.24"
+
+    api("dev.zio:zio_${vs.scala.binaryV}:$zioV")
 }

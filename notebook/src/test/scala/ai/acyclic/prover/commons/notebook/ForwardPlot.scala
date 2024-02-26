@@ -23,7 +23,7 @@ trait ForwardPlot {
   object Forward extends Local.Diverging.UpperSemilattice.Inspection[Forward] {
 
     object inspect extends (Forward => inspect)
-    case class inspect(value: Forward) extends Node_ {
+    case class inspect(value: Forward) extends Result {
 
       override def inductions: Seq[(_Arrow, Forward.this.inspect)] = {
 

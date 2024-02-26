@@ -25,34 +25,28 @@ object Priors {
 
   trait Node {
 
-    def value: Any
-
-    def nodeText: String = value.toString
+    lazy val identity: Option[Any] = evalCacheKey
 
     /**
       * Only affecting caching mechanism in resolving induction(s). Induction of the same node may be cached and reused
-      * instead of being computed twice. If returns None, no computation will ever be cached
+      * instead of being computed twice. If returns None, the cache will be ignored
       *
-      * CAUTION: this won't affect node representation in diagrams, need to override the following [[identityC]]
-      *
-      * in general, [[evalCacheKeyC]] equality should be a sufficient condition of [[identityC]] equality
+      * CAUTION: it is generally stronger than [[identity]], namely, [[evalCacheKey]] equality should be a sufficient
+      * condition of [[identity]] equality, but not vice versa. E.g.1 identical node can have 2 different
+      * [[evalCacheKey]], each referring to forward and backward links.
       *
       * @return
       *   key with equality & hashcode
       */
-    protected def evalCacheKeyC: Option[Any] = Some(this)
-    final lazy val evalCacheKey = evalCacheKeyC
+    lazy val evalCacheKey: Option[Any] = Some(this)
 
-    protected def identityC: Option[Any] = evalCacheKeyC
-    final lazy val identity = identityC
-    // TODO: this should be fold in value
-    //  if not, it may define a single node with 2 conflicting values
+    def value: Any
 
+    def nodeText: String = value.toString
   }
 
   trait Graph {
 
     val engine: Engine
   }
-
 }

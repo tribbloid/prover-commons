@@ -83,9 +83,11 @@ class TextBlockSpec extends AnyFunSpec {
     it("right") {
 
       assert {
-        normalizeLineEndings(untrimmed
-          .zipRight(untrimmed.trim.block)
-          .toString)
+        normalizeLineEndings(
+          untrimmed
+            .zipRight(untrimmed.trim.block)
+            .toString
+        )
           .===(
             """                  /---\
               |                 /  |  \
@@ -101,9 +103,11 @@ class TextBlockSpec extends AnyFunSpec {
     it("bottom") {
 
       assert {
-        normalizeLineEndings(untrimmed
-          .zipBottom(untrimmed.trim.block)
-          .toString)
+        normalizeLineEndings(
+          untrimmed
+            .zipBottom(untrimmed.trim.block)
+            .toString
+        )
           .===(
             """
               |

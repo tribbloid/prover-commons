@@ -42,7 +42,7 @@ class TryCompileMacros(val c: whitebox.Context) extends SerializingLift.Mixin {
 
     tt.dealias match {
       case v: ConstantType => v.value.value.asInstanceOf[String]
-      case _ =>
+      case _               =>
         throw new UnsupportedOperationException(
           s"cannot parse type $tt : ${tt.getClass}"
         )

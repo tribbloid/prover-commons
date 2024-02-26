@@ -13,8 +13,7 @@ trait Arrow {
 
   val arrowType: ArrowType
 
-  protected def arrowTextC: Option[String] = None
-  final lazy val arrowText: Option[String] = arrowTextC
+  val arrowText: Option[String]
 }
 
 object Arrow {
@@ -28,11 +27,11 @@ object Arrow {
 
     trait NoInfo extends ^ {
 
-      final override def arrowTextC: None.type = None
+      final override lazy val arrowText: None.type = None
 
       case class OfText(text: OptionMagnet[String]) extends ^ {
 
-        @transient final override lazy val arrowTextC: Option[String] = text
+        @transient final override lazy val arrowText: Option[String] = text
       }
     }
     object NoInfo extends NoInfo {}

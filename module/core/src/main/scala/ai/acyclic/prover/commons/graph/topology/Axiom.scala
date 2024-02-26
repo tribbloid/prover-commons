@@ -1,7 +1,8 @@
 package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
-import ai.acyclic.prover.commons.util.{Phantom, Summoner}
+import ai.acyclic.prover.commons.implicits.summon
+import ai.acyclic.prover.commons.util.Phantom
 
 /**
   * a container of graph constraints
@@ -41,7 +42,7 @@ object Axiom {
   }
 
   { // sanity
-    val bounds = Summoner.summon[ExtractArrow.Gt[Lt_[Arrow.Outbound]]]
+    val bounds = summon.apply[ExtractArrow.Gt[Lt_[Arrow.Outbound]]]
 
     implicitly[bounds._Arrow =:= Arrow.Outbound]
   }

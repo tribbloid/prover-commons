@@ -1,0 +1,19 @@
+package ai.acyclic.prover.commons.jit
+
+object CanSimplify extends CanSimplify_Impl0 {}
+
+trait CanSimplify[+N <: FunctionLike] extends FunctionLike {
+
+  type PartialEvalInputs
+  lazy val noneProvided: PartialEvalInputs = throw new UnsupportedOperationException("PartialEvalInputs not provided")
+  def partialEval(env: PartialEvalEnv[PartialEvalInputs]): N = {
+    this.asInstanceOf[N]
+  }
+
+  def simplify: N = {
+
+    val env = PartialEvalEnv(noneProvided, failFast = false, onlyPure = true)
+
+    partialEval(env)
+  }
+}

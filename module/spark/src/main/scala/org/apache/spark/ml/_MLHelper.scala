@@ -24,9 +24,4 @@
 //    }
 //  }
 //
-//  object _DefaultParamsWriter {
-//
-//    val saveMetadata: (Params, String, SparkContext, Option[JObject], Option[JValue]) => Unit =
-//      DefaultParamsWriter.saveMetadata
-//  }
 //}

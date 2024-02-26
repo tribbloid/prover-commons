@@ -6,6 +6,7 @@ trait Projection {}
 
 object Projection {
 
+  // TODO: move into a new package "projection" under "multiverse"
   type Equals = Equals.Base
 
   object Equals {

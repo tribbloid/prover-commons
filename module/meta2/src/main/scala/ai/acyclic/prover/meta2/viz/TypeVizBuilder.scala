@@ -1,0 +1,43 @@
+package ai.acyclic.prover.meta2.viz
+
+import ai.acyclic.prover.commons.HasInner
+import ai.acyclic.prover.meta2.meta.ScalaReflection
+import ai.acyclic.prover.meta2.refl.Reflection
+
+class TypeVizBuilder[R <: Reflection](
+    val reflection: R,
+    val format: TypeTreeFormat
+) extends HasInner {
+
+  sealed abstract class _TypeViz(
+      val reflection: R = TypeVizBuilder.this.reflection
+  ) extends TypeViz[R]
+      with _Inner {
+
+    override val treeFormat: TypeTreeFormat = TypeVizBuilder.this.format
+  }
+
+  abstract class WeakType extends _TypeViz() {
+
+    override type TTag[T] = WeakTypeTag[T]
+
+    def withFormat(format: TypeTreeFormat = TypeTreeFormat.Default) =
+      new TypeVizBuilder(this.reflection, format).WeakType
+  }
+  object WeakType extends WeakType
+
+  abstract class ConcreteType extends _TypeViz() {
+
+    override type TTag[T] = TypeTag[T]
+
+    def withFormat(format: TypeTreeFormat = TypeTreeFormat.Default) =
+      new TypeVizBuilder(this.reflection, format).ConcreteType
+  }
+  object ConcreteType extends ConcreteType
+
+}
+
+object TypeVizBuilder {
+
+  object RuntimeDefault extends TypeVizBuilder(ScalaReflection, TypeTreeFormat.Default) {}
+}

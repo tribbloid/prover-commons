@@ -2,7 +2,8 @@ package ai.acyclic.prover.commons.multiverse
 
 import ai.acyclic.prover.commons.collection.CacheMagnet.{MapRepr, SetRepr}
 import ai.acyclic.prover.commons.collection.{CacheMagnet, KeyEncodedMap, MapBackedSet, ValueEncodedMap}
-import ai.acyclic.prover.commons.function.Bijection
+import ai.acyclic.prover.commons.jit.Bijection
+import ai.acyclic.prover.commons.multiverse.rewrite.CanNormalise
 import ai.acyclic.prover.commons.util.Caching
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -124,9 +125,7 @@ object CanEqual {
     }
   }
 
-  // TODO: should be ByStackMemory
-
-  object ByMemory extends Impl[Any] {
+  object ByMemory extends Impl[Any] { // TODO: should be ByStackMemory
     // always delegate to trivial case
 
     override def hashOf(v: Any): Int = {
@@ -200,37 +199,26 @@ object CanEqual {
   }
 
   case class ByNormalise[LR: ClassTag](
-      normalise: CanNormalise[LR] = CanNormalise.Native,
+      normalise: CanNormalise.From[LR],
       fallback: CanEqual[Any] = CanEqual.Native
   ) extends CanEqual.Impl[LR] {
 
     override def hashOfNonTrivial(v: LR): Option[Int] = {
-      val normalisedOpt = normalise.normalise(v).map(_.value)
+      val normalised = normalise.normalise(v)
 
-      normalisedOpt
-        .flatMap { n =>
-          fallback.hashOfNonTrivial(n)
-        }
+      fallback.hashOfNonTrivial(normalised)
     }
 
     override def areEqualNonTrivial(v1: LR, v2: LR): Option[Boolean] = {
 
-      val opts: Seq[Option[Any]] = Seq(v1, v2).map { v =>
-        normalise.normalise(v).map(_.value)
+      val opts: Seq[Any] = Seq(v1, v2).map { v =>
+        normalise.normalise(v)
       }
 
-      val Seq(lOpt, rOpt) = opts
+      val Seq(ln, rn) = opts
 
-      (lOpt, rOpt) match {
-        case (Some(ln), Some(rn)) =>
-          fallback
-            .areEqualNonTrivial(ln, rn)
-            .orElse(
-              fallback.areEqualNonTrivial(v1, v2)
-            )
-
-        case _ =>
-          fallback.areEqualNonTrivial(v1, v2)
+      fallback.areEqualNonTrivial(ln, rn).orElse {
+        fallback.areEqualNonTrivial(v1, v2)
       }
     }
   }
@@ -308,6 +296,8 @@ object CanEqual {
 
   implicit class Tagged[LR: ClassTag](self: CanEqual[LR]) {
 
+    implicitly[ClassTag[LR]]
+
     object ForAny extends Impl[Any] {
 
       val outer = CanEqual.this
@@ -315,19 +305,19 @@ object CanEqual {
       override def hashOfNonTrivial(v: Any): Option[Int] = {
 
         v match {
-          case vv: LR => self.hashOfNonTrivial(vv)
-          case _      => None
+          case vv if tagLR.runtimeClass.isInstance(vv) => self.hashOfNonTrivial(vv.asInstanceOf[LR])
+          case _                                       => None
         }
       }
 
       override def areEqualNonTrivial(v1: Any, v2: Any): Option[Boolean] = {
 
         (v1, v2) match {
-          case (null, null) => Some(true)
-          case (null, _)    => Some(false)
-          case (_, null)    => Some(false)
-          case (ll: LR, rr: LR) =>
-            self.areEqualNonTrivial(ll, rr)
+          case (null, null)                                                                       => Some(true)
+          case (null, _)                                                                          => Some(false)
+          case (_, null)                                                                          => Some(false)
+          case (ll, rr) if tagLR.runtimeClass.isInstance(ll) && tagLR.runtimeClass.isInstance(rr) =>
+            self.areEqualNonTrivial(ll.asInstanceOf[LR], rr.asInstanceOf[LR])
           case _ => None
         }
       }
@@ -336,7 +326,7 @@ object CanEqual {
   }
 }
 
-trait CanEqual[-LR] extends Plane {
+trait CanEqual[-LR] extends Verse {
 
   import CanEqual.*
 
@@ -356,13 +346,12 @@ trait CanEqual[-LR] extends Plane {
 
   def areEqual(x: LR, y: LR): Boolean = {
     val determined: Option[Boolean] = (x, y) match {
-      case (x: AnyRef with LR, y: AnyRef with LR) => {
-        if (x.eq(y)) Some(true)
+      case (refX: AnyRef, refY: AnyRef) =>
+        if (refX.eq(refY)) Some(true)
         else areEqualNonTrivial(x, y)
-      }
-      case (_: AnyRef with LR, _) => Some(false)
-      case (_, _: AnyRef with LR) => Some(false)
-      case _ =>
+      case (_: AnyRef, _) => Some(false)
+      case (_, _: AnyRef) => Some(false)
+      case _              =>
         areEqualNonTrivial(x, y)
     }
 
@@ -388,7 +377,7 @@ trait CanEqual[-LR] extends Plane {
     def nextSerialID: Int = {
       require(
         !locked, {
-          locked
+          val _ = locked
           "cannot write, lookup is locked"
         }
       )
