@@ -1,10 +1,10 @@
-package ai.acyclic.prover.commons.util
+package ai.acyclic.prover.commons.implicits
 
-object Summoner {
+object summon {
 
   // backported from Scala 3, tighter than scala 2's `implicitly[T]`
   // TODO: all invocation of `implicitly` should be replaced with this
-  def summon[T](
+  def apply[T](
       implicit
       x: T
   ): x.type = x
@@ -18,7 +18,7 @@ object Summoner {
     }
 
     {
-      val foo = summon[Foo]
+      val foo = apply[Foo]
       foo
     }
 

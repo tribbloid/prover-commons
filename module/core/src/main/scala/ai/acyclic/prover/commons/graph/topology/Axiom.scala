@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.util.Summoner
+import ai.acyclic.prover.commons.implicits.summon
 
 /**
   * a container of graph constraints
@@ -30,7 +30,7 @@ object Axiom {
   }
 
   { // sanity
-    val bounds = Summoner.summon[ImplUnpack.Gt[Impl[Arrow.`~>`.^]]]
+    val bounds = summon.apply[ImplUnpack.Gt[Impl[Arrow.`~>`.^]]]
 
     implicitly[bounds._Arrow =:= Arrow.`~>`.^]
   }

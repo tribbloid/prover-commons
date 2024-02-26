@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.util
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 
 trait DefinedAtMixin extends Serializable {
+  // TODO: need 2 implementations: compile-time (use staging) & run-time (use stacktrace)
 
   {
     definedAt
