@@ -27,11 +27,11 @@ trait HasPolyLike extends HasFn {
       def defining[R](fn: I => R)(
           implicit
           ev: FnImpl[I, R] <:< F
-      ): Case[FnImpl[I, R]] = Fn(fn).enable[IsCase]
+      ): I =>> R = Fn(fn).enable[IsCase]
       def apply[R](fn: I => R)(
           implicit
           ev: FnImpl[I, R] <:< F
-      ): Case[FnImpl[I, R]] = defining(fn)
+      ): I =>> R = defining(fn)
 
       def summon(
           implicit

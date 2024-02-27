@@ -8,9 +8,11 @@ package ai.acyclic.prover.commons.util
   */
 trait Capabilities {
 
+  type @@[T, CC <: Cap] = T with Can[CC]
+
   trait Can[+C <: Cap] {
 
-    def enable[CC <: Cap]: Can.this.type with Can[CC] = this.asInstanceOf[this.type with Can[CC]]
+    def enable[CC <: Cap]: Can.this.type @@ CC = this.asInstanceOf[this.type with Can[CC]]
   }
   type NoCap = Can[Cap]
 

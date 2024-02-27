@@ -17,12 +17,21 @@ trait HasPoly extends HasPolyLike {
     */
   trait Poly extends PolyLike {
     // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
-    // TODO: renamed to AdHoc
 
     def apply[I <: IUB, R](v: I)(
         implicit
         _case: Case[FnCompat[v.type, R]]
     ): R = _case.apply(v)
+
+    object asShapeless extends shapeless.Poly1 {
+
+      implicit def rewrite[I <: IUB, R](
+          implicit
+          _case: Poly.this.Case[FnCompat[I, R]]
+      ) = at[I] { v =>
+        _case.apply(v)
+      }
+    }
   }
 
   implicit class functionIsPoly[I <: IUB, R](val reference: FnCompat[I, R]) extends Poly with Transparent1 {
