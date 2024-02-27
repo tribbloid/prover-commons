@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.same.Same
 import ai.acyclic.prover.commons.typesetting.TextBlock
-import shapeless.{::, HList, HNil, Witness}
+import shapeless.{::, HList, HNil}
 
 trait ProductTuples[VB] extends Tuples {
 
@@ -29,7 +29,7 @@ trait ProductTuples[VB] extends Tuples {
 
     override def asList: List[VB] = Nil
 
-    override lazy val toString: String = EYE.value
+    override lazy val toString: String = EYE
 
   }
   override val Eye = new Eye
@@ -70,12 +70,12 @@ trait ProductTuples[VB] extends Tuples {
 
 object ProductTuples {
 
-  val EYE = Witness("∅")
+  final val EYE = "∅"
 
   object W {
 
-    final val eye = Witness("Eye")
+    final val eye = "Eye"
 
-    final val >< = Witness(" >< ")
+    final val >< = " >< "
   }
 }
