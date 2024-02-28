@@ -2,6 +2,8 @@ package ai.acyclic.prover.commons.function.api
 
 import FnLike.Transparent1
 
+import scala.language.implicitConversions
+
 trait HasPoly extends HasPolyLike {
 
   /**
@@ -33,6 +35,8 @@ trait HasPoly extends HasPolyLike {
       }
     }
   }
+
+  implicit def asShapeless(v: Poly): v.asShapeless.type = v.asShapeless
 
   implicit class functionIsPoly[I <: IUB, R](val reference: FnCompat[I, R]) extends Poly with Transparent1 {
 

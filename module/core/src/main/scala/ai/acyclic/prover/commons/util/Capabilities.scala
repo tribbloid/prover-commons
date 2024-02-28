@@ -8,11 +8,11 @@ package ai.acyclic.prover.commons.util
   */
 trait Capabilities {
 
-  type @@[T, CC <: Cap] = T with Can[CC]
+  type ^^[T, CC <: Cap] = T with Can[CC] // following the convention of Scala 3.4.0 with capture checking
 
   trait Can[+C <: Cap] {
 
-    def enable[CC <: Cap]: Can.this.type @@ CC = this.asInstanceOf[this.type with Can[CC]]
+    def enable[CC <: Cap]: Can.this.type ^^ CC = this.asInstanceOf[this.type with Can[CC]]
   }
   type NoCap = Can[Cap]
 
