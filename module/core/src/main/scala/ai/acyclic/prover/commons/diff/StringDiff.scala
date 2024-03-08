@@ -52,13 +52,15 @@ case class StringDiff(
         ) ++ effective
       }
 
-      def stringWithMargin(margin: String): String = {
+      def textWithMargin(margin: String): String = {
         rows
           .map(v => margin + v)
           .mkString("\n")
       }
 
-      override lazy val toString: String = stringWithMargin("|")
+      lazy val text: String = textWithMargin("")
+
+      override lazy val toString: String = textWithMargin("|") // to be used for interpolation with stripMargin
     }
   }
 
@@ -133,9 +135,9 @@ case class StringDiff(
       case (false, false) =>
         throw new UnsupportedOperationException("both left and right operands are missing")
       case (true, false) =>
-        Left.info.toString
+        Left.info.text
       case (false, true) =>
-        Right.info.toString
+        Right.info.text
     }
   }
 
