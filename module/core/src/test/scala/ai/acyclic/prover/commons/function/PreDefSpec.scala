@@ -77,7 +77,7 @@ class PreDefSpec extends BaseSpec {
         val v = _poly.at[Int].summon
         val v2 = _poly.at[Int].summon
 
-        implicitly[v.type <:< _poly.Case[Int :=> Int]]
+        implicitly[v.type <:< (_poly.=>>[Int, Int])]
         assert(v == v2)
 
         val r = v.apply(1)

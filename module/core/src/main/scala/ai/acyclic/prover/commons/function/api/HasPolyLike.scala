@@ -6,7 +6,7 @@ trait HasPolyLike extends HasFn {
 
     trait IsCase extends FnLike.Cap
 
-    type Case[+FF <: Fn[_]] = FF with FnLike.Can[IsCase]
+    type Case[+FF <: Fn[_]] = FnLike.^^[FF, IsCase]
 
     type CaseFrom[I <: IUB] = Case[Fn[I]]
 
@@ -45,6 +45,6 @@ trait HasPolyLike extends HasFn {
     def getCaseFor[I <: IUB](v: I)(
         implicit
         _case: Case[Fn[I]]
-    ): _case.type = _case
+    ): Case[Fn[I]] = _case
   }
 }

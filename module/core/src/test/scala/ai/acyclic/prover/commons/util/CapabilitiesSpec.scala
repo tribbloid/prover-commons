@@ -52,6 +52,6 @@ object CapabilitiesSpec {
     def fn(v: Int): Int
   }
 
-  trait Ext[C <: Subject.Cap] extends Ex with Subject.Can[C] {}
+  trait Ext[C <: Subject.Cap] extends Ex with Subject.NoCap {}
 
 }

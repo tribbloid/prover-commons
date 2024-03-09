@@ -29,8 +29,8 @@ trait HasPoly extends HasPolyLike {
 
       implicit def rewrite[I <: IUB, R](
           implicit
-          _case: Poly.this.Case[FnCompat[I, R]]
-      ) = at[I] { v =>
+          _case: I =>> R
+      ): Case.Aux[I, R] = at[I] { v =>
         _case.apply(v)
       }
     }
