@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.topology.{Axiom, Lawful, Topology}
 
-import scala.language.implicitConversions
 
 trait Engine {
   self: Singleton =>
