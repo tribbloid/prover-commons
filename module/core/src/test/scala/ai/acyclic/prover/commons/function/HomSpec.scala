@@ -2,12 +2,12 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-object PreDefSpec {}
+object HomSpec {}
 
-class PreDefSpec extends BaseSpec {
+class HomSpec extends BaseSpec {
 
   import ai.acyclic.prover.commons.function.Fixtures._
-  import ai.acyclic.prover.commons.function.PreDef._
+  import ai.acyclic.prover.commons.function.Hom._
 
   lazy val fn: Int :=> Int = { Fixtures._fn0 }
 
@@ -53,7 +53,7 @@ class PreDefSpec extends BaseSpec {
         s"""
             |+ andThen
             |!-- ${fnText}
-            |!-- chainedOthers <at PreDefSpec.scala:16>
+            |!-- chainedOthers <at HomSpec.scala:16>
             |""".stripMargin
       )
 

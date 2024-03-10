@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.PreDef._
+import ai.acyclic.prover.commons.function.Hom._
 
 trait FnFixture {
 

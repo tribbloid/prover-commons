@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.function
 
-object PreDef extends System.SystemView {
-  // TODO: should be "Hom"
+object Hom extends System.SystemView {
 
   import System._
 

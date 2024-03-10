@@ -22,7 +22,7 @@ object __FunctionDesignSpec {
     *
     * F[_ <: /\] requires 2 arguments (/\ and F) that are too bloat to define
     *
-    * it also causes divergence between [[PreDef.Morphism]] and [[PreDef.Poly]]
+    * it also causes divergence between [[Hom.Morphism]] and [[Hom.Poly]]
     *
     * One solution is to brake it into a polymorph and a dependent type, but type class relies heavily on unreliable
     * implicit.

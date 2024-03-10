@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.PreDef.Poly
+import ai.acyclic.prover.commons.function.Hom.Poly
 
 trait PolyFixture {
 
