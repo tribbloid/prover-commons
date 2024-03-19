@@ -25,7 +25,7 @@ object __Glossary {
     *   - `Top` for supertype of all reifications of a generic type
     *   - `^` for the one and only implementation
     *
-    * dependent type or class name suffixes:
+    * type or class name suffixes:
     *
     *   - Should contains at least 2 characters to differentiate from higher-kind-arguments
     *   - `Like` (also `I` prefix, as in Java & C#) for closest interface that defines all members/methods of a class,
@@ -72,6 +72,8 @@ object __Glossary {
     *   - `Case`/`TypeCase` for type class (as in Haskell terminology, this name should be avoided in code, as it is not
     *     a JVM class in OOP), and object/term that can bind (be summoned from) type(s) and nothing else, required by
     *     any type system that contains system F
+    *   - `Factory` for a class that can be used to construct instances of another class, usually defined in a companion
+    *   - `Giver` for an implicit `Factory` of which cases can be summoned for a type, usually defined as a companion
     *
     * type or class name prefixes:
     *

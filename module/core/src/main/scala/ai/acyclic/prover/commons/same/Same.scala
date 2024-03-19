@@ -121,8 +121,9 @@ object Same {
       override def toString: String = "" + samenessDelegatedTo
     }
 
+    // a cache wrapper with a serialID, such that `values` will return the values in insertion order
     case class Lookup[K, V](
-        underlying: CacheView[Wrapper[K], (Thunk[V], Long)] = Caching.Soft.build[Wrapper[K], (Thunk[V], Long)]()
+        underlying: CacheView[Wrapper[K], (V, Long)] = Caching.Soft.build[Wrapper[K], (V, Long)]()
     ) {
 
       private val serialID: AtomicInteger = new AtomicInteger(0)
@@ -138,23 +139,25 @@ object Same {
         serialID.getAndIncrement()
       }
 
-      def values: Seq[V] = underlying.values.toSeq.sortBy(_._2).map(_._1.value)
+      def values: Seq[V] = underlying.values.toSeq.sortBy(_._2).map(_._1)
 
       final def getOrElseUpdate(key: K, getValue: => V): V = {
 
         val id = Wrapper(key)
-        val w = this.synchronized {
-          underlying.getOrElseUpdate(
-            id, {
-              val t = Thunk((_: Unit) => getValue)
-              (t, nextSerialID)
+        val existing = underlying
+          .get(id) // fast
+        val w = existing
+          .getOrElse {
+            this.synchronized { // slow but once
+              underlying.getOrElseUpdate(
+                id, {
+                  val t = getValue
+                  (t, nextSerialID)
+                }
+              ) // should be fast
             }
-          ) // should be fast
-        }
-        w._1.value
-        // TODO: this may cause stackoverflow
-        //  if [[getOrElseUpdate]] is called again within the thunk
-        //  may need a trampoline to avoid it, maybe switch to cats
+          }
+        w._1
       }
 
       final def updateOverride(key: K, getValue: => V): Unit = {
@@ -163,7 +166,7 @@ object Same {
         this.synchronized {
           underlying.update(
             id, {
-              val t = Thunk(_ => getValue)
+              val t = getValue
               (t, nextSerialID)
             }
           )
@@ -184,7 +187,7 @@ object Same {
 
         underlying.repr
           .get(inMemoryId)
-          .map(_._1.value)
+          .map(_._1)
       }
     }
 
