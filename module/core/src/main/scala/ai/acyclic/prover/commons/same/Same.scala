@@ -1,9 +1,12 @@
 package ai.acyclic.prover.commons.same
 
-import ai.acyclic.prover.commons.function.Thunk
-import ai.acyclic.prover.commons.util.{CacheView, Caching}
+import ai.acyclic.prover.commons.collection.CacheView.{MapRepr, SetRepr}
+import ai.acyclic.prover.commons.collection.{CacheView, KeyEncodedMap, MapBackedSet, ValueEncodedMap}
+import ai.acyclic.prover.commons.function.Bijection
+import ai.acyclic.prover.commons.util.Caching
 
 import java.util.concurrent.atomic.AtomicInteger
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 trait Same[T] {
@@ -124,7 +127,7 @@ object Same {
     // a cache wrapper with a serialID, such that `values` will return the values in insertion order
     case class Lookup[K, V](
         underlying: CacheView[Wrapper[K], (V, Long)] = Caching.Soft.build[Wrapper[K], (V, Long)]()
-    ) {
+    ) extends CacheView[K, V] {
 
       private val serialID: AtomicInteger = new AtomicInteger(0)
       @volatile var locked: Boolean = false
@@ -139,56 +142,43 @@ object Same {
         serialID.getAndIncrement()
       }
 
-      def values: Seq[V] = underlying.values.toSeq.sortBy(_._2).map(_._1)
+      @transient lazy val asMap: MapRepr[K, V] = {
 
-      final def getOrElseUpdate(key: K, getValue: => V): V = {
+        val keyCodec = new Bijection[K, Wrapper[K]] {
+          override def apply(v1: K): Wrapper[K] = Wrapper(v1)
 
-        val id = Wrapper(key)
-        val existing = underlying
-          .get(id) // fast
-        val w = existing
-          .getOrElse {
-            this.synchronized { // slow but once
-              underlying.getOrElseUpdate(
-                id, {
-                  val t = getValue
-                  (t, nextSerialID)
-                }
-              ) // should be fast
-            }
-          }
-        w._1
-      }
+          override def invert(v1: Wrapper[K]): K = v1.samenessDelegatedTo
+        }
 
-      final def updateOverride(key: K, getValue: => V): Unit = {
+        val valueCodec = new Bijection[V, (V, Long)] {
+          override def apply(v1: V): (V, Long) = (v1, nextSerialID)
 
-        val id = Wrapper(key)
-        this.synchronized {
-          underlying.update(
-            id, {
-              val t = getValue
-              (t, nextSerialID)
-            }
-          )
+          override def invert(v1: (V, Long)): V = v1._1
+        }
+
+        val keyEnc = new KeyEncodedMap.Mutable(
+          keyCodec,
+          underlying
+        )
+
+        new ValueEncodedMap.Mutable(
+          valueCodec,
+          keyEnc
+        ) {
+
+          override def values: Seq[V] = underlying.values.toSeq.sortBy(_._2).map(_._1)
         }
       }
 
-      final def remove(key: K): Unit = {
-        val id = Wrapper(key)
-        this.synchronized {
-          underlying.remove(id)
-        }
+      override def asSet(
+          implicit
+          ev: Unit <:< V
+      ): SetRepr[K] = {
+
+        new MapBackedSet.Mutable(asMap.asInstanceOf[mutable.Map[K, Unit]])
+        // alas, Scala compiler is too dumb, should figure it out automatically
       }
 
-      final def isEmpty: Boolean = underlying.isEmpty
-
-      final def get(key: K): Option[V] = {
-        val inMemoryId = Wrapper(key)
-
-        underlying.repr
-          .get(inMemoryId)
-          .map(_._1)
-      }
     }
 
     case class Of[T: ClassTag](fn: T => Option[Any]) extends By {

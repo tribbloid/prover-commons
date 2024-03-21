@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.function.api
 
 import FnLike.Transparent1
+import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.same.Same
 
 object HasMorphism {}
@@ -33,6 +34,7 @@ trait HasMorphism extends HasPolyLike {
 
     type In[_ <: T_/\] <: IUB
     type Out[T <: T_/\]
+    // TODO: simplify using Fn as a dependent type
 
     def apply[T <: T_/\](arg: In[T]): Out[T]
   }
@@ -47,13 +49,12 @@ trait HasMorphism extends HasPolyLike {
       override type In[T <: T_/\] = reference.In[T]
       override type Out[T <: T_/\] = reference.Out[T]
 
-      lazy val lookup: Same.By#Lookup[IUB, Any] = Same.ByEquality.Lookup[IUB, Any]()
+      lazy val lookup: CacheView[IUB, Any] = Same.ByEquality.Lookup[IUB, Any]()
 
       override def apply[T <: T_/\](arg: In[T]): Out[T] = {
 
         lookup
-          .getOrElseUpdate(
-            arg,
+          .getOrElseUpdateOnce(arg)(
             reference.apply(arg)
           )
           .asInstanceOf[Out[T]]

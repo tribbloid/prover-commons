@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.function.api
 
+import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 import ai.acyclic.prover.commons.same.Same
 
@@ -55,7 +56,7 @@ trait HasFn {
 
   type FnCompat[-I <: IUB, +R] = Fn[I] { type Out <: R }
 
-  trait FnImpl[I <: IUB, R] extends Fn[I] { // most specific
+  trait FnImpl[I <: IUB, R] extends Fn[I] with Function1[I, R] { // most specific
 
     final type In = I
     final type Out = R
@@ -90,14 +91,14 @@ trait HasFn {
     ) extends FnImpl[I, R]
         with FnLike.Transparent1 {
 
-      lazy val lookup: Same.By#Lookup[I, R] = Same.ByEquality.Lookup[I, R]()
+      lazy val underlyingCache: CacheView[I, R] = Same.ByEquality.Lookup[I, R]()
 
       final def apply(key: I): R = {
-        lookup.getOrElseUpdate(key, reference(key))
+        underlyingCache.getOrElseUpdateOnce(key)(reference(key))
       }
 
       final def getExisting(arg: I): Option[R] = {
-        lookup
+        underlyingCache
           .get(arg)
       }
     }

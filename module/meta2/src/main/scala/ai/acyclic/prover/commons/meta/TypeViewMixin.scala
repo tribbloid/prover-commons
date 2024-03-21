@@ -319,7 +319,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     override def _copy(self: Type) = copy(self)
   }
 
-  lazy val typeView: function.System.FnImpl.Cached[Type, TypeView] = {
+  lazy val typeView: function.HomSystem.FnImpl.Cached[Type, TypeView] = {
     Impl(TypeView.apply _).cachedBy(Same.ByEquality.Lookup())
   }
 

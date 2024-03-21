@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.util
+package ai.acyclic.prover.commons.collection
 
 import scala.collection.mutable
 import scala.language.implicitConversions
@@ -17,14 +17,12 @@ trait CacheView[K, V] {
 
   def asMap: MapRepr[K, V]
 
-  def asSet(default: V): SetRepr[K]
-
-  def asSet()(
+  def asSet(
       implicit
-      ev: Default[V]
-  ): SetRepr[K] = asSet(ev.default)
+      ev: Unit <:< V
+  ): SetRepr[K]
 
-  def getOrElseUpdateSynchronously(key: K)(value: => V): V = {
+  final def getOrElseUpdateOnce(key: K)(value: => V): V = {
 
     asMap.getOrElse(
       key, {
@@ -34,11 +32,13 @@ trait CacheView[K, V] {
       }
     )
   }
+
+  // TODO: impl to updatedWithFnSynced
 }
 
 object CacheView {
 
-  type MapRepr[K, V] = scala.collection.concurrent.Map[K, V]
+  type MapRepr[K, V] = mutable.Map[K, V]
 
   type SetRepr[K] = mutable.Set[K]
 

@@ -2,10 +2,10 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 
-object Impl extends System.SystemView {
+object Impl extends HomSystem.SystemView {
   // TODO: should be under "Hom"
 
-  import System._
+  import HomSystem._
 
   type Fn[I, R] = FnImpl[I, R]
   type :=>[I, R] = FnImpl[I, R]
@@ -25,5 +25,6 @@ object Impl extends System.SystemView {
   type Dependent[T, R[_ <: T]] = DependentImpl[T, R]
   type :|=>[R[_]] = DependentImpl[Any, R]
 
-  type Poly = System.Poly
+  type Poly = HomSystem.Poly
+
 }

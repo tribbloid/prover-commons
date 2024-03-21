@@ -128,7 +128,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
                   Seq(n)
                 case None =>
                   keyOpt.foreach { key =>
-                    evaled.getOrElseUpdate(key, node)
+                    evaled.getOrElseUpdateOnce(key)(node)
                   }
 
                   fn(node)
@@ -167,7 +167,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
                 case None =>
                   val result = fn(node)
                   keyOpt.foreach { key =>
-                    evaled.getOrElseUpdate(key, result)
+                    evaled.getOrElseUpdateOnce(key)(result)
                   }
                   result
               }

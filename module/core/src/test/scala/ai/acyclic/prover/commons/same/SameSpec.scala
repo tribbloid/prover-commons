@@ -69,6 +69,21 @@ class SameSpec extends BaseSpec {
       )
   }
 
+  describe("lookup.asMap") {
+    it("can insert") {
+
+      val lookup = ByEquality.Lookup[Int, String]()
+
+      val asMap = lookup.asMap
+
+      asMap.update(1, "a")
+
+      assert(lookup.values.size == 1)
+      assert(lookup.get(1) == Some("a"))
+
+    }
+  }
+
 }
 
 object SameSpec {

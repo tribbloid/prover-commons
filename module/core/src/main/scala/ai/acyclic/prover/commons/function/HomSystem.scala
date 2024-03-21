@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 import ai.acyclic.prover.commons.function.api.FnLike.Transparent1
 import ai.acyclic.prover.commons.function.api.{FnLike, HasMorphism, HasPoly}
@@ -7,7 +8,7 @@ import ai.acyclic.prover.commons.same.Same
 
 import scala.language.implicitConversions
 
-object System extends HasMorphism with HasPoly with Serializable {
+object HomSystem extends HasMorphism with HasPoly with Serializable {
 
   type IUB = Any
 
@@ -38,11 +39,11 @@ object System extends HasMorphism with HasPoly with Serializable {
     }
 
     def cachedBy(
-        _lookup: Same.By#Lookup[I, R] = Same.ByEquality.Lookup[I, R]()
+        cache: CacheView[I, R] = Same.ByEquality.Lookup[I, R]()
     ): FnImpl.Cached[I, R] = {
       new FnImpl.Cached[I, R](self) {
 
-        override lazy val lookup: Same.By#Lookup[I, R] = _lookup
+        override lazy val underlyingCache: CacheView[I, R] = cache
       }
     }
   }
@@ -53,7 +54,7 @@ object System extends HasMorphism with HasPoly with Serializable {
   ](val self: SS) {
 
     def cachedBy(
-        _lookup: Same.By#Lookup[IUB, Any] = Same.ByEquality.Lookup()
+        _lookup: CacheView[IUB, Any] = Same.ByEquality.Lookup()
     ): Morphism.Cached[T_/\, SS] = {
 
       type Result = Morphism.Cached[T_/\, SS]
@@ -61,7 +62,7 @@ object System extends HasMorphism with HasPoly with Serializable {
       val result: Result =
         new Morphism.Cached[T_/\, SS](self) {
 
-          override lazy val lookup: Same.By#Lookup[IUB, Any] = _lookup
+          override lazy val lookup: CacheView[IUB, Any] = _lookup
         }
       result
 
@@ -96,7 +97,7 @@ object System extends HasMorphism with HasPoly with Serializable {
 
   trait SystemView {
 
-    implicit def asFnSystem(v: this.type): System.type = System
+    implicit def asFnSystem(v: this.type): HomSystem.type = HomSystem
   }
 
 }

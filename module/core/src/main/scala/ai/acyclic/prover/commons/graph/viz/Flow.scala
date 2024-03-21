@@ -167,7 +167,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
       buildBuffers.resolve
 
-      val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.lookup.values
+      val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.underlyingCache.values
         .map { nodeWrapper =>
           nodeWrapper.bindInboundArrows()
           nodeWrapper

@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.function
 
-object Hom extends System.SystemView {
+object Hom extends HomSystem.SystemView {
 
-  import System._
+  import HomSystem._
 
   type Fn[I, R] = FnCompat[I, R]
   type :=>[I, R] = FnCompat[I, R]
@@ -13,5 +13,5 @@ object Hom extends System.SystemView {
   type Dependent[T, +R[_]] = DependentCompat[T, R]
   type :|=>[+R[_]] = DependentCompat[Any, R]
 
-  type Poly = System.Poly
+  type Poly = HomSystem.Poly
 }
