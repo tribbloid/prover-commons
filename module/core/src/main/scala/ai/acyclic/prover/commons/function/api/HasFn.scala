@@ -56,7 +56,7 @@ trait HasFn {
 
   type FnCompat[-I <: IUB, +R] = Fn[I] { type Out <: R }
 
-  trait FnImpl[I <: IUB, R] extends Fn[I] with Function1[I, R] { // most specific
+  trait FnImpl[I <: IUB, R] extends Fn[I] { // most specific
 
     final type In = I
     final type Out = R

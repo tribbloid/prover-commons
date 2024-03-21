@@ -22,7 +22,9 @@ trait FnLike extends DefinedAtMixin with FnLike.NoCap {
     viz.treeText
   }
 
-  override def toString: String = nodeText
+  override def toString: String = {
+    nodeText
+  }
 }
 
 /**

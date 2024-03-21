@@ -2,15 +2,13 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
+import ai.acyclic.prover.commons.function.api.FnLike
 import ai.acyclic.prover.commons.function.api.FnLike.Transparent1
-import ai.acyclic.prover.commons.function.api.{FnLike, HasMorphism, HasPoly}
 import ai.acyclic.prover.commons.same.Same
 
 import scala.language.implicitConversions
 
-object HomSystem extends HasMorphism with HasPoly with Serializable {
-
-  type IUB = Any
+object HomSystem extends HomSystem_Imp0 {
 
   implicit class FnOps[I, R](val self: FnCompat[I, R]) extends Serializable {
 
