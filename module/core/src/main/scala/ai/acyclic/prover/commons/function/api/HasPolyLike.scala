@@ -4,9 +4,9 @@ trait HasPolyLike extends HasFn {
 
   trait PolyLike extends FnLike {
 
-    trait IsCase extends FnLike.Cap
+    object IsCase extends FnLike.Capability
 
-    type Case[+FF <: Fn[_]] = FnLike.^^[FF, IsCase]
+    type Case[+FF <: Fn[_]] = FnLike.^:[FF, IsCase.type]
 
     type At[I <: IUB] = Case[Fn[I]]
 
@@ -21,13 +21,19 @@ trait HasPolyLike extends HasFn {
       def to[O]: CaseBuilder[I, FnImpl[I, O]] = new CaseBuilder[I, FnImpl[I, O]]
       def =>>[O]: CaseBuilder[I, FnImpl[I, O]] = to[O]
 
-      def defining[FF <: F](fn: FF): Case[FF] = fn.enable[IsCase]
+      def defining[FF <: F](fn: FF): Case[FF] = {
+        val annotator: FnLike.Annotator[IsCase.type] = IsCase
+        annotator.^:[FF](fn)
+      }
       def apply[FF <: F](fn: FF): Case[FF] = defining(fn)
 
       def defining[R](fn: I => R)(
           implicit
           ev: FnImpl[I, R] <:< F
-      ): I =>> R = Fn(fn).enable[IsCase]
+      ): I =>> R = {
+        val _fn: FnImpl[I, R] = Fn(fn)
+        IsCase.^:[FnImpl[I, R]](_fn)
+      }
       def apply[R](fn: I => R)(
           implicit
           ev: FnImpl[I, R] <:< F

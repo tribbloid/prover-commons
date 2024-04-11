@@ -42,16 +42,16 @@ object CapabilitiesSpec {
 
   object Subject extends Capabilities {
 
-    trait Cap1 extends Cap {}
+    trait Cap1 extends Capability {}
 
     trait Cap2 extends Cap1 {}
   }
 
-  trait Ex extends Subject.NoCap {
+  trait Ex extends Subject.CanEnable {
 
     def fn(v: Int): Int
   }
 
-  trait Ext[C <: Subject.Cap] extends Ex with Subject.NoCap {}
+  trait Ext[C <: Subject.Capability] extends Ex with Subject.CanEnable {}
 
 }

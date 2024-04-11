@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.util.{Capabilities, DefinedAtMixin}
 
 import scala.runtime.ScalaRunTime
 
-trait FnLike extends DefinedAtMixin with FnLike.NoCap {
+trait FnLike extends DefinedAtMixin with FnLike.CanEnable {
   import FnLike._
 
   private lazy val node = TreeNode(this)
@@ -28,7 +28,7 @@ trait FnLike extends DefinedAtMixin with FnLike.NoCap {
 }
 
 /**
-  * can mixin [[Capabilities.Cap]], but so far, the only [[Cap]] is for refining candidates of polymorphic cases
+  * can mixin [[Capabilities.Capability]], but so far, the only [[Capability]] is for refining candidates of polymorphic cases
   */
 object FnLike extends Capabilities {
 
