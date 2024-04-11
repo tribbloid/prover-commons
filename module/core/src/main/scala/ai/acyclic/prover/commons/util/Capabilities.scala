@@ -10,11 +10,11 @@ trait Capabilities {
 
   type ^^[+T, +CC <: Cap] = T with _Can[CC] // following the convention of Scala 3.4.0 with capture checking
 
-  trait Factory[CC <: Cap] {
+  trait MixinFn[CC <: Cap] {
     def apply[T](v: T): T ^^ CC = v.asInstanceOf[T ^^ CC]
   }
 
-  def ^^[CC <: Cap] = new Factory[CC] {}
+  def ^^[CC <: Cap] = new MixinFn[CC] {}
 
   trait NoCap {
 

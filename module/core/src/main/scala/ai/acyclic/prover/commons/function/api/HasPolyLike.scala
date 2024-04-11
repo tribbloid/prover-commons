@@ -8,7 +8,7 @@ trait HasPolyLike extends HasFn {
 
     type Case[+FF <: Fn[_]] = FnLike.^^[FF, IsCase]
 
-    type CaseFrom[I <: IUB] = Case[Fn[I]]
+    type At[I <: IUB] = Case[Fn[I]]
 
     type =>>[I <: IUB, O] = Case[FnImpl[I, O]]
 
@@ -42,9 +42,9 @@ trait HasPolyLike extends HasFn {
     // similar to `at` in shapeless Poly1
     def at[I <: IUB] = new CaseBuilder[I, Fn[I]]
 
-    def getCaseFor[I <: IUB](v: I)(
+    def caseFor[I <: IUB](v: I)(
         implicit
-        _case: Case[Fn[I]]
-    ): Case[Fn[I]] = _case
+        _case: At[I]
+    ): At[I] = _case
   }
 }

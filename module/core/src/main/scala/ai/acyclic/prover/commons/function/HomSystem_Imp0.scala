@@ -8,15 +8,15 @@ trait HomSystem_Imp0 extends HasMorphism with HasPoly with Serializable {
 
   final type IUB = Any
 
-  case class FnAsFunction1[I, R](fn: FnCompat[I, R]) extends (I => R) {
+  class FnAsFunction1[I, R](val self: FnCompat[I, R]) extends (I => R) with Serializable {
 
-    final override def apply(v1: I): R = fn.apply(v1)
+    final override def apply(v1: I): R = self.apply(v1)
 
-    final override def toString: String = fn.toString // preserve reference transparency
+    final override def toString: String = self.toString // preserve reference transparency
 
   }
 
-  implicit def FnAsFunction1[I, R](fn: FnCompat[I, R]): I => R = {
-    FnAsFunction1[I, R](fn)
+  implicit def _fnAsFunction1[I, R](fn: FnCompat[I, R]): I => R = {
+    new FnAsFunction1[I, R](fn)
   }
 }
