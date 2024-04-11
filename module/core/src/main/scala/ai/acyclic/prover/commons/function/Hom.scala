@@ -4,8 +4,12 @@ object Hom extends HomSystem.SystemView {
 
   import HomSystem._
 
-  type Fn[I, R] = FnCompat[I, R]
-  type :=>[I, R] = FnCompat[I, R]
+  type FnAt[-I] = HomSystem.Fn[I]
+  // TODO: this cause a lot of confusion
+  //  should make consistent in HomSystem
+
+  type Fn[-I, +R] = FnCompat[I, R]
+  type :=>[-I, +R] = Fn[I, R]
 
   type Morphism[T, -I[_] <: IUB, +R[_]] = MorphismCompat[T, I, R]
   type :|~>[-I[_] <: IUB, +R[_]] = MorphismCompat[Any, I, R]
