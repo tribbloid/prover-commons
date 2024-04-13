@@ -30,7 +30,7 @@ trait Capabilities {
   trait Annotator[CC <: Capability] {
 
     // TODO: sometimes left associated function won't work (generic collapse to Nothing), need to file a bug report for it
-    def ^:[V](v: V): V with v.type ^: CC = v.asInstanceOf[V with v.type ^: CC]
+    def ^:[V](v: V): V ^: CC = v.asInstanceOf[V ^: CC]
   }
 
   trait CanEnable extends _Can[Capability] {

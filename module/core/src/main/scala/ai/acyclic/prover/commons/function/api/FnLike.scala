@@ -28,7 +28,8 @@ trait FnLike extends DefinedAtMixin with FnLike.CanEnable {
 }
 
 /**
-  * can mixin [[Capabilities.Capability]], but so far, the only [[Capability]] is for refining candidates of polymorphic cases
+  * can mixin [[Capabilities.Capability]], but so far, the only [[Capability]] is for refining candidates of polymorphic
+  * cases
   */
 object FnLike extends Capabilities {
 
