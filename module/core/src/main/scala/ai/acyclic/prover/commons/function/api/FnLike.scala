@@ -1,8 +1,9 @@
 package ai.acyclic.prover.commons.function.api
 
+import ai.acyclic.prover.commons.cap.Capabilities
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
-import ai.acyclic.prover.commons.util.{Capabilities, DefinedAtMixin}
+import ai.acyclic.prover.commons.util.DefinedAtMixin
 
 import scala.runtime.ScalaRunTime
 

@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.function.api
 
 import FnLike.Transparent1
+import ai.acyclic.prover.commons.cap.Capabilities
 
 import scala.language.implicitConversions
 
@@ -23,7 +24,11 @@ trait HasPoly extends HasPolyLike {
     def apply[I <: IUB, R](v: I)(
         implicit
         _case: Case[FnCompat[v.type, R]]
-    ): R = _case.apply(v)
+    ): R = {
+//      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll[FnCompat[v.type, R], IsCase.type](_case)
+//      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll(_case)
+      _case.apply(v)
+    }
 
     object asShapeless extends shapeless.Poly1 {
 

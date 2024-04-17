@@ -2,11 +2,13 @@ package ai.acyclic.prover.commons.function.api
 
 trait HasPolyLike extends HasFn {
 
+  import FnLike._
+
   trait PolyLike extends FnLike {
 
     object IsCase extends FnLike.Capability
 
-    type Case[+FF <: Fn[_]] = FnLike.^:[FF, IsCase.type]
+    type Case[+FF <: Fn[_]] = ^:[FF, IsCase.type]
 
     type At[I <: IUB] = Case[Fn[I]]
 
@@ -23,7 +25,7 @@ trait HasPolyLike extends HasFn {
 
       def defining[FF <: F](fn: FF): Case[FF] = {
         val annotator: FnLike.Annotator[IsCase.type] = IsCase
-        annotator.^:[FF](fn)
+        annotator.^:(fn)
       }
       def apply[FF <: F](fn: FF): Case[FF] = defining(fn)
 
@@ -32,7 +34,7 @@ trait HasPolyLike extends HasFn {
           ev: FnImpl[I, R] <:< F
       ): I =>> R = {
         val _fn: FnImpl[I, R] = Fn(fn)
-        IsCase.^:[FnImpl[I, R]](_fn)
+        IsCase.^:(_fn)
       }
       def apply[R](fn: I => R)(
           implicit

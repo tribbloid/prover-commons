@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons
 
+import ai.acyclic.prover.commons.cap.Capabilities
+
 object __Glossary {
 
   /**
@@ -43,7 +45,7 @@ object __Glossary {
     *     variable `val ccWithCap = cc.asInstanceOf[CC with Has[XXCap]]`, or vice versa.
     *     - A typical example is `shapeless.labelled.KeyTag`
     *     - Several examples are also features in asynchronous computing library Kyo
-    *     - see [[ai.acyclic.prover.commons.util.Capabilities]] for more explanation
+    *     - see [[Capabilities]] for more explanation
     *   - `Axiom` for axiom type that can be constructed arbitrarily (assumed to have a constructive proof), but only
     *     for compile-time verification and carry no runtime data. Consequently, they can be safely cast into each other
     *     (IF permitted at runtime, w/o triggering ClassCastException) or mixed into other classes, many of they have no
