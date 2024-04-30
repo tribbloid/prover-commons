@@ -7,7 +7,7 @@ import ai.acyclic.prover.commons.util.DefinedAtMixin
 
 import scala.runtime.ScalaRunTime
 
-trait FnLike extends DefinedAtMixin with FnLike.CanEnable {
+trait FnLike extends DefinedAtMixin {
   import FnLike._
 
   private lazy val node = TreeNode(this)

@@ -120,7 +120,12 @@ object Debug {
         }
     ): CallStackRef = {
 
-      here.below(depth).below(condition)
+      here
+        .below(depth)
+        .below(condition)
+        .pop { v =>
+          v.isArgDefault
+        }
     }
 
     case class ElementView(

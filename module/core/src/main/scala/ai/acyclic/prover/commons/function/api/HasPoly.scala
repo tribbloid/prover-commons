@@ -46,7 +46,7 @@ trait HasPoly extends HasPolyLike {
   implicit class functionIsPoly[I <: IUB, R](val reference: FnCompat[I, R]) extends Poly with Transparent1 {
 
     implicit def _onlyCase[T]: Case[FnCompat[I, R]] = {
-      reference ^: IsCase
+      reference >>: IsCase
     }
   }
 }

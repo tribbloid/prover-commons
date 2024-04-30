@@ -14,6 +14,7 @@ trait HasFn {
   type IUB
 
   // TODO: should be protected
+  // TODO: how to declare pure function?
   trait Fn[-I <: IUB] extends FnLike {
 
     type In >: I <: IUB
@@ -22,8 +23,9 @@ trait HasFn {
     /**
       * the only Single Abstract Method interface
       * @param arg
-      *   always in Args form
+      *   input (can be product type)
       * @return
+      *   output (can be curried function)
       */
     def apply(arg: I): Out
   }

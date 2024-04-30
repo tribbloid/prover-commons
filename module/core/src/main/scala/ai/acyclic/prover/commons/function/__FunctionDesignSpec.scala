@@ -7,16 +7,18 @@ object __FunctionDesignSpec {
     *   - monomorphic, dependent or polymorphic (parametric or ad-hoc)
     *   - optionally, with named or nameless argument(s)
     *     - TODO: this is wildly infeasible due to high runtime overhead of `XX :: HNil`
-    *     - TODO: should be made default once Args implementation is delegated to TupleSystem
+    *     - TODO: should be made default once Args implementation is delegated to 0-overhead TupleSystem
     *   - analyzed and printed as an AST (required by static analysis)
-    *   - enforced with chain rules (required by Bayesian inference and differential programming)
+    *   - transformed with chain rules or other functor laws (required by Bayesian inference and differential
+    *     programming)
     *   - can be referential transparent, modified and perturbed (required by variational analysis)
     *   - eta-reduced or expanded to JVM method
     *     - (TODO: don't know how to do this yet)
+    *   - cached (required by memoization)
     *
     * the following capabilities are postponed:
-    *   - pure function
-    *   - cached (required by memoization)
+    *   - pure function (can it be an effect un-lifted by validating once, like
+    *     [[ai.acyclic.prover.commons.cap.Pending.OrNull]]?)
     *
     * Most verbosity in definition came from bounded HKT (higher kinded type):
     *

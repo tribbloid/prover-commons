@@ -1,23 +1,14 @@
-package ai.acyclic.prover.commons.meta
+package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.HasOuter
-import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
+import ai.acyclic.prover.commons.util.RuntimeClass
 
 import scala.reflect.ClassTag
 
-object ProductDiscovery {
+object ProductComposition {
 
   trait Exclude
-
-  def decodedStrOf(v: Any): String = {
-    val clz = v.getClass
-    val enc =
-      clz.getCanonicalName.replace(clz.getPackage.getName, "").stripPrefix(".").stripSuffix("$")
-
-    val dec = ScalaReflection.universe.TypeName(enc).decodedName
-    dec.toString
-  }
 
   trait Node extends Local.Semilattice.Upper.NodeImpl[Any] with Product {}
 
@@ -59,14 +50,14 @@ object ProductDiscovery {
         val list = HasOuter.outerListOf(value)
 
         val names = list.map { v =>
-          val dec = decodedStrOf(v)
+          val dec = RuntimeClass.Decoded.simpleNameOf(v)
 
           dec
         }
 
         names.reverse.mkString(" ‣ ")
       } else {
-        decodedStrOf(value)
+        RuntimeClass.Decoded.simpleNameOf(value)
       }
     }
 
@@ -128,5 +119,4 @@ object ProductDiscovery {
 //    case v @ _ =>
 //      FallbackOps(v)
 //  }
-//
 //}
