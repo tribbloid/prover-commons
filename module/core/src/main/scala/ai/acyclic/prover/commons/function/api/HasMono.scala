@@ -4,18 +4,18 @@ import FnLike.Transparent1
 import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.same.Same
 
-object HasMorphism {}
+object HasMono {}
 
-trait HasMorphism extends HasPolyLike {
+trait HasMono extends HasPoly {
 
-  // dedicated to polymorphic functions
-  // Morphism takes type argument, Poly takes an implicit type class
+  // a special case of Poly that takes type argument, instead of several implicit type classes
   // relying heavily on kind-projector plugin: https://github.com/typelevel/kind-projector
-  // please refrain from using shortened syntax as it is very different from that of Scala3
+  // (plugin supports multiple syntaxes, please refrain from using shortened syntax, difficult to move to Scala3)
+
   // TODO: Unfortunately, from this point, shapeless Poly & DepFn are almost useless
   //  just like Scala2 Function is almost useless
   //  DepFn is not really a function with dependent type
-  //  Poly is unbounded, doesn't have impl for Morphism, has poor compatibility with Scala3,
+  //  Poly is unbounded & has poor compatibility with Scala3,
   //  also, each case doesn't have an output dependent type (like DepFn)
 
   /**
@@ -25,25 +25,26 @@ trait HasMorphism extends HasPolyLike {
     *
     * @tparam T_/\
     *   parameter's upper bound
-    * @tparam I
-    *   type constructor(s) of input arg(s)
     */
-  trait Morphism[
+  trait Mono[
       -T_/\
-  ] extends FnLike {
+  ] extends Poly {
 
     type In[_ <: T_/\] <: IUB
     type Out[T <: T_/\]
-    // TODO: simplify using Fn as a dependent type
 
     def apply[T <: T_/\](arg: In[T]): Out[T]
+
+    implicit final def only[T <: T_/\]: In[T] =>> Out[T] = at[In[T]] { v =>
+      apply(v)
+    }
   }
 
-  object Morphism {
+  object Mono {
 
-    class Cached[T_/\, SS <: Morphism[T_/\]](
+    class Cached[T_/\, SS <: Mono[T_/\]](
         val reference: SS
-    ) extends Morphism[T_/\]
+    ) extends Mono[T_/\]
         with FnLike.Transparent1 {
 
       override type In[T <: T_/\] = reference.In[T]
@@ -70,19 +71,19 @@ trait HasMorphism extends HasPolyLike {
     }
   }
 
-  type MorphismCompat[T_/\, -I[_ <: T_/\] <: IUB, +O[_ <: T_/\]] = Morphism[T_/\] {
+  type MonoCompat[T_/\, -I[_ <: T_/\] <: IUB, +O[_ <: T_/\]] = Mono[T_/\] {
     type In[T <: T_/\] >: I[T]
     type Out[T <: T_/\] <: O[T]
   }
 
-  trait MorphismImpl[T_/\, I[_ <: T_/\] <: IUB, O[_ <: T_/\]] extends Morphism[T_/\] {
+  trait MonoImpl[T_/\, I[_ <: T_/\] <: IUB, O[_ <: T_/\]] extends Mono[T_/\] {
     type In[T <: T_/\] = I[T]
     type Out[T <: T_/\] = O[T]
   }
 
   trait Dependent[
       T_/\ <: IUB
-  ] extends Morphism[T_/\] {
+  ] extends Mono[T_/\] {
 
     type In[+T <: T_/\] = T
   }
@@ -104,7 +105,7 @@ trait HasMorphism extends HasPolyLike {
     type Out[T <: T_/\] = O[T]
   }
 
-  implicit class fnIsMorphism[I <: IUB, O](val reference: FnCompat[I, O]) extends Morphism[Any] with Transparent1 {
+  implicit class fnIsMono[I <: IUB, O](val reference: FnCompat[I, O]) extends Mono[Any] with Transparent1 {
 
     override type In[+_] = I
     override type Out[+_] = O

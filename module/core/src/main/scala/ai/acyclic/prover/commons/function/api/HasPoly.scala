@@ -1,8 +1,5 @@
 package ai.acyclic.prover.commons.function.api
 
-import FnLike.Transparent1
-import ai.acyclic.prover.commons.cap.Capabilities
-
 import scala.language.implicitConversions
 
 trait HasPoly extends HasPolyLike {
@@ -16,7 +13,7 @@ trait HasPoly extends HasPolyLike {
     * evidence), doing it in runtime is shunned in type theories (it is fine in set theories tho), but we may still
     * allow it (if not obstructed by type erasure)
     *
-    * obviously, both [[HasMorphism.Morphism]] and [[FnCompat]] are its trivial examples that only has 1 case
+    * obviously, both [[HasMono.Mono]] and [[FnCompat]] are its trivial examples that only has 1 case
     */
   trait Poly extends PolyLike {
     // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
@@ -30,7 +27,7 @@ trait HasPoly extends HasPolyLike {
       _case.apply(v)
     }
 
-    object asShapeless extends shapeless.Poly1 {
+    object asShapelessPoly1 extends shapeless.Poly1 {
 
       implicit def rewrite[I <: IUB, R](
           implicit
@@ -41,12 +38,5 @@ trait HasPoly extends HasPolyLike {
     }
   }
 
-  implicit def asShapeless(v: Poly): v.asShapeless.type = v.asShapeless
-
-  implicit class functionIsPoly[I <: IUB, R](val reference: FnCompat[I, R]) extends Poly with Transparent1 {
-
-    implicit def _onlyCase[T]: Case[FnCompat[I, R]] = {
-      reference >>: IsCase
-    }
-  }
+  implicit def asShapelessPoly1(v: Poly): v.asShapelessPoly1.type = v.asShapelessPoly1
 }

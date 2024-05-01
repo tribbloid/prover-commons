@@ -62,7 +62,7 @@ class HomSpec extends BaseSpec {
     }
   }
 
-  describe("Morphism") {}
+  describe("Mono") {}
 
   describe("Poly") {
 

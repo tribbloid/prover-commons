@@ -18,7 +18,6 @@ object Formats1 { // higher-order format constructors
     def before(refl: Reflection): refl.TypeView => refl.TypeView
 
     final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
-
       val beforeFn = before(refl)
 
       val transformRoot = beforeFn(tt)

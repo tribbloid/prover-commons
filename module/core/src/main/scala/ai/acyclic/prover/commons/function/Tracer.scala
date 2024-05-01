@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.api.FnLike
-
 trait Tracer[+T] {
   def unbox: T
 }

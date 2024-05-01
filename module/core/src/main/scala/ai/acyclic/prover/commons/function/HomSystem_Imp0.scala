@@ -1,10 +1,10 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.api.{HasMorphism, HasPoly}
+import ai.acyclic.prover.commons.function.api.{HasMono, HasPoly}
 
 import scala.language.implicitConversions
 
-trait HomSystem_Imp0 extends HasMorphism with HasPoly with Serializable {
+trait HomSystem_Imp0 extends HasMono with HasPoly with Serializable {
 
   final type IUB = Any
 

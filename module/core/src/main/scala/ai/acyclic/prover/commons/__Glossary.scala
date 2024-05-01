@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons
 
-import ai.acyclic.prover.commons.cap.Capabilities
-
 object __Glossary {
 
   /**

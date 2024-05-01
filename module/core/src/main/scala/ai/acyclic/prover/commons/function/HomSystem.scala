@@ -3,7 +3,6 @@ package ai.acyclic.prover.commons.function
 import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 import ai.acyclic.prover.commons.function.api.FnLike
-import ai.acyclic.prover.commons.function.api.FnLike.Transparent1
 import ai.acyclic.prover.commons.same.Same
 
 import scala.language.implicitConversions
@@ -46,19 +45,19 @@ object HomSystem extends HomSystem_Imp0 {
     }
   }
 
-  implicit class MorphismOps[
+  implicit class MonoOps[
       T_/\,
-      SS <: Morphism[T_/\]
+      SS <: Mono[T_/\]
   ](val self: SS) {
 
     def cachedBy(
         _lookup: CacheView[IUB, Any] = Same.ByEquality.Lookup()
-    ): Morphism.Cached[T_/\, SS] = {
+    ): Mono.Cached[T_/\, SS] = {
 
-      type Result = Morphism.Cached[T_/\, SS]
+      type Result = Mono.Cached[T_/\, SS]
 
       val result: Result =
-        new Morphism.Cached[T_/\, SS](self) {
+        new Mono.Cached[T_/\, SS](self) {
 
           override lazy val lookup: CacheView[IUB, Any] = _lookup
         }
@@ -75,22 +74,6 @@ object HomSystem extends HomSystem_Imp0 {
     ): R = self.apply(arg)(_case)
 
     //    def cached: Same.ByEquality.CachedPoly[P] = Same.ByEquality.CachedPoly(self)
-  }
-
-  implicit class morphismIsPoly[
-      T_/\
-  ](val reference: Morphism[T_/\])
-      extends Poly
-      with Transparent1 {
-
-    import reference._
-
-    implicit def _onlyCase[T <: T_/\]: Case[FnCompat[In[T], Out[T]]] = {
-      at[In[T]].apply[Out[T]] { arg =>
-        val result: Out[T] = reference.apply[T](arg)
-        result
-      }
-    }
   }
 
   trait SystemView {

@@ -11,8 +11,8 @@ object Hom extends HomSystem.SystemView {
   type Fn[-I, +R] = FnCompat[I, R]
   type :=>[-I, +R] = Fn[I, R]
 
-  type Morphism[T, -I[_] <: IUB, +R[_]] = MorphismCompat[T, I, R]
-  type :|~>[-I[_] <: IUB, +R[_]] = MorphismCompat[Any, I, R]
+  type Mono[T, -I[_] <: IUB, +R[_]] = MonoCompat[T, I, R]
+  type :|~>[-I[_] <: IUB, +R[_]] = MonoCompat[Any, I, R]
 
   type Dependent[T, +R[_]] = DependentCompat[T, R]
   type :|=>[+R[_]] = DependentCompat[Any, R]

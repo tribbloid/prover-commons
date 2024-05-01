@@ -72,7 +72,7 @@ object Pending {
 
       def asEither: Either[E, T] = {
         self match {
-          case fn: (() => T) =>
+          case _: (() => T) =>
             try {
               val v = self.asInstanceOf[() => T].apply()
               Right(v)
