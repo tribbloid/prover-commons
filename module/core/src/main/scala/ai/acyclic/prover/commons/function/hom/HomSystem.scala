@@ -1,44 +1,33 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.collection.CacheView
-import ai.acyclic.prover.commons.debug.Debug.CallStackRef
-import ai.acyclic.prover.commons.function.api.FnLike
 import ai.acyclic.prover.commons.same.Same
 
 import scala.language.implicitConversions
 
-object HomSystem extends HomSystem_Imp0 {
+object HomSystem extends HomBase {
+
+  override type Arg1[T] = T
+  override type _Unit = Unit
+
+  override def arg1[T](v: T): T = v
+  override val _unit: Unit = ()
 
   implicit class FnOps[I, R](val self: FnCompat[I, R]) extends Serializable {
 
     // TODO: enable for all FnLike
-    def madeFrom(_name: String)(
-        refs: FnLike*
-    ): FnImpl.MadeFrom[I, R] = {
-
-      val result = FnImpl.MadeFrom[I, R](self)(refs, _name)
-      result
-    }
-
-    def andThen[R2](g: Fn[R] { type Out = R2 })(
-        implicit
-        _definedAt: CallStackRef = CallStackRef.below(),
-        ev: R <:< (R with IUB)
-    ): FnImpl[I, R2] = {
-
-      val base: FnImpl[I, R2] = Impl { ii: I =>
-        val r: R = self.apply(ii)
-        val r2: R2 = g.apply(r)
-        r2
-      }
-
-      base.madeFrom("andThen")(self, g)
-    }
+//    def madeFrom(_name: String)(
+//        refs: ArrowLike*
+//    ): FnImpl.MadeFrom[I, R] = {
+//
+//      val result = FnImpl.MadeFrom[I, R](self)(refs, _name)
+//      result
+//    }
 
     def cachedBy(
         cache: CacheView[I, R] = Same.ByEquality.Lookup[I, R]()
-    ): FnImpl.Cached[I, R] = {
-      new FnImpl.Cached[I, R](self) {
+    ): Fn.Cached[I, R] = {
+      new Fn.Cached[I, R](self) {
 
         override lazy val underlyingCache: CacheView[I, R] = cache
       }

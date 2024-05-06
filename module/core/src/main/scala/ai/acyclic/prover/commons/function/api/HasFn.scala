@@ -8,26 +8,68 @@ import scala.language.implicitConversions
 
 trait HasFn {
 
+  protected[function] def definedHere: CallStackRef = CallStackRef
+    .below(condition = { v =>
+      v.isDefinedAtClasses(classOf[HasFn]) || v.isArgDefault
+    })
+    .below(1)
+
   /**
     * will be Tuple-like in the future
     */
-  type IUB
+  type IUB // TODO: should be "Domain"
 
-  // TODO: should be protected
-  // TODO: how to declare pure function?
-  trait Fn[-I <: IUB] extends FnLike {
+  type Arg1[T] <: IUB
+  def arg1[T](v: T): Arg1[T]
+
+  type _Unit <: IUB
+  val _unit: _Unit // terminal object in cat theory, can be eliminated if as a member of a product Arg type
+
+  trait Tracer[-I <: IUB] extends TracerLike {
 
     type In >: I <: IUB
-    type Out
 
-    /**
-      * the only Single Abstract Method interface
-      * @param arg
-      *   input (can be product type)
-      * @return
-      *   output (can be curried function)
-      */
-    def apply(arg: I): Out
+    def map[O2](fn: Arg1[Out] => O2): AndThen[In, Out, O2] = {
+
+      /**
+        * [[TracingView]] turning upside-down
+        */
+      val _fn: FnImpl[Arg1[Out], O2] = _fromVanilla(fn)
+
+      val result = _fn.^[Out].apply[In](this)
+
+      result
+    }
+
+    def andThen[O2](fn: Arg1[Out] => O2): AndThen[In, Out, O2] = map(fn) // merely an alias
+
+//    def flatMap
+  }
+
+  type TracerCompat[-I <: IUB, +O] = Tracer[_] { type In >: I; type Out <: O }
+
+  trait Var[I <: IUB] extends Tracer[I] {
+
+    type In = I
+    type Out = I
+
+    def apply(arg: In): Out = arg
+  }
+  protected def Var[I <: IUB]: Var[I] = new Var[I] {}
+
+  trait Thunk extends Tracer[_Unit] {
+    type In = _Unit
+  }
+
+  type ThunkCompat[+O] = Thunk { type Out <: O }
+
+  // TODO: how to declare pure function?
+  sealed trait Fn[-I <: IUB] extends Tracer[I] {
+
+    def ^[O1](
+        implicit
+        ev: Arg1[O1] <:< I
+    ): TracingView[O1, Out] = TracingView(this.asInstanceOf[FnCompat[Arg1[O1], Out]])
   }
 
   object Fn {
@@ -41,22 +83,38 @@ trait HasFn {
 
       new FnImpl.Defined[I, R](vanilla, definedAt)
     }
+
+    class Cached[I <: IUB, R](
+        val composedFrom1: FnCompat[I, R]
+    ) extends FnImpl[I, R]
+        with Explainable.Composite1 {
+
+      lazy val underlyingCache: CacheView[I, R] = Same.ByEquality.Lookup[I, R]()
+
+      final def apply(key: I): R = {
+        underlyingCache.getOrElseUpdateOnce(key)(composedFrom1(key))
+      }
+
+      final def getExisting(arg: I): Option[R] = {
+        underlyingCache
+          .get(arg)
+      }
+    }
+
+    class AsFunction1[I <: IUB, R](val self: FnCompat[I, R]) extends (I => R) with Serializable {
+
+      final override def apply(v1: I): R = self.apply(v1)
+
+      final override def toString: String = self.toString // preserve reference transparency
+    }
+
+    implicit def _fnAsFunction1[I <: IUB, R](fn: FnCompat[I, R]): I => R = {
+      new AsFunction1[I, R](fn)
+    }
+
   }
 
-  protected[function] def definedHere: CallStackRef = CallStackRef
-    .below(condition = { v =>
-      v.isDefinedAtClasses(classOf[HasFn]) || v.isArgDefault
-    })
-    .below(1)
-
-  implicit def _fromVanilla[I <: IUB, R](
-      vanilla: I => R
-  ): FnImpl[I, R] = {
-    implicit val definedAt: CallStackRef = definedHere
-    Fn[I, R](vanilla)
-  }
-
-  type FnCompat[-I <: IUB, +R] = Fn[I] { type Out <: R }
+  type FnCompat[-I <: IUB, +R] = Fn[_] { type In >: I; type Out <: R }
 
   trait FnImpl[I <: IUB, R] extends Fn[I] { // most specific
 
@@ -74,35 +132,85 @@ trait HasFn {
       override def apply(arg: I): R = fn(arg)
     }
 
-    case class MadeFrom[I <: IUB, R](raw: FnCompat[I, R])(
-        override val references: Seq[FnLike],
-        override val name: String
-    ) extends FnImpl[I, R]
-        with FnLike.Transparent
-        with FnLike.Named {
-
-      def apply(arg: I): R = {
-        raw.apply(arg)
-      }
-    }
-
     def identity[I <: IUB]: FnImpl[I, I] = Fn(v => v)
 
-    class Cached[I <: IUB, R](
-        val reference: FnCompat[I, R]
-    ) extends FnImpl[I, R]
-        with FnLike.Transparent1 {
+  }
 
-      lazy val underlyingCache: CacheView[I, R] = Same.ByEquality.Lookup[I, R]()
+  // tracing/composition API
 
-      final def apply(key: I): R = {
-        underlyingCache.getOrElseUpdateOnce(key)(reference(key))
-      }
+  /*
+  preferred syntax:
 
-      final def getExisting(arg: I): Option[R] = {
-        underlyingCache
-          .get(arg)
-      }
+  given Fn exp, plus, root
+
+  val composite = Composite.create {
+    // can use unapply
+
+    case (x: Free[Double], y: Free[Double], n: Free[Int]) =>
+      val xn = exp.^(x >< n)
+      val yn = exp.^(x >< n)
+      val xyn = plus.^(xn >< yn)
+      val rootN = for (_x <- xyn;_n <- n) yield {_x ^ _n} TODO: how to define flatMap? With currying or tuple?
+      rootN
+  }
+
+  all `.^` can be skipped implicitly
+   */
+
+  case class AndThen[
+      I <: IUB,
+      O1,
+      O2
+  ](
+      on: TracerCompat[I, O1],
+      fn: FnCompat[Arg1[O1], O2]
+  ) extends FnImpl[I, O2]
+      with Explainable.Composite
+      with Explainable.DecodedName {
+
+    def apply(arg: I): O2 = {
+      val o1 = on.apply(arg)
+      val _arg1: Arg1[O1] = arg1(o1)
+      fn.apply(_arg1)
+    }
+
+    override def composedFrom: Seq[Explainable] = Seq(on, fn)
+  }
+
+  case class TracingView[O1, O2](
+      self: FnCompat[Arg1[O1], O2]
+  ) {
+
+    def apply[
+        I <: IUB
+    ](prev: TracerCompat[I, O1]): AndThen[I, O1, O2] = {
+
+      AndThen(prev, self)
+    }
+  }
+
+  def trace[I <: IUB, F <: Fn[I]](
+      fn: Var[I] => F
+  ): F = {
+
+    val free = Var[I]
+    val result = fn(free)
+
+    result
+  }
+
+  // shortcuts
+
+  implicit def _fromVanilla[I <: IUB, R](
+      vanilla: I => R
+  ): FnImpl[I, R] = {
+    implicit val definedAt: CallStackRef = definedHere
+
+    vanilla match {
+      case asFunction1: Fn.AsFunction1[I, R] =>
+        asFunction1.self.asInstanceOf[FnImpl[I, R]]
+      case _ =>
+        Fn[I, R](vanilla)
     }
   }
 }

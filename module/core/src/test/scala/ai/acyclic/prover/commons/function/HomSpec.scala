@@ -11,7 +11,9 @@ class HomSpec extends BaseSpec {
 
   lazy val fn: Int :=> Int = { Fixtures._fn0 }
 
-  lazy val chainedSelf = fn.andThen(fn)
+  lazy val chainedSelf = fn.andThen[Int](
+    fn
+  )
 
   lazy val chainedOthers = fn.andThen[String] { v: Int =>
     s"${v}b"
@@ -19,13 +21,13 @@ class HomSpec extends BaseSpec {
 
   lazy val fnText: String = {
 
-    val result = fn.nodeText
+    val result = fn.explain.nodeText
 
     result.shouldBe(
       "_fn0 <at FnFixture.scala:7>"
     )
 
-    fn.treeText.shouldBe(
+    fn.explain.treeText.shouldBe(
       s"- ${result}"
     )
 
@@ -38,9 +40,9 @@ class HomSpec extends BaseSpec {
 
       val r1 = chainedSelf.apply(1)
 
-      chainedSelf.treeText.shouldBe(
+      chainedSelf.explain.treeText.shouldBe(
         s"""
-            |+ andThen
+            |+ AndThen
             |!-- ${fnText}
             |""".stripMargin
       )
@@ -49,11 +51,11 @@ class HomSpec extends BaseSpec {
 
       val r2 = chainedOthers.apply(1)
 
-      chainedOthers.treeText.shouldBe(
+      chainedOthers.explain.treeText.shouldBe(
         s"""
-            |+ andThen
+            |+ AndThen
             |!-- ${fnText}
-            |!-- chainedOthers <at HomSpec.scala:16>
+            |!-- chainedOthers <at HomSpec.scala:18>
             |""".stripMargin
       )
 

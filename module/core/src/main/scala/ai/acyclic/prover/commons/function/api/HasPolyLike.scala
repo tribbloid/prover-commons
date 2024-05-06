@@ -4,11 +4,11 @@ import ai.acyclic.prover.commons.cap.Capability.>>
 
 trait HasPolyLike extends HasFn {
 
-  import FnLike._
+  import Explainable._
 
-  trait PolyLike extends FnLike {
+  trait PolyLike extends Explainable {
 
-    object IsCase extends FnLike.Capability
+    object IsCase extends Explainable.Capability
 
     type Case[+FF <: Fn[_]] = >>[FF, IsCase.type]
 

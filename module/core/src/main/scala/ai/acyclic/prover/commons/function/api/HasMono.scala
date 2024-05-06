@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.api
 
-import FnLike.Transparent1
+import Explainable.Composite1
 import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.same.Same
 
@@ -43,12 +43,12 @@ trait HasMono extends HasPoly {
   object Mono {
 
     class Cached[T_/\, SS <: Mono[T_/\]](
-        val reference: SS
+        val composedFrom1: SS
     ) extends Mono[T_/\]
-        with FnLike.Transparent1 {
+        with Explainable.Composite1 {
 
-      override type In[T <: T_/\] = reference.In[T]
-      override type Out[T <: T_/\] = reference.Out[T]
+      override type In[T <: T_/\] = composedFrom1.In[T]
+      override type Out[T <: T_/\] = composedFrom1.Out[T]
 
       lazy val lookup: CacheView[IUB, Any] = Same.ByEquality.Lookup[IUB, Any]()
 
@@ -56,7 +56,7 @@ trait HasMono extends HasPoly {
 
         lookup
           .getOrElseUpdateOnce(arg)(
-            reference.apply(arg)
+            composedFrom1.apply(arg)
           )
           .asInstanceOf[Out[T]]
       }
@@ -105,11 +105,11 @@ trait HasMono extends HasPoly {
     type Out[T <: T_/\] = O[T]
   }
 
-  implicit class fnIsMono[I <: IUB, O](val reference: FnCompat[I, O]) extends Mono[Any] with Transparent1 {
+  implicit class fnIsMono[I <: IUB, O](val composedFrom1: FnCompat[I, O]) extends Mono[Any] with Composite1 {
 
     override type In[+_] = I
     override type Out[+_] = O
 
-    override def apply[_](arg: I): O = reference.apply(arg)
+    override def apply[_](arg: I): O = composedFrom1.apply(arg)
   }
 }

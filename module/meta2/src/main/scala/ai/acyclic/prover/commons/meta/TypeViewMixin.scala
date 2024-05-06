@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.meta
 
-import ai.acyclic.prover.commons.function
 import ai.acyclic.prover.commons.function.Impl
+import ai.acyclic.prover.commons.function.hom.HomSystem
 import ai.acyclic.prover.commons.same.Same
 
 import scala.tools.reflect.ToolBox
@@ -319,7 +319,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     override def _copy(self: Type) = copy(self)
   }
 
-  lazy val typeView: function.HomSystem.FnImpl.Cached[Type, TypeView] = {
+  lazy val typeView: HomSystem.Fn.Cached[Type, TypeView] = {
     Impl(TypeView.apply _).cachedBy(Same.ByEquality.Lookup())
   }
 

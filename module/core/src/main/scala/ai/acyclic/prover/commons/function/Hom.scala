@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.function.hom.HomSystem
+
 object Hom extends HomSystem.SystemView {
 
   import HomSystem._
