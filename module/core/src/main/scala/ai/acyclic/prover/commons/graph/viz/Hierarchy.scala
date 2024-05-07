@@ -66,7 +66,8 @@ trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
               v._2
             }
 
-          val children = arrows_targets.map(_._2).distinct
+          val children = arrows_targets.map(_._2)
+//            .distinct
 
           val childrenTProtos: Seq[TextBlock] = children.toList.map { child =>
             val arrowBlocksOpt = groupedByTarget(child)

@@ -36,7 +36,6 @@ object Explainable extends Capabilities {
           ScalaRunTime._toString(v)
         case _ =>
           s"${value.definedAt.toString}"
-
       }
 
       body

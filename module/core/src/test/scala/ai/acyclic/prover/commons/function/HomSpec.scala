@@ -44,6 +44,7 @@ class HomSpec extends BaseSpec {
         s"""
             |+ AndThen
             |!-- ${fnText}
+            |!-- ${fnText}
             |""".stripMargin
       )
 
