@@ -36,7 +36,7 @@ trait HasFn {
         */
       val _fn: FnImpl[Arg1[Out], O2] = _fromVanilla(fn)
 
-      val result = _fn.^[Out].apply[In](this)
+      val result = _fn.^.apply[In, Out](this)
 
       result
     }
@@ -66,10 +66,26 @@ trait HasFn {
   // TODO: how to declare pure function?
   sealed trait Fn[-I <: IUB] extends Tracer[I] {
 
-    def ^[O1](
-        implicit
-        ev: Arg1[O1] <:< I
-    ): TracingView[O1, Out] = TracingView(this.asInstanceOf[FnCompat[Arg1[O1], Out]])
+    case class Tracing() {
+
+      val outer: Fn[I] { type In = Fn.this.In; type Out = Fn.this.Out } = Fn.this
+
+      def apply[
+          IPrev <: IUB,
+          OPrev
+      ](prev: TracerCompat[IPrev, OPrev])(
+          implicit
+          ev: Arg1[OPrev] <:< outer.In
+      ): AndThen[IPrev, OPrev, outer.Out] = {
+
+        val _this: FnCompat[Arg1[OPrev], outer.Out] = outer.widen[Arg1[OPrev], outer.Out]
+
+        AndThen(prev, _this)
+      }
+    }
+
+    def ^ : Tracing = Tracing()
+
   }
 
   object Fn {
@@ -175,18 +191,6 @@ trait HasFn {
     }
 
     override def composedFrom: Seq[Explainable] = Seq(on, fn)
-  }
-
-  case class TracingView[O1, O2](
-      self: FnCompat[Arg1[O1], O2]
-  ) {
-
-    def apply[
-        I <: IUB
-    ](prev: TracerCompat[I, O1]): AndThen[I, O1, O2] = {
-
-      AndThen(prev, self)
-    }
   }
 
   def trace[I <: IUB, F <: Fn[I]](

@@ -1,10 +1,11 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.fixture
 
 import ai.acyclic.prover.commons.function.Hom._
+import ai.acyclic.prover.commons.function.Impl
 
-trait FnFixture {
+trait Fns {
 
-  lazy val _fn0: Int :=> Int = Impl { v =>
+  lazy val fn0: Int :=> Int = Impl { v =>
     v + 1
   }
 

@@ -1,8 +1,8 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.fixture
 
 import ai.acyclic.prover.commons.function.Hom.Poly
 
-trait PolyFixture {
+trait Polys {
 
   object _poly extends Poly {
 

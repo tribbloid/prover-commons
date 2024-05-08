@@ -1,30 +1,24 @@
 package ai.acyclic.prover.commons.function
 
+import ai.acyclic.prover.commons.function.fixture.Fixtures
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.function.hom.HomSystem
 
 object HomSpec {}
 
 class HomSpec extends BaseSpec {
 
-  import ai.acyclic.prover.commons.function.Fixtures._
+  import Fixtures._
   import ai.acyclic.prover.commons.function.Hom._
 
-  lazy val fn: Int :=> Int = { Fixtures._fn0 }
-
-  lazy val chainedSelf = fn.andThen[Int](
-    fn
-  )
-
-  lazy val chainedOthers = fn.andThen[String] { v: Int =>
-    s"${v}b"
-  }
+  lazy val fn: Int :=> Int = { Fixtures.fn0 }
 
   lazy val fnText: String = {
 
     val result = fn.explain.nodeText
 
     result.shouldBe(
-      "_fn0 <at FnFixture.scala:7>"
+      "fn0 <at Fns.scala:8>"
     )
 
     fn.explain.treeText.shouldBe(
@@ -36,31 +30,37 @@ class HomSpec extends BaseSpec {
 
   describe("Fn") {
 
-    it("chaining") {
+    describe("chaining") {
 
-      val r1 = chainedSelf.apply(1)
+      it("1") {
 
-      chainedSelf.explain.treeText.shouldBe(
-        s"""
-            |+ AndThen
-            |!-- ${fnText}
-            |!-- ${fnText}
-            |""".stripMargin
-      )
+        val r1 = chainSelf.apply(1)
 
-      assert(r1 == 3)
+        chainSelf.explain.treeText.shouldBe(
+          s"""
+             |+ AndThen
+             |!-- ${fnText}
+             |!-- ${fnText}
+             |""".stripMargin
+        )
 
-      val r2 = chainedOthers.apply(1)
+        assert(r1 == 3)
+      }
 
-      chainedOthers.explain.treeText.shouldBe(
-        s"""
-            |+ AndThen
-            |!-- ${fnText}
-            |!-- chainedOthers <at HomSpec.scala:18>
-            |""".stripMargin
-      )
+      it("2") {
 
-      assert(r2 == "2b")
+        val r2 = chainOther.apply(1)
+
+        chainOther.explain.treeText.shouldBe(
+          s"""
+             |+ AndThen
+             |!-- ${fnText}
+             |!-- chainOther <at ChainOther.scala:7>
+             |""".stripMargin
+        )
+
+        assert(r2 == "2b")
+      }
 
     }
   }

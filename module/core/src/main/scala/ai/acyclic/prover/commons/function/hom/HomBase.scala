@@ -1,8 +1,9 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.function.api.HasMono
+import ai.acyclic.prover.commons.function.api.SystemBase
 
-trait HomBase extends HasMono with Serializable {
+trait HomBase extends SystemBase {
+  self: Singleton =>
 
   final type IUB = Any
 

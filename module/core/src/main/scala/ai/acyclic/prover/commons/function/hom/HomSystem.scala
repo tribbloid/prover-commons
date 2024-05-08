@@ -65,9 +65,4 @@ object HomSystem extends HomBase {
     //    def cached: Same.ByEquality.CachedPoly[P] = Same.ByEquality.CachedPoly(self)
   }
 
-  trait SystemView {
-
-    implicit def asFnSystem(v: this.type): HomSystem.type = HomSystem
-  }
-
 }
