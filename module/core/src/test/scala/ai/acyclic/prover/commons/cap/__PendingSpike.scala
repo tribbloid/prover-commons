@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.cap
 
-object PendingSpike {
+object __PendingSpike {
 
   type <[+T, -S] >: T
 

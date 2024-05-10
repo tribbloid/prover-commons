@@ -15,15 +15,6 @@ object HomSystem extends HomBase {
 
   implicit class FnOps[I, R](val self: FnCompat[I, R]) extends Serializable {
 
-    // TODO: enable for all FnLike
-//    def madeFrom(_name: String)(
-//        refs: ArrowLike*
-//    ): FnImpl.MadeFrom[I, R] = {
-//
-//      val result = FnImpl.MadeFrom[I, R](self)(refs, _name)
-//      result
-//    }
-
     def cachedBy(
         cache: CacheView[I, R] = Same.ByEquality.Lookup[I, R]()
     ): Fn.Cached[I, R] = {

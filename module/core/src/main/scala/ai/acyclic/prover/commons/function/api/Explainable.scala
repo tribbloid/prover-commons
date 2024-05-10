@@ -66,9 +66,9 @@ object Explainable extends Capabilities {
 
   trait Composite1 extends Composite {
 
-    def composedFrom1: Explainable
+    def backbone: Explainable
 
-    @transient final lazy val composedFrom = Seq(composedFrom1)
+    @transient final lazy val composedFrom = Seq(backbone)
   }
 
   trait DecodedName extends Explainable {}

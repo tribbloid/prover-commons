@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.api
 
-import ai.acyclic.prover.commons.cap.Capability.>>
+import ai.acyclic.prover.commons.cap.Capability.<>
 
 trait HasPolyLike extends HasFn {
 
@@ -10,7 +10,7 @@ trait HasPolyLike extends HasFn {
 
     object IsCase extends Explainable.Capability
 
-    type Case[+FF <: Fn[_]] = >>[FF, IsCase.type]
+    type Case[+FF <: Fn[_]] = <>[FF, IsCase.type]
 
     type At[I <: IUB] = Case[Fn[I]]
 
@@ -20,22 +20,19 @@ trait HasPolyLike extends HasFn {
       * CAUTION: cannot be defined for [[FnCompat]], implicit search will fail
       */
 
+//    trait FnBuilder[]
+
     class CaseBuilder[I <: IUB, F <: Fn[I]] {
 
       def to[O]: CaseBuilder[I, FnImpl[I, O]] = new CaseBuilder[I, FnImpl[I, O]]
       def =>>[O]: CaseBuilder[I, FnImpl[I, O]] = to[O]
-
-      def defining[FF <: F](fn: FF): Case[FF] = {
-        IsCase.>>:(fn)
-      }
-      def apply[FF <: F](fn: FF): Case[FF] = defining(fn)
 
       def defining[R](fn: I => R)(
           implicit
           ev: FnImpl[I, R] <:< F
       ): I =>> R = {
         val _fn: FnImpl[I, R] = Fn(fn)
-        IsCase.>>:(_fn)
+        IsCase.<>:(_fn)
       }
       def apply[R](fn: I => R)(
           implicit

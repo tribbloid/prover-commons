@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.cap
 
 import scala.language.implicitConversions
 
-object Pending {
+object Pending extends PendingGroup {
 
 //  trait Must[-S]
 
@@ -42,7 +42,6 @@ object Pending {
 
     object revoke extends Revoke[C]
 
-    def <<--: : revoke.type = revoke
   }
 
   trait OrNull
