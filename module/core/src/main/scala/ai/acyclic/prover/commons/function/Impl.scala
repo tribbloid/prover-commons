@@ -1,24 +1,14 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 import ai.acyclic.prover.commons.function.hom.HomSystem
 
-object Impl extends HomSystem.SystemView {
+object Impl extends Hom.Builder[Any, Any] {
   // TODO: should be under "Hom"
 
   import HomSystem._
 
   type Fn[I, R] = FnImpl[I, R]
 //  type :=>[I, R] = FnImpl[I, R]
-
-  def apply[I <: IUB, R](
-      fn: I => R
-  )(
-      implicit
-      _definedAt: CallStackRef = definedHere
-  ): Fn[I, R] = {
-    Fn(fn)
-  }
 
   type Poly = HomSystem.Poly
 

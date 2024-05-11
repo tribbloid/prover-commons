@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.function.fixture.Fixtures
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.function.hom.HomSystem
 
 object HomSpec {}
 

@@ -1,10 +1,5 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.collection.CacheView
-import ai.acyclic.prover.commons.same.Same
-
-import scala.language.implicitConversions
-
 object HomSystem extends HomBase {
 
   override type Arg1[T] = T

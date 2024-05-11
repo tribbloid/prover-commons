@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.function.fixture
 
-import ai.acyclic.prover.commons.function.hom.HomSystem
 import ai.acyclic.prover.commons.function.hom.HomSystem.Fn
 
 trait ChainSelf extends Fns {
@@ -14,7 +13,7 @@ trait ChainSelf extends Fns {
 //      repr
     }
 
-    val s2 = {
+    {
       fn0.^(fn0)
     }
 

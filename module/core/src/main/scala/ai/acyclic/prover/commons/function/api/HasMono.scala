@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.function.api
 
 import Explainable.Composite1
 import ai.acyclic.prover.commons.collection.CacheView
-import ai.acyclic.prover.commons.function.hom.HomSystem.IUB
 import ai.acyclic.prover.commons.same.Same
 
 object HasMono {}

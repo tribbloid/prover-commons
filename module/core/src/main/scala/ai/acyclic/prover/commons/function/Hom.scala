@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.function.hom.HomSystem
 
-object Hom extends HomSystem.SystemView {
+object Hom extends HomSystem.API {
 
   import HomSystem._
 
@@ -20,4 +20,5 @@ object Hom extends HomSystem.SystemView {
   type :|=>[+R[_]] = DependentCompat[Any, R]
 
   type Poly = HomSystem.Poly
+
 }

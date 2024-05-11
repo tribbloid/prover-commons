@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.function.api
 
 import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
-import ai.acyclic.prover.commons.function.hom.HomSystem.FnCompat
 import ai.acyclic.prover.commons.same.Same
 
 import scala.language.implicitConversions
@@ -154,6 +153,36 @@ trait HasFn {
       override def composedFrom: Seq[Explainable] = Seq(on, fn)
     }
 
+    trait CanBuild {
+
+      protected type =>>[i <: IUB, o]
+
+      protected def _defining[I <: IUB, R](fn: I => R)(
+          implicit
+          _definedAt: CallStackRef = definedHere
+      ): I =>> R
+
+      case class Builder[I <: IUB, O]() {
+
+        def at[i <: IUB]: Builder[i, O] = Builder()
+
+        def to[o]: Builder[I, o] = Builder()
+        final def =>>[o]: Builder[I, o] = to
+
+        final def defining[i <: I, o <: O](fn: i => o)(
+            implicit
+            _definedAt: CallStackRef = definedHere
+        ): i =>> o = _defining(fn)
+
+        final def apply[i <: I, o <: O](fn: i => o)( // alias
+            implicit
+            _definedAt: CallStackRef = definedHere
+        ): i =>> o = _defining(fn)
+      }
+
+      // similar to `at` in shapeless Poly1
+      def at[I <: IUB]: Builder[I, Any] = Builder[I, Any]()
+    }
   }
 
   implicit class FnOps[I <: IUB, R](val self: FnCompat[I, R]) extends (I => R) with Serializable {

@@ -22,5 +22,6 @@ trait CapabilityGroup extends CanRevokeAll {
     ): (T <> C) =>> lemma.Out = at[T <> C] { v =>
       lemma(v.asInstanceOf[T])
     }
+
   }
 }

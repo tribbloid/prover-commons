@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.function.api
 
-import ai.acyclic.prover.commons.function.hom.HomSystem.FnCompat
-
 import scala.language.implicitConversions
 
 trait HasPoly extends HasPolyLike {
