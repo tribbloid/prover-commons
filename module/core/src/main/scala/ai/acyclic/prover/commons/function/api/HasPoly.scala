@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.function.api
 
+import ai.acyclic.prover.commons.function.hom.HomSystem.FnCompat
+
 import scala.language.implicitConversions
 
 trait HasPoly extends HasPolyLike {
@@ -39,4 +41,14 @@ trait HasPoly extends HasPolyLike {
   }
 
   implicit def asShapelessPoly1(v: Poly): v.asShapelessPoly1.type = v.asShapelessPoly1
+
+  implicit class PolyOps[P <: Poly](self: P) extends Serializable {
+
+    def apply[I <: IUB, R](arg: I)(
+        implicit
+        _case: self.Case[FnCompat[I, R]]
+    ): R = self.apply(arg)(_case)
+
+    //    def cachedBy: Same.ByEquality.CachedPoly[P] = Same.ByEquality.CachedPoly(self)
+  }
 }

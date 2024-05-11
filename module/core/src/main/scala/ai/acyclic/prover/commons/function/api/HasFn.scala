@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.function.api
 
 import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.debug.Debug.CallStackRef
+import ai.acyclic.prover.commons.function.hom.HomSystem.FnCompat
 import ai.acyclic.prover.commons.same.Same
 
 import scala.language.implicitConversions
@@ -29,19 +30,19 @@ trait HasFn {
 
     type In <: IUB
 
-    def map[O2](fn: Arg1[Out] => O2): AndThen[In, Out, O2] = {
+    def map[O2](fn: Arg1[Out] => O2): Fn.AndThen[In, Out, O2] = {
 
       /**
         * [[TracingView]] turning upside-down
         */
-      val _fn: FnImpl[Arg1[Out], O2] = _reprAsFn(fn)
+      val _fn: FnImpl[Arg1[Out], O2] = _vanillaAsFn(fn)
 
       val result = _fn.^.apply[In, Out](this)
 
       result
     }
 
-    def andThen[O2](fn: Arg1[Out] => O2): AndThen[In, Out, O2] = map(fn) // merely an alias
+    def andThen[O2](fn: Arg1[Out] => O2): Fn.AndThen[In, Out, O2] = map(fn) // merely an alias
 
 //    def flatMap
   }
@@ -77,11 +78,11 @@ trait HasFn {
       ](prev: TracerCompat[IPrev, OPrev])(
           implicit
           ev: Arg1[OPrev] <:< outer.In
-      ): AndThen[IPrev, OPrev, outer.Out] = {
+      ): Fn.AndThen[IPrev, OPrev, outer.Out] = {
 
         val _this: FnCompat[Arg1[OPrev], outer.Out] = outer.widen[Arg1[OPrev], outer.Out]
 
-        AndThen(prev, _this)
+        Fn.AndThen(prev, _this)
       }
     }
 
@@ -109,7 +110,7 @@ trait HasFn {
     ): FnImpl[I, O] = {
 
       vanilla match {
-        case asFunction1: Fn.AsRepr[I, O, _] =>
+        case asFunction1: FnOps[I, O] =>
           asFunction1.self.asInstanceOf[FnImpl[I, O]]
         case _ =>
           new Blackbox[I, O](vanilla, definedAt)
@@ -133,20 +134,50 @@ trait HasFn {
       }
     }
 
-    final case class AsRepr[
+    case class AndThen[
         I <: IUB,
-        O,
-        F <: FnCompat[I, O]
-    ](val self: F)
-        extends (I => O) {
+        O1,
+        O2
+    ](
+        on: TracerCompat[I, O1],
+        fn: FnCompat[Arg1[O1], O2]
+    ) extends FnImpl[I, O2]
+        with Explainable.Composite
+        with Explainable.DecodedName {
 
-//      final override def apply(v1: I): O = self.apply(v1)
-//
-      override def toString: String = self.toString // preserve reference transparency
+      def apply(arg: I): O2 = {
+        val o1 = on.apply(arg)
+        val _arg1: Arg1[O1] = arg1(o1)
+        fn.apply(_arg1)
+      }
 
-      override def apply(v1: I): O = self.apply(v1)
+      override def composedFrom: Seq[Explainable] = Seq(on, fn)
     }
 
+  }
+
+  implicit class FnOps[I <: IUB, R](val self: FnCompat[I, R]) extends (I => R) with Serializable {
+
+    override def toString: String = self.toString // preserve reference transparency
+
+    override def apply(v1: I): R = self.apply(v1)
+
+    def cachedBy(
+        cache: CacheView[I, R] = Same.ByEquality.Lookup[I, R]()
+    ): Fn.Cached[I, R] = {
+      new Fn.Cached[I, R](self) {
+
+        override lazy val underlyingCache: CacheView[I, R] = cache
+      }
+    }
+  }
+
+  implicit def _vanillaAsFn[I <: IUB, R](
+      vanilla: I => R
+  ): FnImpl[I, R] = {
+    implicit val definedAt: CallStackRef = definedHere
+
+    Fn[I, R](vanilla)
   }
 
   trait Pure[F <: Fn[_]] {} // type case
@@ -187,26 +218,6 @@ trait HasFn {
   all `.^` can be skipped implicitly
    */
 
-  case class AndThen[
-      I <: IUB,
-      O1,
-      O2
-  ](
-      on: TracerCompat[I, O1],
-      fn: FnCompat[Arg1[O1], O2]
-  ) extends FnImpl[I, O2]
-      with Explainable.Composite
-      with Explainable.DecodedName {
-
-    def apply(arg: I): O2 = {
-      val o1 = on.apply(arg)
-      val _arg1: Arg1[O1] = arg1(o1)
-      fn.apply(_arg1)
-    }
-
-    override def composedFrom: Seq[Explainable] = Seq(on, fn)
-  }
-
   def trace[I <: IUB, F <: Fn[I]](
       fn: Var[I] => F
   ): F = {
@@ -219,18 +230,4 @@ trait HasFn {
 
   // shortcuts
 
-  implicit def _fnAsRepr[
-      I <: IUB,
-      F <: Fn[I]
-  ](self: F): Fn.AsRepr[self.In, self.Out, self.type] = {
-    new Fn.AsRepr(self)
-  }
-
-  implicit def _reprAsFn[I <: IUB, R](
-      vanilla: I => R
-  ): FnImpl[I, R] = {
-    implicit val definedAt: CallStackRef = definedHere
-
-    Fn[I, R](vanilla)
-  }
 }

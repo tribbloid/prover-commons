@@ -6,6 +6,30 @@ trait HasPolyLike extends HasFn {
 
   import Explainable._
 
+  trait FnBuilder[I <: IUB, O] {
+
+    type =>>[i <: IUB, o] <: FnImpl[i, o] {
+//      type In = i
+//      type Out = o
+    }
+
+    def mixin[i <: IUB, o](v: FnImpl[i, o]): =>>[i, o]
+
+    type Copy[i <: IUB, o] <: FnBuilder[i, o]
+    protected def copy[i <: IUB, o]: Copy[i, o]
+
+    def at[i <: IUB]: Copy[i, O] = copy
+
+    def to[o]: Copy[I, o] = copy
+    final def =>>[o]: Copy[I, o] = to
+
+    def defining[R <: O](fn: I => R): I =>> R = {
+      val _fn: FnImpl[I, R] = Fn(fn)
+      mixin(_fn)
+    }
+    final def apply[R <: O](fn: I => R): I =>> R = defining(fn)
+  }
+
   trait PolyLike extends Explainable {
 
     object IsCase extends Explainable.Capability
@@ -13,44 +37,30 @@ trait HasPolyLike extends HasFn {
     type Case[+FF <: Fn[_]] = <>[FF, IsCase.type]
 
     type At[I <: IUB] = Case[Fn[I]]
-
+    type Compat[I <: IUB, O] = Case[FnCompat[I, O]]
     type =>>[I <: IUB, O] = Case[FnImpl[I, O]]
 
-    /**
-      * CAUTION: cannot be defined for [[FnCompat]], implicit search will fail
-      */
+    class CaseBuilder[I <: IUB, O] extends FnBuilder[I, O] {
 
-//    trait FnBuilder[]
-
-    class CaseBuilder[I <: IUB, F <: Fn[I]] {
-
-      def to[O]: CaseBuilder[I, FnImpl[I, O]] = new CaseBuilder[I, FnImpl[I, O]]
-      def =>>[O]: CaseBuilder[I, FnImpl[I, O]] = to[O]
-
-      def defining[R](fn: I => R)(
-          implicit
-          ev: FnImpl[I, R] <:< F
-      ): I =>> R = {
-        val _fn: FnImpl[I, R] = Fn(fn)
-        IsCase.<>:(_fn)
+      type Copy[i <: IUB, o] = CaseBuilder[i, o]
+      override protected def copy[i <: IUB, o]: Copy[i, o] = {
+        this.asInstanceOf[CaseBuilder[i, o]]
       }
-      def apply[R](fn: I => R)(
-          implicit
-          ev: FnImpl[I, R] <:< F
-      ): I =>> R = defining(fn)
+
+      override def mixin[i <: IUB, o](v: FnImpl[i, o]): i =>> o = {
+
+        v <>: IsCase
+      }
+
+      type =>>[i <: IUB, o] = PolyLike.this.=>>[i, o]
 
       def summon(
           implicit
-          _case: Case[F]
+          _case: Compat[I, O]
       ): _case.type = _case
     }
 
     // similar to `at` in shapeless Poly1
-    def at[I <: IUB] = new CaseBuilder[I, Fn[I]]
-
-    def caseFor[I <: IUB](v: I)(
-        implicit
-        _case: At[I]
-    ): At[I] = _case
+    def at[I <: IUB] = new CaseBuilder[I, Any]
   }
 }

@@ -1,17 +1,18 @@
 package ai.acyclic.prover.commons.function.fixture
 
 import ai.acyclic.prover.commons.function.hom.HomSystem
+import ai.acyclic.prover.commons.function.hom.HomSystem.Fn
 
 trait ChainSelf extends Fns {
 
-  lazy val chainSelf: HomSystem.AndThen[fn0.In, fn0.Out, Int] = {
+  lazy val chainSelf: Fn.AndThen[fn0.In, fn0.Out, Int] = {
 
-    val repr: HomSystem.Fn.AsRepr[fn0.In, fn0.Out, fn0.type] = HomSystem._fnAsRepr(fn0)
+    val s1 = fn0.andThen[Int] {
+      fn0
 
-    val s1 = fn0.andThen[Int](
-//      fn0
-      repr
-    )
+//      val repr = HomSystem.FnOps(fn0)
+//      repr
+    }
 
     val s2 = {
       fn0.^(fn0)

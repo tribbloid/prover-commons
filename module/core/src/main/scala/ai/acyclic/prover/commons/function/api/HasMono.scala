@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.function.api
 
 import Explainable.Composite1
 import ai.acyclic.prover.commons.collection.CacheView
+import ai.acyclic.prover.commons.function.hom.HomSystem.IUB
 import ai.acyclic.prover.commons.same.Same
 
 object HasMono {}
@@ -68,6 +69,27 @@ trait HasMono extends HasPoly {
             v.asInstanceOf[Out[T]]
           }
       }
+    }
+  }
+
+  implicit class MonoOps[
+      T_/\,
+      SS <: Mono[T_/\]
+  ](val self: SS)
+      extends Serializable {
+
+    def cachedBy(
+        _lookup: CacheView[IUB, Any] = Same.ByEquality.Lookup()
+    ): Mono.Cached[T_/\, SS] = {
+
+      type Result = Mono.Cached[T_/\, SS]
+
+      val result: Result =
+        new Mono.Cached[T_/\, SS](self) {
+
+          override lazy val lookup: CacheView[IUB, Any] = _lookup
+        }
+      result
     }
   }
 
