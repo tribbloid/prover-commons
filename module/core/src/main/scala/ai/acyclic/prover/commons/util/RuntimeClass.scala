@@ -38,8 +38,17 @@ object RuntimeClass {
 
     override def normalise(enc: String): String = {
       val dec = universe.TypeName(enc).decodedName.toString
-      val stripped = dec.slice(0, dec.indexOf("$"))
-      stripped
+
+      dec.indexOf("$") match {
+        case -1 =>
+          dec
+        case v if v >= 0 =>
+          val stripped = dec.slice(0, v)
+
+          stripped
+
+      }
+
     }
   }
 

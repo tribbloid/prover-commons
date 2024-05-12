@@ -6,10 +6,6 @@ object Hom extends HomSystem.API {
 
   import HomSystem._
 
-  type FnAt[-I] = HomSystem.Fn[I]
-  // TODO: this cause a lot of confusion
-  //  should make consistent in HomSystem
-
   type Fn[-I, +R] = FnCompat[I, R]
   type :=>[-I, +R] = Fn[I, R]
 

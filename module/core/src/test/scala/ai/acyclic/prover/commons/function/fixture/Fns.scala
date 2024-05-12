@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.function.Impl
 
 trait Fns {
 
-  lazy val fn0: Int :=> Int = Impl { v =>
+  final lazy val fn0: Int :=> Int = Impl { v =>
     v + 1
   }
 
@@ -24,5 +24,12 @@ trait Fns {
 //    }
 //    b
 //  }
+
+  lazy val fn0Text: String = {
+
+    val result = fn0.explain.nodeText
+
+    result
+  }
 
 }

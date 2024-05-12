@@ -29,7 +29,7 @@ trait HasFn {
 
     type In <: IUB
 
-    def map[O2](fn: Arg1[Out] => O2): Fn.AndThen[In, Out, O2] = {
+    def map[O2](fn: Arg1[Out] => O2): FnImpl[In, O2] = {
 
       /**
         * [[TracingView]] turning upside-down
@@ -41,25 +41,21 @@ trait HasFn {
       result
     }
 
-    def andThen[O2](fn: Arg1[Out] => O2): Fn.AndThen[In, Out, O2] = map(fn) // merely an alias
+    def andThen[O2](fn: Arg1[Out] => O2): FnImpl[In, O2] = map(fn) // merely an alias
 
 //    def flatMap
   }
 
   type TracerCompat[-I <: IUB, +O] = Tracer { type In >: I; type Out <: O }
 
-  trait Var[I <: IUB] extends Tracer {
-
-    type In = I
-    type Out = I
-
-    def apply(arg: In): Out = arg
-  }
-  protected def Var[I <: IUB]: Var[I] = new Var[I] {}
-
-  trait Thunk extends Tracer {
-    type In = _Unit
-  }
+//  trait Var[I <: IUB] extends Tracer {
+//
+//    type In = I
+//    type Out = I
+//
+//    def apply(arg: In): Out = arg
+//  }
+//  protected def Var[I <: IUB]: Var[I] = new Var[I] {}
 
   // TODO: how to declare pure function?
   sealed trait Fn[-I <: IUB] extends Tracer {
@@ -77,11 +73,11 @@ trait HasFn {
       ](prev: TracerCompat[IPrev, OPrev])(
           implicit
           ev: Arg1[OPrev] <:< outer.In
-      ): Fn.AndThen[IPrev, OPrev, outer.Out] = {
+      ): FnImpl[IPrev, outer.Out] = {
 
         val _this: FnCompat[Arg1[OPrev], outer.Out] = outer.widen[Arg1[OPrev], outer.Out]
 
-        Fn.AndThen(prev, _this)
+        Fn.Compose(prev, _this).reduce
       }
     }
 
@@ -91,6 +87,11 @@ trait HasFn {
 
   object Fn {
 
+    case class Identity[I <: IUB]() extends FnImpl[I, I] {
+
+      override def apply(arg: I): I = arg
+    }
+
     class Blackbox[I <: IUB, R](
         val fn: I => R,
         override val _definedAt: CallStackRef = definedHere
@@ -98,8 +99,6 @@ trait HasFn {
 
       override def apply(arg: I): R = fn(arg)
     }
-
-    def identity[I <: IUB]: FnImpl[I, I] = Fn(v => v)
 
     def apply[I <: IUB, O](
         vanilla: I => O
@@ -133,24 +132,38 @@ trait HasFn {
       }
     }
 
-    case class AndThen[
+    case class Compose[
         I <: IUB,
         O1,
         O2
     ](
-        on: TracerCompat[I, O1],
-        fn: FnCompat[Arg1[O1], O2]
-    ) extends FnImpl[I, O2]
-        with Explainable.Composite
-        with Explainable.DecodedName {
+        f: TracerCompat[I, O1],
+        g: FnCompat[Arg1[O1], O2]
+    ) {
 
-      def apply(arg: I): O2 = {
-        val o1 = on.apply(arg)
-        val _arg1: Arg1[O1] = arg1(o1)
-        fn.apply(_arg1)
+      lazy val reduce: FnImpl[I, O2] = {
+
+        (f, g) match {
+
+          case (_f: Identity[_], _g) =>
+            _g.asInstanceOf[FnImpl[I, O2]]
+          case (_f, _g: Identity[_]) =>
+            _f.asInstanceOf[FnImpl[I, O2]]
+          case _ =>
+            AndThen
+        }
       }
 
-      override def composedFrom: Seq[Explainable] = Seq(on, fn)
+      object AndThen extends FnImpl[I, O2] with Explainable.Composite with Explainable.DecodedName {
+
+        override def apply(arg: I): O2 = {
+          val o1 = f.apply(arg)
+          val _arg1: Arg1[O1] = arg1(o1)
+          g.apply(_arg1)
+        }
+
+        override def composedFrom: Seq[Explainable] = Seq(f, g)
+      }
     }
 
     trait CanBuild {
@@ -178,6 +191,37 @@ trait HasFn {
             implicit
             _definedAt: CallStackRef = definedHere
         ): i =>> o = _defining(fn)
+
+        // tracing/composition API
+
+        /*
+        preferred syntax:
+
+        given Fn exp, plus, root
+
+        val composite = Composite.create {
+          // can use unapply
+
+          case (x: Free[Double], y: Free[Double], n: Free[Int]) =>
+            val xn = exp.^(x >< n)
+            val yn = exp.^(x >< n)
+            val xyn = plus.^(xn >< yn)
+            val rootN = for (_x <- xyn;_n <- n) yield {_x ^ _n} TODO: how to define flatMap? With currying or tuple?
+            rootN
+        }
+
+        all `.^` can be skipped implicitly
+         */
+
+        def trace[o <: O](
+            fn: Fn.Identity[I] => FnImpl[I, o]
+        ): FnImpl[I, o] = {
+
+          val id = Fn.Identity[I]()
+          val result = fn(id)
+
+          result
+        }
       }
 
       // similar to `at` in shapeless Poly1
@@ -209,14 +253,18 @@ trait HasFn {
     Fn[I, R](vanilla)
   }
 
-  trait Pure[F <: Fn[_]] {} // type case
+  trait Pure[F <: Fn[_]] {} // type case, TODO: don't know how to do it at the moment
 
   object Pure {
 
     implicit def cachedIsPure[C <: Fn.Cached[_, _]]: Pure[C] = new Pure[C] {}
   }
 
+  type Thunk = Fn[_Unit] { type In = _Unit }
+
   type FnCompat[-I <: IUB, +R] = Fn[_] { type In >: I; type Out <: R }
+  // TODO:
+//  type FnCompat[-I <: IUB, +R] = Fn[_] { type In >: I; type Out <: R }
 
   trait FnImpl[I <: IUB, R] extends Fn[I] { // most specific
 
@@ -225,37 +273,6 @@ trait HasFn {
   }
 
   object FnImpl {}
-
-  // tracing/composition API
-
-  /*
-  preferred syntax:
-
-  given Fn exp, plus, root
-
-  val composite = Composite.create {
-    // can use unapply
-
-    case (x: Free[Double], y: Free[Double], n: Free[Int]) =>
-      val xn = exp.^(x >< n)
-      val yn = exp.^(x >< n)
-      val xyn = plus.^(xn >< yn)
-      val rootN = for (_x <- xyn;_n <- n) yield {_x ^ _n} TODO: how to define flatMap? With currying or tuple?
-      rootN
-  }
-
-  all `.^` can be skipped implicitly
-   */
-
-  def trace[I <: IUB, F <: Fn[I]](
-      fn: Var[I] => F
-  ): F = {
-
-    val free = Var[I]
-    val result = fn(free)
-
-    result
-  }
 
   // shortcuts
 

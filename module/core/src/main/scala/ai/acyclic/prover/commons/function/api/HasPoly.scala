@@ -36,6 +36,7 @@ trait HasPoly extends HasPolyLike {
         _case.apply(v)
       }
     }
+
   }
 
   implicit def asShapelessPoly1(v: Poly): v.asShapelessPoly1.type = v.asShapelessPoly1

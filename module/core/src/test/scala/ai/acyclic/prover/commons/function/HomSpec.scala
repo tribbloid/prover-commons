@@ -10,17 +10,15 @@ class HomSpec extends BaseSpec {
   import Fixtures._
   import ai.acyclic.prover.commons.function.Hom._
 
-  lazy val fn: Int :=> Int = { Fixtures.fn0 }
+  lazy val fn: Int :=> Int = {
 
-  lazy val fnText: String = {
+    val result = Fixtures.fn0
 
-    val result = fn.explain.nodeText
-
-    result.shouldBe(
+    result.toString.shouldBe(
       "fn0 <at Fns.scala:8>"
     )
 
-    fn.explain.treeText.shouldBe(
+    fn0.explain.treeText.shouldBe(
       s"- ${result}"
     )
 
@@ -29,38 +27,42 @@ class HomSpec extends BaseSpec {
 
   describe("Fn") {
 
-    describe("chaining") {
+    describe("composing with") {
 
-      it("1") {
+      describe("self") {
 
-        val r1 = chainSelf.apply(1)
+        chainSelf.zipWithIndex.foreach {
 
-        chainSelf.explain.treeText.shouldBe(
-          s"""
-             |+ AndThen
-             |!-- ${fnText}
-             |!-- ${fnText}
-             |""".stripMargin
-        )
+          case ((fn, s), i) =>
+            it(i.toString) {
 
-        assert(r1 == 3)
+              fn.explain.treeText.shouldBe(
+                s
+              )
+
+              val r1 = fn.apply(1)
+              assert(r1 == 3)
+            }
+        }
       }
 
-      it("2") {
+      describe("others") {
 
-        val r2 = chainOther.apply(1)
+        it("0") {
 
-        chainOther.explain.treeText.shouldBe(
-          s"""
-             |+ AndThen
-             |!-- ${fnText}
-             |!-- chainOther <at ChainOther.scala:7>
-             |""".stripMargin
-        )
+          val r2 = chainOther.apply(1)
 
-        assert(r2 == "2b")
+          chainOther.explain.treeText.shouldBe(
+            s"""
+               |+ AndThen
+               |!-- ${fn0Text}
+               |!-- chainOther <at ChainOther.scala:7>
+               |""".stripMargin
+          )
+
+          assert(r2 == "2b")
+        }
       }
-
     }
   }
 
