@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.function.hom.HomSystem
 
-object Impl extends Hom.Builder[Any, Any] {
+object Impl {
   // TODO: should be under "Hom"
 
   import HomSystem._

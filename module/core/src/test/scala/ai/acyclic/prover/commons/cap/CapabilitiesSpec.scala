@@ -36,7 +36,9 @@ class CapabilitiesSpec extends BaseSpec {
       }
 
       {
-        val revoked = revokeAll(ex12)
+        val revoked = revokeAll(ex12)(revokeAll.chain)
+        // buggy compiler! circumventing
+
         assert(revoked == ex12)
         illTyped("revoked: Ex ^: Subject.Cap1")
       }

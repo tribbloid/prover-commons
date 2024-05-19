@@ -36,4 +36,24 @@ object __FunctionDesignSpec {
     * fn[T <: TUB](): R {type Out = ...}
     */
 
+  /**
+    * glossary:
+    *
+    *   - Expr - can be a Fn / Const / Thunk
+    *   - Const/Thunk can preserve its computation graph
+    *   - ^(v: Any): Const - lifting, value/Fn can be lifted to represent a Const in the next stage
+    *   - (fn: Fn).^(v: Expr): Thunk - suspending: define a Thunk that is yet to be computed
+    *   - (fn: Fn).andThen(fn2: Fn): Fn - composing, equivalent to {v => fn2(fn(v))}
+    *   - (v: Const|Thunk).get(): Any - compute/get its value
+    *   - (v: Expr).map(fn2: O => O2): v.PeerType - continuation, create another Expr where fn2 is applied to the result
+    *     of this Expr
+    *     - alternative syntax is for (o: O <- v: Expr) yield { o2: O2 }
+    */
+
+  /**
+    * after revision:
+    *
+    *   - `I :=> O` becomes Const[I => O]
+    *     - (I => O) won't contain computation graph
+    */
 }

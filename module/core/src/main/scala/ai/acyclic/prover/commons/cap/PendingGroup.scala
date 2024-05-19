@@ -16,10 +16,10 @@ trait PendingGroup extends CanRevokeAll {
 
   object revokeAll extends revokeAll_Lvl0 {
 
-    implicit def chain[T, C <: Pending](
+    implicit def chain[T, R, C <: Pending](
         implicit
-        lemma: At[T]
-    ): (T << C) =>> lemma.Out = at[T << C] { v =>
+        lemma: Compat[T, R]
+    ): (T << C) =>> R = at[T << C] { v =>
       lemma(v.asInstanceOf[T])
     }
   }

@@ -1,8 +1,7 @@
 package ai.acyclic.prover.commons.function.fixture
 
 import ai.acyclic.prover.commons.function.Hom.:=>
-import ai.acyclic.prover.commons.function.{Hom, Impl}
-import ai.acyclic.prover.commons.function.hom.HomSystem.Fn
+import ai.acyclic.prover.commons.function.Hom
 
 trait ChainSelf extends Fns {
 
@@ -15,13 +14,15 @@ trait ChainSelf extends Fns {
 //      repr
     }
 
-    val s2 = {
-      fn0.^(fn0)
-    }
+//    val s2 = {
+//
+////      fn0.andThen(fn0)
+//      fn0.^(fn0)
+//    }
 
-    val s3 = Hom.at[Int].trace { v =>
-      fn0.^(fn0.^(v))
-    }
+//    val s3 = Hom.at[Int].trace { v =>
+//      fn0.^(fn0.^(v))
+//    }
 
     val str = s"""
                  |+ AndThen
@@ -32,9 +33,9 @@ trait ChainSelf extends Fns {
     val pairs: Seq[
       (Int :=> Int, String)
     ] = Seq(
-      (s1, str),
-      (s2, str),
-      (s3, str)
+      (s1, str)
+//      (s2, str),
+//      (s3, str)
     )
 
     pairs

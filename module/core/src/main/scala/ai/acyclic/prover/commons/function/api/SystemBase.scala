@@ -13,7 +13,7 @@ trait SystemBase extends HasMono with Serializable {
 
     override type =>>[i <: IUB, o] = FnImpl[i, o]
 
-    override protected def _defining[I <: IUB, R](fn: I => R)(
+    override def define[I <: IUB, R](fn: I => R)(
         implicit
         _definedAt: Debug.CallStackRef
     ): I =>> R = Fn(fn)

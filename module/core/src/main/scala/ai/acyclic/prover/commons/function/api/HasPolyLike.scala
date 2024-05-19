@@ -11,13 +11,13 @@ trait HasPolyLike extends HasFn {
 
     object IsCase extends Explainable.Capability
 
-    type Case[+FF <: Fn[_]] = <>[FF, IsCase.type]
+    type Case[+FF <: FnCompat[_, _]] = <>[FF, IsCase.type]
 
-    type At[I <: IUB] = Case[Fn[I]]
+    type At[I <: IUB] = Case[FnCompat[I, _]]
     type Compat[I <: IUB, O] = Case[FnCompat[I, O]]
     type =>>[I <: IUB, O] = Case[FnImpl[I, O]]
 
-    override protected def _defining[I <: IUB, R](fn: I => R)(
+    override def define[I <: IUB, R](fn: I => R)(
         implicit
         _definedAt: CallStackRef = definedHere
     ): I =>> R = {

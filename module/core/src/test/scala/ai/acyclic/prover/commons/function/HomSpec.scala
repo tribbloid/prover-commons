@@ -62,6 +62,13 @@ class HomSpec extends BaseSpec {
 
           assert(r2 == "2b")
         }
+
+        it("1") {
+
+          val vv = flatMapOthers
+
+          vv
+        }
       }
     }
   }
