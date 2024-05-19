@@ -12,13 +12,30 @@ trait HomBase extends SystemBase {
   override type _Unit = Unit
   override val _unit: Unit = ()
 
+  implicit class TracerOps[R](val self: TracerCompat[R]) extends Serializable {
+
+    def map[O2](fn: R => O2): TracerImpl[O2] = {
+
+      Fn[R, O2](fn).^.apply(self)
+
+    }
+
+    def foreach(fn: R => Unit): Unit = {
+      map(fn).unbox
+    }
+
+    def flatMap[O2](fn: R => TracerCompat[O2]): TracerImpl[O2] = {
+      ???
+    }
+  }
+
   implicit class FnRepr[I, O](val self: FnCompat[I, O]) extends Serializable with (I => O) {
 
     override def apply(v1: I): O = self.apply(v1)
 
     case class Continuation private () {
 
-      def map[O2](next: O => O2): FnImpl[I, O2] = {
+      def map[O2](next: O => O2): Tracer.CanApply[I, O2] = {
 
         /**
           * [[TracingView]] turning upside-down
@@ -28,10 +45,10 @@ trait HomBase extends SystemBase {
         val result: FnImpl[I, O2] =
           FnRepr.Compose(self: FnCompat[I, O], nextFn).reduce
 
-        result
+        result.^
       }
 
-      def foreach(fn: O => Unit): FnImpl[I, Unit] = map(fn)
+      def foreach = map[Unit] _
 
       def flatMap[O2](fn: O => TracerCompat[O2]): FnImpl[I, O2] = {
         ???
@@ -44,7 +61,7 @@ trait HomBase extends SystemBase {
 
     override def andThen[O2](g: O => O2) = {
 
-      val cc: FnImpl[I, O2] = out.map(g)
+      val cc: FnCompat[I, O2] = out.map(g).unbox
       val result: FnRepr[I, O2] = FnRepr(cc)
       result
     }
@@ -86,5 +103,5 @@ trait HomBase extends SystemBase {
     }
   }
 
-  implicit def doubleElimination2[I, O](v: TracerCompat[FnCompat[I, O]]): FnRepr[I, O] = FnRepr(v.unbox)
+  implicit def unboxToRepr[I, O](v: TracerCompat[FnCompat[I, O]]): FnRepr[I, O] = FnRepr(v.unbox)
 }

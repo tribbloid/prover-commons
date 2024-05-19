@@ -39,6 +39,8 @@ trait HasPoly extends HasPolyLike {
 
   }
 
+  object Poly {}
+
   implicit def asShapelessPoly1(v: Poly): v.asShapelessPoly1.type = v.asShapelessPoly1
 
   implicit class PolyOps[P <: Poly](self: P) extends Serializable {

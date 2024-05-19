@@ -7,7 +7,7 @@ trait HasPolyLike extends HasFn {
 
   import Explainable._
 
-  trait PolyLike extends Fn.CanBuild with Explainable {
+  trait PolyLike extends Builder with Explainable {
 
     object IsCase extends Explainable.Capability
 

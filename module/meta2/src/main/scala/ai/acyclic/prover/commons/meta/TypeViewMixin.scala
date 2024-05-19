@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.meta
 
-import ai.acyclic.prover.commons.function.Hom
+import ai.acyclic.prover.commons.function.Hom.:=>
 import ai.acyclic.prover.commons.function.hom.HomSystem
 import ai.acyclic.prover.commons.same.Same
 
@@ -320,7 +320,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
   }
 
   lazy val typeView: HomSystem.Fn.Cached[Type, TypeView] = {
-    Hom(TypeView.apply _).cachedBy(Same.ByEquality.Lookup())
+    :=>(TypeView.apply _).cachedBy(Same.ByEquality.Lookup())
   }
 
 //  val typeCache = mutable.Map.empty[Type, TypeView]

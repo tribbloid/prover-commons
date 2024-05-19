@@ -109,6 +109,8 @@ trait HasMono extends HasPoly {
     type In[+T <: T_/\] = T
   }
 
+  object Dependent {}
+
   /**
     * function with dependent type
     *

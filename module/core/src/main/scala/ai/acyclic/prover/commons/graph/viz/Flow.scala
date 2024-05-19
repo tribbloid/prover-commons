@@ -1,9 +1,9 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.function.Hom
-import ai.acyclic.prover.commons.graph.{Arrow, Engine}
+import ai.acyclic.prover.commons.function.Hom.:=>
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
+import ai.acyclic.prover.commons.graph.{Arrow, Engine}
 import ai.acyclic.prover.commons.same.Same
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
@@ -131,7 +131,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeID2Wrapper = Hom { v =>
+      val nodeID2Wrapper = :=> { v =>
         NodeWrapper(v)
       }
         .cachedBy()

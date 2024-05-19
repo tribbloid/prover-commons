@@ -5,10 +5,11 @@ import scala.language.implicitConversions
 trait TracerLike extends Explainable {
 
   type Repr
-
 }
 
 object TracerLike {
+
+  type Lt[+T] = TracerLike { type Repr <: T }
 
   case class _View[T <: TracerLike](
       self: T
