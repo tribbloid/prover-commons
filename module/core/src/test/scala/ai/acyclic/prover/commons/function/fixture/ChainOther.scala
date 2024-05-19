@@ -2,9 +2,11 @@ package ai.acyclic.prover.commons.function.fixture
 
 import ai.acyclic.prover.commons.function.hom.HomSystem
 
-trait ChainOther extends Fns {
+object ChainOther {
 
-  lazy val chainOther: HomSystem.FnImpl[Int, String] = fn0.andThen[String] { v =>
+  import Fns._
+
+  lazy val s1: HomSystem.FnImpl[Int, String] = fn0.andThen[String] { v =>
     s"${v}b"
   }
 }

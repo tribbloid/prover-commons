@@ -1,37 +1,36 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.fixture.Fixtures
+import ai.acyclic.prover.commons.function.fixture.{ChainSelf, Fns, HigherOrder1}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 object HomSpec {}
 
 class HomSpec extends BaseSpec {
 
-  import Fixtures._
-  import ai.acyclic.prover.commons.function.Hom._
-
-  lazy val fn: Int :=> Int = {
-
-    val result = Fixtures.fn0
-
-    result.toString.shouldBe(
-      "fn0 <at Fns.scala:8>"
-    )
-
-    fn0.explain.treeText.shouldBe(
-      s"- ${result}"
-    )
-
-    result
-  }
-
   describe("Fn") {
+
+    import Fns._
+
+    it("explain") {
+
+      fn0.explain.nodeText.shouldBe(
+        "fn0 <at Fns.scala:8>"
+      )
+
+      fn0.toString.shouldBe(
+        "fn0 <at Fns.scala:8>"
+      )
+
+      fn0.explain.treeText.shouldBe(
+        s"- ${fn0.toString}"
+      )
+    }
 
     describe("composing with") {
 
       describe("self") {
 
-        chainSelf.zipWithIndex.foreach {
+        ChainSelf.pairs.zipWithIndex.foreach {
 
           case ((fn, s), i) =>
             it(i.toString) {
@@ -48,14 +47,16 @@ class HomSpec extends BaseSpec {
 
       describe("others") {
 
+        import ai.acyclic.prover.commons.function.fixture.ChainOther._
+
         it("0") {
 
-          val r2 = chainOther.apply(1)
+          val r2 = s1.apply(1)
 
-          chainOther.explain.treeText.shouldBe(
+          s1.explain.treeText.shouldBe(
             s"""
                |+ AndThen
-               |!-- ${fn0Text}
+               |!-- ${Fns.fn0.explain.nodeText}
                |!-- chainOther <at ChainOther.scala:7>
                |""".stripMargin
           )
@@ -65,7 +66,7 @@ class HomSpec extends BaseSpec {
 
         it("1") {
 
-          val vv = flatMapOthers
+          val vv = HigherOrder1.flatMapOthers
 
           vv
         }
@@ -76,6 +77,8 @@ class HomSpec extends BaseSpec {
   describe("Mono") {}
 
   describe("Poly") {
+
+    import ai.acyclic.prover.commons.function.fixture.Polys._
 
     describe("summoning cases") {
 

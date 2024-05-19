@@ -28,12 +28,12 @@ trait HasBuilder {
         _definedAt: CallStackRef = definedHere
     ): I =>> R = define(fn)
 
-    case class Builder[I <: IUB, O]() {
+    case class RefinedBuilder[I <: IUB, O]() {
 
-      def at[i <: IUB]: Builder[i, O] = Builder()
+      def at[i <: IUB]: RefinedBuilder[i, O] = RefinedBuilder()
 
-      def to[o]: Builder[I, o] = Builder()
-      final def =>>[o]: Builder[I, o] = to
+      def to[o]: RefinedBuilder[I, o] = RefinedBuilder()
+      final def =>>[o]: RefinedBuilder[I, o] = to
 
       final def define[o <: O](fn: I => o)(
           implicit
@@ -78,7 +78,7 @@ trait HasBuilder {
     }
 
     // similar to `at` in shapeless Poly1
-    def at[I <: IUB]: Builder[I, Any] = Builder[I, Any]()
+    def at[I <: IUB]: RefinedBuilder[I, Any] = RefinedBuilder[I, Any]()
   }
 
   protected[function] def definedHere: CallStackRef = CallStackRef

@@ -26,7 +26,7 @@ trait HasPolyLike extends HasFn {
       _case
     }
 
-    implicit class BuildExtension[I <: IUB, O](self: Builder[I, O]) {
+    implicit class BuildExtension[I <: IUB, O](self: RefinedBuilder[I, O]) {
 
       def summon(
           implicit

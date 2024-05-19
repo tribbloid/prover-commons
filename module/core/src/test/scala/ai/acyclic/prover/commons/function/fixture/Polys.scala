@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.function.fixture
 
 import ai.acyclic.prover.commons.function.Hom.Poly
 
-trait Polys {
+object Polys {
 
   object _poly extends Poly {
 

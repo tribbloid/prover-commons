@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.function.fixture
 
 import ai.acyclic.prover.commons.function.Hom._
 
-trait Fns {
+object Fns {
 
   final lazy val fn0: Int :=> Int = :=> { v =>
     v + 1
@@ -33,10 +33,7 @@ trait Fns {
 //  }
 
   lazy val fn0Text: String = {
-
-    val result = fn0.explain.nodeText
-
-    result
+    fn0.explain.nodeText
   }
 
 }
