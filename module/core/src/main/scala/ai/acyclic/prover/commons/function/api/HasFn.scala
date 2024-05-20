@@ -16,7 +16,7 @@ trait HasBuilder {
 
   trait Builder {
 
-    protected type =>>[i <: IUB, o]
+    protected type =>>[i <: IUB, _]
 
     def define[I <: IUB, R](fn: I => R)(
         implicit
@@ -44,37 +44,6 @@ trait HasBuilder {
           implicit
           _definedAt: CallStackRef = definedHere
       ): I =>> o = define(fn)
-
-      // tracing/composition API
-
-      /*
-      preferred syntax:
-
-      given Fn exp, plus, root
-
-      val composite = Composite.create {
-        // can use unapply
-
-        case (x: Free[Double], y: Free[Double], n: Free[Int]) =>
-          val xn = exp.^(x >< n)
-          val yn = exp.^(x >< n)
-          val xyn = plus.^(xn >< yn)
-          val rootN = for (_x <- xyn;_n <- n) yield {_x ^ _n} TODO: how to define flatMap? With currying or tuple?
-          rootN
-      }
-
-      all `.^` can be skipped implicitly
-       */
-
-//      def trace[o <: O](
-//          fn: Fn.Identity[I] => FnImpl[I, o]
-//      ): FnImpl[I, o] = {
-//
-//        val id = Fn.Identity[I]()
-//        val result = fn(id)
-//
-//        result
-//      }
     }
 
     // similar to `at` in shapeless Poly1
@@ -134,8 +103,6 @@ trait HasFn extends HasBuilder {
     final type Repr = R
   }
 
-  // TODO: how to declare pure function?
-
   sealed trait Fn extends Explainable {
     // thin wrapper of a tracer
 
@@ -178,9 +145,19 @@ trait HasFn extends HasBuilder {
       override def apply(arg: I): R = fn(arg)
     }
 
+    trait Pure[I <: IUB, R] extends FnImpl[I, R] {}
+
+    object Pure {
+      // user need to manually verify purity
+
+      class ^[I <: IUB, R](self: FnCompat[I, R]) extends Pure[I, R] {
+        override def apply(arg: I): R = self.apply(arg)
+      }
+    }
+
     class Cached[I <: IUB, R](
         val backbone: FnCompat[I, R]
-    ) extends FnImpl[I, R]
+    ) extends Pure[I, R]
         with Explainable.Composite1 {
 
       lazy val underlyingCache: CacheView[I, R] = Same.ByEquality.Lookup[I, R]()
@@ -194,7 +171,6 @@ trait HasFn extends HasBuilder {
           .get(arg)
       }
     }
-
   }
 
   type FnCompat[-I <: IUB, +R] = Fn { type In >: I; type Out <: R }
@@ -208,6 +184,8 @@ trait HasFn extends HasBuilder {
   implicit class FnOps[I <: IUB, O](val self: FnCompat[I, O]) extends Serializable {
 
     override def toString: String = self.toString // preserve reference transparency
+
+    def widen[i <: I, o >: O]: FnImpl[i, o] = this.asInstanceOf[FnImpl[i, o]]
 
     def cachedBy(
         cache: CacheView[I, O] = Same.ByEquality.Lookup[I, O]()

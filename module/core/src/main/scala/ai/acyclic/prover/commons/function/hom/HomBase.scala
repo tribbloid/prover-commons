@@ -42,9 +42,9 @@ trait HomBase extends SystemBase {
 
       (f, g) match {
 
-        case (_f: Fn.Identity[_], _g) =>
+        case (_: Fn.Identity[_], _g) =>
           _g.asInstanceOf[FnImpl[I, O2]]
-        case (_f, _g: Fn.Identity[_]) =>
+        case (_f, _: Fn.Identity[_]) =>
           _f.asInstanceOf[FnImpl[I, O2]]
         case _ =>
           Compose
@@ -105,6 +105,8 @@ trait HomBase extends SystemBase {
 
   implicit class FnRepr[I, O](self: FnCompat[I, O]) extends FnReprLike[I, O] {
 
+    override def asFn: FnImpl[I, O] = self.widen[I, O]
+
     override def apply(v1: I): O = self.apply(v1)
 
     override def andThen[O2](g: O => O2): FnRepr[I, O2] = {
@@ -115,8 +117,6 @@ trait HomBase extends SystemBase {
     override def compose[A](g: A => I): FnRepr[A, O] = {
       HomFnOps[I, O](self)._compose(g)
     }
-
-    override def asFn: FnImpl[I, O] = self.asInstanceOf[FnImpl[I, O]]
   }
 
   object FnRepr {}
