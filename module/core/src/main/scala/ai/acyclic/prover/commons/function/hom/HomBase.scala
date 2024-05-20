@@ -12,11 +12,11 @@ trait HomBase extends SystemBase {
   override type _Unit = Unit
   override val _unit: Unit = ()
 
-  implicit class TracerOps[R](val self: TracerCompat[R]) extends Serializable {
+  implicit class HomTracerOps[R](val self: TracerCompat[R]) extends Serializable {
 
     def map[O2](fn: R => O2): TracerImpl[O2] = {
 
-      Fn[R, O2](fn).^.apply(self)
+      Fn[R, O2](fn).^.tracerApply(self)
 
     }
 
@@ -29,23 +29,68 @@ trait HomBase extends SystemBase {
     }
   }
 
-  implicit class FnRepr[I, O](val self: FnCompat[I, O]) extends Serializable with (I => O) {
+  case class MaybeCompose[
+      I <: IUB,
+      O1,
+      O2
+  ](
+      f: FnCompat[I, O1],
+      g: FnCompat[O1, O2]
+  ) {
 
-    override def apply(v1: I): O = self.apply(v1)
+    lazy val reduce: FnImpl[I, O2] = {
+
+      (f, g) match {
+
+        case (_f: Fn.Identity[_], _g) =>
+          _g.asInstanceOf[FnImpl[I, O2]]
+        case (_f, _g: Fn.Identity[_]) =>
+          _f.asInstanceOf[FnImpl[I, O2]]
+        case _ =>
+          Compose
+      }
+    }
+
+    object Compose extends FnImpl[I, O2] with Explainable.Composite with Explainable.DecodedName {
+
+      override def apply(arg: I): O2 = {
+        val o1: O1 = f.apply(arg)
+        g.apply(o1)
+      }
+
+      override def composedFrom: Seq[Explainable] = Seq(f, g)
+    }
+  }
+
+  implicit class HomFnOps[I, O](val self: FnCompat[I, O]) extends Serializable {
+
+    def _andThen[O2](next: O => O2): FnRepr[I, O2] = {
+
+      val nextFn: FnCompat[O, O2] = Fn[O, O2](next)
+
+      val result: FnImpl[I, O2] =
+        MaybeCompose[I, O, O2](self, nextFn).reduce
+
+      result
+    }
+
+    def _compose[I1](prev: I1 => I): FnRepr[I1, O] = {
+
+      val prevFn = Fn(prev)
+
+      val result: FnImpl[I1, O] =
+        MaybeCompose[I1, I, O](prevFn, self).reduce
+
+      result
+    }
 
     case class Continuation private () {
 
-      def map[O2](next: O => O2): Tracer.CanApply[I, O2] = {
+      def map[O2](next: O => O2): TracerCompat[FnImpl[I, O2]] = {
 
-        /**
-          * [[TracingView]] turning upside-down
-          */
-        val nextFn: FnImpl[O, O2] = Fn(next)
+        val result = (_andThen(next): FnImpl[I, O2]).^
 
-        val result: FnImpl[I, O2] =
-          FnRepr.Compose(self: FnCompat[I, O], nextFn).reduce
-
-        result.^
+        result
       }
 
       def foreach = map[Unit] _
@@ -53,55 +98,28 @@ trait HomBase extends SystemBase {
       def flatMap[O2](fn: O => TracerCompat[O2]): FnImpl[I, O2] = {
         ???
       }
-
-//      def apply[O2](fn: O => O2): FnImpl[I, O2] = map(fn) // merely an alias
     }
 
     lazy val out = Continuation()
-
-    override def andThen[O2](g: O => O2) = {
-
-      val cc: FnCompat[I, O2] = out.map(g).unbox
-      val result: FnRepr[I, O2] = FnRepr(cc)
-      result
-    }
   }
 
-  object FnRepr {
+  implicit class FnRepr[I, O](self: FnCompat[I, O]) extends FnReprLike[I, O] {
 
-    case class Compose[
-        I <: IUB,
-        O1,
-        O2
-    ](
-        f: FnCompat[I, O1],
-        g: FnCompat[O1, O2]
-    ) {
+    override def apply(v1: I): O = self.apply(v1)
 
-      lazy val reduce: FnImpl[I, O2] = {
+    override def andThen[O2](g: O => O2): FnRepr[I, O2] = {
 
-        (f, g) match {
-
-          case (_f: Fn.Identity[_], _g) =>
-            _g.asInstanceOf[FnImpl[I, O2]]
-          case (_f, _g: Fn.Identity[_]) =>
-            _f.asInstanceOf[FnImpl[I, O2]]
-          case _ =>
-            AndThen
-        }
-      }
-
-      object AndThen extends FnImpl[I, O2] with Explainable.Composite with Explainable.DecodedName {
-
-        override def apply(arg: I): O2 = {
-          val o1: O1 = f.apply(arg)
-          g.apply(o1)
-        }
-
-        override def composedFrom: Seq[Explainable] = Seq(f, g)
-      }
+      HomFnOps[I, O](self)._andThen(g)
     }
+
+    override def compose[A](g: A => I): FnRepr[A, O] = {
+      HomFnOps[I, O](self)._compose(g)
+    }
+
+    override def asFn: FnImpl[I, O] = self.asInstanceOf[FnImpl[I, O]]
   }
 
-  implicit def unboxToRepr[I, O](v: TracerCompat[FnCompat[I, O]]): FnRepr[I, O] = FnRepr(v.unbox)
+  object FnRepr {}
+
+  implicit def tracerToRepr[I, O](v: TracerCompat[FnCompat[I, O]]): FnRepr[I, O] = FnRepr(v.unbox)
 }

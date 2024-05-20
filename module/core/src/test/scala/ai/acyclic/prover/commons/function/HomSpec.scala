@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.fixture.{ChainSelf, Fns, HigherOrder1}
+import ai.acyclic.prover.commons.function.fixture.{ChainSelf, Fns}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 object HomSpec {}
@@ -45,7 +45,7 @@ class HomSpec extends BaseSpec {
         }
       }
 
-      describe("others") {
+      describe("other") {
 
         import ai.acyclic.prover.commons.function.fixture.ChainOther._
 
@@ -63,14 +63,9 @@ class HomSpec extends BaseSpec {
 
           assert(r2 == "2b")
         }
-
-        it("1") {
-
-          val vv = HigherOrder1.flatMapOthers
-
-          vv
-        }
       }
+
+      describe("HOF") {}
     }
   }
 

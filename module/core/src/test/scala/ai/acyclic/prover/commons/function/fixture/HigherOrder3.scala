@@ -4,7 +4,7 @@ object HigherOrder3 {
 
   import Fns._
 
-  { // currying
+  val s1 = { // currying
 
     for (
       o1 <- fn1.out;

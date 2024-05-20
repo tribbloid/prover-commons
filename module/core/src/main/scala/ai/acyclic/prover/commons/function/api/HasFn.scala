@@ -101,18 +101,7 @@ trait HasFn extends HasBuilder {
 
   object Tracer {
 
-    case class Element[R](unbox: R) extends TracerImpl[R] {}
-
-    case class CanApply[I <: IUB, O](unbox: FnCompat[I, O]) extends TracerImpl[FnCompat[I, O]] {
-
-      def apply(arg: TracerCompat[I]): Tracer.Applied[I, O] = {
-
-        Tracer.Applied(
-          unbox,
-          arg
-        )
-      }
-    }
+    case class Blackbox[R](unbox: R) extends TracerImpl[R] {}
 
     case class Applied[I <: IUB, R](
         fn: FnCompat[I, R],
@@ -121,7 +110,19 @@ trait HasFn extends HasBuilder {
 
       override def unbox: R = fn(arg.unbox)
     }
+  }
 
+  implicit class TracerApply[I <: IUB, O](self: TracerCompat[FnCompat[I, O]]) {
+
+    def apply(arg: TracerCompat[I]): Tracer.Applied[I, O] = {
+
+      Tracer.Applied(
+        self.unbox,
+        arg
+      )
+    }
+
+    def tracerApply(arg: TracerCompat[I]): Tracer.Applied[I, O] = apply(arg)
   }
 
   implicit def _unbox[I](v: TracerCompat[I]): I = v.unbox
@@ -143,17 +144,8 @@ trait HasFn extends HasBuilder {
 
     def apply(arg: In): Out
 
-    def ^ = Tracer.CanApply(
-      Tracer.Element[this.type](Fn.this)
-    )
-  }
-
-  type FnCompat[-I <: IUB, +R] = Fn { type In >: I; type Out <: R }
-
-  trait FnImpl[I <: IUB, R] extends Fn { // most specific
-
-    type In = I
-    type Out = R
+    def ^ : Tracer.Blackbox[Fn.this.type] =
+      Tracer.Blackbox[Fn.this.type](Fn.this)
   }
 
   object Fn extends Builder {
@@ -166,8 +158,8 @@ trait HasFn extends HasBuilder {
     ): I =>> O = {
 
       vanilla match {
-        case ops: FnOps[I, O] =>
-          ops.self.asInstanceOf[FnImpl[I, O]]
+        case ops: FnReprLike[I, O] =>
+          ops.asFn
         case _ =>
           new Blackbox[I, O](vanilla, _definedAt)
       }
@@ -205,6 +197,14 @@ trait HasFn extends HasBuilder {
 
   }
 
+  type FnCompat[-I <: IUB, +R] = Fn { type In >: I; type Out <: R }
+
+  trait FnImpl[I <: IUB, R] extends Fn { // most specific
+
+    type In = I
+    type Out = R
+  }
+
   implicit class FnOps[I <: IUB, O](val self: FnCompat[I, O]) extends Serializable {
 
     override def toString: String = self.toString // preserve reference transparency
@@ -219,7 +219,12 @@ trait HasFn extends HasBuilder {
     }
   }
 
-  implicit def reprToFn[I <: IUB, R](
+  trait FnReprLike[I <: IUB, O] extends Serializable with (I => O) {
+
+    def asFn: FnImpl[I, O]
+  }
+
+  implicit def vanillaToFn[I <: IUB, R](
       vanilla: I => R
   ): FnImpl[I, R] = {
     implicit val definedAt: CallStackRef = definedHere
