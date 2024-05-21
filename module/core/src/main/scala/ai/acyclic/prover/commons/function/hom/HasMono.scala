@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.function.api
+package ai.acyclic.prover.commons.function.hom
 
 import Explainable.Composite1
 import ai.acyclic.prover.commons.collection.CacheView
@@ -30,7 +30,7 @@ trait HasMono extends HasPoly {
       -T_/\
   ] extends Poly {
 
-    type In[_ <: T_/\] <: IUB
+    type In[_ <: T_/\]
     type Out[T <: T_/\]
 
     def apply[T <: T_/\](arg: In[T]): Out[T]
@@ -50,7 +50,7 @@ trait HasMono extends HasPoly {
       override type In[T <: T_/\] = backbone.In[T]
       override type Out[T <: T_/\] = backbone.Out[T]
 
-      lazy val lookup: CacheView[IUB, Any] = Same.ByEquality.Lookup[IUB, Any]()
+      lazy val lookup: CacheView[Any, Any] = Same.ByEquality.Lookup[Any, Any]()
 
       override def apply[T <: T_/\](arg: In[T]): Out[T] = {
 
@@ -78,7 +78,7 @@ trait HasMono extends HasPoly {
       extends Serializable {
 
     def cachedBy(
-        _lookup: CacheView[IUB, Any] = Same.ByEquality.Lookup()
+        _lookup: CacheView[Any, Any] = Same.ByEquality.Lookup()
     ): Mono.Cached[T_/\, SS] = {
 
       type Result = Mono.Cached[T_/\, SS]
@@ -86,24 +86,24 @@ trait HasMono extends HasPoly {
       val result: Result =
         new Mono.Cached[T_/\, SS](self) {
 
-          override lazy val lookup: CacheView[IUB, Any] = _lookup
+          override lazy val lookup: CacheView[Any, Any] = _lookup
         }
       result
     }
   }
 
-  type MonoCompat[T_/\, -I[_ <: T_/\] <: IUB, +O[_ <: T_/\]] = Mono[T_/\] {
+  type MonoCompat[T_/\, -I[_ <: T_/\], +O[_ <: T_/\]] = Mono[T_/\] {
     type In[T <: T_/\] >: I[T]
     type Out[T <: T_/\] <: O[T]
   }
 
-  trait MonoImpl[T_/\, I[_ <: T_/\] <: IUB, O[_ <: T_/\]] extends Mono[T_/\] {
+  trait MonoImpl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends Mono[T_/\] {
     type In[T <: T_/\] = I[T]
     type Out[T <: T_/\] = O[T]
   }
 
   trait Dependent[
-      T_/\ <: IUB
+      T_/\
   ] extends Mono[T_/\] {
 
     type In[+T <: T_/\] = T
@@ -120,15 +120,15 @@ trait HasMono extends HasPoly {
     * @tparam R
     *   type constructor of output
     */
-  type DependentCompat[T_/\ <: IUB, +O[_ <: T_/\]] = Dependent[T_/\] {
+  type DependentCompat[T_/\, +O[_ <: T_/\]] = Dependent[T_/\] {
     type Out[T <: T_/\] <: O[T]
   }
 
-  trait DependentImpl[T_/\ <: IUB, O[_ <: T_/\]] extends Dependent[T_/\] {
+  trait DependentImpl[T_/\, O[_ <: T_/\]] extends Dependent[T_/\] {
     type Out[T <: T_/\] = O[T]
   }
 
-  implicit class fnIsMono[I <: IUB, O](val backbone: FnCompat[I, O]) extends Mono[Any] with Composite1 {
+  implicit class fnIsMono[I, O](val backbone: FnCompat[I, O]) extends Mono[Any] with Composite1 {
 
     override type In[+_] = I
     override type Out[+_] = O

@@ -1,36 +1,30 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.function.api.{Explainable, SystemBase}
+import ai.acyclic.prover.commons.function.hom.{Explainable, SystemBase}
 
 import scala.language.implicitConversions
 
-trait HomBase extends SystemBase {
+trait System_Imp0 extends SystemBase {
   self: Singleton =>
 
-  final type IUB = Any
-
-  override type _Unit = Unit
-  override val _unit: Unit = ()
-
-  implicit class HomTracerOps[R](val self: TracerCompat[R]) extends Serializable {
+  implicit class TracerCompatOps[R](val self: TracerCompat[R]) extends Serializable {
 
     def map[O2](fn: R => O2): TracerImpl[O2] = {
 
-      Fn[R, O2](fn).^.tracerApply(self)
-
+      Fn[R, O2](fn).^.trace_apply(self)
     }
 
     def foreach(fn: R => Unit): Unit = {
       map(fn).unbox
     }
 
-    def flatMap[O2](fn: R => TracerCompat[O2]): TracerImpl[O2] = {
+    def flatMap[O2](fn: R => O2): O2 = {
       ???
     }
   }
 
   case class MaybeCompose[
-      I <: IUB,
+      I,
       O1,
       O2
   ](
@@ -62,9 +56,9 @@ trait HomBase extends SystemBase {
     }
   }
 
-  implicit class HomFnOps[I, O](val self: FnCompat[I, O]) extends Serializable {
+  implicit class FnRepr[I, O](val self: FnCompat[I, O]) extends FnReprLike[I, O] with Serializable {
 
-    def _andThen[O2](next: O => O2): FnRepr[I, O2] = {
+    def _andThen[O2](next: O => O2): FnImpl[I, O2] = {
 
       val nextFn: FnCompat[O, O2] = Fn[O, O2](next)
 
@@ -74,7 +68,7 @@ trait HomBase extends SystemBase {
       result
     }
 
-    def _compose[I1](prev: I1 => I): FnRepr[I1, O] = {
+    def _compose[I1](prev: I1 => I): FnImpl[I1, O] = {
 
       val prevFn = Fn(prev)
 
@@ -86,36 +80,33 @@ trait HomBase extends SystemBase {
 
     case class Continuation private () {
 
-      def map[O2](next: O => O2): TracerCompat[FnImpl[I, O2]] = {
+      def map[O2](next: O => O2): FnImpl[I, O2] = {
 
-        val result = (_andThen(next): FnImpl[I, O2]).^
+        val result = _andThen(next): FnImpl[I, O2]
 
         result
       }
 
       def foreach = map[Unit] _
 
-      def flatMap[O2](fn: O => TracerCompat[O2]): FnImpl[I, O2] = {
+      def flatMap[T](fn: O => T): FnImpl[I, T] = {
         ???
       }
     }
 
     lazy val out = Continuation()
-  }
 
-  implicit class FnRepr[I, O](self: FnCompat[I, O]) extends FnReprLike[I, O] {
-
-    override def asFn: FnImpl[I, O] = self.widen[I, O]
+    override def revert: FnImpl[I, O] = self.widen[I, O]
 
     override def apply(v1: I): O = self.apply(v1)
 
     override def andThen[O2](g: O => O2): FnRepr[I, O2] = {
 
-      HomFnOps[I, O](self)._andThen(g)
+      _andThen(g)
     }
 
     override def compose[A](g: A => I): FnRepr[A, O] = {
-      HomFnOps[I, O](self)._compose(g)
+      _compose(g)
     }
   }
 

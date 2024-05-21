@@ -6,14 +6,21 @@ object ChainSelf {
 
   import Fns._
 
-  val s1 = fn0.andThen[Int] {
-    fn0
-  }
+  val s0 = fn0.andThen[Int](fn0)
 
-  val s2 = for (i <- :=>.Identity[Int]().out) yield {
+  val s1 = fn0.out.map(fn0)
 
-    fn0.^(fn0.^(i))
-  }
+  val s2 = :=>.id[Int].out.map(fn0).out.map(fn0)
+
+  val s3 =
+    for (
+      x <- :=>.id[Int].out;
+      f1 <- fn0.^;
+      f2 <- fn0.^
+    ) yield {
+
+      f2(f1(x))
+    }
 
   lazy val pairs = {
 
@@ -28,7 +35,7 @@ object ChainSelf {
     //    }
 
     val str = s"""
-                 |+ AndThen
+                 |+ Compose
                  |!-- ${fn0.explain.nodeText}
                  |!-- ${fn0.explain.nodeText}
                  |""".stripMargin
@@ -36,9 +43,9 @@ object ChainSelf {
     val pairs: Seq[
       (Int :=> Int, String)
     ] = Seq(
+      (s0, str),
       (s1, str),
       (s2, str)
-//      (s3, str)
     )
 
     pairs

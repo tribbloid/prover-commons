@@ -20,7 +20,7 @@ object HigherOrder2 {
     }
   }
 
-  val s2: Int :=> Seq[Any] = {
+  val s2: Int :=> Seq[Double] = {
 
     fn1.andThen {
 
@@ -35,17 +35,18 @@ object HigherOrder2 {
     }
   }
 
-  val s3: Int :=> Seq[Any] = {
+  val s3: Int :=> Seq[Double] = {
     for (
       o1 <- fn1.out;
       ff <- fn2.^
     ) yield {
 
-      o1.flatMap(ff)
+      val result = o1.flatMap(ff)
+      result
     }
   }
 
-  val s4: Int :=> Seq[Any] = {
+  val s4: Int :=> Seq[Double] = {
     for (
       ff <- fn2.^;
       o1 <- fn1.out

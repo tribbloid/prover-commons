@@ -14,11 +14,11 @@ class HomSpec extends BaseSpec {
     it("explain") {
 
       fn0.explain.nodeText.shouldBe(
-        "fn0 <at Fns.scala:8>"
+        "fn0 <at Fns.scala:7>"
       )
 
       fn0.toString.shouldBe(
-        "fn0 <at Fns.scala:8>"
+        fn0.explain.nodeText
       )
 
       fn0.explain.treeText.shouldBe(
@@ -26,7 +26,7 @@ class HomSpec extends BaseSpec {
       )
     }
 
-    describe("composing with") {
+    describe("chain ~") {
 
       describe("self") {
 

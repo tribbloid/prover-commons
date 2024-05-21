@@ -1,44 +1,44 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.hom.HomSystem
+import ai.acyclic.prover.commons.function.hom.System
 
-object Hom extends HomSystem.Entry {
+object Hom extends System.Entry {
 
-  import HomSystem._
+  import System._
 
   type Fn[-I, +R] = FnCompat[I, R]
   type :=>[-I, +R] = Fn[I, R]
 
-  def Fn = HomSystem.Fn
+  def Fn = System.Fn
   def :=> = Fn
 
-  type Poly = HomSystem.Poly
-  def Poly = HomSystem.Poly
+  type Poly = System.Poly
+  def Poly = System.Poly
 
-  type Mono[T, -I[_] <: IUB, +R[_]] = MonoCompat[T, I, R]
-  type :|~>[-I[_] <: IUB, +R[_]] = Mono[Any, I, R]
+  type Mono[T, -I[_], +R[_]] = MonoCompat[T, I, R]
+  type :|~>[-I[_], +R[_]] = Mono[Any, I, R]
 
-  def Mono = HomSystem.Mono
+  def Mono = System.Mono
   def :|~> = Mono
 
   type Dependent[T, +R[_]] = DependentCompat[T, R]
   type :|->[+R[_]] = Dependent[Any, R]
 
-  def Dependent = HomSystem.Dependent
+  def Dependent = System.Dependent
   def :|-> = Dependent
 
   object Impl {
     // TODO: should be under "Hom"
 
-    import HomSystem._
+    import System._
 
     type Fn[I, R] = FnImpl[I, R]
     //  type :=>[I, R] = FnImpl[I, R]
 
-    type Poly = HomSystem.Poly
+    type Poly = System.Poly
 
-    type Mono[T, I[_ <: T] <: IUB, R[_ <: T]] = MonoImpl[T, I, R]
-    //  type :|~>[I[_] <: IUB, R[_]] = MonoImpl[Any, I, R]
+    type Mono[T, I[_ <: T], R[_ <: T]] = MonoImpl[T, I, R]
+    //  type :|~>[I[_] , R[_]] = MonoImpl[Any, I, R]
 
     type Dependent[T, R[_ <: T]] = DependentImpl[T, R]
     //  type :|=>[R[_]] = DependentImpl[Any, R]

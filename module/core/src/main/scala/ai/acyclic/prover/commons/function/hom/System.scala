@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
-object HomSystem extends HomBase {
+object System extends System_Imp0 {
 
 //  override type Arg1[T] = T
 //

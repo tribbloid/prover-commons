@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.function.api
+package ai.acyclic.prover.commons.function.hom
 
 import scala.language.implicitConversions
 

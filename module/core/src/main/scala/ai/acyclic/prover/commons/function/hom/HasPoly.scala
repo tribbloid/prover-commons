@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.function.api
+package ai.acyclic.prover.commons.function.hom
 
 import scala.language.implicitConversions
 
@@ -18,7 +18,7 @@ trait HasPoly extends HasPolyLike {
   trait Poly extends PolyLike {
     // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
 
-    def apply[I <: IUB, R](v: I)(
+    def apply[I, R](v: I)(
         implicit
         _case: Case[FnCompat[v.type, R]]
     ): R = {
@@ -29,7 +29,7 @@ trait HasPoly extends HasPolyLike {
 
     object asShapelessPoly1 extends shapeless.Poly1 {
 
-      implicit def rewrite[I <: IUB, R](
+      implicit def rewrite[I, R](
           implicit
           _case: I =>> R
       ): Case.Aux[I, R] = at[I] { v =>
@@ -45,7 +45,7 @@ trait HasPoly extends HasPolyLike {
 
   implicit class PolyOps[P <: Poly](self: P) extends Serializable {
 
-    def apply[I <: IUB, R](arg: I)(
+    def apply[I, R](arg: I)(
         implicit
         _case: self.Case[FnCompat[I, R]]
     ): R = self.apply(arg)(_case)

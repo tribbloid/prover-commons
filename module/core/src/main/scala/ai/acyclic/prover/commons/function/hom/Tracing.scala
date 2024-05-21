@@ -1,17 +1,20 @@
-package ai.acyclic.prover.commons.function.api
+package ai.acyclic.prover.commons.function.hom
 
 import scala.language.implicitConversions
 
-trait TracerLike extends Explainable {
+trait Tracing extends Explainable {
 
-  type Repr
+  type In
+  type Out
+
+  def apply(arg: In): Out
 }
 
-object TracerLike {
+object Tracing {
 
-  type Lt[+T] = TracerLike { type Repr <: T }
+  type Compat[-I, +O] = Tracing { type In >: I; type Out <: O }
 
-  case class _View[T <: TracerLike](
+  case class _View[T <: Tracing](
       self: T
   ) {
 
@@ -23,9 +26,8 @@ object TracerLike {
 //
 ////      self // scala is dumb, can't figure out automatically
 //      self.asInstanceOf[T { type In = II; type Out = OO }]
-//
 //    }
   }
 
-  implicit def view[T <: TracerLike](self: T): _View[T] = _View(self)
+  implicit def view[T <: Tracing](self: T): _View[T] = _View(self)
 }
