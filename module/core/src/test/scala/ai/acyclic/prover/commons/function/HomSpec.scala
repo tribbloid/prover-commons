@@ -55,9 +55,9 @@ class HomSpec extends BaseSpec {
 
           s1.explain.treeText.shouldBe(
             s"""
-               |+ AndThen
+               |+ Compose
                |!-- ${Fns.fn0.explain.nodeText}
-               |!-- chainOther <at ChainOther.scala:7>
+               |!-- s1 <at ChainOther.scala:9>
                |""".stripMargin
           )
 

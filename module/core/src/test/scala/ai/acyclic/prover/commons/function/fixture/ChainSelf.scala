@@ -12,7 +12,7 @@ object ChainSelf {
 
   val s2 = :=>.id[Int].out.map(fn0).out.map(fn0)
 
-  val s3 =
+  val s3: Int :=> Int =
     for (
       x <- :=>.id[Int].out;
       f1 <- fn0.^;
@@ -45,7 +45,8 @@ object ChainSelf {
     ] = Seq(
       (s0, str),
       (s1, str),
-      (s2, str)
+      (s2, str),
+      (s3, str)
     )
 
     pairs

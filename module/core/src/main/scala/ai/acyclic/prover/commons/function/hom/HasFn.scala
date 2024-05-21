@@ -8,6 +8,13 @@ import scala.language.implicitConversions
 
 trait HasFn {
 
+  type TracerCompat[+R] = Tracer { type Out <: R }
+
+  trait TracerImpl[R] extends Tracer {
+
+    final type Out = R
+  }
+
   sealed trait Tracer extends Tracing {
 
     def unbox: Out
@@ -32,6 +39,22 @@ trait HasFn {
     }
   }
 
+  implicit class TracerCompatOps[R](val self: TracerCompat[R]) extends Serializable {
+
+    def map[O2](fn: R => O2): TracerImpl[O2] = {
+
+      Fn(fn).^.trace_apply(self)
+    }
+
+    def foreach(fn: R => Unit): Unit = {
+      map(fn).unbox
+    }
+
+    def flatMap[O2](fn: R => O2): O2 = {
+      ???
+    }
+  }
+
   implicit class TracerApply[I, O](self: TracerCompat[FnCompat[I, O]]) {
 
     def apply(arg: TracerCompat[I]): Tracer.Applied[I, O] = {
@@ -47,15 +70,7 @@ trait HasFn {
 
   implicit def _unbox[I](v: TracerCompat[I]): I = v.unbox
 
-  type TracerCompat[+R] = Tracer { type Out <: R }
-
-  trait TracerImpl[R] extends Tracer {
-
-    final type Out = R
-  }
-
   sealed trait Fn extends Tracing with Explainable {
-    // thin wrapper of a tracer
 
     def ^ : Tracer.Blackbox[Fn.this.type] =
       Tracer.Blackbox[Fn.this.type](Fn.this)
@@ -68,7 +83,7 @@ trait HasFn {
     override def define[I, O](vanilla: I => O): I =>> O = {
 
       vanilla match {
-        case ops: FnReprLike[I, O] =>
+        case ops: FnRepr[I, O] =>
           ops.revert
         case _ =>
           new Blackbox[I, O](vanilla, implicitly[CallStackRef])
@@ -142,15 +157,96 @@ trait HasFn {
     }
   }
 
-  trait FnReprLike[I, O] extends Serializable with (I => O) {
+  case class MaybeCompose[
+      I,
+      O1,
+      O2
+  ](
+      f: FnCompat[I, O1],
+      g: FnCompat[O1, O2]
+  ) {
 
-    def revert: FnImpl[I, O]
+    lazy val reduce: FnImpl[I, O2] = {
+
+      (f, g) match {
+
+        case (_: Fn.Identity[_], _g) =>
+          _g.asInstanceOf[FnImpl[I, O2]]
+        case (_f, _: Fn.Identity[_]) =>
+          _f.asInstanceOf[FnImpl[I, O2]]
+        case _ =>
+          Compose
+      }
+    }
+
+    object Compose extends FnImpl[I, O2] with Explainable.Composite with Explainable.DecodedName {
+
+      override def apply(arg: I): O2 = {
+        val o1: O1 = f.apply(arg)
+        g.apply(o1)
+      }
+
+      override def composedFrom: Seq[Explainable] = Seq(f, g)
+    }
   }
 
-  implicit def fromScalaFn[I, R](
+  implicit class FnRepr[I, O](val self: FnCompat[I, O]) extends (I => O) with Serializable {
+
+    def _andThen[O2](next: O => O2): FnImpl[I, O2] = {
+
+      val nextFn: FnCompat[O, O2] = Fn[O, O2](next)
+
+      val result: FnImpl[I, O2] =
+        MaybeCompose[I, O, O2](self, nextFn).reduce
+
+      result
+    }
+
+    def _compose[I1](prev: I1 => I): FnImpl[I1, O] = {
+
+      val prevFn = Fn(prev)
+
+      val result: FnImpl[I1, O] =
+        MaybeCompose[I1, I, O](prevFn, self).reduce
+
+      result
+    }
+
+    case class Continuation private () {
+
+      def map[O2](next: O => O2): FnImpl[I, O2] = {
+
+        val result = _andThen(next): FnImpl[I, O2]
+
+        result
+      }
+
+      def foreach = map[Unit] _
+
+      def flatMap[T](fn: O => T): FnImpl[I, T] = {
+        map(fn)
+      }
+    }
+
+    lazy val out = Continuation()
+
+    lazy val revert: FnImpl[I, O] = self.widen[I, O]
+
+    override def apply(v1: I): O = self.apply(v1)
+
+    override def andThen[O2](g: O => O2): FnRepr[I, O2] = {
+
+      _andThen(g)
+    }
+
+    override def compose[A](g: A => I): FnRepr[A, O] = {
+      _compose(g)
+    }
+  }
+
+  implicit def _fn[I, R](
       vanilla: I => R
   ): FnImpl[I, R] = {
-//    implicit val definedAt: CallStackRef =
 
     Fn[I, R](vanilla)
   }
