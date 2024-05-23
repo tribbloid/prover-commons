@@ -23,10 +23,11 @@ trait HasFn {
 
     override def apply(arg: Unit): Out = unbox
 
-    def widen[T >: Out]: TracerImpl[T] = this.asInstanceOf[TracerImpl[T]]
   }
 
   object Tracer {
+
+    implicit def widen[R](self: TracerCompat[R]): TracerImpl[R] = self.asInstanceOf[TracerImpl[R]]
 
     case class Blackbox[R](unbox: R) extends TracerImpl[R] {}
 
@@ -87,7 +88,7 @@ trait HasFn {
 
     def apply(arg: TracerCompat[I]): TracerImpl[O] = {
 
-      val fn = self.unbox.widen[I, O]
+      val fn = self.unbox.impl
 
       Tracer
         .MaybeApplied(
@@ -121,6 +122,8 @@ trait HasFn {
           new Blackbox[I, O](vanilla, implicitly[CallStackRef])
       }
     }
+
+    implicit def widen[I, O](self: FnCompat[I, O]): FnImpl[I, O] = self.asInstanceOf[FnImpl[I, O]]
 
     case class Identity[I]() extends FnImpl[I, I] {
 
@@ -200,36 +203,30 @@ trait HasFn {
 
   type FnCompat[-I, +R] = Fn { type In >: I; type Out <: R }
 
-  trait FnImpl[I, R] extends Fn { // most specific
+  trait FnImpl[I, O] extends Fn { // most specific
 
     type In = I
-    type Out = R
-  }
+    type Out = O
 
-  implicit class FnOps[I, O](val self: FnCompat[I, O]) extends Serializable {
+    def impl: FnImpl[I, O] = this
 
-    override def toString: String = self.toString // preserve reference transparency
-
-    def widen[i <: I, o >: O]: FnImpl[i, o] = self.asInstanceOf[FnImpl[i, o]]
+//    override def toString: String = self.toString // preserve reference transparency
 
     def cachedBy(
         cache: CacheView[I, O] = Same.ByEquality.Lookup[I, O]()
     ): Fn.Cached[I, O] = {
-      new Fn.Cached[I, O](self) {
+      new Fn.Cached[I, O](this) {
 
         override lazy val underlyingCache: CacheView[I, O] = cache
       }
     }
-  }
-
-  implicit class FnRepr[I, O](val self: FnCompat[I, O]) extends (I => O) with Serializable {
 
     def _andThen[O2](next: O => O2): FnImpl[I, O2] = {
 
       val nextFn: FnCompat[O, O2] = Fn[O, O2](next)
 
       val result: FnImpl[I, O2] =
-        Fn.MaybeCompose[I, O, O2](self, nextFn).resolve
+        Fn.MaybeCompose[I, O, O2](this, nextFn).resolve
 
       result
     }
@@ -239,7 +236,7 @@ trait HasFn {
       val prevFn = Fn(prev)
 
       val result: FnImpl[I1, O] =
-        Fn.MaybeCompose[I1, I, O](prevFn, self).resolve
+        Fn.MaybeCompose[I1, I, O](prevFn, this).resolve
 
       result
     }
@@ -261,18 +258,21 @@ trait HasFn {
     }
 
     lazy val out = Continuation()
+  }
 
-    lazy val revert: FnImpl[I, O] = self.widen[I, O]
+  implicit class FnRepr[I, O](val self: FnCompat[I, O]) extends (I => O) with Serializable {
+
+    lazy val revert: FnImpl[I, O] = self.impl
 
     override def apply(v1: I): O = self.apply(v1)
 
     override def andThen[O2](g: O => O2): FnRepr[I, O2] = {
 
-      _andThen(g)
+      self._andThen(g)
     }
 
     override def compose[A](g: A => I): FnRepr[A, O] = {
-      _compose(g)
+      self._compose(g)
     }
   }
 
@@ -282,7 +282,4 @@ trait HasFn {
 
     Fn[I, R](vanilla)
   }
-
-  // shortcuts
-
 }

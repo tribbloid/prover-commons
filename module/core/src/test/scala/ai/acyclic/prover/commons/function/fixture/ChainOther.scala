@@ -1,13 +1,13 @@
 package ai.acyclic.prover.commons.function.fixture
 
-import ai.acyclic.prover.commons.function.hom.System
+import ai.acyclic.prover.commons.function.Hom.:=>
 import ai.acyclic.prover.commons.function.hom.System.TracerImpl
 
 object ChainOther {
 
   import Fns._
 
-  val s1: System.FnImpl[Int, String] = fn0.andThen[String] { v =>
+  val s1: Int :=> String = fn0.andThen[String] { v =>
     s"${v}b"
   }
 
