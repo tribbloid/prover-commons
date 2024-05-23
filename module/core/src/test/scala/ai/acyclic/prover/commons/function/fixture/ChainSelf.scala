@@ -22,6 +22,18 @@ object ChainSelf {
       f2(f1(x))
     }
 
+  val s4: Int :=> Int = {
+    :=>.id[Int].out.flatMap { x =>
+      val v = fn0.^.flatMap { f1 =>
+        val vv = fn0.^.map { f2 =>
+          f2(f1(x))
+        }
+        vv
+      }
+      v
+    }
+  }
+
   lazy val pairs = {
 
 //
@@ -46,7 +58,8 @@ object ChainSelf {
       (s0, str),
       (s1, str),
       (s2, str),
-      (s3, str)
+      (s3, str),
+      (s4, str)
     )
 
     pairs

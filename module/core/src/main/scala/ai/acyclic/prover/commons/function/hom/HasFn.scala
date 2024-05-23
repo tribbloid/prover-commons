@@ -30,12 +30,31 @@ trait HasFn {
 
     case class Blackbox[R](unbox: R) extends TracerImpl[R] {}
 
-    case class Applied[I, R](
-        fn: FnCompat[I, R],
-        arg: TracerCompat[I]
-    ) extends TracerImpl[R] {
+    case class MaybeApplied[
+        I,
+        R
+    ](
+        arg: TracerCompat[I],
+        fn: FnCompat[I, R]
+    ) { // TODO: can this be a polymorphic function? sounds feasible in Scala 3
 
-      override def unbox: R = fn(arg.unbox)
+      lazy val resolve: TracerImpl[R] = {
+
+        fn match {
+
+          case _: Fn.Identity[_] =>
+            arg.asInstanceOf[TracerImpl[R]]
+          case _ =>
+            Applied
+        }
+      }
+
+      object Applied extends TracerImpl[R] with Explainable.Composite with Explainable.DecodedName {
+
+        override def unbox: R = fn(arg.unbox)
+
+        override def composedFrom: Seq[Explainable] = Seq(arg, fn)
+      }
     }
   }
 
@@ -43,7 +62,8 @@ trait HasFn {
 
     def map[O2](fn: R => O2): TracerImpl[O2] = {
 
-      Fn(fn).^.trace_apply(self)
+      val result = Fn(fn).^.suspend(self)
+      result
     }
 
     def foreach(fn: R => Unit): Unit = {
@@ -51,21 +71,33 @@ trait HasFn {
     }
 
     def flatMap[O2](fn: R => O2): O2 = {
-      ???
+//      val result = map(fn)
+//      val v1 = result.unbox
+
+      val _fn = Fn(fn)
+
+      val s2: TracerImpl[O2] = _fn.^.suspend(self)
+      val v2: O2 = s2.unbox
+
+      v2
     }
   }
 
   implicit class TracerApply[I, O](self: TracerCompat[FnCompat[I, O]]) {
 
-    def apply(arg: TracerCompat[I]): Tracer.Applied[I, O] = {
+    def apply(arg: TracerCompat[I]): TracerImpl[O] = {
 
-      Tracer.Applied(
-        self.unbox,
-        arg
-      )
+      val fn = self.unbox.widen[I, O]
+
+      Tracer
+        .MaybeApplied(
+          arg,
+          fn
+        )
+        .resolve
     }
 
-    def trace_apply(arg: TracerCompat[I]): Tracer.Applied[I, O] = apply(arg)
+    lazy val suspend = apply _
   }
 
   implicit def _unbox[I](v: TracerCompat[I]): I = v.unbox
@@ -131,6 +163,39 @@ trait HasFn {
           .get(arg)
       }
     }
+
+    case class MaybeCompose[
+        I,
+        O1,
+        O2
+    ](
+        f: FnCompat[I, O1],
+        g: FnCompat[O1, O2]
+    ) { // TODO: can this be a polymorphic function? sounds feasible in Scala 3
+
+      lazy val resolve: FnImpl[I, O2] = {
+
+        (f, g) match {
+
+          case (_: Fn.Identity[_], _g) =>
+            _g.asInstanceOf[FnImpl[I, O2]]
+          case (_f, _: Fn.Identity[_]) =>
+            _f.asInstanceOf[FnImpl[I, O2]]
+          case _ =>
+            Compose
+        }
+      }
+
+      object Compose extends FnImpl[I, O2] with Explainable.Composite with Explainable.DecodedName {
+
+        override def apply(arg: I): O2 = {
+          val o1: O1 = f.apply(arg)
+          g.apply(o1)
+        }
+
+        override def composedFrom: Seq[Explainable] = Seq(f, g)
+      }
+    }
   }
 
   type FnCompat[-I, +R] = Fn { type In >: I; type Out <: R }
@@ -157,39 +222,6 @@ trait HasFn {
     }
   }
 
-  case class MaybeCompose[
-      I,
-      O1,
-      O2
-  ](
-      f: FnCompat[I, O1],
-      g: FnCompat[O1, O2]
-  ) {
-
-    lazy val reduce: FnImpl[I, O2] = {
-
-      (f, g) match {
-
-        case (_: Fn.Identity[_], _g) =>
-          _g.asInstanceOf[FnImpl[I, O2]]
-        case (_f, _: Fn.Identity[_]) =>
-          _f.asInstanceOf[FnImpl[I, O2]]
-        case _ =>
-          Compose
-      }
-    }
-
-    object Compose extends FnImpl[I, O2] with Explainable.Composite with Explainable.DecodedName {
-
-      override def apply(arg: I): O2 = {
-        val o1: O1 = f.apply(arg)
-        g.apply(o1)
-      }
-
-      override def composedFrom: Seq[Explainable] = Seq(f, g)
-    }
-  }
-
   implicit class FnRepr[I, O](val self: FnCompat[I, O]) extends (I => O) with Serializable {
 
     def _andThen[O2](next: O => O2): FnImpl[I, O2] = {
@@ -197,7 +229,7 @@ trait HasFn {
       val nextFn: FnCompat[O, O2] = Fn[O, O2](next)
 
       val result: FnImpl[I, O2] =
-        MaybeCompose[I, O, O2](self, nextFn).reduce
+        Fn.MaybeCompose[I, O, O2](self, nextFn).resolve
 
       result
     }
@@ -207,7 +239,7 @@ trait HasFn {
       val prevFn = Fn(prev)
 
       val result: FnImpl[I1, O] =
-        MaybeCompose[I1, I, O](prevFn, self).reduce
+        Fn.MaybeCompose[I1, I, O](prevFn, self).resolve
 
       result
     }

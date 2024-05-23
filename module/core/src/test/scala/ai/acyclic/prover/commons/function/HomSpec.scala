@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.function.fixture.{ChainSelf, Fns}
+import ai.acyclic.prover.commons.function.fixture.{ChainOther, ChainSelf, Fns}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 object HomSpec {}
@@ -26,7 +26,7 @@ class HomSpec extends BaseSpec {
       )
     }
 
-    describe("chain ~") {
+    describe("chain") {
 
       describe("self") {
 
@@ -43,6 +43,17 @@ class HomSpec extends BaseSpec {
               assert(r1 == 3)
             }
         }
+
+      }
+
+      it("ref") {
+
+        val d = ChainOther.debug
+
+        val text = d.explain.treeText
+
+        val r = d.apply(())
+        r
       }
 
       describe("other") {
@@ -65,7 +76,7 @@ class HomSpec extends BaseSpec {
         }
       }
 
-      describe("HOF") {}
+//      describe("HOF") {}
     }
   }
 

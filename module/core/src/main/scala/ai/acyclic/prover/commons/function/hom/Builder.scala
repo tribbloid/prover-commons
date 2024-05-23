@@ -27,7 +27,7 @@ trait Builder {
 
   implicit def definedHere: CallStackRef = CallStackRef
     .below(condition = { v =>
-      v.isDefinedAtClasses(classOf[HasFn]) || v.isArgDefault
+      v.isDefinedAtClasses(Builder.this.getClass) || v.isArgDefault
     })
     .below(1)
 }
