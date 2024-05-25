@@ -28,19 +28,19 @@ class SrcTraceableSpec extends BaseSpec {
   describe("of instances") {
 
     it("ad-hoc class") {
-      t1.definedAt.atLine.shouldBe("DefinedAtMixinSpec.scala:8")
+      t1.definedAt.atLine.shouldBe("SrcTraceableSpec.scala:8")
     }
 
     it("class") {
-      t2.definedAt.atLine.shouldBe("DefinedAtMixinSpec.scala:12")
+      t2.definedAt.atLine.shouldBe("SrcTraceableSpec.scala:12")
     }
 
     it("object") {
-      T3.definedAt.atLine.shouldBe("DefinedAtMixinSpec.scala:14")
+      T3.definedAt.atLine.shouldBe("SrcTraceableSpec.scala:14")
     }
 
     it("single-abstract method") {
-      sam1.definedAt.atLine.shouldBe("DefinedAtMixinSpec.scala:22")
+      sam1.definedAt.atLine.shouldBe("SrcTraceableSpec.scala:22")
     }
   }
 }
