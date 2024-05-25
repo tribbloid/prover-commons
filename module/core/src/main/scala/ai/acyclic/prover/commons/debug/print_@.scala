@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.debug
 
-import ai.acyclic.prover.commons.debug.Debug.CallStackRef
-
 case class print_@(
     belowClasses: Seq[Class[_]]
 ) {
@@ -11,7 +9,7 @@ case class print_@(
   ): String = {
 
     val ref: CallStackRef = CallStackRef.below(condition = { v =>
-      v.isDefinedAt(classes = Seq(this.getClass) ++ belowClasses)
+      v.isUnder(classes = Seq(this.getClass) ++ belowClasses)
     })
 
     val result: String =

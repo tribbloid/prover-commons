@@ -2,19 +2,19 @@ package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-object DefinedAtMixinSpec {
+object SrcTraceableSpec {
 
-  val t1: DefinedAtMixin =
-    new DefinedAtMixin {}
+  val t1: SrcTraceable =
+    new SrcTraceable {}
 
-  case class T2() extends DefinedAtMixin
+  case class T2() extends SrcTraceable
   val t2: T2 =
     T2()
 
   object T3 extends T2()
   T3
 
-  trait SAM1 extends DefinedAtMixin {
+  trait SAM1 extends SrcTraceable {
     def apply(): Int
   }
 
@@ -22,9 +22,9 @@ object DefinedAtMixinSpec {
     () => 1
 }
 
-class DefinedAtMixinSpec extends BaseSpec {
+class SrcTraceableSpec extends BaseSpec {
 
-  import DefinedAtMixinSpec._
+  import SrcTraceableSpec._
   describe("of instances") {
 
     it("ad-hoc class") {

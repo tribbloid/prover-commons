@@ -20,7 +20,7 @@ trait HasPoly extends HasPolyLike {
 
     def apply[I, R](v: I)(
         implicit
-        _case: Case[FnCompat[v.type, R]]
+        _case: Case[FnCompat[I, R]]
     ): R = {
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll[FnCompat[v.type, R], IsCase.type](_case)
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll(_case)

@@ -1,14 +1,13 @@
-package ai.acyclic.prover.commons.function.hom
+package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.cap.Capabilities
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
-import ai.acyclic.prover.commons.util.{DefinedAtMixin, RuntimeClass}
 
 import scala.runtime.ScalaRunTime
 
-trait Explainable extends DefinedAtMixin {
-  import Explainable._
+trait SrcExplainable extends SrcTraceable {
+  import SrcExplainable._
 
   @transient lazy val explain: Explain = Explain(this)
 
@@ -21,10 +20,10 @@ trait Explainable extends DefinedAtMixin {
   * can mixin [[Capabilities.Capability]], but so far, the only [[Capability]] is for refining candidates of polymorphic
   * cases
   */
-object Explainable extends Capabilities {
+object SrcExplainable extends Capabilities {
   // TODO: can this be generalised, not just for functions?
 
-  case class Explain(value: Explainable) extends Local.Tree.NodeImpl[Explainable] {
+  case class Explain private (value: SrcExplainable) extends Local.Tree.NodeImpl[SrcExplainable] {
 
     override def getNodeText: String = {
 
@@ -56,21 +55,24 @@ object Explainable extends Capabilities {
       val viz = Hierarchy.default.apply(this.mkTree)
       viz.treeText
     }
+
+    override def toString: String = treeText
   }
 
   ////
-  trait Composite extends Explainable {
 
-    def composedFrom: Seq[Explainable]
+  trait Composite extends SrcExplainable {
+
+    def composedFrom: Seq[SrcExplainable]
   }
 
   trait Composite1 extends Composite {
 
-    def backbone: Explainable
+    def backbone: SrcExplainable
 
     @transient final lazy val composedFrom = Seq(backbone)
   }
 
-  trait DecodedName extends Explainable {}
+  trait DecodedName extends SrcExplainable {}
 
 }

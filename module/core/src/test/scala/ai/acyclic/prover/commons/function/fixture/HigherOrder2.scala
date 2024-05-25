@@ -27,7 +27,7 @@ object HigherOrder2 {
       val result: Seq[Long] :=> Seq[Double] = for (ff <- fn2.^) yield {
 
         :=>.at[Seq[Long]] { v =>
-          v.flatMap(ff)
+          v.flatMap(ff.asScala)
         }
       }
 
@@ -41,7 +41,7 @@ object HigherOrder2 {
       ff <- fn2.^
     ) yield {
 
-      val result = o1.flatMap(ff)
+      val result = o1.flatMap(ff.asScala)
       result
     }
   }
@@ -52,7 +52,7 @@ object HigherOrder2 {
       o1 <- fn1.out
     ) yield {
 
-      o1.flatMap(ff)
+      o1.flatMap(ff.asScala)
     }
   }
 

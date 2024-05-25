@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.debug.Debug.CallStackRef
+import ai.acyclic.prover.commons.debug.CallStackRef
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.control.ControlThrowable
@@ -98,7 +98,7 @@ object Retry {
         Option(showStr).getOrElse {
           CallStackRef
             .below(
-              condition = _.isDefinedAtClasses(classOf[Retry], classOf[RetryImpl[_]])
+              condition = _.isUnderClasses(classOf[Retry], classOf[RetryImpl[_]])
             )
             .showStr
         }

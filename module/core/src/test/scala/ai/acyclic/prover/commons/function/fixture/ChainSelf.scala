@@ -1,14 +1,15 @@
 package ai.acyclic.prover.commons.function.fixture
 
 import ai.acyclic.prover.commons.function.Hom.:=>
+import ai.acyclic.prover.commons.function.hom.System.FnImpl
 
 object ChainSelf {
 
   import Fns._
 
-  val s0 = fn0.andThen[Int](fn0)
+  val s0: Int :=> Int = fn0.andThen(fn0)
 
-  val s1 = fn0.out.map(fn0)
+  val s1 = FnImpl.ContinuationView(fn0.out).map(fn0)
 
   val s2 = :=>.id[Int].out.map(fn0).out.map(fn0)
 

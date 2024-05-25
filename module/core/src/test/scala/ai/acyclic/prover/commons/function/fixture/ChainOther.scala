@@ -12,9 +12,8 @@ object ChainOther {
   }
 
   val debug: TracerImpl[Seq[Long]] = fn0.^.flatMap { f1 =>
-    val vv = fn1.^.map { f2 =>
+    fn1.^.map { f2 =>
       f2(f1(3))
     }
-    vv
   }
 }

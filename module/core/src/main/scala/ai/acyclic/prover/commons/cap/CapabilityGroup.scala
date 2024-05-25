@@ -9,7 +9,7 @@ trait CapabilityGroup extends CanRevokeAll {
 
   trait revokeAll_Imp0 extends Hom.Poly {
 
-    implicit def last[T, C <: Capability]: (T <> C) =>> T = at[T <> C] { v =>
+    implicit def last[T, C <: Capability]: (T <> C) =>> T = at[T <> C].apply { v =>
       v.asInstanceOf[T]
     }
   }

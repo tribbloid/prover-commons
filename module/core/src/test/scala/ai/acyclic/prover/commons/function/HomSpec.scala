@@ -52,7 +52,7 @@ class HomSpec extends BaseSpec {
 
         val text = d.explain.treeText
 
-        val r = d.apply(())
+        val r = d.unbox
         r
       }
 

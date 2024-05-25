@@ -6,7 +6,7 @@ object Hom extends System.Entry {
 
   import System._
 
-  type Fn[-I, +R] = FnImpl[_ >: I, _ <: R]
+  type Fn[-I, +R] = FnCompat[I, R]
   type :=>[-I, +R] = Fn[I, R]
 
   def Fn = System.Fn

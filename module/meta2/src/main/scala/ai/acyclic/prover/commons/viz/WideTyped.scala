@@ -10,17 +10,17 @@ import scala.language.implicitConversions
   * @tparam TT
   *   the wide type
   */
-case class WideTyped[TT](value: TT) {
-
-  type Wide = TT
-
-  def viz(
-      implicit
-      ttag: ScalaReflection.TypeTag[TT]
-  ) = TypeViz.apply[TT]
-}
-
-object WideTyped {
-
-  implicit def unbox[T](v: WideTyped[T]): T = v.value
-}
+//case class WideTyped[TT](value: TT) {
+//
+//  type Wide = TT
+//
+//  def viz(
+//      implicit
+//      ttag: ScalaReflection.TypeTag[TT]
+//  ) = TypeViz.apply[TT]
+//}
+//
+//object WideTyped {
+//
+//  implicit def unbox[T](v: WideTyped[T]): T = v.value
+//}

@@ -19,7 +19,7 @@ object HigherOrder1 {
     for (ff <- fn2.^) yield {
 
       :=>.at[Seq[Long]] { v =>
-        v.flatMap(ff)
+        v.flatMap(ff.asScala)
       }
     }
   }

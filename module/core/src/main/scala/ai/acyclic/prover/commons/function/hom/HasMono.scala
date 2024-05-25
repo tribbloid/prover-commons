@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.function.hom
 
-import Explainable.Composite1
 import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.same.Same
+import ai.acyclic.prover.commons.util.SrcExplainable
 
 object HasMono {}
 
@@ -45,7 +45,7 @@ trait HasMono extends HasPoly {
     class Cached[T_/\, SS <: Mono[T_/\]](
         val backbone: SS
     ) extends Mono[T_/\]
-        with Explainable.Composite1 {
+        with SrcExplainable.Composite1 {
 
       override type In[T <: T_/\] = backbone.In[T]
       override type Out[T <: T_/\] = backbone.Out[T]
@@ -128,7 +128,7 @@ trait HasMono extends HasPoly {
     type Out[T <: T_/\] = O[T]
   }
 
-  implicit class fnIsMono[I, O](val backbone: FnCompat[I, O]) extends Mono[Any] with Composite1 {
+  implicit class fnIsMono[I, O](val backbone: FnCompat[I, O]) extends Mono[Any] with SrcExplainable.Composite1 {
 
     override type In[+_] = I
     override type Out[+_] = O

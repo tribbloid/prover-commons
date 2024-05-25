@@ -1,14 +1,15 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.cap.Capability.<>
+import ai.acyclic.prover.commons.util.{SrcExplainable, SrcPosition}
 
 trait HasPolyLike extends HasFn {
 
-  import Explainable._
+  import ai.acyclic.prover.commons.util.SrcExplainable._
 
-  trait PolyLike extends Builder with Explainable {
+  trait PolyLike extends SrcExplainable with FnBuilder {
 
-    object IsCase extends Explainable.Capability
+    object IsCase extends SrcExplainable.Capability
 
     type Case[+FF <: FnCompat[_, _]] = <>[FF, IsCase.type]
 
@@ -16,13 +17,16 @@ trait HasPolyLike extends HasFn {
     type Compat[I, O] = Case[FnCompat[I, O]]
     type =>>[I, O] = Case[FnImpl[I, O]]
 
-    override def define[I, R](fn: I => R): I =>> R = {
+    override def define[I, R](fn: I => R)(
+        implicit
+        _definedAt: SrcPosition
+    ): I =>> R = {
 
       val _case = Fn(fn) <>: IsCase
       _case
     }
 
-    implicit class BuildExtension[I, O](self: RefinedBuilder[I, O]) {
+    implicit class AsSummoner[I, O](self: RefinedBuilder[I, O]) {
 
       def summon(
           implicit
@@ -30,4 +34,5 @@ trait HasPolyLike extends HasFn {
       ): _case.type = _case
     }
   }
+
 }
