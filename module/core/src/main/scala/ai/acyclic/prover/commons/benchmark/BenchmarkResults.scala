@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.benchmark
 
-import ai.acyclic.prover.commons.debug.{print_@, CallStackRef}
+import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.util.SrcPosition
 
 import java.util.concurrent.TimeUnit

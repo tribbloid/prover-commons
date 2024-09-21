@@ -9,7 +9,8 @@ case class print_@(
   ): String = {
 
     val ref: CallStackRef = CallStackRef.below(condition = { v =>
-      v.isUnder(classes = Seq(this.getClass) ++ belowClasses)
+      val mt = v.isUnder(classes = Seq(this.getClass) ++ belowClasses)
+      mt
     })
 
     val result: String =

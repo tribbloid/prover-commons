@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons
 
-object __AxiomaticProgramming {
+object __AxiomaticPrinciples {
 
   /**
     * principles (CHL correspondence):
@@ -19,5 +19,7 @@ object __AxiomaticProgramming {
     *   - a chained given definition (an implicit function/class that has using argument(s)) that is not a theorem
     *     (doesn't provide any new type to be used by other theorems as a lemma ) represents a leaky abstraction, it
     *     cannot be summoned without a (usually extremely verbose) declaration of its lemma, AVOID IT AT ALL COSTS!
+    *
+    *   - implicit class (as a manifestation of Scala 3 extension) is preferred over implicit conversion
     */
 }

@@ -32,6 +32,10 @@ case class CallStackRef(
       condition: ElementView => Boolean
   ): CallStackRef = {
 
+    effectiveStack.map { v =>
+      v -> condition(ElementView(v))
+    }
+
     val belowI = effectiveStack.lastIndexWhere { v =>
       condition(ElementView(v))
     } + 1
@@ -51,21 +55,27 @@ object CallStackRef {
 
     val stackInfo_raw: Array[StackTraceElement] = Debug.getBreakpointInfo
     CallStackRef(stackInfo_raw.toVector)
+      .below { v =>
+        v.isUnderClasses(CallStackRef.getClass)
+      }
   }
 
   def below(
-      depth: Int = 1,
+      depth: Int = 0,
       condition: ElementView => Boolean = { _ =>
         false
       }
   ): CallStackRef = {
 
-    here
-      .below(depth)
+    val belowDepth = here.below(depth)
+
+    val belowCondition = belowDepth
       .below(condition)
       .pop { v =>
         v.isArgDefault
       }
+
+    belowCondition
   }
 
   case class ElementView(
@@ -94,7 +104,7 @@ object CallStackRef {
         classes: Seq[Class[_]] = Nil
     ): Boolean = {
 
-      val _paths = paths ++ classes.map(_.getName)
+      val _paths = paths ++ classes.map(_.getName.stripSuffix("$"))
 
       def nameIsUnderPath(name: String, path: String): Boolean = {
 

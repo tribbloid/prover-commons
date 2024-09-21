@@ -1,9 +1,5 @@
 package ai.acyclic.prover.commons.viz
 
-import ai.acyclic.prover.commons.meta.ScalaReflection
-
-import scala.language.implicitConversions
-
 /**
   * @param value
   *   use compiler's type inference feature to discover the non-singleton type of the value
