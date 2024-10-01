@@ -4,17 +4,18 @@ import ai.acyclic.prover.commons.util.SrcExplainable
 
 import scala.language.implicitConversions
 
-trait Traced extends SrcExplainable {
+trait IOBound extends SrcExplainable {
+  // Used to annotate FnImpl when Input is not contravariant & Output is not covariant
 
-  type In
-  type Out
+  type IMax
+  type OMin
 }
 
-object Traced {
+object IOBound {
 
-  type Compat[-I, +O] = Traced { type In >: I; type Out <: O }
+  type Compat[-I, +O] = IOBound { type In >: I; type Out <: O }
 
-  case class _View[T <: Traced](
+  case class _View[T <: IOBound](
       self: T
   ) {
 
@@ -29,5 +30,5 @@ object Traced {
 //    }
   }
 
-  implicit def view[T <: Traced](self: T): _View[T] = _View(self)
+  implicit def view[T <: IOBound](self: T): _View[T] = _View(self)
 }

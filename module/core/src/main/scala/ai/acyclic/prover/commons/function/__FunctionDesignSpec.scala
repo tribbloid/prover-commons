@@ -56,4 +56,15 @@ object __FunctionDesignSpec {
     *   - `I :=> O` becomes Const[I => O]
     *     - (I => O) won't contain computation graph
     */
+
+  /**
+   * TODO: (09/30/2024)
+   *
+   * - Tracer should be discarded - no need to fit into the ecosystem of JAX as it relies heavily on capability of Python
+   * - JAX tracer is always for bound variables that cannot exist without a function body. Free variables are never traced
+   * - the optimal representation for variables is DeBruijn number, which also cannot exist without a functino body.
+   * - unlike Python, Scala (or other strongly typed languages) functions don't have a "shadow mode" that can be applied on tracer (e.g. dual numbers)
+   *   - the only Scala-native option is to use AST transformation.
+   *   - examples of AST transformations are Kyo direct-style and dotty-cps-async
+   */
 }

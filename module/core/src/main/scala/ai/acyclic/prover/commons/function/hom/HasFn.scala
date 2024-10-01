@@ -8,151 +8,188 @@ import scala.language.implicitConversions
 
 trait HasFn {
 
-  sealed trait Tracer extends Traced {
-
-    def unbox: Out
-
-    type In = Unit
-  }
+//  sealed trait Tracer extends Traced {
+//
+//    def unbox: Out
+//
+//    type In = Unit
+//  }
 
   object Tracer {
 
-    implicit def widen[R](self: TracerCompat[R]): TracerImpl[R] = self.asInstanceOf[TracerImpl[R]]
+//    implicit def widen[R](self: TracerCompat[R]): TracerImpl[R] = self.asInstanceOf[TracerImpl[R]]
 
-    case class Blackbox[R](unbox: R) extends TracerImpl[R] {}
+//    case class Blackbox[R](unbox: R) extends TracerImpl[R] {}
 
-    case class MaybeApplied[
-        I,
-        R
-    ](
-        arg: TracerCompat[I],
-        fn: FnCompat[I, R]
-    ) { // TODO: can this be a polymorphic function? sounds feasible in Scala 3
+//    case class MaybeApplied[
+//        I,
+//        R
+//    ](
+//        arg: TracerCompat[I],
+//        fn: FnCompat[I, R]
+//    ) { // TODO: can this be a polymorphic function? sounds feasible in Scala 3
+//
+//      lazy val suspend: TracerImpl[R] = {
+//
+//        fn match {
+//
+//          case _: Fn.Identity[_] =>
+//            arg.asInstanceOf[TracerImpl[R]]
+//          case _ =>
+//            Suspend
+//        }
+//      }
+//
+//      lazy val applied: TracerImpl[R] = {
+//
+//        fn match {
+//
+//          case _: Fn.Identity[_] =>
+//            arg.asInstanceOf[TracerImpl[R]]
+//          case _ =>
+//            Applied
+//        }
+//      }
 
-      lazy val suspend: TracerImpl[R] = {
-
-        fn match {
-
-          case _: Fn.Identity[_] =>
-            arg.asInstanceOf[TracerImpl[R]]
-          case _ =>
-            Suspend
-        }
-      }
-
-      lazy val applied: TracerImpl[R] = {
-
-        fn match {
-
-          case _: Fn.Identity[_] =>
-            arg.asInstanceOf[TracerImpl[R]]
-          case _ =>
-            Applied
-        }
-      }
-
-      sealed trait Suspend extends TracerImpl[R] with SrcExplainable.Composite with SrcExplainable.DecodedName {
-
-        override def composedFrom: Seq[SrcExplainable] = Seq(arg, fn)
-      }
-
-      object Suspend extends Suspend {
-
-        override def unbox: R = fn(arg.unbox)
-
-        def applied: Applied.type = Applied
-      }
-
-      object Applied extends Suspend {
-
-        override val unbox: R = fn(arg.unbox)
-      }
+//      sealed trait Suspend extends TracerImpl[R] with SrcExplainable.Composite with SrcExplainable.DecodedName {
+//
+//        override def composedFrom: Seq[SrcExplainable] = Seq(arg, fn)
+//      }
+//
+//      object Suspend extends Suspend {
+//
+//        override def unbox: R = fn(arg.unbox)
+//
+//        def applied: Applied.type = Applied
+//      }
+//
+//      object Applied extends Suspend {
+//
+//        override val unbox: R = fn(arg.unbox)
+//      }
     }
 
   }
 
-  type TracerCompat[+R] = Tracer { type Out <: R }
+//  type TracerCompat[+R] = Tracer { type Out <: R }
 
-  trait TracerImpl[R] extends Tracer {
+//  trait TracerImpl[R] extends Tracer {
+//
+//    import TracerImpl._
+//
+//    final type Out = R
+//
+//    def + = ContinuationView(this)
+//  }
 
-    import TracerImpl._
+//  object TracerImpl {
+//
+//    implicit class ContinuationView[R](self: TracerImpl[R])(
+//        implicit
+//        val _definedAt: SrcPosition
+//    ) {
+//
+//      def map[O2](fn: R => O2): TracerImpl[O2] = {
+//
+//        val result = Fn(fn).^.suspend(self)
+//        result
+//      }
+//
+//      def foreach(fn: R => Unit): Unit = {
+//        map(fn).unbox
+//      }
+//
+//      def flatMap[O2](fn: R => O2): O2 = {
+//        //      val result = map(fn)
+//        //      val v1 = result.unbox
+//
+//        val _fn = Fn(fn)
+//
+//        val s2: TracerImpl[O2] = _fn.^.apply(self)
+//        val v2: O2 = s2.unbox
+//
+//        v2
+//      }
+//    }
+//  }
 
-    final type Out = R
-
-    def + = ContinuationView(this)
-  }
-
-  object TracerImpl {
-
-    implicit class ContinuationView[R](self: TracerImpl[R])(
-        implicit
-        val _definedAt: SrcPosition
-    ) {
-
-      def map[O2](fn: R => O2): TracerImpl[O2] = {
-
-        val result = Fn(fn).^.suspend(self)
-        result
-      }
-
-      def foreach(fn: R => Unit): Unit = {
-        map(fn).unbox
-      }
-
-      def flatMap[O2](fn: R => O2): O2 = {
-        //      val result = map(fn)
-        //      val v1 = result.unbox
-
-        val _fn = Fn(fn)
-
-        val s2: TracerImpl[O2] = _fn.^.apply(self)
-        val v2: O2 = s2.unbox
-
-        v2
-      }
-    }
-  }
-
-  implicit class TracerApply[I, O](self: TracerCompat[FnCompat[I, O]]) {
-
-    private def maybe(arg: TracerCompat[I]) = {
-
-      val fn = self.unbox
-
-      Tracer
-        .MaybeApplied(
-          arg,
-          fn
-        )
-    }
-
-    def suspend(arg: TracerCompat[I]): TracerImpl[O] = {
-      maybe(arg).suspend
-    }
-
-    def apply(arg: TracerCompat[I]): TracerImpl[O] = {
-      maybe(arg).applied
-    }
-  }
+//  implicit class TracerApply[I, O](self: TracerCompat[FnCompat[I, O]]) {
+//
+//    private def maybe(arg: TracerCompat[I]) = {
+//
+//      val fn = self.unbox
+//
+//      Tracer
+//        .MaybeApplied(
+//          arg,
+//          fn
+//        )
+//    }
+//
+//    def suspend(arg: TracerCompat[I]): TracerImpl[O] = {
+//      maybe(arg).suspend
+//    }
+//
+//    def apply(arg: TracerCompat[I]): TracerImpl[O] = {
+//      maybe(arg).applied
+//    }
+//  }
 
   // TODO: cleanup for effect
-  implicit def _unbox[I](v: TracerCompat[I]): I = v.unbox
+//  implicit def _unbox[I](v: TracerCompat[I]): I = v.unbox
 
-  sealed trait Fn extends Traced {
-
-    def apply(arg: In): Out
-
-  }
+  sealed trait Fn[-I, +O ] extends Function[I, O]
 
   object Fn {
 
-    implicit def widen[I, O](self: FnCompat[I, O]): FnImpl[I, O] = self.asInstanceOf[FnImpl[I, O]]
+    trait FnImpl[I, O] extends Fn[I, O] { // most specific
 
-    implicit class TracingView[T <: Fn](self: T) {
+      type IMax = I
+      type OMin = O
 
-      def ^ : Tracer.Blackbox[T] =
-        Tracer.Blackbox(self)
+      def cachedBy(
+                    cache: CacheView[I, O] = Same.ByEquals.Lookup[I, O]()
+                  ): Fn.Cached[I, O] = {
+        new Fn.Cached[I, O](this) {
+
+          override lazy val underlyingCache: CacheView[I, O] = cache
+        }
+      }
+
+      final def andThen[O2](next: O => O2)(
+        implicit
+        _definedAt: SrcPosition
+      ): FnImpl[I, O2] = {
+
+        val result =
+          Fn.MaybeCompose[I, O, O2](this, next).resolved
+
+        result
+      }
+
+      final def compose[I1](prev: I1 => I)(
+        implicit
+        _definedAt: SrcPosition
+      ): FnImpl[I1, O] = {
+
+        val result =
+          Fn.MaybeCompose[I1, I, O](prev, this).resolved
+
+        result
+      }
+
+      def out: FnImpl.Continuation[I, O] = FnImpl.Continuation(this)
+
+      def asScala = AsScalaFunction(this)
     }
+
+//    implicit def widen[I, O](self: FnCompat[I, O]): FnImpl[I, O] = self.asInstanceOf[FnImpl[I, O]]
+
+//    implicit class TracingView[T <: Fn](self: T) {
+//
+//      def ^ : Tracer.Blackbox[T] =
+//        Tracer.Blackbox(self)
+//    }
 
     case class Identity[I]() extends FnImpl[I, I] {
 
@@ -364,58 +401,26 @@ trait HasFn {
     }
   }
 
-  type FnCompat[-I, +O] = FnImpl[_ >: I, _ <: O]
+//  type FnCompat[-I, +O] = FnImpl[_ >: I, _ <: O]
 
-  trait FnImpl[I, O] extends Fn { // most specific
 
-    import FnImpl._
+  object FnImpl {
 
-    type In = I
-    type Out = O
+    case class Continuation[I, O](self: FnImpl[I, O]) {
 
-    def cachedBy(
-        cache: CacheView[I, O] = Same.Native.Lookup[I, O]()
-    ): Fn.Cached[I, O] = {
-      new Fn.Cached[I, O](this) {
-
-        override lazy val underlyingCache: CacheView[I, O] = cache
-      }
+      def + = ContinuationView(this)
     }
 
-    final def andThen[O2](next: O => O2)(
-        implicit
-        _definedAt: SrcPosition
-    ): FnImpl[I, O2] = {
-
-      val result =
-        Fn.MaybeCompose[I, O, O2](this, next).resolved
-
-      result
-    }
-
-    final def compose[I1](prev: I1 => I)(
-        implicit
-        _definedAt: SrcPosition
-    ): FnImpl[I1, O] = {
-
-      val result =
-        Fn.MaybeCompose[I1, I, O](prev, this).resolved
-
-      result
-    }
-
-    def out: FnImpl.Continuation[I, O] = FnImpl.Continuation(this)
-
-    def asScala = AsScalaFunction(this)
-
-//    case class Continuation private ()(
+//    implicit class ContinuationView[I, O](continuation: Continuation[I, O])(
 //        implicit
 //        val _definedAt: SrcPosition
 //    ) {
 //
+//      lazy val self = continuation.self
+//
 //      def map[O2](next: O => O2): FnImpl[I, O2] = {
 //
-//        val result = andThen(next): FnImpl[I, O2]
+//        val result = self.andThen(next)
 //
 //        result
 //      }
@@ -432,47 +437,6 @@ trait HasFn {
 //        map(fn)
 //      }
 //    }
-
-  }
-
-  object FnImpl {
-
-    case class Continuation[I, O](self: FnImpl[I, O]) {
-
-      def + = ContinuationView(this)
-    }
-
-    implicit class ContinuationView[I, O](continuation: Continuation[I, O])(
-        implicit
-        val _definedAt: SrcPosition
-    ) {
-
-      lazy val self = continuation.self
-
-      def map[O2](next: O => O2): FnImpl[I, O2] = {
-
-        val result = self.andThen(next)
-
-        result
-      }
-
-      def foreach(
-          implicit
-          _definedAt: SrcPosition
-      ) = map[Unit] _
-
-      def flatMap[T](fn: O => T)(
-          implicit
-          _definedAt: SrcPosition
-      ): FnImpl[I, T] = {
-        map(fn)
-      }
-    }
-
-    implicit class AsScalaFunction[I, O](self: FnImpl[I, O]) extends (I => O) {
-
-      override def apply(v1: I): O = self.apply(v1)
-    }
   }
 
   // Fn ==> scala function
