@@ -7,9 +7,9 @@ class SameSpec extends BaseSpec {
   import Same._
   import SameSpec._
 
-  it(ByConstruction.getClass.getSimpleName) {
+  it(ByMemory.getClass.getSimpleName) {
     val set = fixtures.map { v =>
-      ByConstruction.Wrapper(v)
+      ByMemory.Wrapper(v)
     }.toSet
 
     set
@@ -24,9 +24,9 @@ class SameSpec extends BaseSpec {
       )
   }
 
-  it(ByEquality.getClass.getSimpleName) {
+  it(ByEquals.getClass.getSimpleName) {
     val set = fixtures.map { v =>
-      ByEquality.Wrapper(v)
+      ByEquals.Wrapper(v)
     }.toSet
 
     set
@@ -40,9 +40,9 @@ class SameSpec extends BaseSpec {
       )
   }
 
-  it(ByProduct.getClass.getSimpleName) {
+  it(ByProductElements.getClass.getSimpleName) {
     val set = fixtures.map { v =>
-      ByProduct.Wrapper(v)
+      ByProductElements.Wrapper(v)
     }.toSet
 
     set
@@ -55,7 +55,7 @@ class SameSpec extends BaseSpec {
       )
   }
 
-  it(classOf[ByProductWithTolerance].getSimpleName) {
+  it(classOf[ByConstruction].getSimpleName) {
     val set = fixtures.map { v =>
       ByToleranceExample.Wrapper(v)
     }.toSet
@@ -72,7 +72,7 @@ class SameSpec extends BaseSpec {
   describe("lookup.asMap") {
     it("can insert") {
 
-      val lookup = ByEquality.Lookup[Int, String]()
+      val lookup = ByEquals.Lookup[Int, String]()
 
       val asMap = lookup.asMap
 
@@ -108,7 +108,7 @@ object SameSpec {
     F2.E(2.0, 5)
   )
 
-  object ByToleranceExample extends Same.ByProductWithTolerance {
+  object ByToleranceExample extends Same.ByConstruction {
 
     override def truncateToTolerance(v: Any): Option[Any] = {
       v match {
