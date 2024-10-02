@@ -12,7 +12,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
   case class TypeID(
       self: Type
-  ) extends Same.ByEquality.IWrapper {
+  ) extends Same.Native.IWrapper {
 
     lazy val allSymbols: Seq[Symbol] = {
 
@@ -35,7 +35,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
     lazy val showStr: String = self.toString
 
-    override def samenessDelegatedTo: Any = allSymbols -> showStr
+    override def samenessKey: Any = allSymbols -> showStr
   }
 
   case class TypeView(
@@ -320,7 +320,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
   }
 
   lazy val typeView: System.Fn.Cached[Type, TypeView] = {
-    :=>(TypeView.apply _).cachedBy(Same.ByEquality.Lookup())
+    :=>(TypeView.apply _).cachedBy(Same.Native.Lookup())
   }
 
 //  val typeCache = mutable.Map.empty[Type, TypeView]

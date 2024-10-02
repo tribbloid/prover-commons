@@ -3,7 +3,6 @@ package ai.acyclic.prover.commons.same
 import ai.acyclic.prover.commons.collection.CacheView.{MapRepr, SetRepr}
 import ai.acyclic.prover.commons.collection.{CacheView, KeyEncodedMap, MapBackedSet, ValueEncodedMap}
 import ai.acyclic.prover.commons.function.Bijection
-import ai.acyclic.prover.commons.same.Same.{ByUnapply, MemoryHash}
 import ai.acyclic.prover.commons.util.Caching
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -31,6 +30,8 @@ import scala.reflect.ClassTag
   *     - prove by memory address in all other cases
   */
 trait Same extends Serializable {
+  
+  import ai.acyclic.prover.commons.same.Same._
 
   protected def getHashNonTrivial(v: Any): Option[Int]
 
@@ -55,6 +56,7 @@ trait Same extends Serializable {
       case (_, null)    => false
       case (x: AnyRef, y: AnyRef) =>
         if (x.eq(y)) true
+        // TODO: should we support equality between different classes?
         else if (x.getClass == y.getClass && proveNonTrivial(x, y)) true
         else false
       case _ =>
@@ -81,46 +83,34 @@ trait Same extends Serializable {
     result
   }
 
-  case object ByConstruction extends ByUnapply[Product] {
-
-    override def outer: Same.this.type = Same.this
-
-    final override def unapply(v: Product): Some[Any] = {
-
-      val result = v.productPrefix -> v.productIterator.toList
-      Some(result)
-    }
-
-  }
-
   case class Truncate[T: ClassTag](fn: T => Option[Any]) extends ByUnapply[T] {
 
     override def outer: Same.this.type = Same.this
 
-    override protected def unapply(v1: T): Option[Any] = {
+    override protected def unapply(v1: T): Option[Vector[Any]] = {
 
-      fn(v1)
+      Some(Vector(fn(v1)))
     }
   }
 
   trait IWrapper {
-    protected def self: Any
+    protected def samenessKey: Any
 
     final override def hashCode(): Int = {
-      getHash(self)
+      getHash(samenessKey)
     }
 
     final override def equals(that: Any): Boolean = {
       that match {
-        case that: IWrapper => prove_validate(self, that.self)
+        case that: IWrapper => prove_validate(samenessKey, that.samenessKey)
         case _              => false
       }
     }
   }
 
-  case class Wrapper[T](override val self: T) extends IWrapper {
+  case class Wrapper[T](override val samenessKey: T) extends IWrapper {
 
-    override def toString: String = "" + self
+    override def toString: String = "" + samenessKey
   }
 
   // a cache wrapper with a serialID, such that `values` will return the values in insertion order
@@ -146,7 +136,7 @@ trait Same extends Serializable {
       val keyCodec = new Bijection[K, Wrapper[K]] {
         override def apply(v1: K): Wrapper[K] = Wrapper(v1)
 
-        override def invert(v1: Wrapper[K]): K = v1.self
+        override def invert(v1: Wrapper[K]): K = v1.samenessKey
       }
 
       val valueCodec = new Bijection[V, (V, Long)] {
@@ -209,11 +199,42 @@ object Same {
     result
   }
 
-  abstract class UnapplyMixin[T: ClassTag] extends Same {
+//  abstract class UnapplyMixin[T: ClassTag] extends Same {
+//
+//    protected def unapply(v1: T): Option[Any]
+//
+//    protected def unapplyAny(v: Any): Option[Any] = {
+//
+//      rectify(v) match {
+//        case v: T => unapply(v)
+//        case _    => None
+//      }
+//    }
+//  }
 
-    protected def unapply(v1: T): Option[Any]
+  object Native extends Same {
 
-    protected def unapplyAny(v: Any): Option[Any] = {
+    override protected def getHashNonTrivial(v: Any): Option[Int] = Option(v).map(_.##)
+
+    protected def proveNonTrivial(v1: Any, v2: Any): Boolean = {
+
+      (Option(v1), Option(v2)) match {
+
+        case (Some(id1), Some(id2)) => id1 == id2
+        case _                      => false
+      }
+    }
+  }
+
+  abstract class ByNormalise[T: ClassTag, R] extends Same {
+
+    /*
+    returns Some vector for elements used to create this object
+    or None if the origin of this object cannot be determinedd
+     */
+    protected def unapply(v1: T): Option[R]
+
+    protected def unapplyAny(v: Any): Option[R] = {
 
       rectify(v) match {
         case v: T => unapply(v)
@@ -222,37 +243,41 @@ object Same {
     }
   }
 
-  object ByEquals extends UnapplyMixin[Any] {
-    override def unapply(v1: Any): Some[Any] = Some(v1)
-
-    override protected def getHashNonTrivial(v: Any): Option[Int] =
-      unapplyAny(v).map(_.##)
-
-    protected def proveNonTrivial(v1: Any, v2: Any): Boolean = {
-
-      (unapplyAny(v1), unapplyAny(v2)) match {
-
-        case (Some(id1), Some(id2)) => id1 == id2
-        case _                      => false
-      }
-    }
-  }
-
-  abstract class ByUnapply[T: ClassTag] extends UnapplyMixin[T] {
+  abstract class ByUnapply[T: ClassTag] extends ByNormalise[T, Vector[Any]] {
 
     def outer: Same
 
     final override protected def getHashNonTrivial(v: Any): Option[Int] = {
-      unapplyAny(v).map(outer.getHash)
+      unapplyAny(v).map { vec =>
+        val hashVec = vec.map(outer.getHash)
+
+        hashVec.##
+      }
     }
 
     final override protected def proveNonTrivial(v1: Any, v2: Any): Boolean = {
 
       (unapplyAny(v1), unapplyAny(v2)) match {
 
-        case (Some(id1), Some(id2)) => outer.prove(id1, id2)
-        case _                      => false
+        case (Some(v1), Some(v2)) =>
+          if (v1.size != v2.size) return false;
+
+          v1.zip(v2)
+            .forall {
+              case (a, b) => outer.prove(a, b)
+            }
+
+        case _ => false
       }
+    }
+  }
+
+  case class ByConstruction(outer: Same) extends ByUnapply[Product] {
+
+    final override def unapply(v: Product): Some[Vector[Any]] = {
+
+      val result = Vector(v.productPrefix) ++ v.productIterator
+      Some(result)
     }
   }
 }

@@ -43,13 +43,13 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
   def apply[V](s: Graph_/\[V]): Viz[V] = Viz(s)
 
-  val sameness = Same.ByEquality.Of[Node[_]](v => v.identityKey)
+  val sameness = Same.Native.Truncate[Node[_]](v => Some(v.identityKey))
 
   case class Viz[V](override val semilattice: Graph_/\[V]) extends TextViz[V] {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(override val samenessDelegatedTo: Node[V]) extends sameness.IWrapper {
+    case class NodeWrapper(override val samenessKey: Node[V]) extends sameness.IWrapper {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
@@ -109,7 +109,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
           .map(_.rectangular)
 
         val nodeText = {
-          lazy val nodeText = samenessDelegatedTo.nodeText
+          lazy val nodeText = samenessKey.nodeText
 
           val ss = bindingOpt
             .map { binding =>

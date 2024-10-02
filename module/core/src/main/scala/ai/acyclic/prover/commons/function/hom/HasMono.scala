@@ -50,7 +50,7 @@ trait HasMono extends HasPoly {
       override type In[T <: T_/\] = backbone.In[T]
       override type Out[T <: T_/\] = backbone.Out[T]
 
-      lazy val lookup: CacheView[Any, Any] = Same.ByEquality.Lookup[Any, Any]()
+      lazy val lookup: CacheView[Any, Any] = Same.Native.Lookup[Any, Any]()
 
       override def apply[T <: T_/\](arg: In[T]): Out[T] = {
 
@@ -78,7 +78,7 @@ trait HasMono extends HasPoly {
       extends Serializable {
 
     def cachedBy(
-        _lookup: CacheView[Any, Any] = Same.ByEquality.Lookup()
+        _lookup: CacheView[Any, Any] = Same.Native.Lookup()
     ): Mono.Cached[T_/\, SS] = {
 
       type Result = Mono.Cached[T_/\, SS]

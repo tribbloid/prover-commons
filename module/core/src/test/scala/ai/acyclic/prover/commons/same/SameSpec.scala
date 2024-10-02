@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.same
 
+import ai.acyclic.prover.commons.same.Same.{ByConstruction, Native}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class SameSpec extends BaseSpec {
@@ -24,9 +25,9 @@ class SameSpec extends BaseSpec {
       )
   }
 
-  it(ByEquals.getClass.getSimpleName) {
+  it(Native.getClass.getSimpleName) {
     val set = fixtures.map { v =>
-      ByEquals.Wrapper(v)
+      Native.Wrapper(v)
     }.toSet
 
     set
@@ -40,9 +41,9 @@ class SameSpec extends BaseSpec {
       )
   }
 
-  it(ByProductElements.getClass.getSimpleName) {
+  it(ByConstruction.toString()) {
     val set = fixtures.map { v =>
-      ByProductElements.Wrapper(v)
+      byConstructionExample.Wrapper(v)
     }.toSet
 
     set
@@ -55,9 +56,9 @@ class SameSpec extends BaseSpec {
       )
   }
 
-  it(classOf[ByConstruction].getSimpleName) {
+  it(ByConstruction.toString() + "-withTolerance") {
     val set = fixtures.map { v =>
-      ByToleranceExample.Wrapper(v)
+      withToleranceExample.Wrapper(v)
     }.toSet
 
     set
@@ -72,7 +73,7 @@ class SameSpec extends BaseSpec {
   describe("lookup.asMap") {
     it("can insert") {
 
-      val lookup = ByEquals.Lookup[Int, String]()
+      val lookup = Native.Lookup[Int, String]()
 
       val asMap = lookup.asMap
 
@@ -108,14 +109,12 @@ object SameSpec {
     F2.E(2.0, 5)
   )
 
-  object ByToleranceExample extends Same.ByConstruction {
+  val byConstructionExample = ByConstruction(Native)
 
-    override def truncateToTolerance(v: Any): Option[Any] = {
-      v match {
-        case d: Double => Some(d.toInt.toDouble)
-        case _         => None
-      }
+  val withToleranceExample = byConstructionExample.copy(
+    outer = Native.Truncate[Double] { d =>
+      Some(d.toInt.toDouble)
     }
-  }
+  )
 
 }

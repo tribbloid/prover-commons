@@ -113,7 +113,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
       private val delegate = {
 
-        val evaled = Same.ByEquality.Lookup[Any, ArgNode]()
+        val evaled = Same.Native.Lookup[Any, ArgNode]()
 
         Transform(
           rewriter,
@@ -151,7 +151,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
       private val delegate = {
 
-        val evaled = Same.ByEquality.Lookup[Any, Seq[ArgNode]]()
+        val evaled = Same.Native.Lookup[Any, Seq[ArgNode]]()
 
         Transform(
           rewriter,

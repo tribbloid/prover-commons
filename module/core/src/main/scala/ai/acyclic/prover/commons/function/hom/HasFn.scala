@@ -184,7 +184,7 @@ trait HasFn {
     ) extends Pure[I, R]
         with SrcExplainable.Composite1 {
 
-      lazy val underlyingCache: CacheView[I, R] = Same.ByEquality.Lookup[I, R]()
+      lazy val underlyingCache: CacheView[I, R] = Same.Native.Lookup[I, R]()
 
       final def apply(key: I): R = {
         underlyingCache.getOrElseUpdateOnce(key)(backbone(key))
@@ -374,7 +374,7 @@ trait HasFn {
     type Out = O
 
     def cachedBy(
-        cache: CacheView[I, O] = Same.ByEquality.Lookup[I, O]()
+        cache: CacheView[I, O] = Same.Native.Lookup[I, O]()
     ): Fn.Cached[I, O] = {
       new Fn.Cached[I, O](this) {
 
