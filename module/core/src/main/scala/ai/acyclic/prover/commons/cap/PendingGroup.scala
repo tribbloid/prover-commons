@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.cap
 
 import ai.acyclic.prover.commons.cap.Pending.<<
-import ai.acyclic.prover.commons.function.Hom
+import ai.acyclic.prover.commons.function.hom.Hom
 
 trait PendingGroup extends CanRevokeAll {
 

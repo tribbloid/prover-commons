@@ -1,28 +1,26 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.cap.Capability.<>
-import ai.acyclic.prover.commons.util.{SrcExplainable, SrcPosition}
+import ai.acyclic.prover.commons.util.SrcPosition
 
-trait HasPolyLike extends HasFn {
+trait HasPolyLike extends HasCircuit {
 
-  import ai.acyclic.prover.commons.util.SrcExplainable._
+  trait PolyLike extends FnBuilder {
 
-  trait PolyLike extends SrcExplainable with FnBuilder {
+    object IsCase extends HasCircuit.Capability
 
-    object IsCase extends SrcExplainable.Capability
+    type Case[+FF <: Circuit[_, _]] = <>[FF, IsCase.type]
 
-    type Case[+FF <: FnCompat[_, _]] = <>[FF, IsCase.type]
-
-    type At[I] = Case[FnCompat[I, _]]
-    type Compat[I, O] = Case[FnCompat[I, O]]
-    type =>>[I, O] = Case[FnImpl[I, O]]
+    type At[I] = Case[Circuit[I, _]]
+    type Compat[-I, +O] = Case[Circuit[I, O]]
+    type =>>[I, O] = Case[Circuit.Impl[I, O]]
 
     override def define[I, R](fn: I => R)(
         implicit
         _definedAt: SrcPosition
     ): I =>> R = {
 
-      val _case = Fn(fn) <>: IsCase
+      val _case = Circuit(fn) <>: IsCase
       _case
     }
 

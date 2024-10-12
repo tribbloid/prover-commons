@@ -9,7 +9,7 @@ import scala.language.implicitConversions
 
 case class TypeHierarchy(
     typeFormat: TypeFormat,
-    backbone: Hierarchy = Hierarchy.default,
+    backbone: Hierarchy = Hierarchy.Default,
     showArgs: TypeHierarchy.ShowArgs = TypeHierarchy.ShowArgs.default
 ) {
 

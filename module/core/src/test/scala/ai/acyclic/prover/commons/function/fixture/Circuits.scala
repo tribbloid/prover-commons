@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.function.fixture
 
-import ai.acyclic.prover.commons.function.Hom._
+import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
-object Fns {
+object Circuits {
 
   final lazy val fn0: Int :=> Int = :=> { v =>
     v + 1
@@ -15,22 +15,6 @@ object Fns {
   final lazy val fn2: Long :=> Seq[Double] = :=> { v =>
     Seq(v, v * 0.1, v * 0.2)
   }
-
-//  lazy val _fn0: Int :=> Int = {
-//
-//    val x: Int :=> Int = _fromVanillaBase { v =>
-//      v + 1
-//    }
-//
-//    val a: Int :=> Int = fromVanilla { v =>
-//      v + 1
-//    }
-//
-//    val b: Int :=> Int = Fn { v =>
-//      v + 1
-//    }
-//    b
-//  }
 
   lazy val fn0Text: String = {
     fn0.explain.nodeText

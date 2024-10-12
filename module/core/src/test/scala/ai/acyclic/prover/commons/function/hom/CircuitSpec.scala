@@ -1,15 +1,13 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.function.fixture.{ChainOther, ChainSelf, Fns}
+import ai.acyclic.prover.commons.function.fixture.{ChainOther, ChainSelf}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-object HomSpec {}
+object CircuitSpec {}
 
-class HomSpec extends BaseSpec {
+class CircuitSpec extends BaseSpec {
 
-  describe("Fn") {
-
-    import Fns._
+  describe("Circuit") {
 
     it("explain") {
 
@@ -48,7 +46,7 @@ class HomSpec extends BaseSpec {
 
       it("ref") {
 
-        val d = ChainOther.debug
+        val d = ChainOther.s2
 
         val text = d.explain.treeText
 
@@ -67,7 +65,7 @@ class HomSpec extends BaseSpec {
           s1.explain.treeText.shouldBe(
             s"""
                |+ Compose
-               |!-- ${Fns.fn0.explain.nodeText}
+               |!-- ${CircuitExamples.fn0.explain.nodeText}
                |!-- s1 <at ChainOther.scala:9>
                |""".stripMargin
           )

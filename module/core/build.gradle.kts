@@ -1,6 +1,6 @@
 val vs = versions()
 
-val splainVRelease: String = "1.1.0-SNAPSHOT"
+val splainVRelease: String = "1.2.0-SNAPSHOT"
 
 val splainVFallback: String = run {
 
@@ -27,5 +27,8 @@ dependencies {
     api("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
 
     // https://mvnrepository.com/artifact/com.lihaoyi/sourcecode
-    implementation("com.lihaoyi:sourcecode_2.13:0.4.2")
+    api("com.lihaoyi:sourcecode_2.13:0.4.2")
+
+    // https://mvnrepository.com/artifact/com.lihaoyi/pprint
+    api("com.lihaoyi:pprint_2.13:0.9.0")
 }

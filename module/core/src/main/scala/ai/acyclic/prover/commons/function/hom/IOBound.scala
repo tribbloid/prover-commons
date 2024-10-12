@@ -1,10 +1,8 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.util.SrcExplainable
-
 import scala.language.implicitConversions
 
-trait IOBound extends SrcExplainable {
+trait IOBound {
   // Used to annotate FnImpl when Input is not contravariant & Output is not covariant
 
   type IMax

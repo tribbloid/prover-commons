@@ -9,7 +9,7 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 
-object LinkedHierarchy extends Visualisations {
+object LinkedHierarchy {
 
   def addSrcAnnotation(body: String, binding: String): String = {
 
@@ -40,12 +40,6 @@ object LinkedHierarchy extends Visualisations {
       .build
   }
 
-  type Graph_/\[V] = Local.AnyGraph.Outbound[V]
-
-  implicit lazy val defaultFormat: Default = new Default(Hierarchy.default)
-
-  implicit def newGroup: defaultFormat.Group = defaultFormat.Group()
-
   class Default(
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
@@ -65,7 +59,12 @@ object LinkedHierarchy extends Visualisations {
         .DepthFirst
         .compute
     }
+
   }
+
+  object Default extends Default(Hierarchy.Default)
+
+  implicit def newGroup: Default.Group = Default.Group()
 
   trait RefBindingLike {
 
@@ -76,17 +75,25 @@ object LinkedHierarchy extends Visualisations {
   def emptySameRefs = mutable.ArrayBuffer.empty[RefBindingLike]
 }
 
-trait LinkedHierarchy extends LinkedHierarchy.Format {
+trait LinkedHierarchy extends Visualisation {
 
   import LinkedHierarchy._
+
+  final override val graphType: Local.AnyGraph.Outbound.type = Local.AnyGraph.Outbound
+
+  def __sanity[T](): Unit = {
+
+    implicitly[Graph_/\[T] =:= Local.AnyGraph.Outbound[T]]
+    implicitly[Node_/\[T] =:= Local.AnyGraph.Outbound.Node[T]]
+  }
 
   def backbone: Hierarchy
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit
+  protected def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit
 
-  trait _TextViz[V] extends TextViz[V]
+  override def visualise[V](data: Graph_/\[V]): Visualized[V] = Group().Viz(data)
 
   // shared between visualisations of multiple graphs
   case class Group() {
@@ -97,14 +104,16 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class Viz[V](override val semilattice: Graph_/\[V]) extends _TextViz[V] {
+    def visualize[V](data: Local.AnyGraph.Outbound[V]): Visualized[V] = Viz(data)
+
+    case class Viz[V](override val data: Graph_/\[V]) extends Visualized[V] {
 
       object RefBindings extends Local.Tree.Group {
 
-        case class Node(
+        case class node(
             override val original: Local.AnyGraph.Outbound.Node[V],
             id: UUID = UUID.randomUUID()
-        ) extends INode
+        ) extends _Node
             with RefBindingLike {
 
           {
@@ -158,16 +167,16 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
             }
           }
 
-          override protected def getInduction: Seq[(Arrow.`~>`.^, RefBindings.Node)] = {
+          override protected def getInduction: Seq[(Arrow.Outbound.^, RefBindings.node)] = {
 
             val result = if (!shouldExpand) {
               Nil
             } else {
 
               original.induction.map { tuple =>
-                val arrow = tuple._1: Arrow.`~>`.^
+                val arrow = tuple._1: Arrow.Outbound.^
 
-                val target: RefBindings.Node = RefBindings.Node.apply(tuple._2)
+                val target: RefBindings.node = RefBindings.node.apply(tuple._2)
 
                 arrow -> target
               }
@@ -191,10 +200,10 @@ trait LinkedHierarchy extends LinkedHierarchy.Format {
         }
       }
 
-      lazy val delegates: Seq[Local.Tree[RefBindings.Node]] = {
-        val roots: Vector[Local.AnyGraph.Outbound.Node[V]] = semilattice.entriesC
+      lazy val delegates: Seq[Local.Tree[RefBindings.node]] = {
+        val roots: Vector[Local.AnyGraph.Outbound.Node[V]] = data.getEntries
         roots.map { node =>
-          val refBinding: RefBindings.Node = RefBindings.Node(node)
+          val refBinding: RefBindings.node = RefBindings.node(node)
 
           Local.Tree.makeExact(refBinding)
         }

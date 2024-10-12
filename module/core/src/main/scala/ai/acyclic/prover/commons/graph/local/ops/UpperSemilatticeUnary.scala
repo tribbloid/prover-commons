@@ -62,7 +62,7 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
   }
 
-  def diagram_hierarchy(
+  def text_hierarchy(
       implicit
       format: Hierarchy
   ): format.Viz[ArgV] = format.Viz(arg)

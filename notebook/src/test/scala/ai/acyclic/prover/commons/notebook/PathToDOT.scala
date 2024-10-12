@@ -88,17 +88,17 @@ class PathToDOT extends BaseSpec {
 
     val g = LambdaCube.f.make
 
-    print_@(g.diagram_flow.toString)
+    print_@(g.text_flow.toString)
 
-    print_@(g.diagram_linkedHierarchy.toString)
+    print_@(g.text_linkedHierarchy.toString)
   }
 
   it("DOT") {
 
     val g = ToDOT.f.make
 
-    print_@(g.diagram_flow.toString)
+    print_@(g.text_flow.toString)
 
-    print_@(g.diagram_linkedHierarchy.toString)
+    print_@(g.text_linkedHierarchy.toString)
   }
 }

@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.util
 import ai.acyclic.prover.commons.debug.CallStackRef
 
 trait SrcPosition {
+  // TODO: can use Lihaoyi's sourcecode library
 
   def fileName: String
 
@@ -21,7 +22,7 @@ trait SrcPosition {
 
 object SrcPosition {
 
-  case class ^(
+  case class Runtime(
       stack: CallStackRef
   ) extends SrcPosition {
 
@@ -63,6 +64,6 @@ object SrcPosition {
         v.isLazyCompute || v.isInit
       }
 
-    ^(stack)
+    Runtime(stack)
   }
 }

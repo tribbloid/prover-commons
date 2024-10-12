@@ -29,8 +29,8 @@ class SplainPluginVersions extends BaseSpec {
 
     val g = scalaV.make
 
-    print_@(g.diagram_flow.toString)
+    print_@(g.text_flow.toString)
 
-    print_@(g.diagram_linkedHierarchy.toString)
+    print_@(g.text_linkedHierarchy.toString)
   }
 }

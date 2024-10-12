@@ -1,20 +1,22 @@
-package ai.acyclic.prover.commons.util
+package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-object SrcTraceableSpec {
+object TraceableSpec {
 
-  val t1: SrcTraceable =
-    new SrcTraceable {}
+  import Traceable._
 
-  case class T2() extends SrcTraceable
+  val t1: BySrc =
+    new BySrc {}
+
+  case class T2() extends BySrc
   val t2: T2 =
     T2()
 
   object T3 extends T2()
   T3
 
-  trait SAM1 extends SrcTraceable {
+  trait SAM1 extends BySrc {
     def apply(): Int
   }
 
@@ -22,9 +24,9 @@ object SrcTraceableSpec {
     () => 1
 }
 
-class SrcTraceableSpec extends BaseSpec {
+class TraceableSpec extends BaseSpec {
 
-  import SrcTraceableSpec._
+  import TraceableSpec._
   describe("of instances") {
 
     it("ad-hoc class") {

@@ -1,21 +1,29 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Axiom, Lawful}
+import ai.acyclic.prover.commons.graph.topology.{Axioms, Lawful}
 
-trait GraphK[+X <: Axiom] extends Lawful.Struct[X] {
+trait NodeOrGraph[+X <: Axioms] extends Lawful.Struct[X] {
 
-  type _E <: Engine
+//  def asGraph: GraphK.Aux[X, Value]
+}
+
+trait GraphK[+X <: Axioms] extends NodeOrGraph[X] {
+
+  type _E <: Engine // TODO: should fold into engine using dependent type
   def engine: _E
 
   type Dataset[+_]
 
-  def entriesC: Dataset[NodeK.Compat[X, Value]]
+  def getEntries: Dataset[NodeK.Compat[X, Value]]
 }
 
 object GraphK {
 
-  type Aux[+X <: Axiom, V] = GraphK[X] { type Value = V }
+  type Aux[+X <: Axioms, V] = GraphK[X] { type Value = V }
+  trait Aux_[+X <: Axioms, V] extends GraphK[X] { type Value = V }
 
   // Acronym of "Less Than"
-  type Lt[+X <: Axiom, +A <: Arrow, +V] = Aux[X, _ <: V]
+  type Lt[+X <: Axioms, +A <: Arrow, +V] = Aux[X, _ <: V]
+
+  def asGraph = this
 }

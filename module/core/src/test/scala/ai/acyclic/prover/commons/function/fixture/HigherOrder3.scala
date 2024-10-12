@@ -2,17 +2,15 @@ package ai.acyclic.prover.commons.function.fixture
 
 object HigherOrder3 {
 
-  import Fns._
+  import Circuits._
 
-  val s1 = { // currying
+  val s1 = {
 
-    for (
-      o1 <- fn1.out;
-      o2 <- fn2.out
-    ) yield {
+    for (case (o1, o2) <- (fn1.trace >< fn2).trace)
+      yield {
 
-      o1.zip(o2)
-    }
+        o1 -> o2
+      }
   }
 
 }

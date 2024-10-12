@@ -9,7 +9,7 @@ trait OutboundGraphUnary extends Local.AnyGraph.Outbound.Ops.Unary {
     implicitly[ArgLaw <:< Local.AnyGraph.Outbound._Axiom]
   }
 
-  def diagram_linkedHierarchy(
+  def text_linkedHierarchy(
       implicit
       group: LinkedHierarchy#Group
   ): group.Viz[ArgV] = group.Viz(arg)

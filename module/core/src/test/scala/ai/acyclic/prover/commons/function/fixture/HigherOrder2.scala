@@ -1,10 +1,10 @@
 package ai.acyclic.prover.commons.function.fixture
 
-import ai.acyclic.prover.commons.function.Hom.:=>
+import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 object HigherOrder2 {
 
-  import Fns._
+  import Circuits._
 
   val s1: Int :=> Seq[Double] = {
     fn1.andThen {
@@ -24,7 +24,7 @@ object HigherOrder2 {
 
     fn1.andThen {
 
-      val result: Seq[Long] :=> Seq[Double] = for (ff <- fn2.^) yield {
+      val result: Seq[Long] :=> Seq[Double] = for (ff <- fn2.trace) yield {
 
         :=>.at[Seq[Long]] { v =>
           v.flatMap(ff.asScala)

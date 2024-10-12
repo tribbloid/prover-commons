@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.function.Hom.:=>
+import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
 import ai.acyclic.prover.commons.graph.{Arrow, Engine}
@@ -14,24 +14,20 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListSet
 import scala.collection.mutable
 
-object Flow extends Visualisations {
+object Flow {
 
-  type Graph_/\[V] = Local.AnyGraph[V]
-
-  trait Default extends Flow {
+  implicit object Default extends Flow {
 
     override def layoutPreferences: LayoutPrefs = LayoutPrefsImpl.DEFAULT
+
   }
-  object Default extends Default {}
-
-  implicit lazy val default: Default.type = Default
-
 }
 
-trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
+trait Flow extends Visualisation with Engine.HasMaxRecursionDepth {
 
-  import Flow._
   import Local.AnyGraph._
+
+  override val graphType: Local.AnyGraph.type = Local.AnyGraph
 
   override lazy val maxDepth: Int = 20
 
@@ -45,7 +41,9 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
   val sameness = Same.Native.Truncate[Node[_]](v => Some(v.identityKey))
 
-  case class Viz[V](override val semilattice: Graph_/\[V]) extends TextViz[V] {
+  override def visualise[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
+
+  case class Viz[V](override val data: Graph_/\[V]) extends Visualized[V] {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
@@ -131,14 +129,15 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeID2Wrapper = :=> { v =>
-        NodeWrapper(v)
-      }
+      val nodeID2Wrapper = Hom
+        .Circuit { v =>
+          NodeWrapper(v)
+        }
         .cachedBy()
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
-      val unary = AnyGraphUnary.^(semilattice, maxDepth)
+      val unary = AnyGraphUnary.^(data, maxDepth)
 
       val buildBuffers = unary
         .Traverse(
@@ -147,11 +146,11 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
             val newRelations: Seq[(NodeWrapper, NodeWrapper)] = node.induction.flatMap { v =>
               v._1.arrowType match {
-                case Arrow.`~>` =>
+                case Arrow.Outbound =>
                   val to = nodeID2Wrapper.apply(v._2)
                   to.arrowsFrom += wrapper -> v._1.arrowText
                   Some(wrapper -> to)
-                case Arrow.`<~` =>
+                case Arrow.Inbound =>
                   val from = nodeID2Wrapper.apply(v._2)
                   wrapper.arrowsFrom += from -> v._1.arrowText
                   Some(from -> wrapper)

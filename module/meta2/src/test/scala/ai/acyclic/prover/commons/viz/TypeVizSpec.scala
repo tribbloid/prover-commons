@@ -3,8 +3,7 @@ package ai.acyclic.prover.commons.viz
 import ai.acyclic.prover.commons.diff.StringDiff.SuperSet
 import ai.acyclic.prover.commons.meta.ScalaReflection.WeakTypeTag
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.viz.TypeViz
-import shapeless.{syntax, HNil, Witness}
+import shapeless.{HNil, Witness, syntax}
 
 class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
@@ -21,7 +20,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
     val viz = TypeViz[S2K[S1]]
 
-    viz.diagram_hierarchy.toString.shouldBe(
+    viz.text_hierarchy.toString.shouldBe(
       """
         |+ ai.acyclic.prover.commons.viz.TypeVizSpec.S2K[ai.acyclic.prover.commons.viz.TypeVizSpec.S1]
         |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.S2K [ 1 ARG ] :
@@ -31,7 +30,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |""".stripMargin
     )
 
-    viz.diagram_flow.toString.shouldBe(
+    viz.text_flow.toString.shouldBe(
       """
         | ┌───────────────────────────────────────────────────────────────────────────────────────────┐
         | │ai.acyclic.prover.commons.viz.TypeVizSpec.S2K[ai.acyclic.prover.commons.viz.TypeVizSpec.S1]│
@@ -52,7 +51,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
     val viz = TypeViz[S2]
 
-    viz.diagram_hierarchy.toString.shouldBe(
+    viz.text_hierarchy.toString.shouldBe(
       """
         |+ ai.acyclic.prover.commons.viz.TypeVizSpec.S2 .................................... [1]
         |!-+ ai.acyclic.prover.commons.viz.TypeVizSpec.S1
@@ -64,7 +63,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |""".stripMargin
     )
 
-    viz.diagram_flow.toString.shouldBe(
+    viz.text_flow.toString.shouldBe(
       """
         |                                               ┌────────────────────────────────────────────┐
         |                                               │ai.acyclic.prover.commons.viz.TypeVizSpec.S2│
@@ -92,7 +91,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
     val viz = TypeViz[String]
 
-    viz.diagram_hierarchy.toString.shouldBe(
+    viz.text_hierarchy.toString.shouldBe(
       """
         |+ String .......................................................................... [0]
         |!-- Comparable[String]

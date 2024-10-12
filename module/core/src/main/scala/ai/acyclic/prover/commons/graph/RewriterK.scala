@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Axiom, Lawful}
+import ai.acyclic.prover.commons.graph.topology.{Axioms, Lawful}
 
-trait RewriterK[L <: Axiom] extends Lawful.Struct[L] {
+trait RewriterK[L <: Axioms] extends Lawful.Struct[L] {
 
   private[this] type NodeV = NodeK.Compat[L, Value]
 
@@ -14,7 +14,7 @@ trait RewriterK[L <: Axiom] extends Lawful.Struct[L] {
 
     type Value = RewriterK.this.Value
 
-    val assuming: L = RewriterK.this.assuming
+    val axioms: L = RewriterK.this.axioms
 
     override def rewrite(src: NodeV)(discoverNodes: Seq[NodeV]): NodeV = {
 
@@ -40,10 +40,10 @@ trait RewriterK[L <: Axiom] extends Lawful.Struct[L] {
 
 object RewriterK {
 
-  type Aux[X <: Axiom, V] = RewriterK[X] { type Value = V }
-  trait Impl[X <: Axiom, V] extends RewriterK[X] { type Value = V }
+  type Aux[X <: Axioms, V] = RewriterK[X] { type Value = V }
+  trait Impl[X <: Axioms, V] extends RewriterK[X] { type Value = V }
 
-  case class DoNotRewrite[L <: Axiom, N](override val assuming: L) extends RewriterK[L] {
+  case class DoNotRewrite[L <: Axioms, N](override val axioms: L) extends RewriterK[L] {
 
     type Value = N
 

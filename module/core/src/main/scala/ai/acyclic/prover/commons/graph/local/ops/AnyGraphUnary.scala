@@ -17,7 +17,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   lazy val distinctEntries: Vector[ArgNode] = arg.entries.distinct
 
-  def diagram_flow(
+  def text_flow(
       implicit
       format: Flow
   ): format.Viz[ArgV] = format.Viz(arg)
@@ -49,7 +49,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
           n.map(v => fn(v): V2)
         }
 
-        Local.AnyGraph.makeTightestWIthAxiom[ArgLaw, V2](newNode: _*)(argPlan.assuming)
+        Local.AnyGraph.makeTightestWithAxiom[ArgLaw, V2](newNode: _*)(argPlan.axioms)
       }
 
       result
@@ -105,7 +105,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
       override def compute: LocalEngine._GraphK.Unchecked[ArgLaw, ArgV] = {
         val transformed: Seq[ArgNode] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
-        Local.AnyGraph.makeTightestWIthAxiom[ArgLaw, ArgV](transformed: _*)(argPlan.assuming)
+        Local.AnyGraph.makeTightestWithAxiom[ArgLaw, ArgV](transformed: _*)(argPlan.axioms)
       }
     }
 
@@ -209,7 +209,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
   ) {
 
     private val delegate = Transform(
-      rewriter = RewriterK.DoNotRewrite(arg.assuming),
+      rewriter = RewriterK.DoNotRewrite(arg.axioms),
       down = { v => down(v); Seq(v) },
       up = { v => up(v); Seq(v) }
     )

@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Axiom, Lawful}
+import ai.acyclic.prover.commons.graph.topology.{Axioms, Lawful}
 
-trait NodeK[+L <: Axiom] extends Lawful.Struct[L] {
+trait NodeK[+L <: Axioms] extends Lawful.Struct[L] {
 
   import NodeK._
 
@@ -69,24 +69,24 @@ trait NodeK[+L <: Axiom] extends Lawful.Struct[L] {
 
 object NodeK {
 
-  type Aux[+L <: Axiom, V] = NodeK[L] { type Value = V }
-  trait Impl[+L <: Axiom, V] extends NodeK[L] { type Value = V }
+  type Aux[+L <: Axioms, V] = NodeK[L] { type Value = V }
+  trait Impl[+L <: Axioms, V] extends NodeK[L] { type Value = V }
 
-  type Compat[+L <: Axiom, +V] = Aux[L, _ <: V]
+  type Compat[+L <: Axioms, +V] = Aux[L, _ <: V]
 
-  trait Untyped[+L <: Axiom] extends NodeK[L] {
+  trait Untyped[+L <: Axioms] extends NodeK[L] {
     // actually self typed, but that doesn't convey any extra information
 
     type Value >: this.type
     final lazy val value: this.type = this
   }
 
-  case class Mapped[+L <: Axiom, V, V2](
+  case class Mapped[+L <: Axioms, V, V2](
       original: NodeK.Compat[L, V],
       fn: V => V2
   ) extends Impl[L, V2] {
 
-    override val assuming: original.assuming.type = original.assuming
+    override val axioms: original.axioms.type = original.axioms
 
     override def value: V2 = fn(original.value.asInstanceOf)
 

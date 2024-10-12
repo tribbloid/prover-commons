@@ -6,22 +6,22 @@ import ai.acyclic.prover.commons.util.Summoner
 /**
   * a container of graph constraints
   */
-trait Axiom {
+trait Axioms {
 
   type _Arrow <: Arrow
 }
 
-object Axiom {
+object Axioms {
 
-  def assume[X <: Axiom]: X = null.asInstanceOf[X]
+  def assume[X <: Axioms]: X = null.asInstanceOf[X]
 
-  trait Impl[+A <: Arrow] extends Axiom { type _Arrow <: A }
+  trait Impl[+A <: Arrow] extends Axioms { type _Arrow <: A }
 
-  trait ImplUnpack[X <: Axiom] extends Lawful { type _Arrow <: Arrow }
+  trait ImplUnpack[X <: Axioms] extends Lawful { type _Arrow <: Arrow }
 
   object ImplUnpack {
 
-    type Gt[L <: Axiom] = ImplUnpack[_ >: L]
+    type Gt[L <: Axioms] = ImplUnpack[_ >: L]
 
     implicit def onlyCase[A <: Arrow]: ImplUnpack[Impl[A]] { type _Arrow = A } =
       new ImplUnpack[Impl[A]] {
@@ -30,16 +30,16 @@ object Axiom {
   }
 
   { // sanity
-    val bounds = Summoner.summon[ImplUnpack.Gt[Impl[Arrow.`~>`.^]]]
+    val bounds = Summoner.summon[ImplUnpack.Gt[Impl[Arrow.Outbound.^]]]
 
-    implicitly[bounds._Arrow =:= Arrow.`~>`.^]
+    implicitly[bounds._Arrow =:= Arrow.Outbound.^]
   }
 
-  trait AnyGraphT extends Axiom.Impl[Arrow]
+  trait AnyGraphT extends Axioms.Impl[Arrow]
 
   object AnyGraphT extends Topology[AnyGraphT] {
 
-    trait OutboundT extends AnyGraphT with Axiom.Impl[Arrow.`~>`.^]
+    trait OutboundT extends AnyGraphT with Axioms.Impl[Arrow.Outbound.^]
 
     object OutboundT extends Topology[OutboundT] {}
 

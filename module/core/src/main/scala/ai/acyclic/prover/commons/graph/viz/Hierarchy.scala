@@ -4,14 +4,11 @@ import ai.acyclic.prover.commons.graph.Engine
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
-object Hierarchy extends Visualisations {
-
-  type Graph_/\[V] = Local.Semilattice.Upper[V]
-
-  implicit lazy val default: Hierarchy.Indent2.type = Hierarchy.Indent2
+object Hierarchy {
 
   trait Indent2 extends Hierarchy
   case object Indent2 extends Indent2
+  implicit def Default = Indent2
 
   trait Indent2Minimal extends Hierarchy {
 
@@ -21,12 +18,12 @@ object Hierarchy extends Visualisations {
 
     override lazy val SPACE = ""
   }
-  case object Indent2Minimal extends Indent2Minimal
+  case object Indent2Minimal extends Indent2Minimal {}
 }
 
-trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
+trait Hierarchy extends Visualisation with Engine.HasMaxRecursionDepth {
 
-  import Hierarchy._
+  override val graphType: Local.Semilattice.Upper.type = Local.Semilattice.Upper
 
   override lazy val maxDepth: Int = 20
 
@@ -42,9 +39,12 @@ trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
 
   lazy val SPACE = " "
 
-  def apply[V](s: Graph_/\[V]): Viz[V] = Viz(s)
+  override def visualise[V](data: Local.Semilattice.Upper[V]): Viz[V] = {
 
-  case class Viz[V](override val semilattice: Graph_/\[V]) extends TextViz[V] {
+    Viz(data)
+  }
+
+  case class Viz[V](override val data: Graph_/\[V]) extends Visualized[V] {
 
     case class SubViz(head: Local.Semilattice.Upper.Node[V], depth: Int = maxDepth) {
 
@@ -106,7 +106,7 @@ trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
     }
 
     lazy val treeText: String = {
-      semilattice.maxNodeOpt
+      data.maxNodeOpt
         .map { nn =>
           SubViz(nn).treeString
         }

@@ -13,14 +13,14 @@ trait HasPoly extends HasPolyLike {
     * evidence), doing it in runtime is shunned in type theories (it is fine in set theories tho), but we may still
     * allow it (if not obstructed by type erasure)
     *
-    * obviously, both [[HasMono.Mono]] and [[FnCompat]] are its trivial examples that only has 1 case
+    * obviously, both [[HasMono.MonoLike]] and [[FnCompat]] are its trivial examples that only has 1 case
     */
   trait Poly extends PolyLike {
     // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
 
     def apply[I, R](v: I)(
         implicit
-        _case: Case[FnCompat[I, R]]
+        _case: Case[Circuit[I, R]]
     ): R = {
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll[FnCompat[v.type, R], IsCase.type](_case)
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll(_case)
@@ -47,7 +47,7 @@ trait HasPoly extends HasPolyLike {
 
     def apply[I, R](arg: I)(
         implicit
-        _case: self.Case[FnCompat[I, R]]
+        _case: self.Case[Circuit[I, R]]
     ): R = self.apply(arg)(_case)
 
     //    def cachedBy: Same.ByEquality.CachedPoly[P] = Same.ByEquality.CachedPoly(self)

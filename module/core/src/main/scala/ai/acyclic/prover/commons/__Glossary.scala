@@ -24,6 +24,8 @@ object __Glossary {
     *     `Aux`, it could be an alias of `Lt`, `Gt` or `Aux` depending on situations
     *   - `Top` for supertype of all reifications of a generic type
     *   - `^` for the one and only implementation
+    *   - `Is` for Yoda's axiom: A wrapper of an object of a supertype that downcast it without verification. Eg.
+    *     Pure.Is(theFunction) downcast `theFunction` into a pure one
     *
     * type or class name suffixes:
     *

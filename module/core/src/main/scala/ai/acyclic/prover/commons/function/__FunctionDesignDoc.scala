@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function
 
-object __FunctionDesignSpec {
+object __FunctionDesignDoc {
 
   /**
     * advanced function API that allows referential transparency, function defined under it can be:
@@ -58,13 +58,46 @@ object __FunctionDesignSpec {
     */
 
   /**
-   * TODO: (09/30/2024)
-   *
-   * - Tracer should be discarded - no need to fit into the ecosystem of JAX as it relies heavily on capability of Python
-   * - JAX tracer is always for bound variables that cannot exist without a function body. Free variables are never traced
-   * - the optimal representation for variables is DeBruijn number, which also cannot exist without a functino body.
-   * - unlike Python, Scala (or other strongly typed languages) functions don't have a "shadow mode" that can be applied on tracer (e.g. dual numbers)
-   *   - the only Scala-native option is to use AST transformation.
-   *   - examples of AST transformations are Kyo direct-style and dotty-cps-async
-   */
+    * TODO: (09/30/2024)
+    *
+    *   - Tracer should be discarded - no need to fit into the ecosystem of JAX as it relies heavily on capability of
+    *     Python
+    *   - JAX tracer is always for bound variables that cannot exist without a function body. Free variables are never
+    *     traced
+    *   - the optimal representation for variables is DeBruijn number, which also cannot exist without a functino body.
+    *   - unlike Python, Scala (or other strongly typed languages) functions don't have a "shadow mode" that can be
+    *     applied on tracer (e.g. dual numbers)
+    *     - the only Scala-native option is to use AST transformation.
+    *     - examples of AST transformations are Kyo direct-style and dotty-cps-async
+    */
+
+  /**
+    * TODO: (10/05/2024)
+    *
+    * In JAX:
+    *   - const / thunk / nullary function are not traced for 1st-order functions, no need
+    *     - but it should be traced for higher-order functions! Even if it is a constant, it may affect the grad of
+    *       other variables!
+    *     - as a result, it should always be introduced as a const
+    *
+    * Unfortunately in Scala, we have 2 competing methods to define expressions (& their axiomatic rewrite rules):
+    *
+    *   - define-by-run (preferred by all Python-based DL libraries & egglog-python):
+    *     - impl in rise compiler that uses G-EqSat
+    *
+    *   - define-by-rewrite (a.k.a. staged compile) (preferred by catgrad):
+    *     - compile-time debugging is hard!
+    *     - therefore, development will start with an API (called "indirect/comprehension-style") that defines the
+    *       program AFTER the rewrite
+    *     - ... then add the intended rewrite capability (called "direct-style") that works in both runtime (for
+    *       debugging) & compile-time (for performance)
+    *       - in Scala, it usually manifest as for-comprehension, impl in Kyo, dotty-cps-async
+    *
+    * Both are complex. In best case I only need to impl one of them, if the G-EqSat impl doesn't offer anything new
+    *
+    * also, function.apply() in define-by-run shouldn't get special treatment, it is like other operators (+, *)
+    *
+    * the define-by-run API will be postponed, as ArithExpr is hyper-optimised for SIMD linear algebra, the more general
+    * G-EqSat impl won't rely on it
+    */
 }

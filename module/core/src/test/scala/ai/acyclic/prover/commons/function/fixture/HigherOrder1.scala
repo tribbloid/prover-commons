@@ -1,32 +1,28 @@
 package ai.acyclic.prover.commons.function.fixture
 
-import ai.acyclic.prover.commons.function.Hom.:=>
+import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 object HigherOrder1 {
 
-  import Fns._
+  import Circuits._
 
-  val s1: Seq[Long] :=> Seq[Double] = {
-    :=>.at[Long :=> Seq[Double]] { ff =>
-      :=>.at[Seq[Long]] { o1 =>
-        o1.flatMap(ff)
-      }
+  val raw: (Int :=> Int) :=> (Unit :=> Seq[Int]) = :=> { circuit =>
+    val result = for (const <- circuit.traceConst) yield {
+
+      (1 to 10).map(const)
     }
-      .apply(fn2)
+
+    result
   }
 
-  val s2: Seq[Long] :=> Seq[Double] = {
-    for (ff <- fn2.^) yield {
-
-      :=>.at[Seq[Long]] { v =>
-        v.flatMap(ff.asScala)
-      }
-    }
+  val s1: Unit :=> Seq[Int] = {
+    raw
+      .apply(fn0)
   }
 
-  val pairs: Seq[(Seq[Long] :=> Seq[Double], String)] =
+  val pairs: Seq[(Unit :=> Seq[Int], String)] =
     Seq(
-      s1 -> "s1",
-      s2 -> "s2"
+      s1 -> "s1"
+//      s2 -> "s2"
     )
 }

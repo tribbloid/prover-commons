@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.function.hom
 
-
-case class Tracing[I, O](fn: I => O) {
+// TODO: remove, tracing is built into Circuit
+case class Tracing[I, O](left: Hom.Circuit[I, O]) {
 
   // define functions to make Scala for-comprehension possible here
 
@@ -10,4 +10,7 @@ case class Tracing[I, O](fn: I => O) {
 
   // after
   // flatMap
+
 }
+
+object Tracing {}

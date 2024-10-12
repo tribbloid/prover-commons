@@ -10,7 +10,7 @@ object Local extends LocalEngine.Module {
 
     implicitly[Tree[V] <:< Semilattice.Upper[V]]
 
-    implicitly[Local.Tree._Arrow <:< Arrow.`~>`.^]
+    implicitly[Local.Tree._Arrow <:< Arrow.Outbound.^]
 
     implicitly[Local.AnyGraph.Outbound._Arrow <:< Local.Tree._Arrow]
 

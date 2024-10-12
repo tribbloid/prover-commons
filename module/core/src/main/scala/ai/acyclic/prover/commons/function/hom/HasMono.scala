@@ -2,7 +2,8 @@ package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.collection.CacheView
 import ai.acyclic.prover.commons.same.Same
-import ai.acyclic.prover.commons.util.SrcExplainable
+
+import scala.language.implicitConversions
 
 object HasMono {}
 
@@ -26,7 +27,7 @@ trait HasMono extends HasPoly {
     * @tparam T_/\
     *   parameter's upper bound
     */
-  trait Mono[
+  sealed trait MonoLike[
       -T_/\
   ] extends Poly {
 
@@ -40,12 +41,26 @@ trait HasMono extends HasPoly {
     }
   }
 
+  type Mono[T_/\, -I[_ <: T_/\], +O[_ <: T_/\]] = MonoLike[T_/\] {
+    type In[T <: T_/\] >: I[T]
+    type Out[T <: T_/\] <: O[T]
+  }
+
   object Mono {
 
-    class Cached[T_/\, SS <: Mono[T_/\]](
-        val backbone: SS
-    ) extends Mono[T_/\]
-        with SrcExplainable.Composite1 {
+    case class Is[I, O](backbone: Circuit[I, O]) extends MonoLike[Any] {
+
+      override type In[+_] = I
+      override type Out[+_] = O
+
+      override def apply[_](arg: I): O = backbone.apply(arg)
+    }
+
+    implicit def fnIsMono[I, O](v: Circuit[I, O]): Mono.Is[I, O] = Mono.Is(v)
+
+    case class Cached[T_/\, SS <: MonoLike[T_/\]](
+        backbone: SS
+    ) extends MonoLike[T_/\] {
 
       override type In[T <: T_/\] = backbone.In[T]
       override type Out[T <: T_/\] = backbone.Out[T]
@@ -73,7 +88,7 @@ trait HasMono extends HasPoly {
 
   implicit class MonoOps[
       T_/\,
-      SS <: Mono[T_/\]
+      SS <: MonoLike[T_/\]
   ](val self: SS)
       extends Serializable {
 
@@ -92,24 +107,17 @@ trait HasMono extends HasPoly {
     }
   }
 
-  type MonoCompat[T_/\, -I[_ <: T_/\], +O[_ <: T_/\]] = Mono[T_/\] {
-    type In[T <: T_/\] >: I[T]
-    type Out[T <: T_/\] <: O[T]
-  }
-
-  trait MonoImpl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends Mono[T_/\] {
+  trait MonoImpl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends MonoLike[T_/\] {
     type In[T <: T_/\] = I[T]
     type Out[T <: T_/\] = O[T]
   }
 
-  trait Dependent[
+  sealed trait DependentLike[
       T_/\
-  ] extends Mono[T_/\] {
+  ] extends MonoLike[T_/\] {
 
     type In[+T <: T_/\] = T
   }
-
-  object Dependent {}
 
   /**
     * function with dependent type
@@ -120,19 +128,12 @@ trait HasMono extends HasPoly {
     * @tparam R
     *   type constructor of output
     */
-  type DependentCompat[T_/\, +O[_ <: T_/\]] = Dependent[T_/\] {
+  type Dependent[T_/\, +O[_ <: T_/\]] = DependentLike[T_/\] {
     type Out[T <: T_/\] <: O[T]
   }
+  object Dependent {}
 
-  trait DependentImpl[T_/\, O[_ <: T_/\]] extends Dependent[T_/\] {
+  trait DependentImpl[T_/\, O[_ <: T_/\]] extends DependentLike[T_/\] {
     type Out[T <: T_/\] = O[T]
-  }
-
-  implicit class fnIsMono[I, O](val backbone: FnCompat[I, O]) extends Mono[Any] with SrcExplainable.Composite1 {
-
-    override type In[+_] = I
-    override type Out[+_] = O
-
-    override def apply[_](arg: I): O = backbone.apply(arg)
   }
 }

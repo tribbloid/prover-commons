@@ -48,7 +48,7 @@ object TreeFixture {
 
       val children = value.children
       val result = children.map { child =>
-        Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
+        Arrow.Outbound.NoInfo(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
       }
       result.toSeq
     }

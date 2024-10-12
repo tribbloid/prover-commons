@@ -28,8 +28,6 @@ trait TypeOfMixin extends HasReflection {
       val tt: universe.Type
   ) {
 
-    type TT = T
-
     lazy val typeOps: TypeOps = TypeOps(reflection.typeView(tt))
 
     lazy val vizGroup: VisualisationGroup = VisualisationGroup()
@@ -40,21 +38,21 @@ trait TypeOfMixin extends HasReflection {
     lazy val graph = Local.AnyGraph
       .Outbound(nodes.SuperTypeNode)
 
-    lazy val diagram_hierarchy: format.DelegateFormat.Group#Viz[VisualisationGroup.Node] =
-      graph.diagram_linkedHierarchy(vizGroup.delegateGroup)
+    lazy val text_hierarchy: format.DelegateFormat.Group#Viz[VisualisationGroup.node] =
+      graph.text_linkedHierarchy(vizGroup.delegateGroup)
 
-    lazy val diagram_flow =
-      graph.diagram_flow(Flow.Default)
+    lazy val text_flow =
+      graph.text_flow(Flow.Default)
 
     override def toString: String = {
 
-      diagram_hierarchy.toString
+      text_hierarchy.toString
     }
 
     def should_=:=(that: TypeOf[_] = null): Unit = {
 
       val Seq(s1, s2) = Seq(this, that).map { v =>
-        Option(v).map(_.diagram_hierarchy.toString)
+        Option(v).map(_.text_hierarchy.toString)
       }
 
       val diff = StringDiff(s1, s2, Seq(this.getClass))
@@ -83,7 +81,7 @@ trait TypeOfMixin extends HasReflection {
   object VisualisationGroup extends Local.AnyGraph.Outbound.Group {
 
     // technically this layer could be collapsed into GraphRepr
-    trait Node extends INode with TypeOfMixin.VNodeLike {}
+    trait node extends _Node with TypeOfMixin.VNodeLike {}
   }
 
   // visualisations in the same group should not display redundant information
@@ -99,7 +97,7 @@ trait TypeOfMixin extends HasReflection {
 
       val node: TypeOps = ir.typeOps
 
-      lazy val argGraph: Local.AnyGraph.Outbound[VisualisationGroup.Node] = {
+      lazy val argGraph: Local.AnyGraph.Outbound[VisualisationGroup.node] = {
 
         val equivalentIRs = ir.EquivalentTypes.recursively
 
@@ -118,7 +116,7 @@ trait TypeOfMixin extends HasReflection {
 
       lazy val typeText: String = ir.text
 
-      lazy val argViz: delegateGroup.Viz[VisualisationGroup.Node] = delegateGroup.Viz(argGraph)
+      lazy val argViz: delegateGroup.Viz[VisualisationGroup.node] = delegateGroup.Viz(argGraph)
 
       lazy val argText: String = {
 
@@ -141,7 +139,7 @@ trait TypeOfMixin extends HasReflection {
         }
       }
 
-      case object SuperTypeNode extends Node {
+      case object SuperTypeNode extends node {
 
         final override lazy val identityKeyC = Some(node.reference)
 
@@ -164,7 +162,7 @@ trait TypeOfMixin extends HasReflection {
         }
       }
 
-      case object ArgNode extends Node {
+      case object ArgNode extends node {
 
         final override lazy val identityKeyC = None
 

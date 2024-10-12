@@ -3,6 +3,8 @@ package ai.acyclic.prover.commons.graph
 import scala.collection.Factory
 import scala.language.implicitConversions
 
+// TODO: may represents undesirable relationship.
+//  should define a link type equivalent to (Arrow, Node)
 trait Arrow {
 
   import Arrow._
@@ -49,9 +51,17 @@ object Arrow {
 
   sealed abstract class Edge extends ArrowType {}
 
-  case object `~>` extends Edge
+  case object Outbound extends Edge
+  type `~>` = Outbound.^
+  val `~>` = Outbound.NoInfo.empty
 
-  case object `<~` extends Edge
+  implicitly[`~>`.type <:< `~>`]
+
+  case object Inbound extends Edge
+  type `<~` = Inbound.^
+  val `<~` = Inbound.NoInfo.empty
+
+  implicitly[`<~`.type <:< `<~`]
 
 //  case object `~~` extends Edge // undirected
 

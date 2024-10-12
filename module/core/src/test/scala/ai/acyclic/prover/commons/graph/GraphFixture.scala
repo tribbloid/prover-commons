@@ -17,7 +17,7 @@ object GraphFixture {
     val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren: _*)
   }
 
-  object GV extends Local.AnyGraph.Outbound.Wiring[GV] {
+  object GV extends Local.AnyGraph.Outbound.Inspection[GV] {
 
     case class Node(override val value: GV) extends OGraphNode {
 
@@ -25,14 +25,14 @@ object GraphFixture {
         value.children.toSeq.map(v => Node(v))
     }
 
-    object WithArrows extends Local.AnyGraph.Outbound.Wiring[GV] {
+    object WithArrows extends Local.AnyGraph.Outbound.Inspection[GV] {
 
       case class Node(override val value: GV) extends OGraphNode {
 
         override protected def getInduction = {
           val children = value.children.toSeq
           val result = children.map { child =>
-            Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Node(child)
+            Arrow.Outbound.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Node(child)
           }
           result
         }
