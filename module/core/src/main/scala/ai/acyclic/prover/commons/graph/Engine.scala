@@ -154,7 +154,7 @@ trait Engine {
         */
       trait Inspection[V] {
 
-        trait _Node extends NodeImpl[V]
+        type _Node = NodeImpl[V]
 
         protected type node <: _Node
         val node: V => node

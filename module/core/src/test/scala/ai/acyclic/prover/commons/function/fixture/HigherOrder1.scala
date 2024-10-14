@@ -7,7 +7,7 @@ object HigherOrder1 {
   import Circuits._
 
   val raw: (Int :=> Int) :=> (Unit :=> Seq[Int]) = :=> { circuit =>
-    val result = for (const <- circuit.traceConst) yield {
+    val result = for (const <- circuit.trace.higher) yield {
 
       (1 to 10).map(const)
     }

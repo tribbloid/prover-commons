@@ -10,7 +10,7 @@ object ChainSelf {
 
   val s1 = fn0.trace.map(fn0)
 
-  val s2 = :=>.id[Int].trace.map(fn0).trace.map(fn0)
+  val s2 = :=>.id[Int].trace.map(fn0).map(fn0)
 
   lazy val pairs = {
 

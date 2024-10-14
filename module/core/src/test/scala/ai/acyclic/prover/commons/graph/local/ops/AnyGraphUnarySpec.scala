@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.GraphFixture
-import ai.acyclic.prover.commons.graph.GraphFixture.GV.Node
+import ai.acyclic.prover.commons.graph.GraphFixture.GV.node
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
@@ -111,16 +111,16 @@ class AnyGraphUnarySpec extends BaseSpec {
       val result = AnyGraphUnary
         .^(diamond.make: Local.AnyGraph[GV], 4)
         .TransformLinear(
-          GVRewriter(v => Node(v)),
+          GVRewriter(v => node(v)),
           down = { v =>
             val result = v.value.copy(text = v.value.text + "+" + inc.getAndIncrement(), Nil)
             result.children ++= v.value.children
-            Node(result)
+            node(result)
           },
           up = { v =>
             val result = v.value.copy(text = v.value.text + "-" + inc.getAndIncrement(), Nil)
             result.children ++= v.value.children
-            Node(result)
+            node(result)
           }
         )
       result

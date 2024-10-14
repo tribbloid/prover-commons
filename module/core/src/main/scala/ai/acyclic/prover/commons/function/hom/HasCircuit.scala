@@ -19,72 +19,96 @@ trait HasCircuit {
   sealed trait Circuit[-I, +O] extends Traceable with Serializable {
 
     def apply(arg: I): O
-
-    lazy val trace: Circuit.ComprehensionView[I, O] = Circuit.ComprehensionView(this)
-
-    lazy val traceConst: Circuit.ComprehensionView[Unit, Circuit[I, O]] = Circuit.ComprehensionView(Thunk.Eager(this))
   }
 
   object Circuit {
 
-    case class FunctionView[-I, +O](circuit: Circuit[I, O])(
+    implicit class InvariantView[I, O](
+        self: Circuit[I, O]
+    ) {
+
+      lazy val trace: Circuit.Tracing[I, O] = Circuit.Tracing(self)
+
+    }
+
+    implicit class FunctionView[-I, +O](val self: Circuit[I, O])(
         implicit
         _definedAt: SrcPosition
     ) extends Function[I, O] {
 
-      final override def apply(v: I) = circuit(v)
+      final override def apply(v: I) = self(v)
 
-      override def andThen[O2](next: O => O2): FunctionView[I, O2] = {
+      // TODO: both of these are not narrow enough
+      final override def andThen[O2](next: O => O2): FunctionView[I, O2] = {
 
         val _next = Blackbox(next)(_definedAt)
 
         val result =
-          Circuit.Mapped[I, O, O2](circuit, _next)
+          Circuit.Mapped[I, O, O2](self, _next)
 
         result
       }
 
-      override def compose[I1](prev: I1 => I): FunctionView[I1, O] = {
+      final override def compose[I1](prev: I1 => I): FunctionView[I1, O] = {
 
         val _prev = Blackbox(prev)(_definedAt)
 
-        _prev.andThen(circuit)
+        _prev.andThen(self)
       }
+
     }
+//    implicit def circuit2FunctionView[I, O](circuit: Circuit[I, O]): FunctionView[I, O] = FunctionView(circuit)
+    implicit def functionView2Circuit[I, O](fn: FunctionView[I, O]): Circuit[I, O] = fn.self
 
-    implicit def circuit2FunctionView[I, O](circuit: Circuit[I, O]): FunctionView[I, O] = FunctionView(circuit)
-
-    implicit def functionView2Circuit[I, O](fn: FunctionView[I, O]): Circuit[I, O] = fn.circuit
-
-    case class ComprehensionView[-I, +O](left: Circuit[I, O])(
+    case class Tracing[I, O](self: Circuit[I, O])(
         implicit
         _definedAt: SrcPosition
     ) {
+      // TODO: this can be fold into Circuit?
 
-      def map[O2](right: O => O2)(): Circuit[I, O2] = {
+      lazy val higher: Circuit.Tracing[Unit, Circuit[I, O]] =
+        Circuit.Tracing(Thunk.Eager(self))
 
-        val result = left.andThen(right)
+      def map[O2](right: O => O2)(): Tracing[I, O2] = {
 
-        result
+        val result = self.andThen(right)
+
+        Tracing(result)
       }
 
-      def foreach(right: O => Unit): Circuit[I, Unit] = {
+      def foreach(right: O => Unit): Tracing[I, Unit] = {
 
         map(right)
       }
 
-      def withFilter(right: O => Boolean): Circuit[I, O] = {
+      def withFilter(right: O => Boolean): Tracing[I, O] = {
 
         val _right = Blackbox(right)(_definedAt)
 
         val result =
-          Circuit.Partial[I, O](left, _right)
+          Circuit.WithFilter[I, O](self, _right)
 
-        result
+        Tracing(result)
+      }
+
+      def ><[I2, O2](right: Tracing[I2, O2]): Tracing[(I, I2), (O, O2)] = {
+
+        val result = Pointwise(self, right.self)
+
+        result.trace
+      }
+
+      def -<[O2](right: Tracing[I, O2]): Tracing[I, (O, O2)] = {
+
+        val first = Duplicate[I]()
+        val second = Pointwise(self, right.self)
+
+        first.andThen(second).self.trace
       }
 
       // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
     }
+    implicit def tracing2Circuit[I, O](tracing: Tracing[I, O]): Circuit[I, O] = tracing.self
 
     trait Mixin
 
@@ -131,6 +155,7 @@ trait HasCircuit {
       val K = Thunk.Lazy
 
       val Delta = Pointwise
+      val Gamma = Duplicate
     }
 
     case class Identity[I]() extends Impl[I, I] with Combinator.Linear {
@@ -148,7 +173,7 @@ trait HasCircuit {
       override def apply(arg: I): O = right(left(arg))
     }
 
-    case class Partial[I, O](
+    case class WithFilter[I, O](
         base: Circuit[I, O],
         condition: Circuit[O, Boolean]
     ) extends Impl[I, O]
@@ -186,35 +211,49 @@ trait HasCircuit {
       }
     }
 
-    case class AbsorbLeft[I, O1, O2](
-        left: Thunk[O1],
-        right: Circuit[I, O2]
-    ) extends Impl[I, (O1, O2)]
-        with Combinator.Linear {
+    case class Duplicate[I]() extends Impl[I, (I, I)] {
 
-      override def apply(arg: I): (O1, O2) = {
-
-        val lo = left(())
-        val ro = right(arg)
-
-        lo -> ro
-      }
+      override def apply(arg: I): (I, I) = arg -> arg
     }
 
-    case class Fork[I, O1, O2](
-        left: Circuit[I, O1],
-        right: Circuit[I, O2]
-    ) extends Impl[I, (O1, O2)]
-        with Combinator {
+    case class DiscardRight[I1, I2](
+    ) extends Impl[(I1, I2), I1]
+        with Combinator.Affine {
 
-      override def apply(arg: I): (O1, O2) = {
-
-        val lo = left(arg)
-        val ro = right(arg)
-
-        lo -> ro
-      }
+      override def apply(arg: (I1, I2)): I1 = arg._1
     }
+
+    // TODO: remove, equals Pointwise + DiscardRight
+//    case class AbsorbLeft[I, O1, O2](
+//        left: Thunk[O1],
+//        right: Circuit[I, O2]
+//    ) extends Impl[I, (O1, O2)]
+//        with Combinator.Linear {
+//
+//      override def apply(arg: I): (O1, O2) = {
+//
+//        val lo = left(())
+//        val ro = right(arg)
+//
+//        lo -> ro
+//      }
+//    }
+
+    // TODO: remove, equals Duplicate + Pointwise
+//    case class Fork[I, O1, O2](
+//        left: Circuit[I, O1],
+//        right: Circuit[I, O2]
+//    ) extends Impl[I, (O1, O2)]
+//        with Combinator {
+//
+//      override def apply(arg: I): (O1, O2) = {
+//
+//        val lo = left(arg)
+//        val ro = right(arg)
+//
+//        lo -> ro
+//      }
+//    }
 
     // there is no absorb right
 
