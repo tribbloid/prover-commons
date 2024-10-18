@@ -19,7 +19,7 @@ object HigherOrder2 {
 
   }
 
-  val s1 = for (case (o1, ff) <- pointwise) yield {}
+//  val s1 = for (case (o1, ff) <- pointwise) yield {}
 
 //  val s1: Int :=> Seq[Double] = {
 //    fn1.andThen {
