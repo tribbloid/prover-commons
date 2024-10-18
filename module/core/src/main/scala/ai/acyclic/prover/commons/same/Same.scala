@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.same
 
-import ai.acyclic.prover.commons.collection.CacheView.{MapRepr, SetRepr}
-import ai.acyclic.prover.commons.collection.{CacheView, KeyEncodedMap, MapBackedSet, ValueEncodedMap}
+import ai.acyclic.prover.commons.collection.LookupMagnet.{MapRepr, SetRepr}
+import ai.acyclic.prover.commons.collection.{KeyEncodedMap, LookupMagnet, MapBackedSet, ValueEncodedMap}
 import ai.acyclic.prover.commons.function.Bijection
 import ai.acyclic.prover.commons.util.Caching
 
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
   *     - prove by memory address in all other cases
   */
 trait Same extends Serializable {
-  
+
   import ai.acyclic.prover.commons.same.Same._
 
   protected def getHashNonTrivial(v: Any): Option[Int]
@@ -83,9 +83,7 @@ trait Same extends Serializable {
     result
   }
 
-  case class Truncate[T: ClassTag](fn: T => Option[Any]) extends ByUnapply[T] {
-
-    override def outer: Same.this.type = Same.this
+  case class Rounding[T: ClassTag](fn: T => Option[Any]) extends ByUnapply[T](Same.this) {
 
     override protected def unapply(v1: T): Option[Vector[Any]] = {
 
@@ -115,8 +113,8 @@ trait Same extends Serializable {
 
   // a cache wrapper with a serialID, such that `values` will return the values in insertion order
   case class Lookup[K, V](
-      underlying: CacheView[Wrapper[K], (V, Long)] = Caching.Soft.build[Wrapper[K], (V, Long)]()
-  ) extends CacheView[K, V] {
+      underlying: LookupMagnet[Wrapper[K], (V, Long)] = Caching.Soft.build[Wrapper[K], (V, Long)]()
+  ) extends LookupMagnet[K, V] {
 
     private val serialID: AtomicInteger = new AtomicInteger(0)
     @volatile var locked: Boolean = false
@@ -243,9 +241,7 @@ object Same {
     }
   }
 
-  abstract class ByUnapply[T: ClassTag] extends ByNormalise[T, Vector[Any]] {
-
-    def outer: Same
+  abstract class ByUnapply[T: ClassTag](outer: Same) extends ByNormalise[T, Vector[Any]] {
 
     final override protected def getHashNonTrivial(v: Any): Option[Int] = {
       unapplyAny(v).map { vec =>
@@ -272,7 +268,7 @@ object Same {
     }
   }
 
-  case class ByConstruction(outer: Same) extends ByUnapply[Product] {
+  case class ByConstruction(outer: Same) extends ByUnapply[Product](outer) {
 
     final override def unapply(v: Product): Some[Vector[Any]] = {
 

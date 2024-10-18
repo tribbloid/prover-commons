@@ -75,11 +75,11 @@ object LinkedHierarchy {
   def emptySameRefs = mutable.ArrayBuffer.empty[RefBindingLike]
 }
 
-trait LinkedHierarchy extends Visualisation {
+trait LinkedHierarchy extends Visualisation.OfType {
 
   import LinkedHierarchy._
 
-  final override val graphType: Local.AnyGraph.Outbound.type = Local.AnyGraph.Outbound
+  final override val applicableToType: Local.AnyGraph.Outbound.type = Local.AnyGraph.Outbound
 
   def __sanity[T](): Unit = {
 
@@ -93,7 +93,7 @@ trait LinkedHierarchy extends Visualisation {
 
   protected def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit
 
-  override def visualise[V](data: Graph_/\[V]): Visualized[V] = Group().Viz(data)
+  final override def visualise[V](data: Graph_/\[V]): Visualized[V] = Group().Viz(data)
 
   // shared between visualisations of multiple graphs
   case class Group() {

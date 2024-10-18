@@ -17,20 +17,20 @@ object Axioms {
 
   trait Impl[+A <: Arrow] extends Axioms { type _Arrow <: A }
 
-  trait ImplUnpack[X <: Axioms] extends Lawful { type _Arrow <: Arrow }
+  trait ExtractArrow[X <: Axioms] extends Lawful { type _Arrow <: Arrow }
 
-  object ImplUnpack {
+  object ExtractArrow {
 
-    type Gt[L <: Axioms] = ImplUnpack[_ >: L]
+    type Gt[L <: Axioms] = ExtractArrow[_ >: L]
 
-    implicit def onlyCase[A <: Arrow]: ImplUnpack[Impl[A]] { type _Arrow = A } =
-      new ImplUnpack[Impl[A]] {
+    implicit def onlyCase[A <: Arrow]: ExtractArrow[Impl[A]] { type _Arrow = A } =
+      new ExtractArrow[Impl[A]] {
         override type _Arrow = A
       }
   }
 
   { // sanity
-    val bounds = Summoner.summon[ImplUnpack.Gt[Impl[Arrow.Outbound.^]]]
+    val bounds = Summoner.summon[ExtractArrow.Gt[Impl[Arrow.Outbound.^]]]
 
     implicitly[bounds._Arrow =:= Arrow.Outbound.^]
   }

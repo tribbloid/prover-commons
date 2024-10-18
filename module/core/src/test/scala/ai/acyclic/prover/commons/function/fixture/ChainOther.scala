@@ -21,17 +21,17 @@ object ChainOther {
         (
           s1,
           s"""
-             |+ Compose
+             |+ Mapped
              |!-- ${fn0.explain.nodeText}
-             |!-- ${fn0.explain.nodeText}
+             |!-- Blackbox(s1 <at ChainOther.scala:9>)
              |""".stripMargin
         ),
         (
           s2,
-          s"""
-             |+ Compose
+          s""" 
+             |+ Mapped
              |!-- ${fn0.explain.nodeText}
-             |!-- ${fn0.explain.nodeText}
+             |!-- Blackbox(s2 <at ChainOther.scala:13>)
              |""".stripMargin
         )
       )

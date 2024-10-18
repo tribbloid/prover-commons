@@ -48,6 +48,7 @@ object CallStackRef {
 
   lazy val LZYCOMPUTE = "$lzycompute"
   lazy val INIT = "<init>"
+  lazy val STATIC_CLASS_INIT = "<clinit>"
   lazy val ARG_DEFAULT = "$default$"
   lazy val LAMBDA = "$Lambda$"
 
@@ -87,9 +88,11 @@ object CallStackRef {
       self.getMethodName.contains(ARG_DEFAULT)
     }
 
-    def isInit: Boolean = {
-      self.getMethodName == INIT
-    }
+    def isInit: Boolean = self.getMethodName == INIT
+
+    def isStaticClassInit = self.getMethodName == STATIC_CLASS_INIT
+
+    def isConstructor: Boolean = isInit || isStaticClassInit // alias
 
     def isLambda: Boolean = {
       self.getMethodName contains LAMBDA

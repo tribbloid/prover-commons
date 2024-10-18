@@ -12,6 +12,13 @@ class PolySpec extends BaseSpec {
 
     import ai.acyclic.prover.commons.function.fixture.Polys._
 
+    describe("case definition") {
+
+      ignore("single-abstract method") {
+        // current compiler is janky
+      }
+    }
+
     describe("summoning cases") {
 
       it("with input & output types") {
@@ -32,17 +39,4 @@ class PolySpec extends BaseSpec {
     }
   }
 
-//  describe("Single Abstract Method definition for") {
-//
-//    it("function") {
-//
-//      val fn1: Tier1.Function[Int :: HNil, String] = { v =>
-//        val _ = v._1 // uses implicits
-//
-//        val tt: Tuple1[Int] = v.asTuple // use dynamic selector
-//
-//        "" + tt._1
-//      }
-//    }
-//  }
 }

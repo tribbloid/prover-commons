@@ -21,9 +21,9 @@ object Hierarchy {
   case object Indent2Minimal extends Indent2Minimal {}
 }
 
-trait Hierarchy extends Visualisation with Engine.HasMaxRecursionDepth {
+trait Hierarchy extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
-  override val graphType: Local.Semilattice.Upper.type = Local.Semilattice.Upper
+  override val applicableToType: Local.Semilattice.Upper.type = Local.Semilattice.Upper
 
   override lazy val maxDepth: Int = 20
 
@@ -39,7 +39,7 @@ trait Hierarchy extends Visualisation with Engine.HasMaxRecursionDepth {
 
   lazy val SPACE = " "
 
-  override def visualise[V](data: Local.Semilattice.Upper[V]): Viz[V] = {
+  final override def visualise[V](data: Local.Semilattice.Upper[V]): Viz[V] = {
 
     Viz(data)
   }

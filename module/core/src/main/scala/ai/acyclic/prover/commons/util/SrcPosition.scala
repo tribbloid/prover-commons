@@ -1,13 +1,14 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.debug.CallStackRef
+import ai.acyclic.prover.commons.same.Same
 
-trait SrcPosition {
+trait SrcPosition extends Serializable with Same.Native.IWrapper {
   // TODO: can use Lihaoyi's sourcecode library
 
   def fileName: String
 
-  def lineNumber: String
+  def lineNumber: Int
 
   def methodName: String
 
@@ -18,12 +19,30 @@ trait SrcPosition {
   override lazy val toString: String = {
     s"${methodName} <at $atLine>"
   }
+
+  override protected def samenessKey: Any = (fileName, lineNumber, methodName)
 }
 
 object SrcPosition {
 
+  @deprecated("use CompileTime instead")
   case class Runtime(
-      stack: CallStackRef
+      stack: CallStackRef = {
+
+        val stack = CallStackRef
+          .below(
+            condition = { v =>
+              v.isUnderClasses(this.getClass)
+
+            }
+          )
+
+        val filtered = stack
+          .pop { v =>
+            v.isLazyCompute || v.isInit
+          }
+        filtered
+      }
   ) extends SrcPosition {
 
     private lazy val head = stack.head
@@ -34,7 +53,7 @@ object SrcPosition {
 
     override def fileName: String = head.getFileName
 
-    override def lineNumber: String = head.getLineNumber.toString
+    override def lineNumber: Int = head.getLineNumber
 
     override lazy val methodName: String = {
 
@@ -50,20 +69,30 @@ object SrcPosition {
         }
       }
     }
+
   }
 
-  // TODO: need the second impl resolved at compile-time, after Scala 3.
-  //  a good example is kyo.internal.Position
-  implicit def here: SrcPosition = {
+  private type _FileName = sourcecode.FileName
 
-    val stack = CallStackRef
-      .below(
-        condition = _.isUnderClasses(this.getClass)
-      )
-      .pop { v =>
-        v.isLazyCompute || v.isInit
-      }
+  case class CompileTime()(
+      implicit
+      _fileName: _FileName,
+      _line: sourcecode.Line,
+      _name: sourcecode.Name
+  ) extends SrcPosition {
 
-    Runtime(stack)
+    override val fileName: String = _fileName.value
+
+    override val lineNumber: Int = _line.value
+
+    override val methodName: String = _name.value
   }
+
+  implicit def default(
+      implicit
+      _fileName: _FileName,
+      _line: sourcecode.Line,
+      _name: sourcecode.Name
+  ): CompileTime = CompileTime()
+
 }

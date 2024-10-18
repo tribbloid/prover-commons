@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.GraphK
-import ai.acyclic.prover.commons.graph.topology.Axioms.ImplUnpack
+import ai.acyclic.prover.commons.graph.topology.Axioms.ExtractArrow
 
 abstract class Topology[X <: Axioms] extends Lawful {
   self: Singleton =>
@@ -12,7 +12,7 @@ abstract class Topology[X <: Axioms] extends Lawful {
 
   implicit def assuming(
       implicit
-      unpack: ImplUnpack.Gt[X]
+      unpack: ExtractArrow.Gt[X]
   ): X { type _Arrow = unpack._Arrow } = Axioms.assume[X { type _Arrow = unpack._Arrow }]
 }
 

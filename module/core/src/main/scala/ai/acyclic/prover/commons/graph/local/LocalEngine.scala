@@ -11,7 +11,7 @@ object LocalEngine extends Engine {
   def parallelize[T](seq: Seq[T]): Dataset[T] = seq.toVector
 
   implicit def graphAsUnary[L <: Local.AnyGraph._Axiom, V](
-      self: LocalEngine._GraphK.Aux[L, V]
+      self: LocalEngine.GraphKOfTheEngine.Aux[L, V]
   ): AnyGraphUnary.^[L, V] = {
 
     val leaf = self.asPlan
@@ -20,7 +20,7 @@ object LocalEngine extends Engine {
   }
 
   implicit def outboundGraphAsUnary[L <: Local.AnyGraph.Outbound._Axiom, V](
-      self: LocalEngine._GraphK.Aux[L, V]
+      self: LocalEngine.GraphKOfTheEngine.Aux[L, V]
   ): OutboundGraphUnary.^[L, V] = {
 
     val leaf = self.asPlan
@@ -29,7 +29,7 @@ object LocalEngine extends Engine {
   }
 
   implicit def upperSemilatticeAsUnary[L <: Local.Semilattice.Upper._Axiom, V](
-      self: LocalEngine._GraphK.Aux[L, V]
+      self: LocalEngine.GraphKOfTheEngine.Aux[L, V]
   ): UpperSemilatticeUnary.^[L, V] = {
 
     val leaf = self.asPlan

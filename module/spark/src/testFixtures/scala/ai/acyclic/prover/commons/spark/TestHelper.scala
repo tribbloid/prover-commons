@@ -1,9 +1,8 @@
 package ai.acyclic.prover.commons.spark
 
 import ai.acyclic.prover.commons.util.Retry
-import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.apache.spark.{SparkConf, SparkContext, SparkEnv, SparkException}
+import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import org.slf4j.LoggerFactory
 
 import java.util.{Date, Properties}
@@ -163,9 +162,13 @@ object TestHelper {
       }
 
       base2 ++ Map(
-        "spark.serializer" -> "org.apache.spark.serializer.KryoSerializer",
-        //      .set("spark.kryo.registrator", "com.tribbloids.spookystuff.SpookyRegistrator")Incomplete for the moment
-        "spark.kryoserializer.buffer.max" -> "512m",
+//        "spark.serializer" -> "org.apache.spark.serializer.KryoSerializer",
+//        "spark.kryoserializer.buffer.max" -> "512m",
+
+        // TODO: kryo serializer is temporarily disabled by https://github.com/EsotericSoftware/kryo/issues/885
+        //  in addition, kryo serializer without class registration is not efficient
+        //  this should be done automatically by an adaptive analyzer that collects required registration through runtime telemetry
+
         "spark.sql.warehouse.dir" -> Envs.WAREHOUSE_PATH,
         //      "hive.metastore.warehouse.dir" -> WAREHOUSE_PATH,
         "dummy.property" -> "dummy"
@@ -280,8 +283,8 @@ object TestHelper {
   }
 
   def assureKryoSerializer(sc: SparkContext, rigorous: Boolean = false): Unit = {
-    val ser = SparkEnv.get.serializer
-    require(ser.isInstanceOf[KryoSerializer])
+//    val ser = SparkEnv.get.serializer
+//    require(ser.isInstanceOf[KryoSerializer])
 
     // will print a long warning message into stderr, disabled by default
     if (rigorous) {

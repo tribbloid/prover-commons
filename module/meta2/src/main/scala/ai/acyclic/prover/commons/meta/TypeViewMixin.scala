@@ -320,7 +320,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
   }
 
   lazy val typeView: Hom.Circuit.CachedLazy[Type, TypeView] = {
-    :=>(TypeView.apply _).cachedBy(Same.Native.Lookup())
+    :=>(TypeView.apply _).cached(Same.Native.Lookup())
   }
 
 //  val typeCache = mutable.Map.empty[Type, TypeView]

@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.collection.CacheView
+import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.same.Same
 
 import scala.language.implicitConversions
@@ -65,7 +65,7 @@ trait HasMono extends HasPoly {
       override type In[T <: T_/\] = backbone.In[T]
       override type Out[T <: T_/\] = backbone.Out[T]
 
-      lazy val lookup: CacheView[Any, Any] = Same.Native.Lookup[Any, Any]()
+      lazy val lookup: LookupMagnet[Any, Any] = Same.Native.Lookup[Any, Any]()
 
       override def apply[T <: T_/\](arg: In[T]): Out[T] = {
 
@@ -92,8 +92,8 @@ trait HasMono extends HasPoly {
   ](val self: SS)
       extends Serializable {
 
-    def cachedBy(
-        _lookup: CacheView[Any, Any] = Same.Native.Lookup()
+    def cached(
+        byLookup: LookupMagnet[Any, Any] = Same.Native.Lookup()
     ): Mono.Cached[T_/\, SS] = {
 
       type Result = Mono.Cached[T_/\, SS]
@@ -101,7 +101,7 @@ trait HasMono extends HasPoly {
       val result: Result =
         new Mono.Cached[T_/\, SS](self) {
 
-          override lazy val lookup: CacheView[Any, Any] = _lookup
+          override lazy val lookup: LookupMagnet[Any, Any] = byLookup
         }
       result
     }

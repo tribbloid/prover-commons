@@ -49,7 +49,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
           n.map(v => fn(v): V2)
         }
 
-        Local.AnyGraph.makeTightestWithAxiom[ArgLaw, V2](newNode: _*)(argPlan.axioms)
+        Local.AnyGraph.makeWithAxioms[ArgLaw, V2](newNode: _*)(argPlan.axioms)
       }
 
       result
@@ -103,9 +103,9 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
         }
       }
 
-      override def compute: LocalEngine._GraphK.Unchecked[ArgLaw, ArgV] = {
+      override def compute: LocalEngine.GraphKOfTheEngine.Unchecked[ArgLaw, ArgV] = {
         val transformed: Seq[ArgNode] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
-        Local.AnyGraph.makeTightestWithAxiom[ArgLaw, ArgV](transformed: _*)(argPlan.axioms)
+        Local.AnyGraph.makeWithAxioms[ArgLaw, ArgV](transformed: _*)(argPlan.axioms)
       }
     }
 

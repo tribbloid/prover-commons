@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.cap.Capabilities
-import ai.acyclic.prover.commons.collection.CacheView
+import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.function.Traceable
 import ai.acyclic.prover.commons.function.Traceable.BySrc
 import ai.acyclic.prover.commons.same.Same
@@ -19,16 +19,26 @@ trait HasCircuit {
   sealed trait Circuit[-I, +O] extends Traceable with Serializable {
 
     def apply(arg: I): O
+
+    def normalize: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
   }
 
   object Circuit {
 
-    implicit class InvariantView[I, O](
+    implicit class _extension[I, O](
         self: Circuit[I, O]
     ) {
 
       lazy val trace: Circuit.Tracing[I, O] = Circuit.Tracing(self)
 
+      def cached(
+          byLookup: LookupMagnet[I, O] = Same.Native.Lookup[I, O]()
+      ): Circuit.CachedLazy[I, O] = {
+        new Circuit.CachedLazy[I, O](self) {
+
+          override lazy val underlyingCache: LookupMagnet[I, O] = byLookup
+        }
+      }
     }
 
     implicit class FunctionView[-I, +O](val self: Circuit[I, O])(
@@ -41,7 +51,7 @@ trait HasCircuit {
       // TODO: both of these are not narrow enough
       final override def andThen[O2](next: O => O2): FunctionView[I, O2] = {
 
-        val _next = Blackbox(next)(_definedAt)
+        val _next = Circuit.define(next)(_definedAt)
 
         val result =
           Circuit.Mapped[I, O, O2](self, _next)
@@ -51,7 +61,7 @@ trait HasCircuit {
 
       final override def compose[I1](prev: I1 => I): FunctionView[I1, O] = {
 
-        val _prev = Blackbox(prev)(_definedAt)
+        val _prev = Circuit.define(prev)(_definedAt)
 
         _prev.andThen(self)
       }
@@ -60,33 +70,41 @@ trait HasCircuit {
 //    implicit def circuit2FunctionView[I, O](circuit: Circuit[I, O]): FunctionView[I, O] = FunctionView(circuit)
     implicit def functionView2Circuit[I, O](fn: FunctionView[I, O]): Circuit[I, O] = fn.self
 
-    case class Tracing[I, O](self: Circuit[I, O])(
-        implicit
-        _definedAt: SrcPosition
-    ) {
+    case class Tracing[I, O](self: Circuit[I, O]) extends Circuit[I, O] {
       // TODO: this can be fold into Circuit?
+
+      override def apply(arg: I): O = self.apply(arg)
 
       lazy val higher: Circuit.Tracing[Unit, Circuit[I, O]] =
         Circuit.Tracing(Thunk.Eager(self))
 
-      def map[O2](right: O => O2)(): Tracing[I, O2] = {
+      def map[O2](right: O => O2)(
+          implicit
+          _definedAt: SrcPosition
+      ): Tracing[I, O2] = {
 
         val result = self.andThen(right)
 
         Tracing(result)
       }
 
-      def foreach(right: O => Unit): Tracing[I, Unit] = {
+      def foreach(right: O => Unit)(
+          implicit
+          _definedAt: SrcPosition
+      ): Tracing[I, Unit] = {
 
         map(right)
       }
 
-      def withFilter(right: O => Boolean): Tracing[I, O] = {
+      def withFilter(right: O => Boolean)(
+          implicit
+          _definedAt: SrcPosition
+      ): Tracing[I, O] = {
 
-        val _right = Blackbox(right)(_definedAt)
+        val _right = Blackbox()(right)(_definedAt)
 
         val result =
-          Circuit.WithFilter[I, O](self, _right)
+          Circuit.Filtered[I, O](self, _right)
 
         Tracing(result)
       }
@@ -116,15 +134,6 @@ trait HasCircuit {
 
       type IMax = I
       type OMin = O
-
-      def cachedBy(
-          cache: CacheView[I, O] = Same.Native.Lookup[I, O]()
-      ): Circuit.CachedLazy[I, O] = {
-        new Circuit.CachedLazy[I, O](this) {
-
-          override lazy val underlyingCache: CacheView[I, O] = cache
-        }
-      }
     }
 
     trait Pure extends Mixin {}
@@ -142,6 +151,9 @@ trait HasCircuit {
       trait Affine extends Combinator
       trait Linear extends Affine
 //      trait NonLinear extends Combinator
+
+      trait TrivialConversion extends Linear
+      // for conversion between extensionally equal types (but cannot be represented in the current type system)
 
       // TODO: not all are defined, will add more in the following order:
       //  - B/C: used in autograd
@@ -161,6 +173,11 @@ trait HasCircuit {
     case class Identity[I]() extends Impl[I, I] with Combinator.Linear {
 
       override def apply(arg: I): I = arg
+
+      case object CrossUnit extends Impl[I, (I, Unit)] with Combinator.TrivialConversion {
+
+        override def apply(arg: I): (I, Unit) = arg -> ()
+      }
     }
     def id[I]: Identity[I] = Identity[I]()
 
@@ -171,9 +188,17 @@ trait HasCircuit {
         with Combinator.Linear {
 
       override def apply(arg: I): O = right(left(arg))
+
+      override def normalize: Circuit[I, O] = {
+        (left, right) match {
+          case (_: Identity[_], rr) => rr.normalize.asInstanceOf[Circuit[I, O]]
+          case (ll, _: Identity[_]) => ll.normalize.asInstanceOf[Circuit[I, O]]
+          case (ll, rr)             => Mapped(ll.normalize, rr.normalize)
+        }
+      }
     }
 
-    case class WithFilter[I, O](
+    case class Filtered[I, O](
         base: Circuit[I, O],
         condition: Circuit[O, Boolean]
     ) extends Impl[I, O]
@@ -257,7 +282,7 @@ trait HasCircuit {
 
     // there is no absorb right
 
-    case class Blackbox[I, R](fn: I => R)(
+    case class Blackbox[I, R] private ()(fn: I => R)(
         implicit
         final override val _definedAt: SrcPosition
     ) extends Impl[I, R]
@@ -266,12 +291,14 @@ trait HasCircuit {
       override def apply(arg: I): R = fn(arg)
     }
 
+    trait Cached extends Pure
+
     case class CachedLazy[I, R](
         backbone: Circuit[I, R]
     ) extends Impl[I, R]
-        with Pure {
+        with Cached {
 
-      lazy val underlyingCache: CacheView[I, R] = Same.Native.Lookup[I, R]()
+      lazy val underlyingCache: LookupMagnet[I, R] = Same.Native.Lookup[I, R]()
 
       final def apply(key: I): R = {
         underlyingCache.getOrElseUpdateOnce(key) {
@@ -293,7 +320,7 @@ trait HasCircuit {
 
     def build = this
 
-    override type =>>[i, o] = Circuit.Impl[i, o]
+    override type =>>[i, o] = Circuit[i, o]
 
     override def define[I, O](vanilla: I => O)(
         implicit
@@ -301,13 +328,10 @@ trait HasCircuit {
     ): I =>> O = {
 
       vanilla match {
-        case already: Circuit.Impl[I, O] =>
-          already
-//        case partial: Circuit.PartiallyTraced[I, O] =>
-//          partial.trace
-        case _ =>
-          new Circuit.Blackbox[I, O](vanilla)(_definedAt)
+        case fnView: self.FunctionView[_, _] => fnView.self.asInstanceOf[Circuit[I, O]]
+        case _                               => self.Blackbox()(vanilla)(_definedAt)
       }
+
     }
   }
 
@@ -325,14 +349,25 @@ trait HasCircuit {
     type Const[O] = Impl[O] with Circuit.Pure
     sealed trait Const_[O] extends Impl[O] with Circuit.Pure
 
-    case class Lazy[O](gen: () => O) extends Const_[O] {
+    type Cached[O] = Impl[O] with Circuit.Cached
+    sealed trait Cached_[O] extends Const_[O] with Circuit.Cached {
 
-      override def apply(arg: Unit): O = gen()
-    }
-
-    case class Eager[O](value: O) extends Const_[O] {
+      protected def value: O
 
       override def apply(arg: Unit): O = value
     }
+
+    case class Lazy[O](gen: () => O)(
+        implicit
+        final override val _definedAt: SrcPosition
+    ) extends Cached_[O]
+        with Traceable.BySrc {
+
+      // equivalent to CachedLazy[Unit, O], but much faster
+      protected lazy val value = gen()
+
+    }
+
+    case class Eager[O](value: O) extends Cached_[O] {}
   }
 }

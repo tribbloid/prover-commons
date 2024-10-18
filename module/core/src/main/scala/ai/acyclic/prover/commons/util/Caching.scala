@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.collection.CacheView
-import ai.acyclic.prover.commons.collection.CacheView.{MapRepr, SetRepr}
+import ai.acyclic.prover.commons.collection.LookupMagnet
+import ai.acyclic.prover.commons.collection.LookupMagnet.{MapRepr, SetRepr}
 import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 
 import java.util.concurrent.ConcurrentHashMap
@@ -10,7 +10,7 @@ trait Caching extends Serializable {
 
   trait CacheTag
 
-  def build[K, V](): CacheView[K, V] with CacheTag
+  def build[K, V](): LookupMagnet[K, V] with CacheTag
 }
 
 object Caching {
@@ -21,7 +21,7 @@ object Caching {
 
     private def javaConcurrentMap[K, V]() = new java.util.concurrent.ConcurrentHashMap[K, V]()
 
-    case class Impl[K, V]() extends CacheView[K, V] with CacheTag {
+    case class Impl[K, V]() extends LookupMagnet[K, V] with CacheTag {
 
       val underlying: ConcurrentHashMap[K, V] = {
         javaConcurrentMap[K, V]()
@@ -48,7 +48,7 @@ object Caching {
       toBuilder(proto)
     }
 
-    case class Impl[K, V]() extends CacheView[K, V] with CacheTag {
+    case class Impl[K, V]() extends LookupMagnet[K, V] with CacheTag {
 
       val underlying: Cache[K, V] = underlyingBuilder.build[K, V]()
 

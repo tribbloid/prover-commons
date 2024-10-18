@@ -13,7 +13,7 @@ trait HasPolyLike extends HasCircuit {
 
     type At[I] = Case[Circuit[I, _]]
     type Compat[-I, +O] = Case[Circuit[I, O]]
-    type =>>[I, O] = Case[Circuit.Impl[I, O]]
+    type =>>[I, O] = Case[Circuit[I, O]]
 
     override def define[I, R](fn: I => R)(
         implicit

@@ -6,7 +6,7 @@ object HigherOrder1 {
 
   import Circuits._
 
-  val raw: (Int :=> Int) :=> (Unit :=> Seq[Int]) = :=> { circuit =>
+  val s1: (Int :=> Int) :=> (Unit :=> Seq[Int]) = :=> { circuit =>
     val result = for (const <- circuit.trace.higher) yield {
 
       (1 to 10).map(const)
@@ -15,14 +15,20 @@ object HigherOrder1 {
     result
   }
 
-  val s1: Unit :=> Seq[Int] = {
-    raw
+  val s2: Unit :=> Seq[Int] = {
+    s1
       .apply(fn0)
   }
 
-  val pairs: Seq[(Unit :=> Seq[Int], String)] =
+  val pairs =
     Seq(
-      s1 -> "s1"
-//      s2 -> "s2"
+      s1 -> "- Blackbox(s1 <at HigherOrder1.scala:9>)",
+      s2 ->
+        s"""
+          |+ Mapped
+          |!-+ Eager
+          |: !-- ${fn0.explain.nodeText}
+          |!-- Blackbox(result <at HigherOrder1.scala:10>)
+          |""".stripMargin
     )
 }

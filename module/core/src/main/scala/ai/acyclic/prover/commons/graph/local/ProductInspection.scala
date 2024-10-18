@@ -14,68 +14,114 @@ abstract class ProductInspection[
     tI: ClassTag[I]
 ) extends Local.Semilattice.Upper.Inspection[I] {
 
-  def getInners(value: I): Vector[Any] =
-    Vector.empty // product element is either an arg or a node, they are all subnode by default
+  def unapply(value: I): Option[Seq[Any]] = None
+  // product element is either an arg or a node, they are all subnode by default
 
-  case class node(value: I) extends _Node {
+  type node = NodeImpl
 
-    private object _inners {
+  abstract class NodeImpl(value: I) extends _Node {
 
-      val vec: Vector[Any] = getInners(value)
-      val set = vec.toSet
-    }
+    protected object Resolving {
 
-    private lazy val allPrefixes: Vector[String] = {
+      val content: Seq[Any] = unapply(value).getOrElse(Nil)
+      val contentSet = content.toSet
 
-      val outers = HasOuter.outerListOf(value)
-      val all = Vector(value) ++ outers
-      val names = all.collect {
-        case v: Product => v.productPrefix
+      val inductions_inhabitants = {
+        val elements = value.productIterator.to(LazyList)
+
+        val result: LazyList[Either[I, Any]] = elements.flatMap { v =>
+          if (Resolving.contentSet.contains(v)) Nil
+          else {
+            v match {
+              case sub: I =>
+                if (Resolving.contentSet.contains(sub)) Nil
+                else {
+
+                  Seq(Left(sub))
+                }
+
+              case _ =>
+                Seq(Right(v))
+            }
+          }
+        }
+        result
       }
 
-      names.reverse
+      val induction: LazyList[I] = inductions_inhabitants.collect {
+        case Left(v) => v
+      }
+
+      val inhabitants: LazyList[Any] = inductions_inhabitants.collect {
+        case Right(v) => v
+      }
     }
+
+    override protected lazy val getInduction: Seq[(_Arrow, node)] = {
+
+      implicitly[_Arrow <:< Arrow.`~>`]
+      implicitly[Arrow.`~>` <:< _Arrow]
+
+      val result: Seq[(_Arrow, node)] = Resolving.induction.map { v =>
+        Arrow.`~>` -> node(v)
+      }
+
+      result
+    }
+  }
+
+  case class BuiltIn(value: I) extends NodeImpl(value) {
 
     final override protected def getNodeText: String = {
 
-      val fullPrefix = allPrefixes.mkString(" ‣ ")
+      val prefix = value.productPrefix
 
-      if (_inners.vec.isEmpty) {
+      if (Resolving.inhabitants.isEmpty) {
 
-        fullPrefix
+        prefix
       } else {
 
-        val _innerBlocks = _inners.vec.map { str =>
-          TextBlock("" + str).pad.left(Padding.argLeftBracket).build
+        val _innerBlocks: Seq[String] = Resolving.inhabitants.map { v =>
+          "" + v
         }
 
-        TextBlock(fullPrefix)
+        prefix + _innerBlocks.mkString("(", ", ", ")")
+      }
+    }
+  }
+
+  case class Long(value: I) extends NodeImpl(value) {
+
+    final override protected def getNodeText: String = {
+
+      val prefixElements: Vector[String] = {
+
+        val outers = HasOuter.outerListOf(value)
+        val names = outers.collect {
+          case v: Product => v.productPrefix
+        }.toVector
+
+        names.reverse
+      }
+
+      val prefix = prefixElements.mkString(" ‣ ")
+
+      if (Resolving.inhabitants.isEmpty) {
+
+        prefix
+      } else {
+
+        val _innerBlocks = Resolving.inhabitants.map { v =>
+          TextBlock("" + v).pad.left(Padding.argLeftBracket).build
+        }
+
+        TextBlock(prefix)
           .zipRight(
             TextBlock(_innerBlocks.mkString("\n"))
           )
           .build
       }
     }
-
-    override protected lazy val getInduction: Seq[(Arrow.`~>`, node)] = {
-
-      val elements = value.productIterator.to(LazyList)
-
-      val result: Seq[(_Arrow, node)] = elements.flatMap {
-        case element: I =>
-          if (_inners.set.contains(element)) Nil
-          else {
-
-            val subNode = node(element)
-
-            Some(Arrow.`~>` -> subNode)
-          }
-
-        case _ =>
-          Nil
-      }
-
-      result
-    }
   }
+
 }

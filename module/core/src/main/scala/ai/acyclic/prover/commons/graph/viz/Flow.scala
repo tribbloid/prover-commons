@@ -23,11 +23,11 @@ object Flow {
   }
 }
 
-trait Flow extends Visualisation with Engine.HasMaxRecursionDepth {
+trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
   import Local.AnyGraph._
 
-  override val graphType: Local.AnyGraph.type = Local.AnyGraph
+  override val applicableToType: Local.AnyGraph.type = Local.AnyGraph
 
   override lazy val maxDepth: Int = 20
 
@@ -39,9 +39,9 @@ trait Flow extends Visualisation with Engine.HasMaxRecursionDepth {
 
   def apply[V](s: Graph_/\[V]): Viz[V] = Viz(s)
 
-  val sameness = Same.Native.Truncate[Node[_]](v => Some(v.identityKey))
+  val sameness = Same.Native.Rounding[Node[_]](v => Some(v.identityKey))
 
-  override def visualise[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
+  final override def visualise[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
 
   case class Viz[V](override val data: Graph_/\[V]) extends Visualized[V] {
 
@@ -133,7 +133,7 @@ trait Flow extends Visualisation with Engine.HasMaxRecursionDepth {
         .Circuit { v =>
           NodeWrapper(v)
         }
-        .cachedBy()
+        .cached()
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 

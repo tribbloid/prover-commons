@@ -8,6 +8,8 @@ class SparkContextViewSuite extends BaseSpec with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {}
 
+  override def afterAll(): Unit = {}
+
   TestHelper.TestSC
 
   describe("withJob") {
@@ -53,6 +55,4 @@ class SparkContextViewSuite extends BaseSpec with BeforeAndAfterAll {
       }
     }
   }
-
-  override def afterAll(): Unit = {}
 }

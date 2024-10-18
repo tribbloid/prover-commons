@@ -15,7 +15,7 @@ object ChainSelf {
   lazy val pairs = {
 
     val str = s"""
-                 |+ Compose
+                 |+ Mapped
                  |!-- ${fn0.explain.nodeText}
                  |!-- ${fn0.explain.nodeText}
                  |""".stripMargin

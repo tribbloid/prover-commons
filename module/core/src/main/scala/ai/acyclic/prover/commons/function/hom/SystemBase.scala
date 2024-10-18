@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.function.hom
 
-import scala.language.implicitConversions
-
 trait SystemBase extends HasMono with Serializable {
   self: Singleton =>
 

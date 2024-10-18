@@ -12,8 +12,8 @@ import scala.language.implicitConversions
   * @tparam V
   *   value
   */
-trait CacheView[K, V] {
-  import CacheView._
+trait LookupMagnet[K, V] {
+  import LookupMagnet._
 
   def asMap: MapRepr[K, V]
 
@@ -36,11 +36,11 @@ trait CacheView[K, V] {
   // TODO: impl to updatedWithFnSynced
 }
 
-object CacheView {
+object LookupMagnet {
 
   type MapRepr[K, V] = mutable.Map[K, V]
 
   type SetRepr[K] = mutable.Set[K]
 
-  implicit def asMap[K, V](v: CacheView[K, V]): MapRepr[K, V] = v.asMap
+  implicit def asMap[K, V](v: LookupMagnet[K, V]): MapRepr[K, V] = v.asMap
 }

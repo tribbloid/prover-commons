@@ -112,7 +112,7 @@ object SameSpec {
   val byConstructionExample = ByConstruction(Native)
 
   val withToleranceExample = byConstructionExample.copy(
-    outer = Native.Truncate[Double] { d =>
+    outer = Native.Rounding[Double] { d =>
       Some(d.toInt.toDouble)
     }
   )
