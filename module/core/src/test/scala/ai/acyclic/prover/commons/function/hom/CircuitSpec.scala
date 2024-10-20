@@ -1,12 +1,13 @@
 package ai.acyclic.prover.commons.function.hom
 
+import ai.acyclic.prover.commons.function.fixture._
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 object CircuitSpec {}
 
 class CircuitSpec extends BaseSpec {
 
-  import ai.acyclic.prover.commons.function.fixture.Circuits._
+  import Circuits._
 
   describe("definition") {
     ignore("single-abstract method") { // disabled, current compiler is janky
@@ -43,7 +44,7 @@ class CircuitSpec extends BaseSpec {
         case ((fn, s), i) =>
           it(i.toString) {
 
-            val normal = fn.normalize
+            val normal = fn.normalise
             normal.explain.text_hierarchy.shouldBe(
               s
             )
@@ -62,7 +63,7 @@ class CircuitSpec extends BaseSpec {
         case ((fn, s), i) =>
           it(i.toString) {
 
-            val normal = fn.normalize
+            val normal = fn.normalise
             normal.explain.text_hierarchy.shouldBe(
               s
             )
@@ -76,14 +77,12 @@ class CircuitSpec extends BaseSpec {
 
     describe("twice") {
 
-      import ai.acyclic.prover.commons.function.fixture.ChainTwice
-
       ChainTwice.pairs.zipWithIndex.foreach {
 
         case ((fn, s), i) =>
           it(i.toString) {
 
-            val normal = fn.normalize
+            val normal = fn.normalise
             normal.explain.text_hierarchy.shouldBe(
               s
             )
@@ -97,20 +96,19 @@ class CircuitSpec extends BaseSpec {
   }
 
   describe("pointwise") {
-    import ai.acyclic.prover.commons.function.fixture.PointwiseAndChain
 
     PointwiseAndChain.pairs.zipWithIndex.foreach {
 
       case ((fn, s), i) =>
         it(i.toString) {
 
-          val normal = fn.normalize
+          val normal = fn.normalise
           normal.explain.text_hierarchy.shouldBe(
             s
           )
 
           val r1 = fn.apply(1 -> 2L)
-          assert(r1 == List(1, 2, 3) -> List(2.0, 2.1, 2.2))
+          assert(r1 == List(3.0, 4.1, 5.2))
         }
     }
   }
@@ -122,14 +120,26 @@ class CircuitSpec extends BaseSpec {
     HigherOrder1.pairs.zipWithIndex.foreach {
 
       case ((fn, s), i) =>
-        it(i.toString) {
+        it("1-" + i.toString) {
 
-          val normal = fn.normalize
+          val normal = fn.normalise
+          normal.explain.text_hierarchy.shouldBe(
+            s
+          )
+        }
+    }
+
+    HigherOrder2.pairs.zipWithIndex.foreach {
+
+      case ((fn, s), i) =>
+        it("2-" + i.toString) {
+
+          val normal = fn.normalise
           normal.explain.text_hierarchy.shouldBe(
             s
           )
 
-//          val r1 = fn.apply(1 -> 2L)
+          //          val r1 = fn.apply(1 -> 2L)
         }
     }
   }

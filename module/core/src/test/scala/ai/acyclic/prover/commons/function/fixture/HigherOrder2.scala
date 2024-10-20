@@ -8,48 +8,28 @@ object HigherOrder2 {
   // combine fn1 and fn2 using flatMap, where fn2 is a higher order element
   // Int => Seq[Double]
 
-  private val pointwise = {
+  val s1 = {
 
-    Hom.Circuit
+    val proto = Hom.Circuit
       .id[Int]
       .CrossUnit
       .andThen(
         fn1.trace >< fn2.trace.higher
       )
 
+    val result =
+      for (
+        case (x, fn) <- {
+          proto.trace
+        }
+      ) yield {
+
+        val result = x.flatMap(fn)
+        result
+      }
+
+    result
   }
-
-//  val s1 = for (case (o1, ff) <- pointwise) yield {}
-
-//  val s1: Int :=> Seq[Double] = {
-//    fn1.andThen {
-//
-//      val result: Seq[Long] :=> Seq[Double] = :=>.at[Long :=> Seq[Double]] { _fn2 =>
-//        :=>.at[Seq[Long]] { o1 =>
-//          o1.flatMap(_fn2)
-//        }
-//      }
-//        .apply(fn2)
-//
-//      result
-//    }
-//  }
-
-//  val s2: Int :=> Seq[Double] = {
-//
-//    fn1.andThen {
-//
-////      val result: Seq[Long] :=> Seq[Double] = for (ff <- fn2.trace) yield {
-////
-////        :=>.at[Seq[Long]] { v =>
-////          v
-////        }
-////      }
-////
-////      result
-//      ???
-//    }
-//  }
 
 //  val s3: Int :=> Seq[Double] = {
 //    for (
@@ -72,11 +52,23 @@ object HigherOrder2 {
 //    }
 //  }
 
-//  val pairs = Seq(
-//    s1 -> "s1",
+  val pairs = Seq(
+    s1 ->
+      s"""
+        |+ Mapped
+        |!-+ Filtered
+        |: !-+ Mapped
+        |: : !-- CrossUnit
+        |: : !-+ Pointwise
+        |: :   !-- ${fn1.explain.nodeText}
+        |: :   !-+ Eager
+        |: :     !-- ${fn2.explain.nodeText}
+        |: !-- Blackbox(result <at HigherOrder2.scala:23>)
+        |!-- Blackbox(result <at HigherOrder2.scala:22>)
+        |""".stripMargin
 //    s2 -> "s2"
-////    s3 -> "s3",
-////    s4 -> "s4"
-//  )
+//    s3 -> "s3",
+//    s4 -> "s4"
+  )
 
 }

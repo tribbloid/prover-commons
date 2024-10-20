@@ -10,14 +10,24 @@ object PointwiseAndChain {
 
   val s1 = pointwise.map {
     case (o1, o2) =>
-      o1 -> o2
+      o1.zip(o2).map(v => v._1 + v._2)
   }
 
   val s2 =
     for (case (o1, o2) <- pointwise)
       yield {
-        o1 -> o2
+        o1.zip(o2).map(v => v._1 + v._2)
       }
+
+  val s3 =
+    for (
+      tt <- pointwise;
+      o1 = tt._1;
+      o2 = tt._2
+    ) yield {
+
+      o1.zip(o2).map(v => v._1 + v._2)
+    }
 
   lazy val pairs = {
 
@@ -35,14 +45,25 @@ object PointwiseAndChain {
       (
         s2,
         s"""
-             |
              |+ Mapped
-             |!-+ WithFilter
+             |!-+ Filtered
              |: !-+ Pointwise
              |: : !-- ${fn1.explain.nodeText}
              |: : !-- ${fn2.explain.nodeText}
              |: !-- Blackbox(s2 <at PointwiseAndChain.scala:17>)
              |!-- Blackbox(s2 <at PointwiseAndChain.scala:17>)
+             |""".stripMargin
+      ),
+      (
+        s3,
+        s"""
+             |+ Mapped
+             |!-+ Mapped
+             |: !-+ Pointwise
+             |: : !-- Blackbox(fn1 <at Circuits.scala:11>)
+             |: : !-- Blackbox(fn2 <at Circuits.scala:15>)
+             |: !-- Blackbox(s3 <at PointwiseAndChain.scala:24>)
+             |!-- Blackbox(s3 <at PointwiseAndChain.scala:24>)
              |""".stripMargin
       )
     )

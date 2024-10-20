@@ -13,14 +13,43 @@ object HasCircuit extends Capabilities {}
 
 trait HasCircuit {
 
+  trait CanNormalise_Impl0 {
+
+    implicit def asFunction[I, O](v: CanNormalise[I, O])(
+        implicit
+        _definedAt: SrcPosition
+    ): Circuit.FunctionView[I, O] = {
+      v match {
+
+        case vv: Circuit.FunctionView[_, _] => vv.asInstanceOf[Circuit.FunctionView[I, O]]
+        case _ =>
+          new Circuit.FunctionView(v.normalise, _definedAt)
+      }
+    }
+  }
+  object CanNormalise extends CanNormalise_Impl0 {
+
+    implicit def unbox[I, O](v: CanNormalise[I, O]): Circuit[I, O] = v.normalise
+
+    implicit class _extensions[I, O](self: CanNormalise[I, O]) {
+
+      def trace: Circuit.Tracing[I, O] = Circuit.Tracing(self)
+    }
+  }
+
+  sealed trait CanNormalise[-I, +O] {
+
+    def normalise: Circuit[I, O]
+  }
+
   /**
     * function with computation graph, like a lifted JAXpr
     */
-  sealed trait Circuit[-I, +O] extends Traceable with Serializable {
+  sealed trait Circuit[-I, +O] extends CanNormalise[I, O] with Traceable with Serializable {
 
     def apply(arg: I): O
 
-    def normalize: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
+    def normalise: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
   }
 
   object Circuit {
@@ -28,8 +57,6 @@ trait HasCircuit {
     implicit class _extension[I, O](
         self: Circuit[I, O]
     ) {
-
-      lazy val trace: Circuit.Tracing[I, O] = Circuit.Tracing(self)
 
       def cached(
           byLookup: LookupMagnet[I, O] = Same.Native.Lookup[I, O]()
@@ -41,12 +68,13 @@ trait HasCircuit {
       }
     }
 
-    implicit class FunctionView[-I, +O](val self: Circuit[I, O])(
-        implicit
+    private[HasCircuit] case class FunctionView[-I, +O](
+        self: Circuit[I, O],
         _definedAt: SrcPosition
-    ) extends Function[I, O] {
+    ) extends Function[I, O]
+        with CanNormalise[I, O] {
 
-      final override def apply(v: I) = self(v)
+      final override def apply(v: I): O = self(v)
 
       // TODO: both of these are not narrow enough
       final override def andThen[O2](next: O => O2): FunctionView[I, O2] = {
@@ -66,14 +94,11 @@ trait HasCircuit {
         _prev.andThen(self)
       }
 
+      override def normalise: Circuit[I, O] = self.normalise
     }
-//    implicit def circuit2FunctionView[I, O](circuit: Circuit[I, O]): FunctionView[I, O] = FunctionView(circuit)
-    implicit def functionView2Circuit[I, O](fn: FunctionView[I, O]): Circuit[I, O] = fn.self
 
-    case class Tracing[I, O](self: Circuit[I, O]) extends Circuit[I, O] {
+    case class Tracing[I, O](self: Circuit[I, O]) extends CanNormalise[I, O] {
       // TODO: this can be fold into Circuit?
-
-      override def apply(arg: I): O = self.apply(arg)
 
       lazy val higher: Circuit.Tracing[Unit, Circuit[I, O]] =
         Circuit.Tracing(Thunk.Eager(self))
@@ -125,8 +150,10 @@ trait HasCircuit {
       }
 
       // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
+
+      override def normalise: Circuit[I, O] = self.normalise
     }
-    implicit def tracing2Circuit[I, O](tracing: Tracing[I, O]): Circuit[I, O] = tracing.self
+//    implicit def tracing2Circuit[I, O](tracing: Tracing[I, O]): Circuit[I, O] = tracing.self
 
     trait Mixin
 
@@ -189,11 +216,11 @@ trait HasCircuit {
 
       override def apply(arg: I): O = right(left(arg))
 
-      override def normalize: Circuit[I, O] = {
+      override def normalise: Circuit[I, O] = {
         (left, right) match {
-          case (_: Identity[_], rr) => rr.normalize.asInstanceOf[Circuit[I, O]]
-          case (ll, _: Identity[_]) => ll.normalize.asInstanceOf[Circuit[I, O]]
-          case (ll, rr)             => Mapped(ll.normalize, rr.normalize)
+          case (_: Identity[_], rr) => rr.normalise.asInstanceOf[Circuit[I, O]]
+          case (ll, _: Identity[_]) => ll.normalise.asInstanceOf[Circuit[I, O]]
+          case (ll, rr)             => Mapped(ll.normalise, rr.normalise)
         }
       }
     }
