@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.cap.Capabilities
+import ai.acyclic.prover.commons.cap.Capability.Universe
 import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.function.Traceable
 import ai.acyclic.prover.commons.function.Traceable.BySrc
@@ -9,7 +9,7 @@ import ai.acyclic.prover.commons.util.SrcPosition
 
 import scala.language.implicitConversions
 
-object HasCircuit extends Capabilities {}
+object HasCircuit extends Universe {}
 
 trait HasCircuit {
 
@@ -47,7 +47,10 @@ trait HasCircuit {
     */
   sealed trait Circuit[-I, +O] extends CanNormalise[I, O] with Traceable with Serializable {
 
-    def apply(arg: I): O
+//    type In >: I
+    type Out <: O
+
+    def apply(arg: I): Out
 
     def normalise: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
   }
@@ -159,8 +162,8 @@ trait HasCircuit {
 
     trait Impl[I, O] extends Mixin with Circuit[I, O] { // most specific
 
-      type IMax = I
-      type OMin = O
+      final type In = I
+      final type Out = O
     }
 
     trait Pure extends Mixin {}
@@ -343,22 +346,21 @@ trait HasCircuit {
 
   }
 
-  implicit class _CircuitBuilder(self: Circuit.type) extends FnBuilder {
+  implicit class _CircuitBuilder(self: Circuit.type) extends FromFunctionBuilder {
 
-    def build = this
+    def build: this.type = this
 
-    override type =>>[i, o] = Circuit[i, o]
+    override type Target[i, o] = Circuit.Impl[i, o]
 
     override def define[I, O](vanilla: I => O)(
         implicit
         _definedAt: SrcPosition
-    ): I =>> O = {
+    ): I Target O = {
 
       vanilla match {
-        case fnView: self.FunctionView[_, _] => fnView.self.asInstanceOf[Circuit[I, O]]
+        case fnView: self.FunctionView[_, _] => fnView.self.asInstanceOf[Circuit.Impl[I, O]]
         case _                               => self.Blackbox()(vanilla)(_definedAt)
       }
-
     }
   }
 

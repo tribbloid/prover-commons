@@ -31,7 +31,7 @@ trait HasPoly extends HasPolyLike {
 
       implicit def rewrite[I, R](
           implicit
-          _case: I =>> R
+          _case: I Target R
       ): Case.Aux[I, R] = at[I] { v =>
         _case.apply(v)
       }

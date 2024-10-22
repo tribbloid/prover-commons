@@ -6,12 +6,12 @@ object Polys {
 
   object _poly extends Poly {
 
-    implicit lazy val int: Int =>> Int = {
+    implicit lazy val int: Int Target Int = {
 
       at[Int](v => v + 1)
     }
 
-    implicit lazy val str: String =>> String = {
+    implicit lazy val str: String Target String = {
       at[String].to[String](v => v + "1")
     }
   }

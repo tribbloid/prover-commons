@@ -1,6 +1,6 @@
 val vs = versions()
 
-val splainVRelease: String = "1.2.0-SNAPSHOT"
+val splainVRelease: String = "1.1.0"
 
 val splainVFallback: String = run {
 

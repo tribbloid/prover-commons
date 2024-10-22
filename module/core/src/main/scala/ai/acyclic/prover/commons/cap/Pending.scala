@@ -4,7 +4,7 @@ import scala.language.implicitConversions
 
 object Pending extends PendingGroup {
 
-//  trait Must[-S]
+  //  trait Must[-S]
 
   // DO NOT CHANGE! will be delegated to kyo in Scala 3
   type <<[+T, -S] >: T // | Must[S]

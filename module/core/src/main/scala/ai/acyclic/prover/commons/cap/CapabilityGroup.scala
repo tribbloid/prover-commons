@@ -3,13 +3,13 @@ package ai.acyclic.prover.commons.cap
 import ai.acyclic.prover.commons.cap.Capability.<>
 import ai.acyclic.prover.commons.function.hom.Hom
 
-trait CapabilityGroup extends CanRevokeAll {
+private[cap] trait CapabilityGroup extends CanRevokeAll {
 
   type Capability
 
   trait revokeAll_Imp0 extends Hom.Poly {
 
-    implicit def last[T, C <: Capability]: (T <> C) =>> T = at[T <> C].apply { v =>
+    implicit def last[T, C <: Capability]: (T <> C) Target T = at[T <> C].apply { v =>
       v.asInstanceOf[T]
     }
   }
@@ -19,7 +19,7 @@ trait CapabilityGroup extends CanRevokeAll {
     implicit def chain[T, R, C <: Capability](
         implicit
         lemma: Compat[T, R]
-    ): (T <> C) =>> R = at[T <> C] { v =>
+    ): (T <> C) Target R = at[T <> C] { v =>
       lemma(v.asInstanceOf[T])
     }
 

@@ -30,12 +30,40 @@ class PolySpec extends BaseSpec {
         val v = _poly.at[Int].summon
         val v2 = _poly.at[Int].summon
 
-        implicitly[v.type <:< (_poly.=>>[Int, Int])]
+        implicitly[v.type <:< (_poly.Lemma[Int, Int])]
         assert(v == v2)
 
         val r = v.apply(1)
         r: Int
       }
+    }
+
+    describe("lemma") {
+
+      def __sanity[I, O](): Unit = {
+        {
+          def useIO(l: _poly.Lemma[Int, String]): l.Out = {
+            l.apply(1)
+          }
+
+          def useI(l: _poly.LemmaAt[Int]): l.Out = {
+            l.apply(1)
+          }
+        }
+
+        {
+          def useIO(l: _poly.Lemma[I, O]): l.Out = {
+            val v: I = ???
+            l.apply(v)
+          }
+
+          def useI(l: _poly.LemmaAt[I]): l.Out = {
+            val v: I = ???
+            l.apply(v)
+          }
+        }
+      }
+
     }
   }
 

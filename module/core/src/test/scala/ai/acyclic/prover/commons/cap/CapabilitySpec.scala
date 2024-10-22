@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.cap
 
-import ai.acyclic.prover.commons.cap.Capability.<>
+import ai.acyclic.prover.commons.cap.Capability.{<>, Universe}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import shapeless.test.illTyped
 
-class CapabilitiesSpec extends BaseSpec {
-  import CapabilitiesSpec._
+class CapabilitySpec extends BaseSpec {
+  import CapabilitySpec._
 
   it("can enable capability in compile-time & runtime") {
 
@@ -65,7 +65,7 @@ class CapabilitiesSpec extends BaseSpec {
 
 }
 
-object CapabilitiesSpec extends Capabilities {
+object CapabilitySpec extends Universe {
 
   trait Cap1 extends Capability {}
 

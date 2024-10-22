@@ -36,7 +36,7 @@ trait HasMono extends HasPoly {
 
     def apply[T <: T_/\](arg: In[T]): Out[T]
 
-    implicit final def only[T <: T_/\]: In[T] =>> Out[T] = at[In[T]] { v =>
+    implicit final def only[T <: T_/\]: In[T] Target Out[T] = at[In[T]] { v =>
       apply(v)
     }
   }
