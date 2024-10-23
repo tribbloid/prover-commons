@@ -162,12 +162,13 @@ object TestHelper {
       }
 
       base2 ++ Map(
-//        "spark.serializer" -> "org.apache.spark.serializer.KryoSerializer",
-//        "spark.kryoserializer.buffer.max" -> "512m",
+        "spark.serializer" -> "org.apache.spark.serializer.KryoSerializer",
+        "spark.kryoserializer.buffer.max" -> "512m",
 
-        // TODO: kryo serializer is temporarily disabled by https://github.com/EsotericSoftware/kryo/issues/885
+        // TODO: kryo serializer is almost rendered unusable by https://github.com/EsotericSoftware/kryo/issues/885
         //  in addition, kryo serializer without class registration is not efficient
         //  this should be done automatically by an adaptive analyzer that collects required registration through runtime telemetry
+        //  we may switch to Apache Fury in the future
 
         "spark.sql.warehouse.dir" -> Envs.WAREHOUSE_PATH,
         //      "hive.metastore.warehouse.dir" -> WAREHOUSE_PATH,
