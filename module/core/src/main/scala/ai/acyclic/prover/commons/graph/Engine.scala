@@ -54,7 +54,7 @@ trait Engine {
 //    case class
   }
 
-  trait PlanK[+X <: AnyGraphT] extends Lawful.Struct[X] {
+  trait PlanK[+X <: AnyGraphT] extends Lawful.Structure[X] {
 
     private[this] type OGraph = GraphKOfTheEngine.Aux[X, Value]
 //    type ONode = NodeKind.Lt[L, Value]
@@ -96,7 +96,7 @@ trait Engine {
     trait PlanImpl[v] extends PlanK.Impl[_Axiom, v]
   }
 
-  trait _Struct[+X <: AnyGraphT] extends _Lawful with Lawful.Struct[X] {}
+  trait _Structure[+X <: AnyGraphT] extends _Lawful with Lawful.Structure[X] {}
 
   trait Module {
 
@@ -105,11 +105,11 @@ trait Engine {
     )(
         implicit
         val axioms: Y
-    ) extends _Struct[X] {
+    ) extends _Structure[X] {
 
       type _Axiom = X
 
-      trait Element extends _Struct[_Axiom] {
+      trait Element extends _Structure[_Axiom] {
         // TODO: I don't think this trait should exist, Node and Rewriter should be agnostic to engines (local or distributed)
         //  Rewriter in addition should compile into e-graph
 

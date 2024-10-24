@@ -13,7 +13,7 @@ trait Lawful {
 
 object Lawful {
 
-  trait Struct[+X <: Axioms] extends Lawful {
+  trait Structure[+X <: Axioms] extends Lawful {
 
     override type _Axiom <: X
 

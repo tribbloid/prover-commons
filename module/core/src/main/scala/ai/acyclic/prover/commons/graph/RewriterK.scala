@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.topology.{Axioms, Lawful}
 
-trait RewriterK[L <: Axioms] extends Lawful.Struct[L] {
+trait RewriterK[L <: Axioms] extends Lawful.Structure[L] {
 
   private[this] type NodeV = NodeK.Compat[L, Value]
 

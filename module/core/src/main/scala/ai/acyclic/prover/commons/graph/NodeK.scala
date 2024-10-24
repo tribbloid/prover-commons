@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.topology.{Axioms, Lawful}
 
-trait NodeK[+L <: Axioms] extends Lawful.Struct[L] {
+trait NodeK[+L <: Axioms] extends Lawful.Structure[L] {
 
   import NodeK._
 
