@@ -8,8 +8,8 @@ trait Engine {
   import Axioms._
   import Engine._
 
-  type Dataset[+T]
-  def parallelize[T](seq: Seq[T]): Dataset[T]
+  type Batch[+T]
+  def parallelize[T](seq: Seq[T]): Batch[T]
 
   trait NodeImpl[+X <: AnyGraphT] extends NodeK[X] with NodeOrGraph[X] {
 //
@@ -22,11 +22,11 @@ trait Engine {
     override type _E = Engine.this.type
     final override lazy val engine: _E = Engine.this
 
-    override type Dataset[+V] = Engine.this.Dataset[V]
+    override type Batch[+V] = Engine.this.Batch[V]
 
-    def getEntries: Dataset[NodeK.Compat[X, Value]]
+    def getEntries: Batch[NodeK.Compat[X, Value]]
 
-    lazy val entries: Dataset[NodeK.Compat[X, Value]] = {
+    lazy val entries: Batch[NodeK.Compat[X, Value]] = {
       getEntries
     }
   }
@@ -42,7 +42,7 @@ trait Engine {
       * Graph representation without any validation
       */
     case class Unchecked[X <: AnyGraphT, V](
-        getEntries: Dataset[NodeK.Compat[X, V]]
+        getEntries: Batch[NodeK.Compat[X, V]]
     )(
         override val axioms: X
     ) extends GraphKOfTheEngine[X] {

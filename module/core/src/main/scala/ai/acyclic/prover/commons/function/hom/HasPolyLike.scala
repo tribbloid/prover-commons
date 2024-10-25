@@ -15,6 +15,7 @@ trait HasPolyLike extends HasCircuit {
     type Compat[-I, +O] = Case[Circuit[I, O]]
 
     type Lemma[I, O] = Case[Circuit.Impl[I, O]]
+    type |-[I, O] = Lemma[I, O]
     type LemmaAt[I] = Case[Circuit.Impl[I, _]]
     // All lemma requires tightest In/Out type bound, like shapeless DepFn
 

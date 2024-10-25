@@ -12,9 +12,9 @@ trait GraphK[+X <: Axioms] extends NodeOrGraph[X] {
   type _E <: Engine // TODO: should fold into engine using dependent type
   def engine: _E
 
-  type Dataset[+_]
+  type Batch[+_]
 
-  def getEntries: Dataset[NodeK.Compat[X, Value]]
+  def getEntries: Batch[NodeK.Compat[X, Value]]
 }
 
 object GraphK {

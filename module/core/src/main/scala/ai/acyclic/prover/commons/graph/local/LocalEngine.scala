@@ -7,8 +7,8 @@ import scala.language.implicitConversions
 
 object LocalEngine extends Engine {
 
-  final type Dataset[+T] = Vector[T]
-  def parallelize[T](seq: Seq[T]): Dataset[T] = seq.toVector
+  final type Batch[+T] = Vector[T]
+  def parallelize[T](seq: Seq[T]): Batch[T] = seq.toVector
 
   implicit def graphAsUnary[L <: Local.AnyGraph._Axiom, V](
       self: LocalEngine.GraphKOfTheEngine.Aux[L, V]
