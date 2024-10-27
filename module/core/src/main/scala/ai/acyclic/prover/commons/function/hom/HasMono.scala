@@ -48,6 +48,13 @@ trait HasMono extends HasPoly {
 
   object Mono {
 
+    trait Impl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends MonoLike[T_/\] {
+      type In[T <: T_/\] = I[T]
+      type Out[T <: T_/\] = O[T]
+
+      type Compat = Dependent[T_/\, O]
+    }
+
     case class Is[I, O](backbone: Circuit[I, O]) extends MonoLike[Any] {
 
       override type In[+_] = I
@@ -107,11 +114,6 @@ trait HasMono extends HasPoly {
     }
   }
 
-  trait MonoImpl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends MonoLike[T_/\] {
-    type In[T <: T_/\] = I[T]
-    type Out[T <: T_/\] = O[T]
-  }
-
   sealed trait DependentLike[
       T_/\
   ] extends MonoLike[T_/\] {
@@ -128,12 +130,19 @@ trait HasMono extends HasPoly {
     * @tparam R
     *   type constructor of output
     */
-  type Dependent[T_/\, +O[_ <: T_/\]] = DependentLike[T_/\] {
-    type Out[T <: T_/\] <: O[T]
-  }
-  object Dependent {}
 
-  trait DependentImpl[T_/\, O[_ <: T_/\]] extends DependentLike[T_/\] {
-    type Out[T <: T_/\] = O[T]
+  object Dependent {
+
+    type _Compat[T_/\, +O[_ <: T_/\]] = DependentLike[T_/\] {
+      type Out[T <: T_/\] <: O[T]
+    }
+
+    trait Impl[T_/\, O[_ <: T_/\]] extends DependentLike[T_/\] {
+      type Out[T <: T_/\] = O[T]
+
+      type Compat = _Compat[T_/\, O]
+    }
   }
+  type Dependent[T_/\, O[_ <: T_/\]] = Dependent.Impl[T_/\, O]
+
 }

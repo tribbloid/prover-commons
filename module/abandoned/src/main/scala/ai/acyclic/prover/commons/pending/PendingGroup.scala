@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.pending
 
 import ai.acyclic.prover.commons.cap.CanRevokeAll
 import ai.acyclic.prover.commons.function.hom.Hom
+import ai.acyclic.prover.commons.function.hom.Hom.Circuit
 import ai.acyclic.prover.commons.pending.PendingEffect.<<
 
 import scala.language.implicitConversions
@@ -19,7 +20,7 @@ private[pending] trait PendingGroup extends CanRevokeAll {
 
     implicit def chain[T, R, C <: PendingEffect](
         implicit
-        lemma: Compat[T, R]
+        lemma: Circuit[T, R]
     ): (T << C) Target R = at[T << C] { v =>
       lemma(v.asInstanceOf[T])
     }

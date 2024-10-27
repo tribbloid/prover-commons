@@ -29,7 +29,7 @@ trait HasCircuit extends Capability.Universe {
   }
   object CanNormalise extends CanNormalise_Impl0 {
 
-    implicit def unbox[I, O](v: CanNormalise[I, O]): Circuit[I, O] = v.normalise
+    implicit def normaliseAndReify[I, O](v: CanNormalise[I, O]): Circuit[I, O] = v.normalise
 
     implicit class _extensions[I, O](self: CanNormalise[I, O]) {
 
@@ -39,26 +39,26 @@ trait HasCircuit extends Capability.Universe {
 
   sealed trait CanNormalise[-I, +O] {
 
-    def normalise: Circuit[I, O]
-  }
-
-  /**
-    * function with computation graph, like a lifted JAXpr
-    */
-  sealed trait Circuit[-I, +O] extends CanNormalise[I, O] with Traceable with Serializable {
-
-//    type In >: I
-    type Out <: O
-
-    def apply(arg: I): Out
-
-    def normalise: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
+    def normalise: Circuit[I, O]#Compat
   }
 
   object Circuit {
 
+    /**
+      * function with computation graph, like a lifted JAXpr
+      */
+    trait _Compat[-I, +O] extends CanNormalise[I, O] with Traceable with Serializable {
+
+      //    type In >: I
+      type Out <: O
+
+      def apply(arg: I): Out
+
+      def normalise: _Compat[I, O] = this // bypassing EqSat, always leads to better representation
+    }
+
     implicit class _extension[I, O](
-        self: Circuit[I, O]
+        self: _Compat[I, O]
     ) {
 
       def cached(
@@ -72,7 +72,7 @@ trait HasCircuit extends Capability.Universe {
     }
 
     private[HasCircuit] case class FunctionView[-I, +O](
-        self: Circuit[I, O],
+        self: _Compat[I, O],
         _definedAt: SrcPosition
     ) extends Function[I, O]
         with CanNormalise[I, O] {
@@ -97,13 +97,13 @@ trait HasCircuit extends Capability.Universe {
         _prev.andThen(self)
       }
 
-      override def normalise: Circuit[I, O] = self.normalise
+      override def normalise: _Compat[I, O] = self.normalise
     }
 
-    case class Tracing[I, O](self: Circuit[I, O]) extends CanNormalise[I, O] {
+    case class Tracing[I, O](self: _Compat[I, O]) extends CanNormalise[I, O] {
       // TODO: this can be fold into Circuit?
 
-      lazy val higher: Circuit.Tracing[Unit, Circuit[I, O]] =
+      lazy val higher: Circuit.Tracing[Unit, _Compat[I, O]] =
         Circuit.Tracing(Thunk.Eager(self))
 
       def map[O2](right: O => O2)(
@@ -154,23 +154,17 @@ trait HasCircuit extends Capability.Universe {
 
       // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
 
-      override def normalise: Circuit[I, O] = self.normalise
+      override def normalise: _Compat[I, O] = self.normalise
     }
 //    implicit def tracing2Circuit[I, O](tracing: Tracing[I, O]): Circuit[I, O] = tracing.self
 
     trait Mixin
 
-    trait Impl[I, O] extends Mixin with Circuit[I, O] { // most specific
-
-      final type In = I
-      final type Out = O
-    }
-
     trait Pure extends Mixin {}
 
     object Pure {
 
-      case class Is[I, R](self: Circuit[I, R]) extends Impl[I, R] with Pure {
+      case class Is[I, R](self: _Compat[I, R]) extends Impl[I, R] with Pure {
         override def apply(arg: I): R = self.apply(arg)
       }
     }
@@ -200,7 +194,23 @@ trait HasCircuit extends Capability.Universe {
       val Gamma = Duplicate
     }
 
-    case class Identity[I]() extends Impl[I, I] with Combinator.Linear {
+    trait Impl[I, O] extends Mixin with _Compat[I, O] { // most specific
+
+      final type In = I
+      final type Out = O
+
+      type Compat = _Compat[I, O]
+    }
+
+    case class Reify[I, O](base: _Compat[I, O]) extends Impl[I, O] with Combinator.TrivialConversion {
+
+      override def apply(arg: I): O = base(arg)
+
+      override def normalise: _Compat[I, O] = base.normalise
+    }
+    implicit def reify[I, O](base: _Compat[I, O]): Reify[I, O] = Reify(base)
+
+    case class Identity[I]() extends Impl[I, I] with Combinator.TrivialConversion {
 
       override def apply(arg: I): I = arg
 
@@ -212,25 +222,25 @@ trait HasCircuit extends Capability.Universe {
     def id[I]: Identity[I] = Identity[I]()
 
     case class Mapped[I, M, O](
-        left: Circuit[I, M],
-        right: Circuit[M, O]
+        left: _Compat[I, M],
+        right: _Compat[M, O]
     ) extends Impl[I, O]
         with Combinator.Linear {
 
       override def apply(arg: I): O = right(left(arg))
 
-      override def normalise: Circuit[I, O] = {
+      override def normalise: _Compat[I, O] = {
         (left, right) match {
-          case (_: Identity[_], rr) => rr.normalise.asInstanceOf[Circuit[I, O]]
-          case (ll, _: Identity[_]) => ll.normalise.asInstanceOf[Circuit[I, O]]
+          case (_: Identity[_], rr) => rr.normalise.asInstanceOf[_Compat[I, O]]
+          case (ll, _: Identity[_]) => ll.normalise.asInstanceOf[_Compat[I, O]]
           case (ll, rr)             => Mapped(ll.normalise, rr.normalise)
         }
       }
     }
 
     case class Filtered[I, O](
-        base: Circuit[I, O],
-        condition: Circuit[O, Boolean]
+        base: _Compat[I, O],
+        condition: _Compat[O, Boolean]
     ) extends Impl[I, O]
         with Combinator.Linear {
 
@@ -242,7 +252,7 @@ trait HasCircuit extends Capability.Universe {
     }
 
     case class Flipped[I1, I2, O](
-        base: Circuit[(I1, I2), O]
+        base: _Compat[(I1, I2), O]
     ) extends Impl[(I2, I1), O]
         with Combinator.Linear {
 
@@ -253,8 +263,8 @@ trait HasCircuit extends Capability.Universe {
     }
 
     case class Pointwise[I1, O1, I2, O2](
-        left: Circuit[I1, O1],
-        right: Circuit[I2, O2]
+        left: _Compat[I1, O1],
+        right: _Compat[I2, O2]
     ) extends Impl[(I1, I2), (O1, O2)]
         with Combinator.Linear {
 
@@ -324,7 +334,7 @@ trait HasCircuit extends Capability.Universe {
     trait Cached extends Pure
 
     case class CachedLazy[I, R](
-        backbone: Circuit[I, R]
+        backbone: _Compat[I, R]
     ) extends Impl[I, R]
         with Cached {
 
@@ -345,6 +355,7 @@ trait HasCircuit extends Capability.Universe {
     }
 
   }
+  type Circuit[I, O] = Circuit.Impl[I, O]
 
   implicit class _CircuitBuilder(self: Circuit.type) extends FromFunctionBuilder {
 
@@ -364,15 +375,15 @@ trait HasCircuit extends Capability.Universe {
     }
   }
 
-  type Thunk[+O] = Circuit[Unit, O]
-
   object Thunk {
+
+    type _Compat[+O] = Circuit[Unit, O]#Compat
 
     type Impl[O] = Circuit.Impl[Unit, O]
 
     private def __sanity[O]() = {
 
-      implicitly[Impl[O] <:< Thunk[O]]
+      implicitly[Impl[O] <:< _Compat[O]]
     }
 
     type Const[O] = Impl[O] with Circuit.Pure
@@ -399,4 +410,5 @@ trait HasCircuit extends Capability.Universe {
 
     case class Eager[O](value: O) extends Cached_[O] {}
   }
+  type Thunk[O] = Thunk.Impl[O]
 }

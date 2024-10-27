@@ -20,7 +20,7 @@ trait HasPoly extends HasPolyLike {
 
     def apply[I, R](v: I)(
         implicit
-        _case: Case[Circuit[I, R]]
+        _case: CaseBase[Circuit[I, R]]
     ): R = {
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll[FnCompat[v.type, R], IsCase.type](_case)
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll(_case)
@@ -47,7 +47,7 @@ trait HasPoly extends HasPolyLike {
 
     def apply[I, R](arg: I)(
         implicit
-        _case: self.Case[Circuit[I, R]]
+        _case: self.CaseBase[Circuit[I, R]]
     ): R = self.apply(arg)(_case)
 
     //    def cachedBy: Same.ByEquality.CachedPoly[P] = Same.ByEquality.CachedPoly(self)
