@@ -21,7 +21,7 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
 
     implicit def chain[T, R, C <: Capability](
         implicit
-        lemma: Compat[T, R]
+        lemma: CompatCase[T, R]
     ): (T <> C) Target R = at[T <> C] { v =>
       lemma(v.asInstanceOf[T])
     }

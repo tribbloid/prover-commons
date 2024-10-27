@@ -9,17 +9,17 @@ trait HasPolyLike extends HasCircuit {
 
     object IsCase extends Capability
 
-    type Case[+FF <: Circuit[_, _]] = <>[FF, IsCase.type]
+    type WithCap[+FF <: Circuit._Compat[_, _]] = <>[FF, IsCase.type]
 
-    type At[I] = Case[Circuit[I, _]]
-    type Compat[-I, +O] = Case[Circuit[I, O]]
+    type At[I] = WithCap[Circuit._Compat[I, _]]
+    type CompatCase[-I, +O] = WithCap[Circuit._Compat[I, O]]
 
-    type Lemma[I, O] = Case[Circuit.Impl[I, O]]
+    type Lemma[I, O] = WithCap[Circuit.Impl[I, O]]
     type |-[I, O] = Lemma[I, O]
-    type LemmaAt[I] = Case[Circuit.Impl[I, _]]
+    type LemmaAt[I] = WithCap[Circuit.Impl[I, _]]
     // All lemma requires tightest In/Out type bound, like shapeless DepFn
 
-    protected type Target[I, O] = Case[Circuit.Impl[I, O]]
+    protected type Target[I, O] = WithCap[Circuit.Impl[I, O]]
 
     override def define[I, R](fn: I => R)(
         implicit
@@ -34,7 +34,7 @@ trait HasPolyLike extends HasCircuit {
 
       def summon(
           implicit
-          _case: Compat[I, O]
+          _case: CompatCase[I, O]
       ): _case.type = _case
     }
   }

@@ -19,7 +19,7 @@ private[pending] trait PendingGroup extends CanRevokeAll {
 
     implicit def chain[T, R, C <: PendingEffect](
         implicit
-        lemma: Compat[T, R]
+        lemma: CompatCase[T, R]
     ): (T << C) Target R = at[T << C] { v =>
       lemma(v.asInstanceOf[T])
     }
