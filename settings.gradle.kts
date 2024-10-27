@@ -8,6 +8,7 @@ include(
     ":prover-commons:core",
     ":prover-commons:meta2", // should only be working for Scala 2
     ":prover-commons:spark",
+    ":prover-commons:abandoned",
     ":notebook"
 )
 

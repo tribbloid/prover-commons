@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.cap
 
-import ai.acyclic.prover.commons.cap.Capability.{<>, Universe}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import shapeless.test.illTyped
 
@@ -65,7 +64,7 @@ class CapabilitySpec extends BaseSpec {
 
 }
 
-object CapabilitySpec extends Universe {
+object CapabilitySpec extends Capability.Universe {
 
   trait Cap1 extends Capability {}
 

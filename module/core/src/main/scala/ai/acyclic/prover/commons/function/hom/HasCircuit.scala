@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.cap.Capability.Universe
+import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.function.Traceable
 import ai.acyclic.prover.commons.function.Traceable.BySrc
@@ -9,9 +9,9 @@ import ai.acyclic.prover.commons.util.SrcPosition
 
 import scala.language.implicitConversions
 
-object HasCircuit extends Universe {}
+object HasCircuit {}
 
-trait HasCircuit {
+trait HasCircuit extends Capability.Universe {
 
   trait CanNormalise_Impl0 {
 

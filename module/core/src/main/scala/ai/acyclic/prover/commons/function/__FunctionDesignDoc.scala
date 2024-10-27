@@ -18,7 +18,7 @@ object __FunctionDesignDoc {
     *
     * the following capabilities are postponed:
     *   - pure function (can it be an effect un-lifted by validating once, like
-    *     [[ai.acyclic.prover.commons.cap.Pending.OrNull]]?)
+    *     [[ai.acyclic.prover.commons.cap.PendingEffect.Maybe]]?)
     *   - axiomatic composition: the implicit search of Scala 2 is not strong enough to support it
     *
     * Most verbosity in definition came from bounded HKT (higher kinded type):

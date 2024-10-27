@@ -55,6 +55,10 @@ case class TextBlock(lines: Seq[String]) {
     }
 
     lazy val block: TextBlock = trim.top_bottom.trim.left_right
+
+    lazy val carriageReturn: TextBlock = {
+      TextBlock(lines.map(_.stripLineEnd))
+    }
   }
 
   object pad {

@@ -6,7 +6,7 @@ object __CapAndPendingDesign {
     * minimally viable features:
     *
     *   - Capability ([[ai.acyclic.prover.commons.cap.Capability.>>]]) and Pending Effect (Pending,
-    *     [[ai.acyclic.prover.commons.cap.Pending.<<]]) are compile-time only mixin that are erased at runtime
+    *     [[ai.acyclic.prover.commons.cap.PendingEffect.<<]]) are compile-time only mixin that are erased at runtime
     *   - variables with types constructed from these mixins are tracked in their scope
     *   - Cap/Pending can always be added (mixin) or revoked (demixin) explicitly in program
     *     - TODO: is it possible to demixin without knowing the full type? either as function return type or flatMap arg

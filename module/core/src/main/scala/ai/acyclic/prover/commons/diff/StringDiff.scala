@@ -204,6 +204,6 @@ object StringDiff {
   object SubSet extends ComparisonMode
 
   lazy val defaultTrim: TextBlock => TextBlock = { v: TextBlock =>
-    v.trim.top_bottom
+    v.trim.top_bottom.trim.carriageReturn
   }
 }

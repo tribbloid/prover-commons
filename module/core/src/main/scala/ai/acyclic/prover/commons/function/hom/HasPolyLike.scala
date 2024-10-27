@@ -1,13 +1,13 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.cap.Capability.<>
+import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.util.SrcPosition
 
 trait HasPolyLike extends HasCircuit {
 
   trait PolyLike extends FromFunctionBuilder {
 
-    object IsCase extends HasCircuit.Capability
+    object IsCase extends Capability
 
     type Case[+FF <: Circuit[_, _]] = <>[FF, IsCase.type]
 

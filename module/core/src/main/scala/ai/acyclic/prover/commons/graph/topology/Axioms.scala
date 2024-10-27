@@ -17,7 +17,7 @@ object Axioms {
 
   trait Impl[+A <: Arrow] extends Axioms { type _Arrow <: A }
 
-  trait ExtractArrow[X <: Axioms] extends Lawful { type _Arrow <: Arrow }
+  trait ExtractArrow[X <: Axioms] { type _Arrow <: Arrow }
 
   object ExtractArrow {
 
