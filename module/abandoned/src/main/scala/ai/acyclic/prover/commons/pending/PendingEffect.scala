@@ -2,8 +2,6 @@ package ai.acyclic.prover.commons.pending
 
 import ai.acyclic.prover.commons.cap.Bound
 
-import scala.language.implicitConversions
-
 trait PendingEffect extends Bound {}
 
 object PendingEffect extends PendingGroup {

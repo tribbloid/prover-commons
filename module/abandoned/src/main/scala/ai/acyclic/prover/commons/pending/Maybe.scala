@@ -2,8 +2,6 @@ package ai.acyclic.prover.commons.pending
 
 import ai.acyclic.prover.commons.pending.PendingEffect.<<
 
-import scala.language.implicitConversions
-
 object Maybe extends PendingEffect {
 
   def unset[T]: T << Maybe.type = null.asInstanceOf[T << Maybe.type]

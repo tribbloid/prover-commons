@@ -15,7 +15,7 @@ trait HasCircuit extends Capability.Universe {
 
   trait CanNormalise_Impl0 {
 
-    implicit def asFunction[I, O](v: CanNormalise[I, O])(
+    implicit def asFunctionView[I, O](v: CanNormalise[I, O])(
         implicit
         _definedAt: SrcPosition
     ): Circuit.FunctionView[I, O] = {
@@ -29,12 +29,8 @@ trait HasCircuit extends Capability.Universe {
   }
   object CanNormalise extends CanNormalise_Impl0 {
 
-    implicit def unbox[I, O](v: CanNormalise[I, O]): Circuit[I, O] = v.normalise
+    implicit def asCircuit[I, O](v: CanNormalise[I, O]): Circuit[I, O] = v.normalise
 
-    implicit class _extensions[I, O](self: CanNormalise[I, O]) {
-
-      def trace: Circuit.Tracing[I, O] = Circuit.Tracing(self)
-    }
   }
 
   sealed trait CanNormalise[-I, +O] {
@@ -42,19 +38,21 @@ trait HasCircuit extends Capability.Universe {
     def normalise: Circuit[I, O]
   }
 
-  /**
-    * function with computation graph, like a lifted JAXpr
-    */
-  trait Circuit[-I, +O] extends CanNormalise[I, O] with Traceable with Serializable {
-
-    def apply(arg: I): O
-
-    def normalise: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
-  }
+  type Circuit[-I, +R] = Circuit.Fn[I, R]
 
   object Circuit {
 
-    sealed trait Theorem[-I, +O] extends Circuit[I, O] {
+    /**
+      * function with computation graph, like a lifted JAXpr
+      */
+    trait Fn[-I, +O] extends CanNormalise[I, O] with Traceable with Serializable {
+
+      def apply(arg: I): O
+
+      def normalise: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
+    }
+
+    sealed trait Theorem[-I, +O] extends Fn[I, O] {
 
       //    type In >: I
       type Out <: O
@@ -76,11 +74,10 @@ trait HasCircuit extends Capability.Universe {
       }
     }
 
-    private[HasCircuit] case class FunctionView[-I, +O](
+    private[HasCircuit] case class FunctionView[I, O](
         self: Circuit[I, O],
         _definedAt: SrcPosition
-    ) extends Function[I, O]
-        with CanNormalise[I, O] {
+    ) extends Function[I, O] {
 
       final override def apply(v: I): O = self(v)
 
@@ -102,7 +99,9 @@ trait HasCircuit extends Capability.Universe {
         _prev.andThen(self)
       }
 
-      override def normalise: Circuit[I, O] = self.normalise
+      def trace: Circuit.Tracing[I, O] = Circuit.Tracing(self.normalise)
+
+//      override def normalise: Circuit[I, O] = self.normalise
     }
 
     case class Tracing[I, O](self: Circuit[I, O]) extends CanNormalise[I, O] {
