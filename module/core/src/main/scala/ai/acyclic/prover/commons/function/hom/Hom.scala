@@ -3,13 +3,13 @@ package ai.acyclic.prover.commons.function.hom
 object Hom extends Hom_Imp0 {
 
   type :=>[-I, +R] = Circuit[I, R]
-  def :=> = Circuit
+  val :=> : Circuit.type = Circuit
 
   type :|~>[-I[_], +R[_]] = Mono[Any, I, R]
-  def :|~> = Mono
+  val :|~> : Mono.type = Mono
 
   type :|->[+R[_]] = Dependent[Any, R]
-  def :|-> = Dependent
+  val :|-> : Dependent.type = Dependent
 
   object Impl {
 
