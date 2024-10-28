@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.function.fixture._
+import ai.acyclic.prover.commons.function.hom.Hom.Circuit
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 object CircuitSpec {}
@@ -9,12 +10,23 @@ class CircuitSpec extends BaseSpec {
 
   import Circuits._
 
-  describe("definition") {
+  describe("as") {
+
+    it("supertype") { // disabled, current compiler is janky
+
+      case object cc extends Circuit[Int, String] {
+
+        def apply(v: Int): String = "" + v
+      }
+      assert((cc.apply(1): String) == "1")
+    }
+
     ignore("single-abstract method") { // disabled, current compiler is janky
 
-//      val sam: Circuit.Impl[Int, Int] = { v =>
-//        v
+//      val cc: Circuit[Int, String] = { v: Int =>
+//        "" + v
 //      }
+//      assert((cc.apply(1): String) == "1")
     }
   }
 

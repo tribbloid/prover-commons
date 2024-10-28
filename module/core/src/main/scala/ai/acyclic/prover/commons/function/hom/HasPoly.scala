@@ -18,10 +18,10 @@ trait HasPoly extends HasPolyLike {
   trait Poly extends PolyLike {
     // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
 
-    def apply[I, R](v: I)(
+    def apply[I](v: I)(
         implicit
-        _case: Case[Circuit[I, R]]
-    ): R = {
+        _case: At[I]
+    ): _case.Out = {
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll[FnCompat[v.type, R], IsCase.type](_case)
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll(_case)
       _case.apply(v)
@@ -43,13 +43,5 @@ trait HasPoly extends HasPolyLike {
 
   implicit def asShapelessPoly1(v: Poly): v.asShapelessPoly1.type = v.asShapelessPoly1
 
-  implicit class PolyOps[P <: Poly](self: P) extends Serializable {
-
-    def apply[I, R](arg: I)(
-        implicit
-        _case: self.Case[Circuit[I, R]]
-    ): R = self.apply(arg)(_case)
-
-    //    def cachedBy: Same.ByEquality.CachedPoly[P] = Same.ByEquality.CachedPoly(self)
-  }
+  implicit class PolyOps[P <: Poly](self: P) extends Serializable {}
 }

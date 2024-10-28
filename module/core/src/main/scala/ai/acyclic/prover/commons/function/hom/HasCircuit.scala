@@ -45,17 +45,22 @@ trait HasCircuit extends Capability.Universe {
   /**
     * function with computation graph, like a lifted JAXpr
     */
-  sealed trait Circuit[-I, +O] extends CanNormalise[I, O] with Traceable with Serializable {
+  trait Circuit[-I, +O] extends CanNormalise[I, O] with Traceable with Serializable {
 
-//    type In >: I
-    type Out <: O
-
-    def apply(arg: I): Out
+    def apply(arg: I): O
 
     def normalise: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
   }
 
   object Circuit {
+
+    sealed trait Theorem[-I, +O] extends Circuit[I, O] {
+
+      //    type In >: I
+      type Out <: O
+
+      def apply(arg: I): Out
+    }
 
     implicit class _extension[I, O](
         self: Circuit[I, O]
@@ -160,7 +165,7 @@ trait HasCircuit extends Capability.Universe {
 
     trait Mixin
 
-    trait Impl[I, O] extends Mixin with Circuit[I, O] { // most specific
+    trait Impl[I, O] extends Mixin with Theorem[I, O] { // most specific
 
       final type In = I
       final type Out = O

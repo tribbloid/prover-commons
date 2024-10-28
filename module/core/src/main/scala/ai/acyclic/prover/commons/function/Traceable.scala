@@ -11,7 +11,7 @@ trait Traceable extends Product {
 
     private val node = Traceable.Inspection.node(Traceable.this)
 
-    def nodeText = node.nodeText
+    def nodeText: String = node.nodeText
 
     def text_hierarchy: String = {
 
@@ -24,13 +24,6 @@ trait Traceable extends Product {
       viz.toString
     }
   }
-
-//  final def explain: Traceable.SemilatticeRepr.node = {
-//
-//    val node = Traceable.SemilatticeRepr.node(explainView)
-//
-//    node
-//  }
 }
 
 object Traceable {
