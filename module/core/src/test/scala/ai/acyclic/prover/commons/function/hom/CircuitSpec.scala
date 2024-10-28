@@ -10,9 +10,9 @@ class CircuitSpec extends BaseSpec {
 
   import Circuits._
 
-  describe("as") {
+  describe("define by") {
 
-    it("supertype") { // disabled, current compiler is janky
+    it("subtype") { // disabled, current compiler is janky
 
       case object cc extends Circuit[Int, String] {
 
@@ -21,12 +21,12 @@ class CircuitSpec extends BaseSpec {
       assert((cc.apply(1): String) == "1")
     }
 
-    ignore("single-abstract method") { // disabled, current compiler is janky
+    it("implicit cast") {
 
-//      val cc: Circuit[Int, String] = { v: Int =>
-//        "" + v
-//      }
-//      assert((cc.apply(1): String) == "1")
+      val cc: Circuit[Int, String] = { v =>
+        "" + v
+      }
+      assert((cc.apply(1): String) == "1")
     }
   }
 
