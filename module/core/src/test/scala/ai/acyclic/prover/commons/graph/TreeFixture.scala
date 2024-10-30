@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
+import ai.acyclic.prover.commons.graph.topology.Axioms
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 
 object TreeFixture {
@@ -34,17 +35,23 @@ object TreeFixture {
 
   trait TreeNode extends Local.Tree.NodeImpl[TV] {
 
-    final override protected def getNodeText = value.text
+    final override protected def getNodeText: String = value.text
   }
 
-  case class Node(value: TV) extends TreeNode {
+  case class node(value: TV) extends TreeNode {
 
-    override protected def getInduction = value.children.map(v => Node(v)).toSeq
+    override protected def getInduction: Seq[(Arrow.`~>`, node)] =
+      value.children.map(v => node(v)).toSeq
   }
 
   case class NodeWithArrowText(value: TV) extends TreeNode {
 
-    override protected def getInduction = {
+    override protected def getInduction: Seq[
+      (
+          ai.acyclic.prover.commons.graph.Arrow.Outbound.NoInfo,
+          ai.acyclic.prover.commons.graph.TreeFixture.NodeWithArrowText
+      )
+    ] = {
 
       val children = value.children
       val result = children.map { child =>
@@ -64,7 +71,7 @@ object TreeFixture {
     Top5
   }
 
-  val tn1 = TVF(
+  val tn1: TVF = TVF(
     "aaa",
     Seq(
       TVF(
@@ -79,7 +86,7 @@ object TreeFixture {
     )
   )
 
-  val tn2 = TVF( // TODO: simplify this with graph Transform
+  val tn2: TVF = TVF( // TODO: simplify this with graph Transform
     "aaa\n%%%%%",
     Seq(
       TVF(
@@ -94,14 +101,14 @@ object TreeFixture {
     )
   )
 
-  val treeInf = TVInf("abcdefgh")
+  val treeInf: TVInf = TVInf("abcdefgh")
 
   implicit class TVView(self: TV) {
 
-    def tree =
-      Local.Tree(Node(self))
+    def tree: LocalEngine.GraphKOfTheEngine.Aux[Axioms.TreeT, TV] =
+      Local.Tree(node(self))
 
-    def treeWithArrowTexts =
+    def treeWithArrowTexts: LocalEngine.GraphKOfTheEngine.Aux[Axioms.TreeT, TV] =
       Local.Tree(NodeWithArrowText(self))
   }
 }

@@ -5,17 +5,11 @@ import ai.acyclic.prover.commons.graph.topology.{Axioms, Lawful, Topology}
 trait Engine {
   self: Singleton =>
 
-  import Axioms._
-  import Engine._
+  import Axioms.*
+  import Engine.*
 
   type Batch[+T]
   def parallelize[T](seq: Seq[T]): Batch[T]
-
-  trait NodeImpl[+X <: AnyGraphT] extends NodeK[X] with NodeOrGraph[X] {
-//
-//    override def asGraph =
-//      _GraphK.Unchecked[X, Value](parallelize(this))(axioms)
-  }
 
   trait GraphKOfTheEngine[+X <: AnyGraphT] extends GraphK[X] with NodeOrGraph[X] {
 
@@ -115,7 +109,7 @@ trait Engine {
 
         final override type _Axiom = GraphTypeImpl.this._Axiom
 
-        final lazy val axioms = GraphTypeImpl.this.axioms
+        final lazy val axioms: Y = GraphTypeImpl.this.axioms
       }
 
       /**
@@ -123,7 +117,7 @@ trait Engine {
         * @tparam V
         *   value tyupe
         */
-      trait NodeImpl[V] extends NodeK.Impl[_Axiom, V] with Element with NodeOrGraph[_Axiom] {
+      trait NodeImpl[V] extends NodeK.Typed[_Axiom, V] with Element with NodeOrGraph[_Axiom] {
 
 //        override def asGraph: Graph[V] = makeExact[V](this)
       }
@@ -156,7 +150,7 @@ trait Engine {
 
         type _Node = NodeImpl[V]
 
-        protected type node <: _Node
+        type node <: _Node
         val node: V => node
 
         type Graph = GraphKOfTheEngine.Aux[_Axiom, V]
@@ -282,7 +276,7 @@ trait Engine {
 
       case class Singleton[V](value: V) extends NodeImpl[V] {
 
-        final override lazy val getInduction = Nil
+        final override lazy val getInduction: collection.immutable.Nil.type = Nil
       }
 
       implicit class TreeNodeOps[V](n: NodeImpl[V]) {

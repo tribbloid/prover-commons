@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff
+import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.refl.HasReflection
@@ -18,7 +19,7 @@ object TypeOfMixin {
 
 trait TypeOfMixin extends HasReflection {
 
-  import reflection._
+  import reflection.*
 
   val format: TypeHierarchy
 
@@ -87,7 +88,7 @@ trait TypeOfMixin extends HasReflection {
   // visualisations in the same group should not display redundant information
   case class VisualisationGroup() {
 
-    import VisualisationGroup._
+    import VisualisationGroup.*
 
     lazy val delegateGroup: format.DelegateFormat.Group = format.DelegateFormat.Group()
 
@@ -141,9 +142,9 @@ trait TypeOfMixin extends HasReflection {
 
       case object SuperTypeNode extends node {
 
-        final override lazy val identityKeyC = Some(node.reference)
+        final override lazy val identityKeyC: Some[TypeOfMixin.this.reflection.TypeID] = Some(node.reference)
 
-        override protected val getInduction = {
+        override protected val getInduction: List[(Arrow.`~>`, node)] = {
 
           node.superTypes_nonTransitive
             .filter { tv =>
@@ -164,9 +165,9 @@ trait TypeOfMixin extends HasReflection {
 
       case object ArgNode extends node {
 
-        final override lazy val identityKeyC = None
+        final override lazy val identityKeyC: None.type = None
 
-        override protected lazy val getInduction = {
+        override protected lazy val getInduction: List[(Arrow.`~>`, node)] = {
           node.args.map { tt =>
             Nodes(TypeOps(tt).formattedBy(format.typeFormat)).SuperTypeNode
           }

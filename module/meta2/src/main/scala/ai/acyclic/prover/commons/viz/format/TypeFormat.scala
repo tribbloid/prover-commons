@@ -21,7 +21,7 @@ trait TypeFormat {
 
 //  implicit def fromText_Parts(v: (String, Seq[FormattedType])): IROutput = IROutput(v._1, v._2)
 
-  def ~(factory: TypeFormat => TypeFormat): TypeFormat = factory(this)
+//  def ~(factory: TypeFormat => TypeFormat): TypeFormat = factory(this)
 
   // TODO: the following should be moved into a view that also contains TypeVizFormat
   //  should make compile-time macro much easier to define

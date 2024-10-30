@@ -14,7 +14,7 @@ class TypeVizBuilder[R <: Reflection](
   ) extends TypeViz[R]
       with HasOuter {
 
-    def outer = TypeVizBuilder.this
+    def outer: ai.acyclic.prover.commons.viz.TypeVizBuilder[R] = TypeVizBuilder.this
 
     override val format: TypeHierarchy = TypeVizBuilder.this.format
   }
@@ -24,7 +24,7 @@ class TypeVizBuilder[R <: Reflection](
     override type TTag[T] = WeakTypeTag[T]
 
     def withFormat(format: TypeHierarchy = TypeHierarchy.Default) =
-      new TypeVizBuilder(reflection, format).Weak
+      new TypeVizBuilder(this.reflection, format).Weak
   }
   object Weak extends Weak
 
@@ -33,7 +33,7 @@ class TypeVizBuilder[R <: Reflection](
     override type TTag[T] = TypeTag[T]
 
     def withFormat(format: TypeHierarchy = TypeHierarchy.Default) =
-      new TypeVizBuilder(reflection, format).Strong
+      new TypeVizBuilder(this.reflection, format).Strong
   }
   object Strong extends Strong
 

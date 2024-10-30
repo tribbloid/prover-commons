@@ -133,7 +133,7 @@ trait HasCircuit extends Capability.Universe {
           _definedAt: SrcPosition
       ): Tracing[I, O] = {
 
-        val _right = Blackbox()(right)(_definedAt)
+        val _right = Blackbox()(right)
 
         val result =
           Circuit.Filtered[I, O](self, _right)
@@ -316,7 +316,7 @@ trait HasCircuit extends Capability.Universe {
 
     // there is no absorb right
 
-    case class Blackbox[I, R] private ()(fn: I => R)(
+    case class Blackbox[I, R]()(fn: I => R)(
         implicit
         final override val _definedAt: SrcPosition
     ) extends Impl[I, R]

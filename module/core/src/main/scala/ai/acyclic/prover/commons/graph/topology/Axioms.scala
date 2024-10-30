@@ -15,7 +15,7 @@ object Axioms {
 
   def assume[X <: Axioms]: X = null.asInstanceOf[X]
 
-  trait Impl[+A <: Arrow] extends Axioms { type _Arrow <: A }
+  trait Lt_[+A <: Arrow] extends Axioms { type _Arrow <: A }
 
   trait ExtractArrow[X <: Axioms] { type _Arrow <: Arrow }
 
@@ -23,23 +23,23 @@ object Axioms {
 
     type Gt[L <: Axioms] = ExtractArrow[_ >: L]
 
-    implicit def onlyCase[A <: Arrow]: ExtractArrow[Impl[A]] { type _Arrow = A } =
-      new ExtractArrow[Impl[A]] {
+    implicit def onlyCase[A <: Arrow]: ExtractArrow[Lt_[A]] { type _Arrow = A } =
+      new ExtractArrow[Lt_[A]] {
         override type _Arrow = A
       }
   }
 
   { // sanity
-    val bounds = Summoner.summon[ExtractArrow.Gt[Impl[Arrow.Outbound.^]]]
+    val bounds = Summoner.summon[ExtractArrow.Gt[Lt_[Arrow.Outbound.^]]]
 
     implicitly[bounds._Arrow =:= Arrow.Outbound.^]
   }
 
-  trait AnyGraphT extends Axioms.Impl[Arrow]
+  trait AnyGraphT extends Axioms.Lt_[Arrow]
 
   object AnyGraphT extends Topology[AnyGraphT] {
 
-    trait OutboundT extends AnyGraphT with Axioms.Impl[Arrow.Outbound.^]
+    trait OutboundT extends AnyGraphT with Axioms.Lt_[Arrow.Outbound.^]
 
     object OutboundT extends Topology[OutboundT] {}
 

@@ -8,7 +8,7 @@ object Hierarchy {
 
   trait Indent2 extends Hierarchy
   case object Indent2 extends Indent2
-  implicit def Default = Indent2
+  implicit def Default: Indent2.type = Indent2
 
   trait Indent2Minimal extends Hierarchy {
 

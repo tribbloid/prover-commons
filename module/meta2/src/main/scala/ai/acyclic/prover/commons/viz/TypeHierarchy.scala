@@ -27,7 +27,7 @@ case class TypeHierarchy(
 
         unary
           .Traverse(
-            down = { v: Local.Tree.Node[_ <: RefBindingLike] =>
+            down = { (v: Local.Tree.Node[_ <: RefBindingLike]) =>
               v.value.original match {
                 case vNode: TypeOfMixin.VNodeLike =>
                   vNode.argDryRun()

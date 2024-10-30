@@ -66,7 +66,7 @@ object Formats1 { // higher-order format constructors
     final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
       val trials = bases
         .to(LazyList)
-        .flatMap { base: TypeFormat =>
+        .flatMap { (base: TypeFormat) =>
           try {
             val result = tt.formattedBy(base)
             Some(result)
@@ -93,7 +93,7 @@ object Formats1 { // higher-order format constructors
         base: TypeFormat
     ) extends RecursiveForm.HasRecursiveForm {
 
-      override def constructor: TypeFormat => TypeFormat = Hide.HidePackage
+      override def constructor: TypeFormat => TypeFormat = v => Hide.HidePackage(v)
 
       final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
         val byBase = tt.formattedBy(base)
@@ -122,7 +122,7 @@ object Formats1 { // higher-order format constructors
         base: TypeFormat
     ) extends RecursiveForm.HasRecursiveForm {
 
-      override def constructor: TypeFormat => TypeFormat = Hide.HideStatic
+      override def constructor: TypeFormat => TypeFormat = v => Hide.HideStatic(v)
 
       final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
         type Formatting = refl.TypeIR

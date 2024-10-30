@@ -12,8 +12,8 @@ abstract class Topology[X <: Axioms] extends Lawful {
 
   implicit def assuming(
       implicit
-      unpack: ExtractArrow.Gt[X]
-  ): X { type _Arrow = unpack._Arrow } = Axioms.assume[X { type _Arrow = unpack._Arrow }]
+      extractArrow: ExtractArrow.Gt[X]
+  ): X { type _Arrow = extractArrow._Arrow } = Axioms.assume[X { type _Arrow = extractArrow._Arrow }]
 }
 
 object Topology {}

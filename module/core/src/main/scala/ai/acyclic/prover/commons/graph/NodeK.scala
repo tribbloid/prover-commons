@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.graph.topology.{Axioms, Lawful}
 
 trait NodeK[+L <: Axioms] extends Lawful.Structure[L] {
 
-  import NodeK._
+  import NodeK.*
 
   def value: Value
 
@@ -18,9 +18,9 @@ trait NodeK[+L <: Axioms] extends Lawful.Structure[L] {
 
   final lazy val discoverNodes: Seq[Node_~] = induction.map(_._2)
 
-  final lazy val inductionToValues: Seq[(_Arrow, Value)] = induction.map(v => v._1 -> v._2.value)
+//  final lazy val link_values: Seq[(_Arrow, Value)] = induction.map(v => v._1 -> v._2.value)
 
-  final lazy val discoverValues: Seq[Value] = inductionToValues.map(_._2)
+//  final lazy val values: Seq[Value] = arrows_values.map(_._2)
 
   /**
     * Only affecting caching mechanism in resolving induction(s). Induction of the same node may be cached and reused
@@ -70,9 +70,9 @@ trait NodeK[+L <: Axioms] extends Lawful.Structure[L] {
 object NodeK {
 
   type Aux[+L <: Axioms, V] = NodeK[L] { type Value = V }
-  trait Impl[+L <: Axioms, V] extends NodeK[L] { type Value = V }
-
   type Compat[+L <: Axioms, +V] = Aux[L, _ <: V]
+
+  trait Typed[+L <: Axioms, V] extends NodeK[L] { type Value = V }
 
   trait Untyped[+L <: Axioms] extends NodeK[L] {
     // actually self typed, but that doesn't convey any extra information
@@ -84,7 +84,7 @@ object NodeK {
   case class Mapped[+L <: Axioms, V, V2](
       original: NodeK.Compat[L, V],
       fn: V => V2
-  ) extends Impl[L, V2] {
+  ) extends Typed[L, V2] {
 
     override val axioms: original.axioms.type = original.axioms
 

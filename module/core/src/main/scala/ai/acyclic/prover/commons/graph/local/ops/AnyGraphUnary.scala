@@ -142,7 +142,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
         ).DepthFirst
       }
 
-      override def compute = {
+      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[AnyGraphUnary.this.ArgLaw,AnyGraphUnary.this.ArgV] = {
         delegate.compute
       }
     }
@@ -180,7 +180,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
         ).DepthFirst
       }
 
-      override def compute = {
+      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[AnyGraphUnary.this.ArgLaw,AnyGraphUnary.this.ArgV] = {
         delegate.compute
       }
     }
@@ -204,8 +204,8 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
-      down: ArgNode => Unit = { _: ArgNode => {} },
-      up: ArgNode => Unit = { _: ArgNode => {} }
+      down: ArgNode => Unit = { (_: ArgNode) => {} },
+      up: ArgNode => Unit = { (_: ArgNode) => {} }
   ) {
 
     private val delegate = Transform(

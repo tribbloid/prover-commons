@@ -53,7 +53,7 @@ trait HasMono extends HasPoly {
       override type In[+_] = I
       override type Out[+_] = O
 
-      override def apply[_](arg: I): O = backbone.apply(arg)
+      override def apply[T](arg: I): O = backbone.apply(arg)
     }
 
     implicit def fnIsMono[I, O](v: Circuit[I, O]): Mono.Is[I, O] = Mono.Is(v)

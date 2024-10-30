@@ -20,6 +20,7 @@ object __OperatorPrecedence {
 
     CAUTION: this rule doesn't apply to infix HKTs (higher kind types), e.g.
    */
+
   private def __sanity1(): Unit = {
 
     trait ++[A, B]

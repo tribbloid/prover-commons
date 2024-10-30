@@ -26,10 +26,13 @@ object FormatOvrd {
   trait ~~[A, B] extends FormatOvrd
   case object ~~ extends TypeFormat.Constructor {
 
+    object Format extends (TypeFormat => Format)
     case class Format(base: TypeFormat) extends TypeFormat {
+
       override def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
         val byBase = tt.formattedBy(base)
-        byBase.text <:^ Seq(byBase)
+        val result: TypeIROutput = byBase.text <:^ Seq(byBase)
+        result
       }
     }
   }

@@ -61,7 +61,7 @@ private[meta] trait SymbolViewMixin extends HasUniverse {
 
     override lazy val canonicalName: String = delegate.fullName
 
-    override def _copy(self: universe.Symbol) = copy(self)
+    override def _copy(self: universe.Symbol): SymbolViewMixin.this.SymbolView = copy(self)
   }
 
   val symbolCache = mutable.Map.empty[Symbol, SymbolView]

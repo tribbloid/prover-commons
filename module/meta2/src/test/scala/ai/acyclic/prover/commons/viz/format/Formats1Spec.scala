@@ -72,7 +72,7 @@ class Formats1Spec extends BaseSpec {
 
       val base = Formats0.TypeInfo
 
-      val transformer = { v: TypeFormat =>
+      val transformer = { (v: TypeFormat) =>
         val firstTrial = BacktrackingDummy
         val secondTrial = v.HidePackage.DeAlias
         Trials(
@@ -96,7 +96,7 @@ class Formats1Spec extends BaseSpec {
 
       val base = Formats0.TypeInfo
 
-      val transformer = { v: TypeFormat =>
+      val transformer = { (v: TypeFormat) =>
         val firstTrial = BacktrackingDummy
         val secondTrial = EnableOvrd(v.HidePackage.DeAlias)
         Trials(

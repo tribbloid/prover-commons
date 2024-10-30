@@ -10,7 +10,7 @@ case class StageResult[T](
 
   lazy val durationNano: Long = finishNano - startNano
 
-  lazy val _tags: Set[BenchmarkTag] = tags.map { v: BenchmarkTag =>
+  lazy val _tags: Set[BenchmarkTag] = tags.map[BenchmarkTag] { (v: BenchmarkTag) =>
     v
   }
 }

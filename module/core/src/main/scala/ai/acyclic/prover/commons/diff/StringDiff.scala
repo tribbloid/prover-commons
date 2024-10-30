@@ -12,7 +12,7 @@ case class StringDiff(
     trim: TextBlock => TextBlock = StringDiff.defaultTrim
 ) {
 
-  import StringDiff._
+  import StringDiff.*
 
   private val _printFn = new print_@(
     classes :+
@@ -203,7 +203,7 @@ object StringDiff {
   object SuperSet extends ComparisonMode
   object SubSet extends ComparisonMode
 
-  lazy val defaultTrim: TextBlock => TextBlock = { v: TextBlock =>
+  lazy val defaultTrim: TextBlock => TextBlock = { (v: TextBlock) =>
     v.trim.top_bottom.trim.carriageReturn
   }
 }

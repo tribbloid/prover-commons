@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 //  should define a link type equivalent to (Arrow, Node)
 trait Arrow {
 
-  import Arrow._
+  import Arrow.*
 
   val arrowType: ArrowType
 
@@ -26,12 +26,13 @@ object Arrow {
       override val arrowType: ArrowType.this.type = ArrowType.this
     }
 
-    implicit def pair[N](v: N): (NoInfo, N) = NoInfo.empty -> v
+    // TODO: this should be a magnet
+    implicit def pair[N](v: N): (^, N) = NoInfo() -> v
 
     implicit def pairMany[F[T] <: Iterable[T], N](vs: F[N])(
         implicit
-        toF: Factory[(NoInfo, N), F[(NoInfo, N)]]
-    ): F[(NoInfo, N)] = {
+        toF: Factory[(^, N), F[(^, N)]]
+    ): F[(^, N)] = {
       val mapped = vs.map { v =>
         pair(v)
       }
@@ -47,19 +48,24 @@ object Arrow {
 
       lazy val empty = NoInfo()
     }
+
+//    object NoInfo {
+//
+////      lazy val empty: NoInfo = NoInfo()
+//    }
   }
 
   sealed abstract class Edge extends ArrowType {}
 
   case object Outbound extends Edge
   type `~>` = Outbound.^
-  val `~>` = Outbound.NoInfo.empty
+  object `~>` extends Outbound.NoInfo() {}
 
   implicitly[`~>`.type <:< `~>`]
 
   case object Inbound extends Edge
   type `<~` = Inbound.^
-  val `<~` = Inbound.NoInfo.empty
+  object `<~` extends Inbound.NoInfo() {}
 
   implicitly[`<~`.type <:< `<~`]
 
@@ -69,5 +75,5 @@ object Arrow {
   // e.g. expanding a semilattice into a poset
   sealed abstract class NonEdge extends ArrowType
 
-  case object Discovery extends NonEdge
+//  case object Discovery extends NonEdge
 }
