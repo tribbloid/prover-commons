@@ -24,8 +24,8 @@ allprojects {
 //                        "-Xsource:3-cross",
                         "-Xsource:3",
                         // quickfix should be disabled ASAP after migration
-                        "-quickfix",
-                        "-quickfix:cat=scala3-migration"
+//                        "-quickfix",
+//                        "-quickfix:cat=scala3-migration"
 
                     )
                 )
