@@ -13,7 +13,7 @@ import scala.util.Random
 
 case class RDDView[T](val self: RDD[T]) {
 
-  import RDDView._
+  import RDDView.*
 
   implicit lazy val rddClassTag: ClassTag[T] = _SQLHelper.rddClassTag(self)
 
@@ -55,7 +55,7 @@ case class RDDView[T](val self: RDD[T]) {
 
       halfDone.unpersist()
 
-      if (counter.value == 0) return updated.flatMap(_.right.get)
+      if (counter.value == 0) return updated.flatMap(_.toOption.get)
 
       halfDone = updated
     }
@@ -107,7 +107,7 @@ case class RDDView[T](val self: RDD[T]) {
   def mapOncePerCore[R: ClassTag](f: T => R): RDD[R] = {
 
     self.mapPartitions { itr =>
-      val stageID = TaskContext.get.stageId()
+      val stageID = TaskContext.get().stageId()
       //          val executorID = SparkEnv.get.executorId //this is useless as perCoreMark is a local singleton
       val threadID = Thread.currentThread().getId
       val allIDs = stageID -> threadID
@@ -131,7 +131,7 @@ case class RDDView[T](val self: RDD[T]) {
   def mapOncePerWorker[R: ClassTag](f: T => R): RDD[R] = {
 
     self.mapPartitions { itr =>
-      val stageID = TaskContext.get.stageId()
+      val stageID = TaskContext.get().stageId()
       perWorkerMark.synchronized {
         val alreadyRun = perWorkerMark.getOrElseUpdate(stageID, false)
 

@@ -4,7 +4,7 @@ import scala.language.implicitConversions
 
 trait Delegating[T] {
 
-  import Delegating._
+  import Delegating.*
 
   protected def delegate: T
 
@@ -43,6 +43,6 @@ object Delegating {
     val b2 = B2(B1("hello"))
 
     b2.unbox.concat("b")
-//    b2.concat("b") // oops, doesn't work
+//    b2.concat("b") // oops, doesn't work, TODO: fix in Scala 3
   }
 }

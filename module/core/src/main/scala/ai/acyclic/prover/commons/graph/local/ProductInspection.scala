@@ -59,7 +59,7 @@ abstract class ProductInspection[
 
     override protected lazy val getInduction: Seq[(_Arrow, node)] = {
 
-      val k = this.axioms
+      this.axioms
 
       implicitly[_Arrow <:< Arrow.`~>`]
       implicitly[_Arrow =:= Arrow.`~>`]

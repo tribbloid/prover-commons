@@ -30,7 +30,7 @@ trait Engine {
     type Aux[+X <: AnyGraphT, V] = GraphKOfTheEngine[X] { type Value = V }
 
     // Acronym of "Less Than"
-    type Compat[+X <: AnyGraphT, +V] = Aux[X, _ <: V]
+    type Compat[+X <: AnyGraphT, +V] = Aux[X, ? <: V]
 
     /**
       * Graph representation without any validation
@@ -159,7 +159,7 @@ trait Engine {
 
           def make: Graph = {
             val nodes = vs.iterator.to(Seq).map(_.asNode)
-            makeExact(nodes: _*)
+            makeExact(nodes *)
           }
         }
 
@@ -184,19 +184,19 @@ trait Engine {
           implicit
           assuming: XX
       ): GraphKOfTheEngine.Unchecked[XX, V] =
-        makeWithAxioms[XX, V](nodes: _*)(assuming)
+        makeWithAxioms[XX, V](nodes *)(assuming)
 
       def makeExact[V](
           nodes: NodeK.Compat[_Axiom, V]*
       ): Graph[V] =
-        makeWithAxioms[_Axiom, V](nodes: _*)(this.axioms)
+        makeWithAxioms[_Axiom, V](nodes *)(this.axioms)
 
       def apply[XX <: _Axiom, V]( // alias of makeTightest
           nodes: NodeK.Compat[XX, V]*
       )(
           implicit
           assuming: XX
-      ): GraphKOfTheEngine.Aux[XX, V] = makeTightest[XX, V](nodes: _*)
+      ): GraphKOfTheEngine.Aux[XX, V] = makeTightest[XX, V](nodes *)
 
       def empty[V]: Graph[V] = makeExact[V]()
 
@@ -238,7 +238,7 @@ trait Engine {
 
       object Ops {
 
-        type Aux[P <: PlanK[_]] = Ops { type InputPlan = P }
+        type Aux[P <: PlanK[?]] = Ops { type InputPlan = P }
 
         trait Unary extends Ops {
 

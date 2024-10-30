@@ -30,7 +30,9 @@ object Traceable {
 
   object Inspection extends ProductInspection[Product, Traceable] {
 
-    final override val node: Product => ai.acyclic.prover.commons.function.Traceable.Inspection.BuiltIn = { v => BuiltIn(v) }
+    final override val node: Product => ai.acyclic.prover.commons.function.Traceable.Inspection.BuiltIn = { v =>
+      BuiltIn(v)
+    }
   }
 //  object Inspection extends Local.Semilattice.Upper.Inspection[Any] {
 //

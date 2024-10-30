@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
   */
 trait Same extends Serializable {
 
-  import ai.acyclic.prover.commons.same.Same._
+  import ai.acyclic.prover.commons.same.Same.*
 
   protected def getHashNonTrivial(v: Any): Option[Int]
 
@@ -173,11 +173,11 @@ object Same {
 
   object MemoryHash {
 
-    protected object Impl extends (Any => Int) {
+    protected object Only extends (Any => Int) {
       override def apply(v1: Any): Int = System.identityHashCode(v1)
     }
 
-    def apply[T]: T => Int = Impl.asInstanceOf[T => Int]
+    def apply[T]: T => Int = Only // .asInstanceOf[T => Int]
 
   }
 

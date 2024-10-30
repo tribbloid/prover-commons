@@ -142,7 +142,10 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
         ).DepthFirst
       }
 
-      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[AnyGraphUnary.this.ArgLaw,AnyGraphUnary.this.ArgV] = {
+      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[
+        AnyGraphUnary.this.ArgLaw,
+        AnyGraphUnary.this.ArgV
+      ] = {
         delegate.compute
       }
     }
@@ -180,7 +183,10 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
         ).DepthFirst
       }
 
-      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[AnyGraphUnary.this.ArgLaw,AnyGraphUnary.this.ArgV] = {
+      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[
+        AnyGraphUnary.this.ArgLaw,
+        AnyGraphUnary.this.ArgV
+      ] = {
         delegate.compute
       }
     }
