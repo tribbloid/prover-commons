@@ -325,7 +325,7 @@ trait HasCircuit extends Capability.Universe {
       override def apply(arg: I): R = fn(arg)
     }
 
-    implicit def fromFunction[I, R](fn: I => R)(
+    implicit def fromFunction1[I, R](fn: I => R)(
         implicit
         _definedAt: SrcPosition
     ): Circuit[I, R] = {
@@ -334,7 +334,13 @@ trait HasCircuit extends Capability.Universe {
         case _ =>
           Blackbox[I, R]()(fn)
       }
+    }
 
+    implicit def fromFunction0[R](fn: () => R)(
+        implicit
+        _definedAt: SrcPosition
+    ): Circuit[Unit, R] = {
+      fromFunction1[Unit, R](_ => fn())
     }
 
     trait Cached extends Pure
