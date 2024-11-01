@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 import org.apache.hadoop.security.UserGroupInformation
 import org.scalatest.BeforeAndAfterAll
 
-class SparkContextViewSuite extends BaseSpec with BeforeAndAfterAll {
+class SparkContextViewSuite extends BaseSpec with SparkUISupport with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {}
 

@@ -215,7 +215,8 @@ object TestHelper {
 
   lazy val TestSparkSession: SparkSession = {
 
-    val builder = SparkSession.builder
+    val builder = SparkSession
+      .builder()
       .config(TestSparkConf)
 
     Try {

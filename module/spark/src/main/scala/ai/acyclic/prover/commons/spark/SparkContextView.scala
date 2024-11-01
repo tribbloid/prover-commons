@@ -17,7 +17,7 @@ case class SparkContextView(ctx: SparkContext) {
   // large enough such that all idle threads has a chance to pick up >1 partition
   lazy val REPLICATING_FACTOR: Int = 16
 
-  import RDDView.Implicits._
+  import RDDImplicits._
 
   def localJob: LocalJobSnapshot = LocalJobSnapshot(ctx)
 

@@ -8,7 +8,12 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
 
   trait _Can[+C]
 
-  type <>[+T, +C] <: T with _Can[C]
+  type <>[+T, +C] <: T & _Can[C]
+
+  implicit class _ext[T, C](self: T <> C) {
+
+    def revoke: T = self
+  }
 
   trait revokeAll_Imp0 extends Hom.Poly {
 
