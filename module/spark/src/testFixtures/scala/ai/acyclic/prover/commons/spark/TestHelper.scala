@@ -1,10 +1,12 @@
 package ai.acyclic.prover.commons.spark
 
 import ai.acyclic.prover.commons.util.Retry
+import org.apache.hadoop.fs.FileUtil
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import org.slf4j.LoggerFactory
 
+import java.io.File
 import java.util.{Date, Properties}
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
@@ -321,6 +323,26 @@ object TestHelper {
         throw new AssertionError(s"Expecting $expectedErrorName, but get ${e.getClass.getSimpleName}", e)
       case Success(_) =>
         throw new AssertionError(s"expecting $expectedErrorName, but no exception was thrown")
+    }
+  }
+
+  // TODO: clean up S3 as well
+  // also, this should become a class that inherit cleanable
+  def cleanTempDirs(paths: Seq[String] = Seq(Envs.USER_TEMP_DIR)): Unit = {
+    paths.filter(_ != null).foreach { path =>
+      try {
+        val file = new File(path)
+        Retry(3).apply {
+
+          val absoluteFile = file.getAbsoluteFile
+          if (absoluteFile != null && absoluteFile.exists())
+            FileUtil.fullyDelete(absoluteFile, true)
+        }
+
+      } catch {
+        case e: Throwable =>
+          LoggerFactory.getLogger(this.getClass).warn("cannot clean tempDirs", e)
+      }
     }
   }
 }
