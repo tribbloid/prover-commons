@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.function.fixture._
+import ai.acyclic.prover.commons.function.fixture.*
 import ai.acyclic.prover.commons.function.hom.Hom.Circuit
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
@@ -8,7 +8,7 @@ object CircuitSpec {}
 
 class CircuitSpec extends BaseSpec {
 
-  import Circuits._
+  import Circuits.*
 
   describe("define by") {
 
@@ -26,7 +26,16 @@ class CircuitSpec extends BaseSpec {
       val cc: Circuit[Int, String] = { v =>
         "" + v
       }
+      assert(cc.getClass == classOf[Circuit.Blackbox[_, _]])
       assert((cc.apply(1): String) == "1")
+
+      def useCircuit(c: Circuit[Int, String]): String = {
+        c.apply(1)
+      }
+
+//      assert(useCircuit { _ =>
+//        "1"
+//      } == "1") // TODO: only works in Scala 3
     }
   }
 

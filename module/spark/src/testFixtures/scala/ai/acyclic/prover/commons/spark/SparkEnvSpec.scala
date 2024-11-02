@@ -5,17 +5,23 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.scalatest.BeforeAndAfterAll
 
-trait SparkEnvSpec extends BaseSpec with BeforeAndAfterAll with SparkUISupport {
+trait SparkEnvSpec extends SparkEnvSpec.NoUISupport with SparkUISupport {}
 
-  final def sc: SparkContext = TestHelper.TestSC
+object SparkEnvSpec {
 
-  final def sql: SQLContext = TestHelper.TestSQL
+  trait NoUISupport extends BaseSpec with BeforeAndAfterAll {
 
-  final def parallelism: Int = sc.defaultParallelism
+    final def sc: SparkContext = TestHelper.TestSC
 
-  override def beforeAll(): Unit = {
+    final def sql: SQLContext = TestHelper.TestSQL
 
-    super.beforeAll()
-    sc // initialize before all tests
+    final def parallelism: Int = sc.defaultParallelism
+
+    override def beforeAll(): Unit = {
+
+      super.beforeAll()
+      sc // initialize before all tests
+    }
+
   }
 }

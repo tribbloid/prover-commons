@@ -12,7 +12,6 @@ allprojects {
 
     }
 
-
     tasks {
 
         withType<ScalaCompile> {

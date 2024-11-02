@@ -3,11 +3,11 @@ package ai.acyclic.prover.commons.viz
 import ai.acyclic.prover.commons.diff.StringDiff.SuperSet
 import ai.acyclic.prover.commons.meta.ScalaReflection.WeakTypeTag
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import shapeless.{syntax, HNil, Witness}
+import shapeless.{HNil, Witness, syntax}
 
 class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
-  import TypeVizSpec._
+  import TypeVizSpec.*
 
   def infer[T: WeakTypeTag](v: T): String = {
 
@@ -136,7 +136,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
   }
 
   it("record") {
-    import syntax.singleton._
+    import syntax.singleton.*
 
     val book =
       ("author" ->> "Benjamin Pierce") ::
@@ -202,47 +202,89 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       )
     }
 
-    it("global Witness.T") {
+    describe("Witness.T") {
 
-      infer(singletonW.value)
-        .shouldBe(
-          """
-            |+ ai.acyclic.prover.commons.viz.TypeVizSpec.singletonW.T
-            |!-+ Int
-            |  !-- AnyVal
-            |""".stripMargin
-        )
+      it("global") {
 
-      infer[3](adhocW.value)
-        .shouldBe(
-          """
-            |+ Int(3)
-            |!-+ Int
-            |  !-- AnyVal
-            |""".stripMargin
-        )
+        infer(singletonW.value)
+          .shouldBe(
+            """
+              |+ ai.acyclic.prover.commons.viz.TypeVizSpec.singletonW.T
+              |!-+ Int
+              |  !-- AnyVal
+              |""".stripMargin
+          )
+
+        infer[3](adhocW.value)
+          .shouldBe(
+            """
+              |+ Int(3)
+              |!-+ Int
+              |  !-- AnyVal
+              |""".stripMargin
+          )
+      }
+
+      it("local") {
+
+        {
+          val vv = adhocW.value
+
+          infer(vv)
+            .shouldBe(
+              infer(adhocW.value)
+            )
+        }
+
+        {
+          val vv = singletonW.value
+
+          infer(vv)
+            .shouldBe(
+              infer(singletonW.value)
+            )
+        }
+      }
 
     }
 
-    it("local Witness.T") {
+    it("case class constructor") {
 
-      {
-        val vv = adhocW.value
+      infer(W)
+        .shouldBe(
+          """
+            |+ ai.acyclic.prover.commons.viz.TypeVizSpec.W.type
+            |!-+ ai.acyclic.prover.commons.viz.TypeVizSpec.W.type
+            |  !-- java.io.Serializable ............................................................ [0]
+            |  !-+ scala.runtime.AbstractFunction1[Int,ai.acyclic.prover.commons.viz.TypeVizSpec.W]
+            |    :       ┏ + scala.runtime.AbstractFunction1 [ 2 ARGS ] :
+            |    :       ┃ !-+ Int ............................................................................. [2]
+            |    :       ┃ : !-- AnyVal
+            |    :       ┃ !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.W ..................................... [3]
+            |    :       ┃   !-- java.io.Serializable ... (see [0])
+            |    :       ┃   !-+ Product
+            |    :       ┃   : !-- Equals
+            |    :       ┃   !-- Object ... (see [1])
+            |    !-+ Int => ai.acyclic.prover.commons.viz.TypeVizSpec.W
+            |      :       ┏ + Function1 [ 2 ARGS ] :
+            |      :       ┃ !-- Int ... (see [2])
+            |      :       ┃ !-- ai.acyclic.prover.commons.viz.TypeVizSpec.W ... (see [3])
+            |      !-- Object .......................................................................... [1]
+            |""".stripMargin
+        )
+    }
 
-        infer(vv)
-          .shouldBe(
-            infer(adhocW.value)
-          )
-      }
+    it("... with args") {
 
-      {
-        val vv = singletonW.value
-
-        infer(vv)
-          .shouldBe(
-            infer(singletonW.value)
-          )
-      }
+      infer(WArg)
+        .shouldBe(
+          """
+            |+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg.type
+            |!-+ ai.acyclic.prover.commons.viz.TypeVizSpec.WArg.type
+            |  !-- java.io.Serializable
+            |  !-- Object
+            |""".stripMargin
+        )
     }
 
   }
@@ -529,6 +571,8 @@ object TypeVizSpec {
   trait S2K[V]
 
   trait S2 extends S2K[S2] with S1
+
+  case class W(v: Int)
 
   case class WArg[T](v: T)
 

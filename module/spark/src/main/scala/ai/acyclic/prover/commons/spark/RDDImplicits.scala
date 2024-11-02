@@ -7,7 +7,6 @@ import org.apache.spark.sql._SQLHelper
 import org.apache.spark.storage.{RDDInfo, StorageLevel}
 import org.apache.spark.{HashPartitioner, SparkContext, TaskContext}
 
-import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.util.Random
 

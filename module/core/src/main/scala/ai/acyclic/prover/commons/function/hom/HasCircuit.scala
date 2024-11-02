@@ -15,15 +15,27 @@ trait HasCircuit extends Capability.Universe {
 
   trait CanNormalise_Impl0 {
 
-    implicit def asFunctionView[I, O](v: CanNormalise[I, O])(
+    implicit def asFunction1[I, O](v: CanNormalise[I, O])(
         implicit
         _definedAt: SrcPosition
-    ): Circuit.FunctionView[I, O] = {
+    ): Circuit.Function1View[I, O] = {
       v match {
 
-        case vv: Circuit.FunctionView[_, _] => vv.asInstanceOf[Circuit.FunctionView[I, O]]
+        case vv: Circuit.Function1View[_, _] => vv.asInstanceOf[Circuit.Function1View[I, O]]
         case _ =>
-          new Circuit.FunctionView(v.normalise, _definedAt)
+          Circuit.Function1View(v.normalise, _definedAt)
+      }
+    }
+
+    implicit def asFunction0[O](v: CanNormalise[Unit, O])(
+        implicit
+        _definedAt: SrcPosition
+    ): Thunk.Function0View[O] = {
+      v match {
+
+        case vv: Thunk.Function0View[_] => vv.asInstanceOf[Thunk.Function0View[O]]
+        case _ =>
+          Thunk.Function0View(v.normalise, _definedAt)
       }
     }
   }
@@ -74,15 +86,17 @@ trait HasCircuit extends Capability.Universe {
       }
     }
 
-    private[HasCircuit] case class FunctionView[I, O](
+    private[HasCircuit] case class Function1View[I, O](
         self: Circuit[I, O],
         _definedAt: SrcPosition
     ) extends Function[I, O] {
 
+      def function1: Function1View[I, O] = this
+
       final override def apply(v: I): O = self(v)
 
       // TODO: both of these are not narrow enough
-      final override def andThen[O2](next: O => O2): FunctionView[I, O2] = {
+      final override def andThen[O2](next: O => O2): Function1View[I, O2] = {
 
         val _next = Circuit.define(next)(_definedAt)
 
@@ -92,7 +106,7 @@ trait HasCircuit extends Capability.Universe {
         result
       }
 
-      final override def compose[I1](prev: I1 => I): FunctionView[I1, O] = {
+      final override def compose[I1](prev: I1 => I): Function1View[I1, O] = {
 
         val _prev = Circuit.define(prev)(_definedAt)
 
@@ -330,7 +344,7 @@ trait HasCircuit extends Capability.Universe {
         _definedAt: SrcPosition
     ): Circuit[I, R] = {
       fn match {
-        case FunctionView(c, _) => c
+        case Function1View(c, _) => c
         case _ =>
           Blackbox[I, R]()(fn)
       }
@@ -340,7 +354,11 @@ trait HasCircuit extends Capability.Universe {
         implicit
         _definedAt: SrcPosition
     ): Circuit[Unit, R] = {
-      fromFunction1[Unit, R](_ => fn())
+
+      fn match {
+        case Thunk.Function0View(c, _) => c
+        case _                         => fromFunction1[Unit, R]((_: Unit) => fn())
+      }
     }
 
     trait Cached extends Pure
@@ -380,8 +398,8 @@ trait HasCircuit extends Capability.Universe {
     ): I Target O = {
 
       vanilla match {
-        case fnView: self.FunctionView[_, _] => fnView.self.asInstanceOf[Circuit.Impl[I, O]]
-        case _                               => self.Blackbox()(vanilla)(_definedAt)
+        case fnView: self.Function1View[_, _] => fnView.self.asInstanceOf[Circuit.Impl[I, O]]
+        case _                                => self.Blackbox()(vanilla)(_definedAt)
       }
     }
   }
@@ -420,5 +438,19 @@ trait HasCircuit extends Capability.Universe {
     }
 
     case class Eager[O](value: O) extends Cached_[O] {}
+
+    private[HasCircuit] case class Function0View[O](
+        self: Thunk[O],
+        _definedAt: SrcPosition
+    ) extends Function0[O] {
+
+      def function0: Function0View[O] = this
+
+      final override def apply(): O = self(())
+
+      def trace: Circuit.Tracing[Unit, O] = Circuit.Tracing(self.normalise)
+
+      //      override def normalise: Circuit[I, O] = self.normalise
+    }
   }
 }
