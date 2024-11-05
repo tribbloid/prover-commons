@@ -90,7 +90,7 @@ trait RDDImplicits {
       assert(self.isEmpty())
     }
 
-    def shufflePartitions: RDD[T] = {
+    def shufflePartitions(): RDD[T] = {
 
       val randomKeyed: RDD[(Long, T)] = self.keyBy(_ => Random.nextLong())
       val shuffled = randomKeyed.partitionBy(new HashPartitioner(self.partitions.length))
