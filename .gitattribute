@@ -1,13 +1,14 @@
-*.bat text eol=crlf
-*.cmd text eol=crlf
-*.java text eol=lf
-*.scala text eol=lf
-*.xml text eol=lf
-*.py text eol=lf
-*.R text eol=lf
+
+*.bat text eol=crlf executable core.fileMode=true
+*.cmd text eol=crlf executable core.fileMode=true
+*.sh text eol=lf executable core.fileMode=true
+*.java text eol=lf -executable
+*.scala text eol=lf -executable
+*.xml text eol=lf -executable
+*.py text eol=lf -executable
+*.R text eol=lf -executable
 # mimicking apache spark
 
-*.sh text eol=lf
-
 # Auto detect text files and perform LF normalization
-* text=auto eol=lf
+* text=auto eol=lf -executable
+* -executable
