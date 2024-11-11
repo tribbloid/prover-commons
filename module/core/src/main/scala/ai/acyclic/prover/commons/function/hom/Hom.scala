@@ -17,8 +17,8 @@ object Hom extends Hom_Imp0 {
 
     type Poly = Hom.Poly
 
-    type Mono[T, I[_ <: T], R[_ <: T]] = MonoImpl[T, I, R]
+    type Mono[T, I[_ <: T], R[_ <: T]] = Mono.Impl[T, I, R]
 
-    type Dependent[T, R[_ <: T]] = DependentImpl[T, R]
+    type Dependent[T, R[_ <: T]] = Dependent.Impl[T, R]
   }
 }

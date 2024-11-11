@@ -5,8 +5,8 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class SameSpec extends BaseSpec {
 
-  import Same._
-  import SameSpec._
+  import Same.*
+  import SameSpec.*
 
   it(ByMemory.getClass.getSimpleName) {
     val set = fixtures.map { v =>

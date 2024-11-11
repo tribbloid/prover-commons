@@ -7,9 +7,6 @@ allprojects {
 
         scalaCompilerPlugins("org.typelevel:kind-projector_${vs.scala.v}:0.13.3")
 //        TODO: enable for all project as it is an important syntax
-
-//        TODO: use "-P:kind-projector:underscore-placeholders" once migrated to source:3
-
     }
 
     tasks {
@@ -23,9 +20,17 @@ allprojects {
 //                        "-Xsource:3-cross",
                         "-Xsource:3",
                         // quickfix should be disabled ASAP after migration
-//                        "-quickfix",
+//                        "-quickfix:any",
+//                        "-quickfix:cat=scala3-migration",
+
+                        // the above "quickfix" can't handle many syntax changes, like [_] => [?] or import x._ => import x.*
+//                      // in this case IntelliJ IDEA analyze/`Run inspection by name`/quickfix should be used
+
+//                        "-quickfix:help", TODO: this doesn't work
+//                        "-rewrite",
 //                        "-quickfix:cat=scala3-migration"
 
+                        "-P:kind-projector:underscore-placeholders"
                     )
                 )
             }

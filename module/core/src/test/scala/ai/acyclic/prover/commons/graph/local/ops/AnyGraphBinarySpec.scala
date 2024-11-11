@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class AnyGraphBinarySpec extends BaseSpec {
 
-  import GraphFixture._
+  import GraphFixture.*
 
   describe("Union") {
 

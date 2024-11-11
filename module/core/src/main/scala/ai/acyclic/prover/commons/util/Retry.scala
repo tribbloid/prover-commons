@@ -91,14 +91,14 @@ object Retry {
         retryOvrd: Retry
     ): T = {
 
-      import retryOvrd._
+      import retryOvrd.*
 
       // TODO: merge with CommonUtils
       lazy val _callerShowStr = {
         Option(showStr).getOrElse {
           CallStackRef
             .below(
-              condition = _.isUnderClasses(classOf[Retry], classOf[RetryImpl[_]])
+              condition = _.isUnderClasses(classOf[Retry], classOf[RetryImpl[?]])
             )
             .showStr
         }
@@ -168,7 +168,7 @@ case class Retry(
     showStr: String = null
 ) {
 
-  import Retry._
+  import Retry.*
 
   def apply[T](fn: => T): T = {
 

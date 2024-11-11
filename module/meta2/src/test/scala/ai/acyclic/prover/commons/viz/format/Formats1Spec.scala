@@ -1,16 +1,15 @@
 package ai.acyclic.prover.commons.viz.format
 
-import ai.acyclic.prover.commons.viz.format.Formats1.{RecursiveForm, Trials}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
-import ai.acyclic.prover.commons.viz.format.{Formats0, TypeFormat}
 import ai.acyclic.prover.commons.viz.format.Formats0.TypeInfo
+import ai.acyclic.prover.commons.viz.format.Formats1.{RecursiveForm, Trials}
 import ai.acyclic.prover.commons.viz.format.beans.Beans
 import shapeless.{::, HNil}
 
 class Formats1Spec extends BaseSpec {
 
-  import Beans._
+  import Beans.*
 
   describe("Transform text recursively") {
 

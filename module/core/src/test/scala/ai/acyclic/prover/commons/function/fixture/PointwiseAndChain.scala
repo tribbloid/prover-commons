@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.function.hom.Hom
 
 object PointwiseAndChain {
 
-  import Circuits._
+  import Circuits.*
 
   private val pointwise: Hom.Circuit.Tracing[(Int, Long), (Seq[Long], Seq[Double])] = fn1.trace >< fn2.trace
 

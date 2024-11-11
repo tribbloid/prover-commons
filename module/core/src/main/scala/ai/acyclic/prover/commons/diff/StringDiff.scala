@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.typesetting.TextBlock
 case class StringDiff(
     left: Option[String],
     right: Option[String],
-    classes: Seq[Class[_]] = Nil,
+    classes: Seq[Class[?]] = Nil,
     sort: Boolean = false,
     ignoreCase: Boolean = false,
     trim: TextBlock => TextBlock = StringDiff.defaultTrim

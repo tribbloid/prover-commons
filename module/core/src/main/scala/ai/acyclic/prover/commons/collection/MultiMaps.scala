@@ -102,7 +102,7 @@ object MultiMaps {
     type View[K, V] = Immutable[K, V]
 
     override def apply[K, V](kvs: (K, V)*): Immutable[K, V] = {
-      val buffer: Mutable[K, V] = Mutable(kvs: _*)
+      val buffer: Mutable[K, V] = Mutable(kvs *)
 
       new Immutable(buffer.self)
     }

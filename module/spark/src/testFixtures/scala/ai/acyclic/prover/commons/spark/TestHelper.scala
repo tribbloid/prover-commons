@@ -269,7 +269,7 @@ object TestHelper {
     TestSC.setCheckpointDir("/tmp/spark-checkpoint/" + new Date().toString)
   }
 
-  def setLoggerDuring[T](clazzes: Class[_]*)(fn: => T, level: String = "OFF"): T = {
+  def setLoggerDuring[T](clazzes: Class[?]*)(fn: => T, level: String = "OFF"): T = {
     val logger_oldLevels = clazzes.map { clazz =>
       val logger = org.apache.log4j.Logger.getLogger(clazz)
       val oldLevel = logger.getLevel

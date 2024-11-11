@@ -44,7 +44,7 @@ object LinkedHierarchy {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit = {
+    override def dryRun(tree: Local.Tree[? <: RefBindingLike]): Unit = {
       val unary = {
         AnyGraphUnary
           .^(tree, backbone.maxDepth)
@@ -77,7 +77,7 @@ object LinkedHierarchy {
 
 trait LinkedHierarchy extends Visualisation.OfType {
 
-  import LinkedHierarchy._
+  import LinkedHierarchy.*
 
   final override val applicableToType: Local.AnyGraph.Outbound.type = Local.AnyGraph.Outbound
 
@@ -91,7 +91,7 @@ trait LinkedHierarchy extends Visualisation.OfType {
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  protected def dryRun(tree: Local.Tree[_ <: RefBindingLike]): Unit
+  protected def dryRun(tree: Local.Tree[? <: RefBindingLike]): Unit
 
   final override def visualise[V](data: Graph_/\[V]): Visualized[V] = Group().Viz(data)
 

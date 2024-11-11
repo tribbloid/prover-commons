@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class HasInnerSpec extends BaseSpec {
 
-  import HasInnerSpec._
+  import HasInnerSpec.*
 
   it("can summon from path-dependent companion object") {
 

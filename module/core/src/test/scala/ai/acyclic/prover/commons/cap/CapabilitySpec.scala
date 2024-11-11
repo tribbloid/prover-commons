@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 import shapeless.test.illTyped
 
 class CapabilitySpec extends BaseSpec {
-  import CapabilitySpec._
+  import CapabilitySpec.*
 
   it("can enable capability in compile-time & runtime") {
 

@@ -13,7 +13,7 @@ import scala.language.implicitConversions
   *   value
   */
 trait LookupMagnet[K, V] {
-  import LookupMagnet._
+  import LookupMagnet.*
 
   def asMap: MapRepr[K, V]
 

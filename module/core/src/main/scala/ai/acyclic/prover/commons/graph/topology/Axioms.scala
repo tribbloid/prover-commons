@@ -21,7 +21,7 @@ object Axioms {
 
   object ExtractArrow {
 
-    type Gt[L <: Axioms] = ExtractArrow[_ >: L]
+    type Gt[L <: Axioms] = ExtractArrow[? >: L]
 
     implicit def onlyCase[A <: Arrow]: ExtractArrow[Lt_[A]] { type _Arrow = A } =
       new ExtractArrow[Lt_[A]] {

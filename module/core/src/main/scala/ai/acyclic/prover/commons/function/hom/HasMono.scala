@@ -27,19 +27,38 @@ trait HasMono extends HasPoly {
     * @tparam T_/\
     *   parameter's upper bound
     */
-  sealed trait MonoLike[
-      -T_/\
-  ] extends Poly {
+  object MonoLike {
 
-    type In[_ <: T_/\]
-    type Out[T <: T_/\]
+    sealed trait Decreasing[
+        -T_/\
+    ] extends Poly {
 
-    def apply[T <: T_/\](arg: In[T]): Out[T]
+      type In[_ <: T_/\]
+      type Out[_ <: T_/\]
 
-    implicit final def only[T <: T_/\]: In[T] Target Out[T] = at[In[T]] { v =>
-      apply(v)
+      def apply[T <: T_/\](arg: In[T]): Out[T]
+
+      implicit final def only[T <: T_/\]: In[T] Target Out[T] = at[In[T]] { v =>
+        apply(v)
+      }
+    }
+
+    sealed trait Increasing[
+        +T_\/
+    ] extends Poly {
+
+      type In[_ >: T_\/]
+      type Out[T >: T_\/]
+
+      def apply[T >: T_\/](arg: In[T]): Out[T]
+
+      implicit final def only[T >: T_\/]: In[T] Target Out[T] = at[In[T]] { v =>
+        apply(v)
+      }
     }
   }
+
+  type MonoLike[-T_/\] = MonoLike.Decreasing[T_/\]
 
   type Mono[T_/\, -I[_ <: T_/\], +O[_ <: T_/\]] = MonoLike[T_/\] {
     type In[T <: T_/\] >: I[T]
@@ -47,6 +66,11 @@ trait HasMono extends HasPoly {
   }
 
   object Mono {
+
+    trait Impl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends MonoLike[T_/\] {
+      type In[T <: T_/\] = I[T]
+      type Out[T <: T_/\] = O[T]
+    }
 
     case class Is[I, O](backbone: Circuit[I, O]) extends MonoLike[Any] {
 
@@ -107,16 +131,11 @@ trait HasMono extends HasPoly {
     }
   }
 
-  trait MonoImpl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends MonoLike[T_/\] {
-    type In[T <: T_/\] = I[T]
-    type Out[T <: T_/\] = O[T]
-  }
-
   sealed trait DependentLike[
       T_/\
   ] extends MonoLike[T_/\] {
 
-    type In[+T <: T_/\] = T
+    type In[T <: T_/\] = T
   }
 
   /**
@@ -131,9 +150,15 @@ trait HasMono extends HasPoly {
   type Dependent[T_/\, +O[_ <: T_/\]] = DependentLike[T_/\] {
     type Out[T <: T_/\] <: O[T]
   }
-  object Dependent {}
+  object Dependent {
 
-  trait DependentImpl[T_/\, O[_ <: T_/\]] extends DependentLike[T_/\] {
-    type Out[T <: T_/\] = O[T]
+    trait Impl[T_/\, O[_ <: T_/\]] extends DependentLike[T_/\] {
+      type Out[T <: T_/\] = O[T]
+    }
+
+    type Invar[T] = T
+
+    trait Identity extends Impl[Any, Invar]
   }
+
 }

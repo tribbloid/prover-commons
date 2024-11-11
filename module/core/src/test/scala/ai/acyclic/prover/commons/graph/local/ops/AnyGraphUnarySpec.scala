@@ -10,7 +10,7 @@ import scala.collection.mutable
 
 class AnyGraphUnarySpec extends BaseSpec {
 
-  import GraphFixture._
+  import GraphFixture.*
 
   it("Upcast") {
     val result = AnyGraphUnary

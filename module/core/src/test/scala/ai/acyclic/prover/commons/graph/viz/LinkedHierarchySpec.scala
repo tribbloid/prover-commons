@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class LinkedHierarchySpec extends BaseSpec {
 
-  import GraphFixture._
+  import GraphFixture.*
 
   describe(Hierarchy.Indent2.productPrefix) {
 //    lazy val format = Hierarchy.Indent2

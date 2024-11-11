@@ -415,10 +415,10 @@ trait HasCircuit extends Capability.Universe {
       implicitly[Impl[O] <:< Thunk[O]]
     }
 
-    type Const[O] = Impl[O] with Circuit.Pure
+    type Const[O] = Impl[O] & Circuit.Pure
     sealed trait Const_[O] extends Impl[O] with Circuit.Pure
 
-    type Cached[O] = Impl[O] with Circuit.Cached
+    type Cached[O] = Impl[O] & Circuit.Cached
     sealed trait Cached_[O] extends Const_[O] with Circuit.Cached {
 
       protected def value: O

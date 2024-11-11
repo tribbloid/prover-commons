@@ -17,7 +17,7 @@ trait TermAndTypeOfMixin extends TypeOfMixin {
     //       |""".stripMargin.trim
     //  }
 
-    def ===!(that: TermAndTypeOf[_] = null): Unit = {
+    def ===!(that: TermAndTypeOf[?] = null): Unit = {
 
       should_=:=(that)
 

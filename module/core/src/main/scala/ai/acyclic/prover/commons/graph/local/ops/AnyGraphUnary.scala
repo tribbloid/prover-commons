@@ -11,7 +11,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
     implicitly[ArgLaw <:< Local.AnyGraph._Axiom]
   }
 
-  import AnyGraphUnary._
+  import AnyGraphUnary.*
 
   def isEmpty: Boolean = arg.entries.isEmpty
 
@@ -49,7 +49,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
           n.map(v => fn(v): V2)
         }
 
-        Local.AnyGraph.makeWithAxioms[ArgLaw, V2](newNode: _*)(argPlan.axioms)
+        Local.AnyGraph.makeWithAxioms[ArgLaw, V2](newNode *)(argPlan.axioms)
       }
 
       result
@@ -105,7 +105,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
       override def compute: LocalEngine.GraphKOfTheEngine.Unchecked[ArgLaw, ArgV] = {
         val transformed: Seq[ArgNode] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
-        Local.AnyGraph.makeWithAxioms[ArgLaw, ArgV](transformed: _*)(argPlan.axioms)
+        Local.AnyGraph.makeWithAxioms[ArgLaw, ArgV](transformed *)(argPlan.axioms)
       }
     }
 

@@ -99,7 +99,7 @@ object PendingEffectSpec extends PendingEffect.Universe {
   val ex1: Ex << IO1 = ex0
 
 //  val ex12: Ex << IO1 << IO2 = ex1 // only works in Scala 3
-  val ex12: Ex << (IO1 with IO2) = ex1
+  val ex12: Ex << (IO1 & IO2) = ex1
 
-  val ex123: Ex << (IO1 with IO2 with IO3) = ex12
+  val ex123: Ex << (IO1 & IO2 & IO3) = ex12
 }

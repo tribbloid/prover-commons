@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class HierarchySpec extends BaseSpec {
 
-  import TreeFixture._
+  import TreeFixture.*
 
   describe(Hierarchy.Indent2.productPrefix) {
     Hierarchy.Indent2

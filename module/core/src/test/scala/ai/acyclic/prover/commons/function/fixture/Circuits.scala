@@ -13,7 +13,7 @@ object Circuits {
   }
 
   final lazy val fn2: Long :=> Seq[Double] = :=> { v =>
-    Seq(v, v + 0.1, v + 0.2)
+    Seq(v.toDouble, v + 0.1, v + 0.2)
   }
 
   lazy val fn0Text: String = {

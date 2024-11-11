@@ -23,7 +23,7 @@ object GraphK {
   trait Aux_[+X <: Axioms, V] extends GraphK[X] { type Value = V }
 
   // Acronym of "Less Than"
-  type Lt[+X <: Axioms, +A <: Arrow, +V] = Aux[X, _ <: V]
+  type Lt[+X <: Axioms, +A <: Arrow, +V] = Aux[X, ? <: V]
 
   def asGraph = this
 }

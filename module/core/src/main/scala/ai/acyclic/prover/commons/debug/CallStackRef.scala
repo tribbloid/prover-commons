@@ -5,7 +5,7 @@ case class CallStackRef(
     belowIndex: Int = 0
 ) {
 
-  import CallStackRef._
+  import CallStackRef.*
 
   lazy val effectiveStack: Vector[StackTraceElement] = stack.drop(belowIndex)
 
@@ -104,7 +104,7 @@ object CallStackRef {
 
     def isUnder(
         paths: Seq[String] = Nil,
-        classes: Seq[Class[_]] = Nil
+        classes: Seq[Class[?]] = Nil
     ): Boolean = {
 
       val _paths = paths ++ classes.map(_.getName.stripSuffix("$"))
@@ -139,7 +139,7 @@ object CallStackRef {
     }
 
     def isUnderClasses(
-        classes: Class[_]*
+        classes: Class[?]*
     ): Boolean = {
       isUnder(classes = classes)
     }

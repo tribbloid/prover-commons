@@ -9,14 +9,14 @@ trait HasPolyLike extends HasCircuit {
 
     object IsCase extends Capability
 
-    type Case[+FF <: Circuit.Theorem[_, _]] = <>[FF, IsCase.type]
+    type Case[+FF <: Circuit.Theorem[?, ?]] = <>[FF, IsCase.type]
 
-    type At[I] = Case[Circuit.Theorem[I, _]]
+    type At[I] = Case[Circuit.Theorem[I, ?]]
     type Compat[-I, +O] = Case[Circuit.Theorem[I, O]]
 
     type Lemma[I, O] = Case[Circuit.Impl[I, O]]
     type |-[I, O] = Lemma[I, O]
-    type LemmaAt[I] = Case[Circuit.Impl[I, _]]
+    type LemmaAt[I] = Case[Circuit.Impl[I, ?]]
     // All lemma requires tightest In/Out type bound, like shapeless DepFn
 
     protected type Target[I, O] = Case[Circuit.Impl[I, O]]

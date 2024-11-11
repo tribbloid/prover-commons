@@ -70,7 +70,7 @@ trait NodeK[+L <: Axioms] extends Lawful.Structure[L] {
 object NodeK {
 
   type Aux[+L <: Axioms, V] = NodeK[L] { type Value = V }
-  type Compat[+L <: Axioms, +V] = Aux[L, _ <: V]
+  type Compat[+L <: Axioms, +V] = Aux[L, ? <: V]
 
   trait Typed[+L <: Axioms, V] extends NodeK[L] { type Value = V }
 

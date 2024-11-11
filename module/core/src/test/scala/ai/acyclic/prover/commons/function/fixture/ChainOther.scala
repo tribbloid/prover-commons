@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 object ChainOther {
 
-  import Circuits._
+  import Circuits.*
 
   val s1: Int :=> String = fn0.andThen[String] { v =>
     s"${v}b"

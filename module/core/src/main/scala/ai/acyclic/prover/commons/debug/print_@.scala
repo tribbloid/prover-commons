@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.debug
 
 case class print_@(
-    belowClasses: Seq[Class[_]]
+    belowClasses: Seq[Class[?]]
 ) {
 
   def wrapInfo[T](

@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 object ChainTwice {
 
-  import Circuits._
+  import Circuits.*
 
   val s1 =
     for (

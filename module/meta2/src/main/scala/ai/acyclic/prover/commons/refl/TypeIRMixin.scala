@@ -81,7 +81,7 @@ trait TypeIRMixin {
 //      ff.forms
 //    }
 
-    lazy val children: Seq[Product with TypeIRMixin.this.IRLike with java.io.Serializable] = {
+    lazy val children: Seq[Product & TypeIRMixin.this.IRLike & java.io.Serializable] = {
 
       val both = annotations ++
         Seq(

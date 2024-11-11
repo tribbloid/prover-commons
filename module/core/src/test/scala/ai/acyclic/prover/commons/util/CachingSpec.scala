@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-
 import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.duration.Duration
@@ -9,7 +8,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
 class CachingSpec extends BaseSpec with BeforeAndAfterEach {
 
-  import CachingSpec._
+  import CachingSpec.*
   implicit def global: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
   override def beforeEach(): Unit = {

@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 object ChainSelf {
 
-  import Circuits._
+  import Circuits.*
 
   val s0: Int :=> Int = fn0.andThen(fn0)
 

@@ -10,7 +10,7 @@ class PolySpec extends BaseSpec {
 
   describe("Poly") {
 
-    import ai.acyclic.prover.commons.function.fixture.Polys._
+    import ai.acyclic.prover.commons.function.fixture.Polys.*
 
     describe("case definition") {
 

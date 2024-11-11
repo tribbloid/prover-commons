@@ -10,12 +10,12 @@ trait Caching extends Serializable {
 
   trait CacheTag
 
-  def build[K, V](): LookupMagnet[K, V] with CacheTag
+  def build[K, V](): LookupMagnet[K, V] & CacheTag
 }
 
 object Caching {
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
 
   object Maps extends Caching {
 

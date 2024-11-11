@@ -50,7 +50,7 @@ trait TypeOfMixin extends HasReflection {
       text_hierarchy.toString
     }
 
-    def should_=:=(that: TypeOf[_] = null): Unit = {
+    def should_=:=(that: TypeOf[?] = null): Unit = {
 
       val Seq(s1, s2) = Seq(this, that).map { v =>
         Option(v).map(_.text_hierarchy.toString)
@@ -71,12 +71,12 @@ trait TypeOfMixin extends HasReflection {
       }
     }
 
-    def =!=(that: TypeOf[_] = null): Unit = should_=:=(that)
+    def =!=(that: TypeOf[?] = null): Unit = should_=:=(that)
   }
 
   object TypeOf {
 
-    implicit def asNodes(v: TypeOf[_]): v.vizGroup.Nodes = v.nodes
+    implicit def asNodes(v: TypeOf[?]): v.vizGroup.Nodes = v.nodes
   }
 
   object VisualisationGroup extends Local.AnyGraph.Outbound.Group {
@@ -112,7 +112,7 @@ trait TypeOfMixin extends HasReflection {
           }
           .toSeq
 
-        Local.AnyGraph.Outbound(argNodes: _*)
+        Local.AnyGraph.Outbound(argNodes *)
       }
 
       lazy val typeText: String = ir.text

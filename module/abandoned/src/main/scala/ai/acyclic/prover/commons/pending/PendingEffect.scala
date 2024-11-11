@@ -23,7 +23,7 @@ object PendingEffect extends PendingGroup {
 //      implicitly[(Ex << IO1) <:< (Ex << IO1 << IO2)] only works in Scala 3
 //    implicitly[(Ex << IO1) <:< (Ex << IO2 << IO1)] should fail
 
-    implicitly[(Ex << IO1) <:< (Ex << (IO1 with IO2))]
+    implicitly[(Ex << IO1) <:< (Ex << (IO1 & IO2))]
   }
 
   trait Universe extends PendingGroup {}

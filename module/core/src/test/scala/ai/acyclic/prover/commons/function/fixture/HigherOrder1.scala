@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 object HigherOrder1 {
 
-  import Circuits._
+  import Circuits.*
 
   val s1: (Int :=> Int) :=> (Unit :=> Seq[Int]) = :=> { circuit =>
     val result = for (const <- circuit.trace.higher) yield {

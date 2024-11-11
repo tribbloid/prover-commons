@@ -1,16 +1,15 @@
 package ai.acyclic.prover.commons.viz.format
 
 import ai.acyclic.prover.commons.meta.ScalaReflection
-import ai.acyclic.prover.commons.viz.format.FormatOvrd.{~~, SingletonName}
-import ai.acyclic.prover.commons.viz.format.Formats0.{ClassName, TypeImpl}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
-import ai.acyclic.prover.commons.viz.format.TypeFormat
+import ai.acyclic.prover.commons.viz.format.FormatOvrd.{SingletonName, ~~}
+import ai.acyclic.prover.commons.viz.format.Formats0.{ClassName, TypeImpl}
 import shapeless.Witness
 
 class FormatOvrdSpec extends BaseSpec {
 
-  import FormatOvrdSpec._
+  import FormatOvrdSpec.*
 
   val format: TypeFormat = EnableOvrd(TypeImpl.DeAlias)
 
@@ -71,11 +70,11 @@ class FormatOvrdSpec extends BaseSpec {
 
       viz[o2._Info].typeStr
         .shouldBe(
-          s"${classOf[SingletonName[_]].getCanonicalName}[local.type]: ClassArgsTypeRef"
+          s"${classOf[SingletonName[?]].getCanonicalName}[local.type]: ClassArgsTypeRef"
         )
 
       viz[W_Singleton[Int]#_Info].typeStr.shouldBe(
-        s"${classOf[SingletonName[_]].getCanonicalName}[Int]: ClassArgsTypeRef"
+        s"${classOf[SingletonName[?]].getCanonicalName}[Int]: ClassArgsTypeRef"
       )
 
       viz[W_Singleton[Int]#_InfoWFallback].typeStr.shouldBe(
@@ -108,7 +107,7 @@ object FormatOvrdSpec {
 
     type _Info = SingletonName[T]
 
-    type _InfoWFallback = _Info with ClassName[this.type]
+    type _InfoWFallback = _Info & ClassName[this.type]
   }
   object W_Singleton {
 

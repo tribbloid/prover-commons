@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class FlowSpec extends BaseSpec {
 
-  import GraphFixture._
+  import GraphFixture.*
 
   describe("string") {
 

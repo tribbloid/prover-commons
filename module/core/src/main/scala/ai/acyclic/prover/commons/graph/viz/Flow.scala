@@ -25,7 +25,7 @@ object Flow {
 
 trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
-  import Local.AnyGraph._
+  import Local.AnyGraph.*
 
   override val applicableToType: Local.AnyGraph.type = Local.AnyGraph
 
@@ -39,7 +39,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
   def apply[V](s: Graph_/\[V]): Viz[V] = Viz(s)
 
-  val sameness = Same.Native.Rounding[Node[_]](v => Some(v.identityKey))
+  val sameness = Same.Native.Rounding[Node[?]](v => Some(v.identityKey))
 
   final override def visualise[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
 

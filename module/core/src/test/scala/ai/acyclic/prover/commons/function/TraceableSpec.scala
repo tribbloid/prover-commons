@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 object TraceableSpec {
 
-  import Traceable._
+  import Traceable.*
 
   val t1: BySrc = new BySrc {}
 
@@ -23,7 +23,7 @@ object TraceableSpec {
 
 class TraceableSpec extends BaseSpec {
 
-  import TraceableSpec._
+  import TraceableSpec.*
   describe("of instances") {
 
     it("ad-hoc class") {

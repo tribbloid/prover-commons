@@ -26,7 +26,7 @@ class CircuitSpec extends BaseSpec {
       val cc: Circuit[Int, String] = { v =>
         "" + v
       }
-      assert(cc.getClass == classOf[Circuit.Blackbox[_, _]])
+      assert(cc.getClass == classOf[Circuit.Blackbox[?, ?]])
       assert((cc.apply(1): String) == "1")
 
       def useCircuit(c: Circuit[Int, String]): String = {

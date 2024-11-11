@@ -23,9 +23,9 @@ object Visualisation {
 
   trait OfType extends Visualisation {
 
-    val applicableToType: Local.GraphTypeImpl[_ <: AnyGraphT, _ <: AnyGraphT]
+    val applicableToType: Local.GraphTypeImpl[? <: AnyGraphT, ? <: AnyGraphT]
 
-    implicitly[applicableToType.type <:< Local.GraphTypeImpl[_, _]]
+    implicitly[applicableToType.type <:< Local.GraphTypeImpl[?, ?]]
 
     final override type Graph_/\[V] = applicableToType.Graph[V]
     final override type Node_/\[V] = applicableToType.Node[V]

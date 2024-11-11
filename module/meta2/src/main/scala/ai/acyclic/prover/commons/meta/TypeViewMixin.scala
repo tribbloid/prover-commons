@@ -246,7 +246,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       val baseClzSyms = delegate.baseClasses
 
       val baseNodes = delegate match {
-        case v: (Type with scala.reflect.internal.Types#Type) @unchecked =>
+        case v: (Type & scala.reflect.internal.Types#Type) @unchecked =>
           val list = v.baseTypeSeq.toList.map { v =>
             v.asInstanceOf[Type] // https://github.com/scala/bug/issues/9837
           }
