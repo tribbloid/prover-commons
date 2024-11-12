@@ -19,7 +19,7 @@ trait HasPolyLike extends HasCircuit {
     type LemmaAt[I] = Case[Circuit.Impl[I, ?]]
     // All lemma requires tightest In/Out type bound, like shapeless DepFn
 
-    protected type Target[I, O] = Case[Circuit.Impl[I, O]]
+    protected type Target[I, O] = Lemma[I, O]
 
     override def define[I, R](fn: I => R)(
         implicit
@@ -36,6 +36,16 @@ trait HasPolyLike extends HasCircuit {
           implicit
           _case: Compat[I, O]
       ): _case.type = _case
+    }
+
+    object asShapelessPoly1 extends shapeless.Poly1 {
+
+      implicit def rewrite[I, R](
+          implicit
+          _case: I |- R
+      ): Case.Aux[I, R] = at[I] { v =>
+        _case.apply(v)
+      }
     }
   }
 

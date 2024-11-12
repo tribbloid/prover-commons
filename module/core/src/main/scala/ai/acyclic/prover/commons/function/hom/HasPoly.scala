@@ -27,16 +27,6 @@ trait HasPoly extends HasPolyLike {
       _case.apply(v)
     }
 
-    object asShapelessPoly1 extends shapeless.Poly1 {
-
-      implicit def rewrite[I, R](
-          implicit
-          _case: I Target R
-      ): Case.Aux[I, R] = at[I] { v =>
-        _case.apply(v)
-      }
-    }
-
   }
 
   object Poly {}

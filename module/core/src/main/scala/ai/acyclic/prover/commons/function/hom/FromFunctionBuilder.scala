@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.util.SrcPosition
 
 trait FromFunctionBuilder {
 
-  protected type Target[i, _]
+  protected type Target[_, _]
 
   def define[I, R](fn: I => R)(
       implicit

@@ -31,21 +31,21 @@ trait HasMono extends HasPoly {
 
     sealed trait Decreasing[
         -T_/\
-    ] extends Poly {
+    ] extends PolyLike {
 
       type In[_ <: T_/\]
       type Out[_ <: T_/\]
 
       def apply[T <: T_/\](arg: In[T]): Out[T]
 
-      implicit final def only[T <: T_/\]: In[T] Target Out[T] = at[In[T]] { v =>
+      implicit final def only[T <: T_/\]: In[T] |- Out[T] = at[In[T]] { v =>
         apply(v)
       }
     }
 
     sealed trait Increasing[
         +T_\/
-    ] extends Poly {
+    ] extends PolyLike {
 
       type In[_ >: T_\/]
       type Out[T >: T_\/]
