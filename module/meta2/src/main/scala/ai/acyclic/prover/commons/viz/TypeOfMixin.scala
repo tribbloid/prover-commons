@@ -112,7 +112,7 @@ trait TypeOfMixin extends HasReflection {
           }
           .toSeq
 
-        Local.AnyGraph.Outbound(argNodes *)
+        Local.AnyGraph.Outbound(argNodes*)
       }
 
       lazy val typeText: String = ir.text
@@ -175,7 +175,7 @@ trait TypeOfMixin extends HasReflection {
 
         override lazy val toString: String = {
 
-          val ttStr = node.unbox.typeConstructor.toString
+          val ttStr = node.as.typeConstructor.toString
 
           val size = node.args.size
 

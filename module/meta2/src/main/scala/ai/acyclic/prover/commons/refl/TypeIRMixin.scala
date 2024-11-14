@@ -53,7 +53,7 @@ trait TypeIRMixin {
 //        (annotations ++ derivedFrom)
         derivedFrom
           .filter { v =>
-            v.typeOps.unbox =:= TypeIR.this.typeOps.unbox
+            v.typeOps.as =:= TypeIR.this.typeOps.as
           }
 
       lazy val recursively: Seq[TypeIR] = {

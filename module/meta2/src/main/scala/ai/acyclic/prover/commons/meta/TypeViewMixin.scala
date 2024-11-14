@@ -39,16 +39,16 @@ private[meta] trait TypeViewMixin extends HasUniverse {
   }
 
   case class TypeView(
-      protected val delegate: Type
+      unbox: Type
   ) extends ApiView[Type] {
 
     TypeViewMixin.this
 
-    private lazy val _deAlias = delegate.dealias
+    private lazy val _deAlias = unbox.dealias
     final def dealias: TypeView = typeView(_deAlias)
 
     lazy val id: TypeID = {
-      TypeID(delegate)
+      TypeID(unbox)
     }
 
     lazy val reference: TypeID = {
@@ -56,26 +56,26 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     }
 
     def =:=(that: TypeView): Boolean = {
-      delegate =:= that.delegate
+      unbox =:= that.unbox
     }
 
     def map(fn: TypeView => TypeView): TypeView = TypeView {
-      val result = delegate.map { v =>
-        fn(typeView(v)).delegate
+      val result = unbox.map { v =>
+        fn(typeView(v)).unbox
       }
 
       result
     }
 
-    lazy val constructor: TypeView = typeView(delegate.typeConstructor)
+    lazy val constructor: TypeView = typeView(unbox.typeConstructor)
 
     lazy val allSymbols: Seq[SymbolView] = id.allSymbols.map(v => symbolView(v))
 
-    override lazy val canonicalName: String = delegate.toString
+    override lazy val canonicalName: String = unbox.toString
 
     lazy val singletonSymbolOpt: Option[Symbol] = {
 
-      (delegate.termSymbol, delegate.typeSymbol) match {
+      (unbox.termSymbol, unbox.typeSymbol) match {
         case (termS, _) if termS.isTerm && termS.isStatic => Some(termS)
         case (_, typeS) if typeS.isModuleClass            => Some(typeS)
         case _ =>
@@ -85,7 +85,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
     def singletonSymbol: Symbol = singletonSymbolOpt.getOrElse {
       throw new UnsupportedOperationException(
-        s"$delegate : ${delegate.getClass} is not a Singleton"
+        s"$unbox : ${unbox.getClass} is not a Singleton"
       )
     }
 
@@ -140,9 +140,9 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       }
     }
 
-    lazy val _aliasOpt: Option[Type] = Option(delegate).filterNot(v => v == _deAlias)
+    lazy val _aliasOpt: Option[Type] = Option(unbox).filterNot(v => v == _deAlias)
 
-    lazy val args: List[TypeView] = delegate.typeArgs.map { arg =>
+    lazy val args: List[TypeView] = unbox.typeArgs.map { arg =>
       typeView(arg)
     }
 
@@ -150,18 +150,18 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
       import scala.language.reflectiveCalls
 
-      constructor.delegate match {
+      constructor.unbox match {
 
         case v: (Type { def pre: Type }) @unchecked =>
           val pre = Try(typeView(v.pre)).filter { v =>
-            val self = v.delegate
+            val self = v.unbox
             val notNone = self != universe.NoPrefix
             //            val notSingle = !self.isInstanceOf[universe.SingleType]
             notNone
           }.toOption
 
           val result = pre.filter { pre =>
-            Prefixes.getCanonicalName(v).startsWith(Prefixes.getCanonicalName(pre.delegate))
+            Prefixes.getCanonicalName(v).startsWith(Prefixes.getCanonicalName(pre.unbox))
           }
           result
 
@@ -187,7 +187,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       lazy val internal: BreadcrumbView = {
 
         val chain = prefixOpt.toList.flatMap { tt =>
-          val v1 = List(tt.delegate)
+          val v1 = List(tt.unbox)
           val v2 = tt.Prefixes.all.list
 
           val result = v1 ++ v2
@@ -237,15 +237,15 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       val results = prefixOpt.toList.flatMap(_.genArgs) ++ args
 
       results.filter { v =>
-        delegate.toString.contains(v.toString)
+        unbox.toString.contains(v.toString)
       } // TODO: this should be moved to elsewhere
     }
 
     lazy val baseTypes: List[TypeView] = {
 
-      val baseClzSyms = delegate.baseClasses
+      val baseClzSyms = unbox.baseClasses
 
-      val baseNodes = delegate match {
+      val baseNodes = unbox match {
         case v: (Type & scala.reflect.internal.Types#Type) @unchecked =>
           val list = v.baseTypeSeq.toList.map { v =>
             v.asInstanceOf[Type] // https://github.com/scala/bug/issues/9837
@@ -267,7 +267,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
           }
         case _ =>
           baseClzSyms.map { clz =>
-            val tt = delegate.baseType(clz)
+            val tt = unbox.baseType(clz)
             if (tt == universe.NoType) typeView(tt)
             else typeView(tt)
           }
@@ -299,7 +299,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
       lazy val collectArgs: Seq[TypeView] = {
 
-        val loopEliminated = args.filterNot(v => v.delegate =:= delegate)
+        val loopEliminated = args.filterNot(v => v.unbox =:= unbox)
 
         val transitive = loopEliminated.flatMap { v =>
           v.Recursive.collectArgs

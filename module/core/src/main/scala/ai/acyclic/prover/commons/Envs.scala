@@ -4,20 +4,20 @@ import java.io.File
 
 object Envs {
 
-  case class Dir(protected val delegate: String) extends Delegating[String] {
+  case class Dir(unbox: String) extends Delegating[String] {
 
     def append(splitter: String)(part: String): Dir = {
       require(!part.startsWith(splitter), "cannot append a part that starts with the splitter")
 
-      if (delegate.endsWith(splitter)) Dir(delegate + part)
-      else Dir(delegate + splitter + part)
+      if (unbox.endsWith(splitter)) Dir(unbox + part)
+      else Dir(unbox + splitter + part)
     }
 
     def :/(part: String): Dir = append("/")(part)
     def :\(part: String): Dir = append(File.separator)(part)
     def dot(part: String): Dir = append(".")(part)
 
-    override def toString: String = delegate
+    override def toString: String = unbox
   }
 
   val USER_HOME: Dir = Dir(System.getProperty("user.home"))

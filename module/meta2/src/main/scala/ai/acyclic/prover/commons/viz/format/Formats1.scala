@@ -23,7 +23,7 @@ object Formats1 { // higher-order format constructors
       val transformRoot = beforeFn(tt)
       val transformBranches = transformRoot.map(beforeFn)
 
-      val mapped = tt.copy(delegate = transformBranches)
+      val mapped = tt.copy(unbox = transformBranches)
 
       val mapped_formatted = mapped.formattedBy(base)
 

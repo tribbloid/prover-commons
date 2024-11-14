@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.viz.format.TypeFormat
 
 trait Reflection extends ITyper with TypeIRMixin {
 
-  case class TypeOps(protected val delegate: TypeView) extends Delegating[TypeView] {
+  case class TypeOps(unbox: TypeView) extends Delegating[TypeView] {
 
     def formattedBy(format: TypeFormat): TypeIR = {
       val result = TypeIR(this, format)

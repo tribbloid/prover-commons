@@ -6,12 +6,12 @@ private[meta] trait SymbolViewMixin extends HasUniverse {
   self: ITyper =>
 
   case class SymbolView(
-      protected val delegate: universe.Symbol
+      unbox: universe.Symbol
   ) extends ApiView[universe.Symbol] {
 
     lazy val ownerOpt: Option[universe.Symbol] = {
 
-      val owner = delegate.owner
+      val owner = unbox.owner
 
       if (owner == universe.NoSymbol) None
       else Some(owner)
@@ -59,7 +59,7 @@ private[meta] trait SymbolViewMixin extends HasUniverse {
       }
     }
 
-    override lazy val canonicalName: String = delegate.fullName
+    override lazy val canonicalName: String = unbox.fullName
 
     override def _copy(self: universe.Symbol): SymbolViewMixin.this.SymbolView = copy(self)
   }
