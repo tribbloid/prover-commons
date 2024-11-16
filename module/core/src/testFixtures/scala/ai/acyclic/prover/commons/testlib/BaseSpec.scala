@@ -10,7 +10,7 @@ import java.util.regex.Pattern
 import scala.reflect.ClassTag
 
 trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
-  
+
   import scala.reflect.runtime.universe.TypeTag
 
   @transient implicit class _StringOps(str: String) {

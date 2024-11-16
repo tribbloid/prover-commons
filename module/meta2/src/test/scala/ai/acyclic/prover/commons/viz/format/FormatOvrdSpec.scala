@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.viz.format
 import ai.acyclic.prover.commons.meta.ScalaReflection
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
-import ai.acyclic.prover.commons.viz.format.FormatOvrd.{SingletonName, ~~}
+import ai.acyclic.prover.commons.viz.format.FormatOvrd.{~~, SingletonName}
 import ai.acyclic.prover.commons.viz.format.Formats0.{ClassName, TypeImpl}
 import shapeless.Witness
 

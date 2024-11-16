@@ -7,7 +7,6 @@ case class Causes[T <: Throwable](
 ) extends Exception
     with NoStackTrace {
 
-
   override def getCause: T = causes.headOption.getOrElse(null.asInstanceOf[T])
 
   val simpleMsg: String = s"[CAUSED BY ${causes.size} EXCEPTION(S)]"

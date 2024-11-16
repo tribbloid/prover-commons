@@ -27,7 +27,7 @@ trait HasMono extends HasPoly {
     * @tparam T_/\
     *   parameter's upper bound
     */
-  object MonoLike {
+  case object MonoLike {
 
     sealed trait Decreasing[
         -T_/\
@@ -65,7 +65,7 @@ trait HasMono extends HasPoly {
     type Out[T <: T_/\] <: O[T]
   }
 
-  object Mono {
+  case object Mono {
 
     trait Impl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends MonoLike[T_/\] {
       type In[T <: T_/\] = I[T]
