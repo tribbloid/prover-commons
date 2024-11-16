@@ -52,7 +52,7 @@ trait HasCircuit extends Capability.Universe {
 
   type Circuit[-I, +R] = Circuit.Fn[I, R]
 
-  object Circuit {
+  object Circuit extends Serializable {
 
     /**
       * function with computation graph, like a lifted JAXpr

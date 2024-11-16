@@ -1,0 +1,62 @@
+package ai.acyclic.prover.commons.spark.serialization
+
+import ai.acyclic.prover.commons.testlib.BaseSpec
+import org.scalatest.BeforeAndAfterEach
+
+import java.util.concurrent.atomic.AtomicInteger
+
+class BeforeAndAfterShippingSpec extends BaseSpec with BeforeAndAfterEach {
+
+  import BeforeAndAfterShippingSpec.*
+
+  override def beforeEach(): Unit = {
+    beforeCounter.set(0)
+    afterCounter.set(0)
+  }
+
+  it("can serialize container") {
+    val dummy = Dummy()
+
+    AssertSerializable(dummy.forShipping).strongly()
+
+    assert(beforeCounter.get() == 2)
+    assert(afterCounter.get() == 2)
+  }
+
+  ignore("can serialize self") {
+    // TODO: this doesn't work, why?
+//  it("can serialize self") {
+
+    val dummy = Dummy()
+
+    AssertSerializable(dummy).strongly()
+
+    assert(beforeCounter.get() == 2)
+    assert(afterCounter.get() == 2)
+  }
+}
+
+object BeforeAndAfterShippingSpec {
+
+  val beforeCounter: AtomicInteger = new AtomicInteger(0)
+  val afterCounter: AtomicInteger = new AtomicInteger(0)
+
+  case class Dummy(
+      i: Int = 1,
+      j: Double = 2.375,
+      s: String = "a"
+  ) extends BeforeAndAfterShipping {
+
+    val s2: String = "b"
+
+    override def beforeDeparture(): Unit = {
+      assert(s2 == "b")
+      beforeCounter.incrementAndGet()
+    }
+
+    override def afterArrival(): Unit = {
+      assert(s2 == "b") // ensure that Dummy is fully initialised when doAfter is called
+      afterCounter.incrementAndGet()
+    }
+  }
+}

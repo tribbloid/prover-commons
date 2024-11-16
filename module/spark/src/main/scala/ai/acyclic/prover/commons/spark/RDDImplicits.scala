@@ -12,16 +12,24 @@ import scala.util.Random
 
 object RDDImplicits extends RDDImplicits
 
-trait RDDImplicits {
+object RDDImplicitsGlobal {
 
+  // TODO: stageID is strictly incremental, this cost more memory than necessary
+  //  a counter is good enough
   // (stageID -> threadID) -> isExecuted
   val perCoreMark: ConcurrentMap[(Int, Long), Boolean] = ConcurrentMap()
   // stageID -> isExecuted
   val perWorkerMark: ConcurrentMap[Int, Boolean] = ConcurrentMap()
 
-  implicit class _rddImplicits[T](self: RDD[T]) {
+}
 
-    implicit lazy val rddClassTag: ClassTag[T] = _SQLHelper.rddClassTag(self)
+trait RDDImplicits {
+
+  import RDDImplicitsGlobal._
+
+  implicit class _rddExtensions[T](@transient self: RDD[T]) {
+
+    implicit val rddClassTag: ClassTag[T] = _SQLHelper.rddClassTag(self)
 
     def sc: SparkContext = self.sparkContext
 

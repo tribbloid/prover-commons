@@ -2,12 +2,16 @@ package ai.acyclic.prover.commons.testlib
 
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.typesetting.TextBlock
+import ai.acyclic.prover.commons.util.Summoner
 import org.scalatest.funspec.AnyFunSpec
 import splain.test.TryCompile
 
 import java.util.regex.Pattern
+import scala.reflect.ClassTag
 
 trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
+  
+  import scala.reflect.runtime.universe.TypeTag
 
   @transient implicit class _StringOps(str: String) {
 
@@ -108,6 +112,25 @@ trait BaseSpec extends AnyFunSpec with TryCompile.Static.default.FromCodeMixin {
              |$v
              |""".stripMargin.trim
         )
+    }
+  }
+
+  def typeOfIt[T: TypeTag](
+      subject: T
+  )(fn: T => Unit): Unit = {
+
+    val ttg: TypeTag[T] = Summoner.summon[TypeTag[T]]
+    it(ttg.tpe.toString) {
+      fn(subject)
+    }
+  }
+
+  def classOfIt[T: ClassTag](
+      subject: T
+  )(fn: T => Unit): Unit = {
+    val ctg: ClassTag[T] = Summoner.summon[ClassTag[T]]
+    it(ctg.runtimeClass.toString) {
+      fn(subject)
     }
   }
 }
