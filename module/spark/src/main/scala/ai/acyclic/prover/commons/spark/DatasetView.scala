@@ -28,7 +28,7 @@ case class DatasetView[T](self: Dataset[T]) {
     val headers = self.schema.fieldNames
 
     val result: RDD[Map[String, Any]] = self.toDF().rdd.map { row =>
-      ListMap(headers.zip(row.toSeq) *)
+      ListMap(headers.zip(row.toSeq)*)
     }
 
     val filtered =

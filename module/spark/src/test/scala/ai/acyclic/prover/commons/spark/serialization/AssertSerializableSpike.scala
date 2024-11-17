@@ -43,7 +43,7 @@ class AssertSerializableSpike extends BaseSpec {
 
       val function1: String => Int = function0
 
-      val singleAbstractMethod: Fn[String, Int] = (v1: String) => 3 // TODO: cannot handle this
+      val singleAbstractMethod: Fn[String, Int] = (_: String) => 3 // TODO: cannot handle this
 
       val circuit: Hom.Circuit[String, Int] = Hom.Circuit { _ =>
         3

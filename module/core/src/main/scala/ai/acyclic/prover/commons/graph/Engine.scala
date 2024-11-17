@@ -159,7 +159,7 @@ trait Engine {
 
           def make: Graph = {
             val nodes = vs.iterator.to(Seq).map(_.asNode)
-            makeExact(nodes *)
+            makeExact(nodes*)
           }
         }
 
@@ -184,19 +184,19 @@ trait Engine {
           implicit
           assuming: XX
       ): GraphKOfTheEngine.Unchecked[XX, V] =
-        makeWithAxioms[XX, V](nodes *)(assuming)
+        makeWithAxioms[XX, V](nodes*)(assuming)
 
       def makeExact[V](
           nodes: NodeK.Compat[_Axiom, V]*
       ): Graph[V] =
-        makeWithAxioms[_Axiom, V](nodes *)(this.axioms)
+        makeWithAxioms[_Axiom, V](nodes*)(this.axioms)
 
       def apply[XX <: _Axiom, V]( // alias of makeTightest
           nodes: NodeK.Compat[XX, V]*
       )(
           implicit
           assuming: XX
-      ): GraphKOfTheEngine.Aux[XX, V] = makeTightest[XX, V](nodes *)
+      ): GraphKOfTheEngine.Aux[XX, V] = makeTightest[XX, V](nodes*)
 
       def empty[V]: Graph[V] = makeExact[V]()
 

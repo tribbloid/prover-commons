@@ -49,7 +49,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
           n.map(v => fn(v): V2)
         }
 
-        Local.AnyGraph.makeWithAxioms[ArgLaw, V2](newNode *)(argPlan.axioms)
+        Local.AnyGraph.makeWithAxioms[ArgLaw, V2](newNode*)(argPlan.axioms)
       }
 
       result
@@ -105,7 +105,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
       override def compute: LocalEngine.GraphKOfTheEngine.Unchecked[ArgLaw, ArgV] = {
         val transformed: Seq[ArgNode] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
-        Local.AnyGraph.makeWithAxioms[ArgLaw, ArgV](transformed *)(argPlan.axioms)
+        Local.AnyGraph.makeWithAxioms[ArgLaw, ArgV](transformed*)(argPlan.axioms)
       }
     }
 
@@ -216,8 +216,12 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
     private val delegate = Transform(
       rewriter = RewriterK.DoNotRewrite(arg.axioms),
-      down = { v => down(v); Seq(v) },
-      up = { v => up(v); Seq(v) }
+      down = { v =>
+        down(v); Seq(v)
+      },
+      up = { v =>
+        up(v); Seq(v)
+      }
     )
 
     object DepthFirst extends TraversePlan {

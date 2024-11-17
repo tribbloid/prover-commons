@@ -57,7 +57,7 @@ class CapabilitySpec extends BaseSpec {
 
       val revoked = (new Cap1 {}).revoke(ex12)
       assert(revoked == ex12)
-      val _: (Ex <> Cap2) = revoked
+      val _: Ex <> Cap2 = revoked
       illTyped("revoked: Ex ^: Subject.Cap1")
     }
   }

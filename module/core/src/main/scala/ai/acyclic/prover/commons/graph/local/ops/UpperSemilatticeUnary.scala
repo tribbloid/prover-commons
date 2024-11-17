@@ -25,7 +25,7 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
         mutable.Map(
           entryIDs.map { nn =>
             nn.identityKey -> (nn -> new AtomicInteger())
-          } *
+          }*
         )
       }
 

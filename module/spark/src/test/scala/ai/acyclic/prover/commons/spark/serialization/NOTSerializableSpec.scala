@@ -28,6 +28,7 @@ class NOTSerializableSpec extends BaseSpec {
   import NOTSerializableSpec.*
 
   it("base class is serializable")
+
   /** EndMarker */
   /** EndMarker */
   {

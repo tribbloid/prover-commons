@@ -14,7 +14,7 @@ object GraphFixture {
       id: UUID = UUID.randomUUID()
   ) {
 
-    val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren *)
+    val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren*)
   }
 
   object GV extends Local.AnyGraph.Outbound.Inspection[GV] {

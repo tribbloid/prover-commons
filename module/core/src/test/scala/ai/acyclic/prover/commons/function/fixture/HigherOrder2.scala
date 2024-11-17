@@ -22,11 +22,12 @@ object HigherOrder2 {
         case (x, fn) <- {
           proto.trace
         }
-      ) yield {
+      )
+        yield {
 
-        val result = x.flatMap(fn)
-        result
-      }
+          val result = x.flatMap(fn)
+          result
+        }
 
     result
   }
