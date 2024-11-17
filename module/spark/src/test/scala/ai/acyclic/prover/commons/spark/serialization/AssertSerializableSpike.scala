@@ -7,94 +7,89 @@ import ai.acyclic.prover.commons.util.Caching
 import scala.util.Try
 
 class AssertSerializableSpike extends BaseSpec {
+
   import AssertSerializableSpike.*
 
-  describe("should be WeaklySerializable - ")
-  /** EndMarker */
-  {
+  describe("weakly - ") {
 
     classOfIt {
 
-      val trial = Try {
+      val attempts = Try {
         require(
           requirement = false,
           "error!"
         )
       }
-      val ee = trial.failed.get
+      val ee = attempts.failed.get
       ee
     } { v =>
       AssertSerializable(v).weakly()
 
       //    TestHelper.TestSC.parallelize(Seq(ee))
       //      .collect() //TODO: this failed, why?
-    }
-
-    describe("by ClosureCleaner") {
-
-      it("0") {
-
-        AssertSerializable(Outer.inner0).weakly()
-      }
-
-      it("1") {
-
-        AssertSerializable(Outer.inner1).weakly()
-      }
-
-      it("2") {
-
-        AssertSerializable(Outer.inner2).weakly()
-      }
-
-      it("3") {
-
-        AssertSerializable(Outer.inner3).weakly()
-      }
+      v
     }
   }
 
-  classOfIt {
+  describe("by ClosureCleaner - ") {
 
-    val trial = Try {
-      require(
-        requirement = false,
-        "error!"
-      )
+    object Outer extends NOTSerializable {
+
+      // everything here should be extracted safely by Spark Closure cleaner
+
+      val function0: String => Int = { (_: String) =>
+        3
+      }
+
+      val function1: String => Int = function0
+
+      val singleAbstractMethod: Fn[String, Int] = (v1: String) => 3 // TODO: cannot handle this
+
+      val circuit: Hom.Circuit[String, Int] = Hom.Circuit { _ =>
+        3
+      }
+
+      val mono: Hom.Mono[Any, Seq, Vector] = new Hom.Impl.Mono[Any, Seq, Vector] {
+
+        override def apply[T <: Any](arg: Seq[T]): Vector[T] = arg.toVector
+      }
+
+      val dependent: Hom.Dependent[Any, Vector] = new Hom.Impl.Dependent[Any, Vector] {
+
+        override def apply[T <: Any](arg: T): Vector[T] = Vector(arg)
+      }
+
+      val poly: Hom.Poly = new Hom.Poly {}
+
     }
-    val ee = trial.failed.get
-    ee
-  } { v =>
-    AssertSerializable(v).weakly()
 
-    //    TestHelper.TestSC.parallelize(Seq(ee))
-    //      .collect() //TODO: this failed, why?
+    import Outer.*
+
+    Seq(
+      function0,
+      function1,
+//      singleAbstractMethod,
+      Seq(circuit, circuit.cached()),
+      Seq(mono, mono.cached()),
+      Seq(dependent, dependent.cached()),
+      poly
+//      poly.cached()
+    ).zipWithIndex.foreach {
+      case (vs: Seq[_], i) =>
+        vs.foreach { v =>
+          it(i.toString + ":" + v.getClass.getSimpleName) {
+            AssertSerializable(v).weakly()
+          }
+        }
+
+      case (v, i) =>
+        it(i.toString + ":" + v.getClass.getSimpleName) {
+          AssertSerializable(v).weakly()
+        }
+    }
   }
 
-  describe("by ClosureCleaner") {
-
-    it("0") {
-
-      AssertSerializable(Outer.inner0).weakly()
-    }
-
-    it("1") {
-
-      AssertSerializable(Outer.inner1).weakly()
-    }
-
-    it("2") {
-
-      AssertSerializable(Outer.inner2).weakly()
-    }
-
-    it("3") {
-
-      AssertSerializable(Outer.inner3).weakly()
-    }
-  }
-
-  describe("should be Serializable with equality - ") {
+  describe("strongly - ") {
 
     typeOfIt {
       (): Unit
@@ -143,26 +138,8 @@ class AssertSerializableSpike extends BaseSpec {
 
 }
 
-case object AssertSerializableSpike {
+case object AssertSerializableSpike extends Serializable {
 
   trait Fn[-I, +O] extends (I => O) with Serializable {}
 
-  object Outer extends NOTSerializable {
-
-    // everything here should be extracted safely by Spark Closure cleaner
-
-    val inner0: String => Int = { (_: String) =>
-      3
-    }
-
-    val inner1: Fn[String, Int] = new Fn[String, Int] {
-      override def apply(v1: String): Int = 3
-    }
-
-    val inner2: Hom.Impl.Circuit[String, Int] = Hom.Circuit { _ =>
-      3
-    }
-
-    val inner3: String => Int = inner0
-  }
 }

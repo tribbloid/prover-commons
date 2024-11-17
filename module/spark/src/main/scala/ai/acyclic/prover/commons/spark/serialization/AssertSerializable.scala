@@ -8,10 +8,12 @@ import java.nio.ByteBuffer
 import scala.reflect.ClassTag
 import scala.util.{Failure, Try}
 
-case class AssertSerializable[T <: Any: ClassTag](
+case class AssertSerializable[T <: Any](
     element: T,
     serializers: Seq[Serializer] = SerializerEnv.Default.allSerializers
 ) {
+
+  @transient implicit lazy val ctg: ClassTag[T] = ClassTag(element.getClass)
 
   def on(
       condition: (T, T) => Any

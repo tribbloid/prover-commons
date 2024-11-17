@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.util.SrcPosition
 
 trait HasPolyLike extends HasCircuit {
 
-  trait PolyLike extends FromFunctionBuilder {
+  trait PolyLike extends FromFunctionBuilder with Serializable {
 
     object IsCase extends Capability
 

@@ -82,14 +82,15 @@ trait HasMono extends HasPoly {
 
     implicit def fnIsMono[I, O](v: Circuit[I, O]): Mono.Is[I, O] = Mono.Is(v)
 
-    case class Cached[T_/\, SS <: MonoLike[T_/\]](
-        backbone: SS
+    final case class Cached[T_/\, SS <: MonoLike[T_/\]](
+        backbone: SS,
+        getLookup: () => LookupMagnet[Any, Any] = () => Same.Native.Lookup[Any, Any]()
     ) extends MonoLike[T_/\] {
 
       override type In[T <: T_/\] = backbone.In[T]
       override type Out[T <: T_/\] = backbone.Out[T]
 
-      lazy val lookup: LookupMagnet[Any, Any] = Same.Native.Lookup[Any, Any]()
+      @transient lazy val lookup: LookupMagnet[Any, Any] = getLookup()
 
       override def apply[T <: T_/\](arg: In[T]): Out[T] = {
 
@@ -100,7 +101,7 @@ trait HasMono extends HasPoly {
           .asInstanceOf[Out[T]]
       }
 
-      final def getExisting[T <: T_/\](arg: In[T]): Option[Out[T]] = {
+      def getExisting[T <: T_/\](arg: In[T]): Option[Out[T]] = {
         lookup
           .get(arg)
           .map { v =>
@@ -117,16 +118,13 @@ trait HasMono extends HasPoly {
       extends Serializable {
 
     def cached(
-        byLookup: LookupMagnet[Any, Any] = Same.Native.Lookup()
+        byLookup: => LookupMagnet[Any, Any] = Same.Native.Lookup()
     ): Mono.Cached[T_/\, SS] = {
 
       type Result = Mono.Cached[T_/\, SS]
 
       val result: Result =
-        new Mono.Cached[T_/\, SS](self) {
-
-          override lazy val lookup: LookupMagnet[Any, Any] = byLookup
-        }
+        Mono.Cached[T_/\, SS](self, () => byLookup)
       result
     }
   }

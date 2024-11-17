@@ -74,15 +74,12 @@ trait HasCircuit extends Capability.Universe {
 
     implicit class _extension[I, O](
         self: Circuit[I, O]
-    ) {
+    ) extends Serializable {
 
       def cached(
-          byLookup: LookupMagnet[I, O] = Same.Native.Lookup[I, O]()
-      ): Circuit.CachedLazy[I, O] = {
-        new Circuit.CachedLazy[I, O](self) {
-
-          override lazy val underlyingCache: LookupMagnet[I, O] = byLookup
-        }
+          byLookup: => LookupMagnet[I, O] = Same.Native.Lookup[I, O]()
+      ): Circuit.Lazy[I, O] = {
+        new Circuit.Lazy[I, O](self, () => byLookup)
       }
     }
 
@@ -209,13 +206,13 @@ trait HasCircuit extends Capability.Universe {
       //  - S: used in STLC
       //  - Y: don't know what is it for
 
-      val I = Identity
-      val B = Mapped
-      val C = Flipped
-      val K = Thunk.Lazy
+      val I: Identity.type = Identity
+      val B: Mapped.type = Mapped
+      val C: Flipped.type = Flipped
+      val K: Thunk.Lazy.type = Thunk.Lazy
 
-      val Delta = Pointwise
-      val Gamma = Duplicate
+      val Delta: Pointwise.type = Pointwise
+      val Gamma: Duplicate.type = Duplicate
     }
 
     case class Identity[I]() extends Impl[I, I] with Combinator.Linear {
@@ -363,23 +360,24 @@ trait HasCircuit extends Capability.Universe {
 
     trait Cached extends Pure
 
-    case class CachedLazy[I, R](
-        backbone: Circuit[I, R]
+    final case class Lazy[I, R](
+        backbone: Circuit[I, R],
+        getLookup: () => LookupMagnet[I, R] = () => Same.Native.Lookup[I, R]()
     ) extends Impl[I, R]
         with Cached {
 
-      lazy val underlyingCache: LookupMagnet[I, R] = Same.Native.Lookup[I, R]()
+      @transient lazy val lookup: LookupMagnet[I, R] = getLookup()
 
-      final def apply(key: I): R = {
-        underlyingCache.getOrElseUpdateOnce(key) {
+      def apply(key: I): R = {
+        lookup.getOrElseUpdateOnce(key) {
 
           val value = backbone(key)
           value
         }
       }
 
-      final def getExisting(arg: I): Option[R] = {
-        underlyingCache
+      def getExisting(arg: I): Option[R] = {
+        lookup
           .get(arg)
       }
     }
@@ -426,18 +424,17 @@ trait HasCircuit extends Capability.Universe {
       override def apply(arg: Unit): O = value
     }
 
-    case class Lazy[O](gen: () => O)(
+    final case class Lazy[O](gen: () => O)(
         implicit
-        final override val _definedAt: SrcPosition
+        override val _definedAt: SrcPosition
     ) extends Cached_[O]
         with Traceable.BySrc {
 
       // equivalent to CachedLazy[Unit, O], but much faster
-      protected lazy val value = gen()
-
+      @transient protected lazy val value: O = gen()
     }
 
-    case class Eager[O](value: O) extends Cached_[O] {}
+    final case class Eager[O](value: O) extends Cached_[O] {}
 
     private[HasCircuit] case class Function0View[O](
         self: Thunk[O],
@@ -451,6 +448,10 @@ trait HasCircuit extends Capability.Universe {
       def trace: Circuit.Tracing[Unit, O] = Circuit.Tracing(self.normalise)
 
       //      override def normalise: Circuit[I, O] = self.normalise
+
+      def asLazy: Lazy[O] = Lazy(self)
+
+      def asEager: Eager[Thunk[O]] = Eager(self)
     }
   }
 }

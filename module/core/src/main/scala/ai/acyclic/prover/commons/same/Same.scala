@@ -111,6 +111,8 @@ trait Same extends Serializable {
     override def toString: String = "" + samenessKey
   }
 
+  case object Lookup extends Serializable
+
   // a cache wrapper with a serialID, such that `values` will return the values in insertion order
   case class Lookup[K, V](
       underlying: LookupMagnet[Wrapper[K], (V, Long)] = Caching.Soft.build[Wrapper[K], (V, Long)]()
