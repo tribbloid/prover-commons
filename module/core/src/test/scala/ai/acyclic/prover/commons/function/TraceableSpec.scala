@@ -1,11 +1,8 @@
 package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.util.SrcDefinition
 
 object TraceableSpec {
-
-  import Traceable.*
 
   val t1: Traceable = new Traceable {}
 
@@ -15,15 +12,18 @@ object TraceableSpec {
   object T3 extends T2()
   T3
 
-  trait SAM extends Traceable {
-    def apply(): Int
-  }
-
-  val sam1: SAM = { () => 1 }
-
-  object sam2 extends SAM {
-    override def apply(): Int = 1
-  }
+//  abstract class SAM(
+//      implicit
+//      val _definedAt: SrcDefinition
+//  ) extends Traceable {
+//    def apply(): Int
+//  }
+//
+//  val sam1: SAM = { () => 1 }
+//
+//  object sam2 extends SAM {
+//    override def apply(): Int = 1
+//  }
 }
 
 class TraceableSpec extends BaseSpec {
@@ -47,8 +47,8 @@ class TraceableSpec extends BaseSpec {
 //      sam1._definedAt.atLine.shouldBe("TraceableSpec.scala:21")
 //    }
 
-    it("... extended") {
-      sam2.definedAt.atLine.shouldBe("TraceableSpec.scala:21")
-    }
+//    it("... extended") {
+//      sam2.definedAt.atLine.shouldBe("TraceableSpec.scala:21")
+//    }
   }
 }

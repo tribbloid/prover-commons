@@ -42,22 +42,22 @@ class PolySpec extends BaseSpec {
 
       def __sanity[I, O](): Unit = {
         {
-          def useIO(l: _poly.Lemma[Int, String]): l.Out = {
+          def useIO(l: _poly.Lemma[Int, String]): l.domains.Out = {
             l.apply(1)
           }
 
-          def useI(l: _poly.Lemma.At[Int]): l.Out = {
+          def useI(l: _poly.Lemma.At[Int]): l.domains.Out = {
             l.apply(1)
           }
         }
 
         {
-          def useIO(l: _poly.Lemma[I, O]): l.Out = {
+          def useIO(l: _poly.Lemma[I, O]): l.domains.Out = {
             val v: I = ???
             l.apply(v)
           }
 
-          def useI(l: _poly.Lemma.At[I]): l.Out = {
+          def useI(l: _poly.Lemma.At[I]): l.domains.Out = {
             val v: I = ???
             l.apply(v)
           }

@@ -12,7 +12,7 @@ trait Traceable extends EqualityByConstruction {
     definedAt // eager init
   }
 
-  protected def _definedAt: SrcDefinition
+  protected def _definedAt: SrcDefinition = SrcDefinition.Unknown(constructionID)
   final lazy val definedAt = _definedAt
 
   @transient object explain {

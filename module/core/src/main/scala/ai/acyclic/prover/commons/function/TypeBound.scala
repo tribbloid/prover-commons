@@ -18,8 +18,8 @@ trait TypeBound extends Erased {
     * but it has the extra benefit of making Min & Max accessible, which is not possible in before
     */
 
-  type Min <: Max
-  type Max
+  type Min
+  type Max >: Min
 
 //  type T >: Min <: Max
 
@@ -43,10 +43,10 @@ object TypeBound {
     type Max <: TMax
   }
   type <~>[TMin, TMax >: TMin] = Lt[TMin, TMax]
-  trait Lt_[TMin, TMax >: TMin] extends TypeBound {
-    type Min >: TMin
-    type Max <: TMax
-  }
+//  trait Lt_[TMin, TMax >: TMin] extends TypeBound {
+//    type Min >: TMin
+//    type Max >: Min <: TMax
+//  }
 
   type Gt[TMin, TMax >: TMin] = TypeBound {
     type Min <: TMin

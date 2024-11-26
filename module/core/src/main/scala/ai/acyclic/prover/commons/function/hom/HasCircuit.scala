@@ -50,8 +50,8 @@ trait HasCircuit extends Capability.Universe {
 
   trait Domains extends Erased {
 
-    type In // Domain
-    type Out // Codomain
+    type In // Domain, Min
+    type Out // Codomain, Max
   }
 
   object Domains {
@@ -83,7 +83,7 @@ trait HasCircuit extends Capability.Universe {
 
       final override val projection: this.type = this
 
-      val domains: Domains.Aux[? >: I, ? <: O]
+      val domains: Domains.Lt[I, O]
 
       def apply(arg: I): O & domains.Out
 
@@ -217,7 +217,9 @@ trait HasCircuit extends Capability.Universe {
     object Pure {
 
       case class Is[I, R](delegate: Circuit[I, R]) extends Impl[I, R] with Pure {
-        override def apply(arg: I): R = delegate.apply(arg)
+        implicitly[delegate.domains.Out <:< this.domains.Out]
+
+        override def apply(arg: I): R & domains.Out = delegate.apply(arg)
       }
     }
 
@@ -248,7 +250,7 @@ trait HasCircuit extends Capability.Universe {
 
     case class Identity[I]() extends Impl[I, I] with Combinator.Linear {
 
-      override def apply(arg: I): I = arg
+      override def apply(arg: I): I & domains.Out = arg
 
       case object CrossUnit extends Impl[I, (I, Unit)] with Combinator.TrivialConversion {
 
