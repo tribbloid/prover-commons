@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.benchmark
 
 import ai.acyclic.prover.commons.debug.print_@
-import ai.acyclic.prover.commons.util.SrcPosition
+import ai.acyclic.prover.commons.util.SrcDefinition
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
@@ -23,7 +23,7 @@ case class BenchmarkResults[T](
 
   def log()(
       implicit
-      definedAt: SrcPosition
+      definedAt: SrcDefinition
   ): Unit = {
 
     val info =

@@ -1,29 +1,34 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.cap.Capability
-import ai.acyclic.prover.commons.util.SrcPosition
+import ai.acyclic.prover.commons.function.Traceable
+import ai.acyclic.prover.commons.util.SrcDefinition
 
 trait HasPolyLike extends HasCircuit {
 
-  trait PolyLike extends FromFunctionBuilder with Serializable {
+  trait PolyLike extends FromFunctionBuilder with Serializable with Traceable {
 
     object IsCase extends Capability
 
-    type Case[+FF <: Circuit.Theorem[?, ?]] = <>[FF, IsCase.type]
+    type Case[+FF <: Circuit.Fn[?, ?]] = FF <> IsCase.type
 
-    type At[I] = Case[Circuit.Theorem[I, ?]]
-    type Compat[-I, +O] = Case[Circuit.Theorem[I, O]]
+    type At[I] = Case[Circuit.Fn[I, ?]]
+    type Compat[-I, +O] = Case[Circuit.Fn[I, O]]
 
     type Lemma[I, O] = Case[Circuit.Impl[I, O]]
+    object Lemma {
+
+      type At[I] = Case[Circuit.Impl[I, ?]]
+    }
+
     type |-[I, O] = Lemma[I, O]
-    type LemmaAt[I] = Case[Circuit.Impl[I, ?]]
     // All lemma requires tightest In/Out type bound, like shapeless DepFn
 
     protected type Target[I, O] = Lemma[I, O]
 
     override def define[I, R](fn: I => R)(
         implicit
-        _definedAt: SrcPosition
+        _definedAt: SrcDefinition
     ): I Target R = {
 
       val _case = Circuit(fn) <>: IsCase
@@ -48,5 +53,4 @@ trait HasPolyLike extends HasCircuit {
       }
     }
   }
-
 }

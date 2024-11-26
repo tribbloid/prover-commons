@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.function.hom
 
+import ai.acyclic.prover.commons.util.SrcDefinition
+
 import scala.language.implicitConversions
 
 trait HasPoly extends HasPolyLike {
@@ -13,15 +15,18 @@ trait HasPoly extends HasPolyLike {
     * evidence), doing it in runtime is shunned in type theories (it is fine in set theories tho), but we may still
     * allow it (if not obstructed by type erasure)
     *
-    * obviously, both [[HasMono.MonoLike]] and [[FnCompat]] are its trivial examples that only has 1 case
+    * obviously, both [[HasPoly1.Poly1]] and [[FnCompat]] are its trivial examples that only has 1 case
     */
-  trait Poly extends PolyLike {
+  abstract class Poly(
+      implicit
+      override val _definedAt: SrcDefinition
+  ) extends PolyLike {
     // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
 
     def apply[I](v: I)(
         implicit
         _case: At[I]
-    ): _case.Out = {
+    ): _case.domains.Out = {
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll[FnCompat[v.type, R], IsCase.type](_case)
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll(_case)
       _case.apply(v)

@@ -46,7 +46,7 @@ class PolySpec extends BaseSpec {
             l.apply(1)
           }
 
-          def useI(l: _poly.LemmaAt[Int]): l.Out = {
+          def useI(l: _poly.Lemma.At[Int]): l.Out = {
             l.apply(1)
           }
         }
@@ -57,7 +57,7 @@ class PolySpec extends BaseSpec {
             l.apply(v)
           }
 
-          def useI(l: _poly.LemmaAt[I]): l.Out = {
+          def useI(l: _poly.Lemma.At[I]): l.Out = {
             val v: I = ???
             l.apply(v)
           }

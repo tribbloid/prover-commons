@@ -14,7 +14,7 @@ class CircuitSpec extends BaseSpec {
 
     it("subtype") { // disabled, current compiler is janky
 
-      case object cc extends Circuit[Int, String] {
+      case object cc extends Circuit.Impl[Int, String] {
 
         def apply(v: Int): String = "" + v
       }
@@ -36,6 +36,21 @@ class CircuitSpec extends BaseSpec {
 //      assert(useCircuit { _ =>
 //        "1"
 //      } == "1") // TODO: only works in Scala 3
+    }
+  }
+
+  describe("copy without SrcPosition change") {
+    it("should preserve equality") {
+
+      val cc: Circuit[Int, String] = { v =>
+        "" + v
+      }
+
+      val cc1 = cc.asInstanceOf[Circuit.Blackbox[Int, String]]
+
+      val cc2 = cc1.copy(fn = { v: Int => "" })(cc1._definedAt)
+
+      assert(cc == cc2)
     }
   }
 

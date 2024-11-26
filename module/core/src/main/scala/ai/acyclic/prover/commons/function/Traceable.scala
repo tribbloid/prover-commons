@@ -1,17 +1,27 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.debug.CallStackRef
-import ai.acyclic.prover.commons.graph.local.ProductInspection
+import ai.acyclic.prover.commons.graph.local.DestructuringInspection.Destructured
+import ai.acyclic.prover.commons.graph.local.{DestructuringInspection, ProductInspection}
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
-import ai.acyclic.prover.commons.util.SrcPosition
+import ai.acyclic.prover.commons.util.SrcDefinition
 
-trait Traceable extends Product {
+trait Traceable extends EqualityByConstruction {
+  import Traceable.*
 
-  object explain {
+  {
+    definedAt // eager init
+  }
 
-    private val node = Traceable.Inspection.node(Traceable.this)
+  protected def _definedAt: SrcDefinition
+  final lazy val definedAt = _definedAt
 
-    def nodeText: String = node.nodeText
+  @transient object explain {
+
+    private val node = Inspection.node(Traceable.this)
+
+    def nodeText: String = {
+      node.nodeText
+    }
 
     def text_hierarchy: String = {
 
@@ -24,62 +34,43 @@ trait Traceable extends Product {
       viz.toString
     }
   }
+
+  override def toString = explain.nodeText
 }
 
 object Traceable {
 
-  object Inspection extends ProductInspection[Product, Traceable] {
+  object Inspection extends DestructuringInspection[Traceable, Traceable] {
 
-    final override val node: Product => ai.acyclic.prover.commons.function.Traceable.Inspection.BuiltIn = { v =>
+    override def unapplyAll(value: Traceable): Destructured[Traceable] = {
+
+      val raw = value match {
+        case vv: Traceable with Product =>
+          ProductInspection.unapplyProduct(vv, Nil)
+        case _ =>
+          // not a product, both extensional equality & visualization have to rely on SrcDefinition
+          Destructured(value.getClass.getSimpleName, Nil, Seq(value.definedAt))
+      }
+
+      raw
+    }
+
+    final override val node: Traceable => BuiltIn = { v =>
       BuiltIn(v)
     }
   }
-//  object Inspection extends Local.Semilattice.Upper.Inspection[Any] {
+
+//  trait Leaf extends Traceable with Product1[SrcPosition] {
 //
-//    object Underlying extends ProductInspection[Product, Product] {}
+//    def _1: SrcPosition = definedAt
+//  }
 //
-//    override protected type node = Underlying.node
-//    override val node: Any => node = {
+//  object Leaf {
 //
-//      case v: Traceable =>
-//      case v: Product   =>
-//
-//    }
+//    abstract class CompileTime(
+//        implicit
+//        _defineAt: SrcPosition
+//    ) extends Leaf
 //  }
 
-  trait BySrc extends Traceable with Product1[String] {
-
-    {
-      definedAt
-    }
-    final lazy val definedAt: SrcPosition = _definedAt
-
-    protected def _definedAt: SrcPosition = {
-
-      val thisClass = classOf[BySrc]
-      val stack = CallStackRef
-        .below(
-          1,
-          condition = { v =>
-            v.isUnderClasses(thisClass)
-          }
-        )
-        .pop { v =>
-          v.isLazyCompute || v.isInit
-        }
-
-      SrcPosition.Runtime(stack)
-    }
-
-//    final override lazy val productPrefix = definedAt.toString
-
-    final lazy val _1 = definedAt.toString
-
-    override def canEqual(that: Any): Boolean = {
-      that match {
-        case _: BySrc => true
-        case _        => false
-      }
-    }
-  }
 }

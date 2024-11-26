@@ -1,9 +1,9 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.debug.CallStackRef
-import ai.acyclic.prover.commons.same.Same
+import ai.acyclic.prover.commons.same.EqualBy
 
-trait SrcPosition extends Serializable with Same.Native.IWrapper {
+sealed trait SrcDefinition extends Serializable with EqualBy {
   // TODO: can use Lihaoyi's sourcecode library
 
   def fileName: String
@@ -20,19 +20,25 @@ trait SrcPosition extends Serializable with Same.Native.IWrapper {
     s"${methodName} <at $atLine>"
   }
 
-  override protected def samenessKey: Any = (fileName, lineNumber, methodName)
+  override lazy val samenessKey: (String, Int, String) = {
+    (fileName, lineNumber, methodName)
+  }
+
 }
 
-object SrcPosition {
+object SrcDefinition {
 
-  @deprecated("use CompileTime instead")
+  // only here as a backup, should use CompileTime in most cases for speed
+  @Deprecated
   case class Runtime(
+      cls: Class[?]
+  )(
       stack: CallStackRef = {
 
         val stack = CallStackRef
           .below(
             condition = { v =>
-              v.isUnderClasses(this.getClass)
+              v.isUnderClasses(cls, this.getClass)
 
             }
           )
@@ -43,7 +49,7 @@ object SrcPosition {
           }
         filtered
       }
-  ) extends SrcPosition {
+  ) extends SrcDefinition {
 
     private lazy val head = stack.head
 
@@ -79,7 +85,7 @@ object SrcPosition {
       _fileName: _FileName,
       _line: sourcecode.Line,
       _name: sourcecode.Name
-  ) extends SrcPosition {
+  ) extends SrcDefinition {
 
     override val fileName: String = _fileName.value
 
@@ -88,7 +94,7 @@ object SrcPosition {
     override val methodName: String = _name.value
   }
 
-  implicit def default(
+  implicit def get(
       implicit
       _fileName: _FileName,
       _line: sourcecode.Line,

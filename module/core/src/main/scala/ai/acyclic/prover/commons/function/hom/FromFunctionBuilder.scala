@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.util.SrcPosition
+import ai.acyclic.prover.commons.util.SrcDefinition
 
 trait FromFunctionBuilder {
 
@@ -8,12 +8,12 @@ trait FromFunctionBuilder {
 
   def define[I, R](fn: I => R)(
       implicit
-      _definedAt: SrcPosition
+      _definedAt: SrcDefinition
   ): I Target R
 
   final def apply[I, R](fn: I => R)(
       implicit
-      _definedAt: SrcPosition
+      _definedAt: SrcDefinition
   ): I Target R = define(fn)
 
   case class RefinedBuilder[I, O]() {
@@ -25,12 +25,12 @@ trait FromFunctionBuilder {
 
     final def define[o <: O](fn: I => o)(
         implicit
-        _definedAt: SrcPosition
+        _definedAt: SrcDefinition
     ): I Target o = FromFunctionBuilder.this.define(fn)
 
     final def apply[o <: O](fn: I => o)(
         implicit
-        _definedAt: SrcPosition
+        _definedAt: SrcDefinition
     ): I Target o = define(fn)
   }
 

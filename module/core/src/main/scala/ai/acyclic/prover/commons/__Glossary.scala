@@ -13,19 +13,28 @@ object __Glossary {
     *
     * type or class names in/of a companion object:
     *
-    *   - `Aux` for auxiliary type condition: introduced in shapeless as a shorthand definition for duck type
-    *   - `AuxImpl` / `Impl` for extendable trait that satisfies `Aux`, Scala won't allow inheriting duck type,
-    *     expecting heavy boilerplate
+    *   - `K` (short of "Kind", also a suffix) for a type constructor of another associated type, it can a concrete type
+    *     (trait/class) or a type alias
+    *     - if it is a concrete type (`trait SomeK[T]`), the associated type will be an alias (`type Some = SomeK[?]`)
+    *     - if it is a duck type alias (`type K[T] = Some{type TT = T}`), the associated type will be a concrete type
+    *       `trait Some {...}`, in this case `type K[T]` is also known as an "auxiliary constructor" with name `Aux[T]`,
+    *       as introduced in shapeless (`Aux` is not favoured as 3 letter is too long)
+    *   - `KImpl` / `AuxImpl` / `Impl` for extendable trait that satisfies `Aux`, Scala won't allow inheriting duck
+    *     type, expecting heavy boilerplate
     *   - `Lt` for "less than" type condition: same as above, but for type refinement that is a subtype of `Aux`
     *   - `LtImpl` for extendable trait that satisfies `Lt`, similar to `AuxImpl`
     *   - `Gt` for "greater than" type condition, enough said
     *   - `GtImpl` for extendable trait that satisfies `Gt`, similar to `AuxImpl`
-    *   - `Compat` for compatible type condition, instances that satisfy such condition can be implicitly converted to
-    *     `Aux`, it could be an alias of `Lt`, `Gt` or `Aux` depending on situations
+    *   - `Compat` for compatible type condition, it could be an alias of `Lt`, `Gt` or `Aux` depending on situations,
+    *     sometimes acompanied by an implicit conversion to `K`
     *   - `Top` for supertype of all reifications of a generic type
-    *   - `^` for the one and only implementation
+    *   - ` ^ ` for the one and only implementation
     *   - `Is` for Yoda's axiom: A wrapper of an object of a supertype that downcast it without verification. Eg.
     *     Pure.Is(theFunction) downcast `theFunction` into a pure one
+    *   - `TProj` for type projector, an intermediate trait with a dependent output type. In Scala 3 type project is
+    *     disabled, so this is a workaround
+    *     - it may become useless later when inlined term can be used in type definition (e.g. `type K(val x: Some) =
+    *       x.TT`)
     *
     * type or class name suffixes:
     *

@@ -29,63 +29,39 @@ class AssertSerializableSpike extends BaseSpec {
       //      .collect() //TODO: this failed, why?
       v
     }
-  }
 
-  describe("by ClosureCleaner - ") {
+    describe("by ClosureCleaner - ") {
 
-    object Outer extends NOTSerializable {
+      object Outer extends NOTSerializable {
 
-      // everything here should be extracted safely by Spark Closure cleaner
+        // everything here should be extracted safely by Spark Closure cleaner
 
-      val function0: String => Int = { (_: String) =>
-        3
+        val function0: String => Int = { (_: String) =>
+          3
+        }
+
+        val function1: String => Int = function0
       }
 
-      val function1: String => Int = function0
+      import Outer.*
 
-      val singleAbstractMethod: Fn[String, Int] = (_: String) => 3 // TODO: cannot handle this
+      Seq(
+        function0,
+        function1
+        //      poly.cached()
+      ).zipWithIndex.foreach {
+        case (vs: Seq[_], i) =>
+          vs.foreach { v =>
+            it(i.toString + ":" + v.getClass.getSimpleName) {
+              AssertSerializable(v).weakly()
+            }
+          }
 
-      val circuit: Hom.Circuit[String, Int] = Hom.Circuit { _ =>
-        3
-      }
-
-      val mono: Hom.Mono[Any, Seq, Vector] = new Hom.Impl.Mono[Any, Seq, Vector] {
-
-        override def apply[T <: Any](arg: Seq[T]): Vector[T] = arg.toVector
-      }
-
-      val dependent: Hom.Dependent[Any, Vector] = new Hom.Impl.Dependent[Any, Vector] {
-
-        override def apply[T <: Any](arg: T): Vector[T] = Vector(arg)
-      }
-
-      val poly: Hom.Poly = new Hom.Poly {}
-
-    }
-
-    import Outer.*
-
-    Seq(
-      function0,
-      function1,
-//      singleAbstractMethod,
-      Seq(circuit, circuit.cached()),
-      Seq(mono, mono.cached()),
-      Seq(dependent, dependent.cached()),
-      poly
-//      poly.cached()
-    ).zipWithIndex.foreach {
-      case (vs: Seq[_], i) =>
-        vs.foreach { v =>
+        case (v, i) =>
           it(i.toString + ":" + v.getClass.getSimpleName) {
             AssertSerializable(v).weakly()
           }
-        }
-
-      case (v, i) =>
-        it(i.toString + ":" + v.getClass.getSimpleName) {
-          AssertSerializable(v).weakly()
-        }
+      }
     }
   }
 
@@ -94,7 +70,57 @@ class AssertSerializableSpike extends BaseSpec {
     typeOfIt {
       (): Unit
     } { v =>
-      AssertSerializable(v).weakly()
+      AssertSerializable(v).strongly()
+    }
+
+    describe("by ClosureCleaner - ") {
+
+      object Outer extends NOTSerializable {
+
+        // everything here should be extracted safely by Spark Closure cleaner
+
+        val singleAbstractMethod: Fn[String, Int] = (_: String) => 3 // TODO: cannot handle this
+
+        val circuit: Hom.Circuit[String, Int] = Hom.Circuit { _ =>
+          3
+        }
+
+        val mono: Hom.Mono[Any, Seq, Vector] = new Hom.Impl.Mono[Any, Seq, Vector] {
+
+          override def apply[T <: Any](arg: Seq[T]): Vector[T] = arg.toVector
+        }
+
+        val dependent: Hom.Dependent[Any, Vector] = new Hom.Impl.Dependent[Any, Vector] {
+
+          override def apply[T <: Any](arg: T): Vector[T] = Vector(arg)
+        }
+
+        val poly: Hom.Poly = new Hom.Poly {}
+
+      }
+
+      import Outer.*
+
+      Seq(
+        //      singleAbstractMethod,
+        Seq(circuit, circuit.cached()),
+        Seq(mono, mono.cached()),
+        Seq(dependent, dependent.cached()),
+        poly
+        //      poly.cached()
+      ).zipWithIndex.foreach {
+        case (vs: Seq[_], i) =>
+          vs.foreach { v =>
+            it(i.toString + ":" + v.getClass.getSimpleName) {
+              AssertSerializable(v).strongly()
+            }
+          }
+
+        case (v, i) =>
+          it(i.toString + ":" + v.getClass.getSimpleName) {
+            AssertSerializable(v).strongly()
+          }
+      }
     }
   }
 

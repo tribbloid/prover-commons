@@ -91,22 +91,29 @@ trait Same extends Serializable {
     }
   }
 
-  trait IWrapper {
-    protected def samenessKey: Any
+  trait EqualBy {
+    protected def samenessKey: Any // TODO: should be "equalityEvidence"
 
     final override def hashCode(): Int = {
       getHash(samenessKey)
     }
 
-    final override def equals(that: Any): Boolean = {
+    final def canEqual(that: Any): Boolean = {
       that match {
-        case that: IWrapper => prove_validate(samenessKey, that.samenessKey)
-        case _              => false
+        case _: EqualBy => true
+        case _          => false
       }
+    }
+
+    final override def equals(that: Any): Boolean = {
+      if (canEqual(that)) {
+        prove_validate(samenessKey, that.asInstanceOf[EqualBy].samenessKey)
+      } else false
+
     }
   }
 
-  case class Wrapper[T](override val samenessKey: T) extends IWrapper {
+  case class Wrapper[T](override val samenessKey: T) extends EqualBy {
 
     override def toString: String = "" + samenessKey
   }

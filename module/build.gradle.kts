@@ -29,6 +29,9 @@ allprojects {
 //                        "-rewrite",
 //                        "-quickfix:cat=scala3-migration"
 
+                        "-Wconf:msg=lambda-parens:s",
+                        "-Xsource-features:case-apply-copy-access",// this is the standard for Scala 3
+
                         "-P:kind-projector:underscore-placeholders"
                     )
                 )

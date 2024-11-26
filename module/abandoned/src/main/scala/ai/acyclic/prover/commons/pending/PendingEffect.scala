@@ -1,8 +1,6 @@
 package ai.acyclic.prover.commons.pending
 
-import ai.acyclic.prover.commons.cap.Bound
-
-trait PendingEffect extends Bound {}
+trait PendingEffect {}
 
 object PendingEffect extends PendingGroup {
 
