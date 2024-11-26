@@ -6,9 +6,9 @@ import ai.acyclic.prover.commons.util.SrcDefinition
 
 import scala.language.implicitConversions
 
-object HasMono {}
+object HasPoly1 {}
 
-trait HasMono extends HasPoly {
+trait HasPoly1 extends HasPoly {
 
   // a special case of Poly that takes type argument, instead of several implicit type classes
   // relying heavily on kind-projector plugin: https://github.com/typelevel/kind-projector
@@ -28,7 +28,7 @@ trait HasMono extends HasPoly {
     * @tparam T_/\
     *   parameter's upper bound
     */
-  case object MonoLike {
+  case object Poly1Like {
 
     abstract class Decreasing[
         -T_/\
@@ -62,21 +62,21 @@ trait HasMono extends HasPoly {
     }
   }
 
-  type MonoLike[-T_/\] = MonoLike.Decreasing[T_/\]
+  type Poly1Like[-T_/\] = Poly1Like.Decreasing[T_/\]
 
-  type Mono[T_/\, -I[_ <: T_/\], +O[_ <: T_/\]] = MonoLike[T_/\] {
+  type Poly1[T_/\, -I[_ <: T_/\], +O[_ <: T_/\]] = Poly1Like[T_/\] {
     type In[T <: T_/\] >: I[T]
     type Out[T <: T_/\] <: O[T]
   }
 
-  case object Mono {
+  case object Poly1 {
 
-    trait Impl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends MonoLike[T_/\] {
+    trait Impl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends Poly1Like[T_/\] {
       type In[T <: T_/\] = I[T]
       type Out[T <: T_/\] = O[T]
     }
 
-    case class Is[I, O](backbone: Circuit[I, O]) extends MonoLike[Any] {
+    case class Is[I, O](backbone: Circuit[I, O]) extends Poly1Like[Any] {
 
       override type In[+_] = I
       override type Out[+_] = O
@@ -84,12 +84,12 @@ trait HasMono extends HasPoly {
       override def apply[T](arg: I): O = backbone.apply(arg)
     }
 
-    implicit def fnIsMono[I, O](v: Circuit[I, O]): Mono.Is[I, O] = Mono.Is(v)
+    implicit def fnIsPoly1[I, O](v: Circuit[I, O]): Poly1.Is[I, O] = Poly1.Is(v)
 
-    final case class Cached[T_/\, SS <: MonoLike[T_/\]](
+    final case class Cached[T_/\, SS <: Poly1Like[T_/\]](
         backbone: SS,
         getLookup: () => LookupMagnet[Any, Any] = () => Same.Native.Lookup[Any, Any]()
-    ) extends MonoLike[T_/\] {
+    ) extends Poly1Like[T_/\] {
 
       override type In[T <: T_/\] = backbone.In[T]
       override type Out[T <: T_/\] = backbone.Out[T]
@@ -115,27 +115,27 @@ trait HasMono extends HasPoly {
     }
   }
 
-  implicit class MonoOps[
+  implicit class Poly1Ops[
       T_/\,
-      SS <: MonoLike[T_/\]
+      SS <: Poly1Like[T_/\]
   ](val self: SS)
       extends Serializable {
 
     def cached(
         byLookup: => LookupMagnet[Any, Any] = Same.Native.Lookup()
-    ): Mono.Cached[T_/\, SS] = {
+    ): Poly1.Cached[T_/\, SS] = {
 
-      type Result = Mono.Cached[T_/\, SS]
+      type Result = Poly1.Cached[T_/\, SS]
 
       val result: Result =
-        Mono.Cached[T_/\, SS](self, () => byLookup)
+        Poly1.Cached[T_/\, SS](self, () => byLookup)
       result
     }
   }
 
   sealed trait DependentLike[
       T_/\
-  ] extends MonoLike[T_/\] {
+  ] extends Poly1Like[T_/\] {
 
     type In[T <: T_/\] = T
   }
@@ -162,5 +162,4 @@ trait HasMono extends HasPoly {
 
     trait Identity extends Impl[Any, Invar]
   }
-
 }

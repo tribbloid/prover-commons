@@ -6,8 +6,6 @@ object PolySpec {}
 
 class PolySpec extends BaseSpec {
 
-  describe("Mono") {}
-
   describe("Poly") {
 
     import ai.acyclic.prover.commons.function.fixture.Polys.*

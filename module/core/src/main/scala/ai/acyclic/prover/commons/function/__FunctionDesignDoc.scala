@@ -25,7 +25,7 @@ object __FunctionDesignDoc {
     *
     * F[_ <: /\] requires 2 arguments (/\ and F) that are too bloat to define
     *
-    * it also causes divergence between [[Hom.Mono]] and [[Hom.Poly]]
+    * it also causes divergence between [[Hom.Poly1]] and [[Hom.Poly]]
     *
     * One solution is to brake it into a polymorph and a dependent type, but type class relies heavily on unreliable
     * implicit.
