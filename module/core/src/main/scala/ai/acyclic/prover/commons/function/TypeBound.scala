@@ -23,8 +23,10 @@ trait TypeBound extends Erased {
 
 //  type T >: Min <: Max
 
-  type Lt = TypeBound.Lt[this.Min, this.Max]
-  type Gt = TypeBound.Gt[this.Min, this.Max]
+  type Bound = TypeBound.K[this.Min, this.Max]
+
+  type Less = TypeBound.Lt[this.Min, this.Max]
+  type More = TypeBound.Gt[this.Min, this.Max]
 }
 
 object TypeBound {
@@ -34,8 +36,8 @@ object TypeBound {
   }
   type |~|[TMin, TMax >: TMin] = K[TMin, TMax]
   trait K_[TMin, TMax >: TMin] extends TypeBound {
-    type Min = TMin
-    type Max = TMax
+    final type Min = TMin
+    final type Max = TMax
   }
 
   type Lt[TMin, TMax >: TMin] = TypeBound {
@@ -59,12 +61,16 @@ object TypeBound {
   }
 
   type Top = K[Nothing, Any]
-  val Top: Top = Erased()
+  val Any: Top = Erased()
 
-  trait PinpointAt[T] extends K_[T, T] {
-    type Point = Max
+  trait Point extends TypeBound {
+    type Point
+    type Max = Point
+    type Min = Point
   }
-  type |[T] = K[T, T]
+  type PointAt[T] = Point {
+    type Point = T
+  }
+  type |[T] = PointAt[T]
 
-  type Pinpoint = PinpointAt[?]
 }

@@ -1,8 +1,12 @@
 package ai.acyclic.prover.commons.function.hom
 
+import ai.acyclic.prover.commons
 import ai.acyclic.prover.commons.collection.LookupMagnet
+import ai.acyclic.prover.commons.function
+import ai.acyclic.prover.commons.function.TypeBound
+import ai.acyclic.prover.commons.function.TypeBound.Any
 import ai.acyclic.prover.commons.same.Same
-import ai.acyclic.prover.commons.util.SrcDefinition
+import ai.acyclic.prover.commons.util.{Erased, SrcDefinition}
 
 import scala.language.implicitConversions
 
@@ -20,76 +24,146 @@ trait HasPoly1 extends HasPoly {
   //  Poly is unbounded & has poor compatibility with Scala3,
   //  also, each case doesn't have an output dependent type (like DepFn)
 
-  /**
-    * a.k.a. parametric polymorphism, e.g. natural transformation
-    *
-    * serve as the basis of functions with dependent type
-    *
-    * @tparam T_/\
-    *   parameter's upper bound
-    */
-  case object Poly1Like {
+  //  trait HasBound {
+  //
+  //    val bound: TypeBound
+  //  }
 
-    abstract class Decreasing[
-        -T_/\
-    ](
+  /**
+    * key observation:
+    *
+    * every polymorphic function (I[T] => O[T]) can degrade to a universal function with the widest bound:
+    *
+    * I[_ >: Nothing <: Any] => O[_ >: Nothing <: Any]
+    *
+    * (or in case the bound is explicitly defined to be narrower):
+    *
+    * I[_ >: sub.Min <: sub.Max] => O[_ >: sub.Min <: sub.Max]
+    *
+    * but unlike a common function, it has the capability to refine itself given a new bound, so if sub2 <: sub.Lt is
+    * given:
+    *
+    * J (with the follwing definition) can be derived from I
+    *
+    * I[_ >: sub2.Min <: sub2.Max] => O[_ >: sub2.Min <: sub2.Max]
+    *
+    * to apply the poly1 to a value of know type, simply refine it to a pinpoint bound [[TypeBound.PointAt[T]]
+    *
+    * this is the most larconic definition of a poly1 I can think of, but there may be more automated ways to figure out
+    * refinement rule(s)
+    */
+
+  type Poly1[-B <: TypeBound] = Poly1.Base { type BB = B }
+
+  object Poly1 {
+
+    abstract class Base(
         implicit
         override val _definedAt: SrcDefinition
     ) extends PolyLike {
 
-      type In[_ <: T_/\]
-      type Out[_ <: T_/\]
+      type Bound <: TypeBound
 
-      def apply[T <: T_/\](arg: In[T]): Out[T]
-
-      implicit final def only[T <: T_/\]: In[T] |- Out[T] = at[In[T]] { v =>
-        apply(v)
-      }
+      type Refine[Sub <: Bound] <: Circuit.TProj
+      def refine[Sub <: Bound](sub: Sub): Refine[Sub]
     }
 
-    sealed trait Increasing[
-        +T_\/
-    ] extends PolyLike {
+    object Base {
 
-      type In[_ >: T_\/]
-      type Out[T >: T_\/]
+      type Gt[-B <: TypeBound] = Base { type Bound >: B }
+    }
 
-      def apply[T >: T_\/](arg: In[T]): Out[T]
+    case class Is[I, O](backbone: Circuit[I, O]) extends Base {
 
-      implicit final def only[T >: T_\/]: In[T] Target Out[T] = at[In[T]] { v =>
-        apply(v)
+      type Bound <: TypeBound.Any.Less
+
+      case class Refine[Sub <: TypeBound]() extends Circuit.TProj {
+
+        override val projection: Circuit[I, O] = backbone
+      }
+
+      override def refine[Sub <: TypeBound](sub: Sub): Refine[Sub] = Refine[Sub]()
+
+    }
+    implicit def _fnIsPoly1[I, O](fn: Circuit[I, O]): Is[I, O] = Is(fn)
+
+    // weaker than Base, can only refine by providing a concrete type (instead of a bounded free type)
+    //  see https://stackoverflow.com/questions/79221926/in-scala-3-whats-the-meaning-of-unreducible-application-of-higher-kinded-type
+    //  for this issue
+    // TODO: Scala 2 cannot figure out the correct bound for sub, cannot extend Base directly
+    trait Ctor extends Base {
+      val maxBound: TypeBound
+
+      final type Bound = maxBound.Less & TypeBound.Point // Scala 3 only support point bound
+      type F[T >: maxBound.Min <: maxBound.Max] <: Circuit[?, ?]
+
+      def f[T >: maxBound.Min <: maxBound.Max]: F[T]
+
+      class Refine[Sub <: Bound](_sub: Sub) extends Circuit.TProj {
+
+        val sub: TypeBound.PointAt[? >: maxBound.Min <: maxBound.Max] =
+          _sub.asInstanceOf[TypeBound.PointAt[? >: maxBound.Min <: maxBound.Max]]
+
+        override val projection: F[sub.Point] = f[sub.Point]
+      }
+      final override def refine[Sub <: Bound](sub: Sub): Refine[Sub] = {
+
+        implicitly[Sub <:< Ctor.this.Bound]
+
+        new Refine[Sub](sub)
       }
     }
   }
 
-  type Poly1Like[-T_/\] = Poly1Like.Decreasing[T_/\]
+  class BoundView[B <: TypeBound](val maxBound: B) {
 
-  type Poly1[T_/\, -I[_ <: T_/\], +O[_ <: T_/\]] = Poly1Like[T_/\] {
-    type In[T <: T_/\] >: I[T]
-    type Out[T <: T_/\] <: O[T]
-  }
+    // most trait definitions has to be moved out to get implicits into scope
 
-  case object Poly1 {
+//    import maxBound.*
 
-    trait Impl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends Poly1Like[T_/\] {
-      type In[T <: T_/\] = I[T]
-      type Out[T <: T_/\] = O[T]
+    trait _Base extends Poly1.Base[maxBound.Less] {
+      final val maxBound = BoundView.this.maxBound
     }
 
-    case class Is[I, O](backbone: Circuit[I, O]) extends Poly1Like[Any] {
+//    abstract class OfKind[F[_ >: Min <: Max] <: Circuit[?, ?]](
+//        implicit
+//        override val _definedAt: SrcDefinition
+//    ) extends _Base {
+//
+//      def refine[B <: bound.Lt](sub: B): F[? >: sub.Min <: sub.Max]
+//
+//      case class Only[B <: bound.Lt](sub: B) extends CircuitRelay {
+//
+//        override val lemma: Circuit[B, F[? >: sub.Min <: sub.Max]] = {
+//          refine[B]
+//        }
+//      }
+//      override def only[B <: bound.Lt](sub: B): Only[B] = Only(sub)
+//    }
+//
+//    object OfKind {
+//
+//      case class Is[I, O](backbone: Circuit[I, O]) extends OfKind[Is[I, O]#F] {
+//
+//        type F[_] = Circuit[I, O]
+//
+//        override def refine[B <: bound.Lt](sub: B): Circuit[I, O] = backbone
+//      }
+//    }
 
-      override type In[+_] = I
-      override type Out[+_] = O
+    implicit def fnIsPoly1[I, O](v: Circuit[I, O]): OfKind.Is[I, O] = OfKind.Is(v)
 
-      override def apply[T](arg: I): O = backbone.apply(arg)
+    object Dependent {
+
+      type _FromOutK[O[_ >: Min <: Max]] = Circuit[_, O[_]]
     }
 
-    implicit def fnIsPoly1[I, O](v: Circuit[I, O]): Poly1.Is[I, O] = Poly1.Is(v)
+    type Dependent[O[_ >: Min <: Max]] = OfKind[Dependent._FromOutK[O]]
 
-    final case class Cached[T_/\, SS <: Poly1Like[T_/\]](
-        backbone: SS,
+    final case class Cached[T_/\, TSelf <: _Base](
+        backbone: TSelf,
         getLookup: () => LookupMagnet[Any, Any] = () => Same.Native.Lookup[Any, Any]()
-    ) extends Poly1Like[T_/\] {
+    ) extends _Base {
 
       override type In[T <: T_/\] = backbone.In[T]
       override type Out[T <: T_/\] = backbone.Out[T]
@@ -115,51 +189,167 @@ trait HasPoly1 extends HasPoly {
     }
   }
 
-  implicit class Poly1Ops[
-      T_/\,
-      SS <: Poly1Like[T_/\]
-  ](val self: SS)
-      extends Serializable {
+  object Unbounded extends BoundView {
 
-    def cached(
-        byLookup: => LookupMagnet[Any, Any] = Same.Native.Lookup()
-    ): Poly1.Cached[T_/\, SS] = {
-
-      type Result = Poly1.Cached[T_/\, SS]
-
-      val result: Result =
-        Poly1.Cached[T_/\, SS](self, () => byLookup)
-      result
-    }
-  }
-
-  sealed trait DependentLike[
-      T_/\
-  ] extends Poly1Like[T_/\] {
-
-    type In[T <: T_/\] = T
+    val maxBound: Top = TypeBound.Any
   }
 
   /**
-    * function with dependent type
+    * a.k.a. parametric polymorphism, e.g. natural transformation
     *
-    * equivalent to `def(v: A): v.R` or `def[T <: A](v: T): T#R` in terms of capability
-    * @tparam I
-    *   type(s) of input arg(s)
-    * @tparam R
-    *   type constructor of output
+    * serve as the basis of functions with dependent type
     */
-  type Dependent[T_/\, +O[_ <: T_/\]] = DependentLike[T_/\] {
-    type Out[T <: T_/\] <: O[T]
-  }
-  object Dependent {
+  //  case object Poly1 {
+  //
+  //    import ai.acyclic.prover.commons.function.TypeBound.*
+  //
+  //    trait Common extends Poly1 {
+  //
+  //      type F[T >: bound.Min <: bound.Max] <: Circuit[?, ?]
+  //
+  //      override val projection: F[? >: bound.Min <: bound.Max]
+  //
+  //      case class Refined[Sub <: bound.Lt](sub: Sub) extends Common {
+  //
+  //        final override val bound: TypeBound = sub
+  //        val outer = Common.this
+  //
+  //        override type F[T >: bound.Min <: bound.Max] = outer.F[T]
+  //
+  //        override protected def _definedAt: SrcDefinition = Common.this._definedAt
+  //
+  //        override val projection = outer.projection.asInstanceOf[F[? >: bound.Min <: bound.Max]]
+  //      }
+  //
+  //      override def refine[Sub <: bound.Lt](sub: Sub): Refined[Sub] = Refined[Sub](sub)
+  //    }
+  //
+  //    trait Sanity extends Common {
+  //      // encoding T => Seq[T]
+  //
+  //      type F[T >: bound.Min <: bound.Max] = T |- Seq[T]
+  //
+  //      override val projection = at[_ >: ] { v =>
+  //        Seq(v)
+  //      }
+  //    }
+  //
+  ////    trait Canonical extends Poly1Like {
+  ////
+  ////      type F[T] <: Circuit[? >: bound.Max, ? <: bound.Min]
+  ////
+  ////      def refine[B <: bound.Lt](sub: B): F[? >: sub.Min <: sub.Max]
+  ////
+  ////      case class Only[B <: bound.Lt](sub: B) extends Circuit.TProj {
+  ////
+  ////        override val projection: Circuit[B, F[? >: sub.Min <: sub.Max]] = {
+  ////          refine[B]
+  ////        }
+  ////      }
+  ////      override def only[B <: bound.Lt](sub: B): Only[B] = Only(sub)
+  ////
+  ////    }
+  //  }
 
-    trait Impl[T_/\, O[_ <: T_/\]] extends DependentLike[T_/\] {
-      type Out[T <: T_/\] = O[T]
-    }
+  //  type Mono[T_/\, -I[_ <: T_/\], +O[_ <: T_/\]] = MonoLike[T_/\] {
+  //    type In[T <: T_/\] >: I[T]
+  //    type Out[T <: T_/\] <: O[T]
+  //  }
+  //
+  //  case object Mono {
+  //
+  //    trait Impl[T_/\, I[_ <: T_/\], O[_ <: T_/\]] extends MonoLike[T_/\] {
+  //      type In[T <: T_/\] = I[T]
+  //      type Out[T <: T_/\] = O[T]
+  //    }
+  //
+  //    case class Is[I, O](backbone: Circuit[I, O]) extends MonoLike[Any] {
+  //
+  //      override type In[+_] = I
+  //      override type Out[+_] = O
+  //
+  //      override def apply[T](arg: I): O = backbone.apply(arg)
+  //    }
+  //
+  //    implicit def fnIsMono[I, O](v: Circuit[I, O]): Mono.Is[I, O] = Mono.Is(v)
+  //
+  //    final case class Cached[T_/\, SS <: MonoLike[T_/\]](
+  //        backbone: SS,
+  //        getLookup: () => LookupMagnet[Any, Any] = () => Same.Native.Lookup[Any, Any]()
+  //    ) extends MonoLike[T_/\] {
+  //
+  //      override type In[T <: T_/\] = backbone.In[T]
+  //      override type Out[T <: T_/\] = backbone.Out[T]
+  //
+  //      @transient lazy val lookup: LookupMagnet[Any, Any] = getLookup()
+  //
+  //      override def apply[T <: T_/\](arg: In[T]): Out[T] = {
+  //
+  //        lookup
+  //          .getOrElseUpdateOnce(arg)(
+  //            backbone.apply(arg)
+  //          )
+  //          .asInstanceOf[Out[T]]
+  //      }
+  //
+  //      def getExisting[T <: T_/\](arg: In[T]): Option[Out[T]] = {
+  //        lookup
+  //          .get(arg)
+  //          .map { v =>
+  //            v.asInstanceOf[Out[T]]
+  //          }
+  //      }
+  //    }
+  //  }
 
-    type Invar[T] = T
+  //  implicit class MonoOps[
+  //      T_/\,
+  //      SS <: MonoLike[T_/\]
+  //  ](val self: SS)
+  //      extends Serializable {
+  //
+  //    def cached(
+  //        byLookup: => LookupMagnet[Any, Any] = Same.Native.Lookup()
+  //    ): Mono.Cached[T_/\, SS] = {
+  //
+  //      type Result = Mono.Cached[T_/\, SS]
+  //
+  //      val result: Result =
+  //        Mono.Cached[T_/\, SS](self, () => byLookup)
+  //      result
+  //    }
+  //  }
+  //
+  //  type DependentLike[
+  //      T_/\
+  //  ] = MonoLike[T_/\] {
+  //
+  //    type In[T <: T_/\] = T
+  //  }
+  //
+  //  /**
+  //    * function with dependent type
+  //    *
+  //    * equivalent to `def(v: A): v.R` or `def[T <: A](v: T): T#R` in terms of capability
+  //    * @tparam I
+  //    *   type(s) of input arg(s)
+  //    * @tparam R
+  //    *   type constructor of output
+  //    */
+  //  type Dependent[T_/\, +O[_ <: T_/\]] = DependentLike[T_/\] {
+  //    type Out[T <: T_/\] <: O[T]
+  //  }
+  //
+  //  object Dependent {
+  //
+  //    type Invar[T] = T
+  //
+  //    trait Impl[T_/\, O[_ <: T_/\]] extends Mono.Impl[T_/\, Invar, O] {}
+  //
+  //    object Identity extends Impl[Any, Invar] {
+  //      override def apply[T <: Any](arg: T): T = arg
+  //    }
+  //    type Identity = Identity.type
+  //  }
 
-    trait Identity extends Impl[Any, Invar]
-  }
 }
