@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.util.Erased
 
-trait TypeBound extends Erased {
+trait TypeBound extends PseudoTypeBound {
 
   /**
     * used like a type argument with lower & upper bound
@@ -17,8 +17,6 @@ trait TypeBound extends Erased {
     *
     * but it has the extra benefit of making Min & Max accessible, which is not possible in before
     */
-
-  type Min
   type Max >: Min
 
 //  type T >: Min <: Max

@@ -1,22 +1,19 @@
 package ai.acyclic.prover.commons.debug
 
+import ai.acyclic.prover.commons.util.SrcDefinition
+
 case class print_@(
-    belowClasses: Seq[Class[?]]
+    src: SrcDefinition
 ) {
 
   def wrapInfo[T](
       v: T
   ): String = {
 
-    val ref: CallStackRef = CallStackRef.below(condition = { v =>
-      val mt = v.isUnder(classes = Seq(this.getClass) ++ belowClasses)
-      mt
-    })
-
     val result: String =
       s"""
          |${v.toString}
-         |\tat ${ref.showStr}
+         |\tat ${src.toString}
     """.stripMargin
 
     result
@@ -32,4 +29,4 @@ case class print_@(
   }
 }
 
-object print_@ extends print_@(Nil)
+object print_@ extends print_@(SrcDefinition.Runtime(Nil)())

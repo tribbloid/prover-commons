@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.diff
 
 import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.typesetting.TextBlock
+import ai.acyclic.prover.commons.util.SrcDefinition
 
 case class StringDiff(
     left: Option[String],
@@ -15,8 +16,10 @@ case class StringDiff(
   import StringDiff.*
 
   private val _printFn = new print_@(
-    classes :+
-      this.getClass
+    SrcDefinition.Runtime(
+      classes :+
+        this.getClass
+    )
   )
 
   case class Rows(

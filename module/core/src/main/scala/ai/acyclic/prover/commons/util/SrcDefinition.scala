@@ -39,17 +39,16 @@ object SrcDefinition {
   }
 
   // only here as a backup, should use CompileTime in most cases for speed
-  @Deprecated
   case class Runtime(
-      cls: Class[?]
+      belowClasses: Seq[Class[?]] = Nil
   )(
+      implicit
       stack: CallStackRef = {
 
         val stack = CallStackRef
           .below(
             condition = { v =>
-              v.isUnderClasses(cls, this.getClass)
-
+              v.isUnderClasses((Seq(this.getClass) ++ belowClasses)*)
             }
           )
 
