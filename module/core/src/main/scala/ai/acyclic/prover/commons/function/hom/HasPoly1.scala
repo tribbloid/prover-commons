@@ -14,21 +14,6 @@ object HasPoly1 {}
 
 trait HasPoly1 extends HasPoly {
 
-  // a special case of Poly that takes type argument, instead of several implicit type classes
-  // relying heavily on kind-projector plugin: https://github.com/typelevel/kind-projector
-  // (plugin supports multiple syntaxes, please refrain from using shortened syntax, difficult to move to Scala3)
-
-  // TODO: Unfortunately, from this point, shapeless Poly & DepFn are almost useless
-  //  just like Scala2 Function is almost useless
-  //  DepFn is not really a function with dependent type
-  //  Poly is unbounded & has poor compatibility with Scala3,
-  //  also, each case doesn't have an output dependent type (like DepFn)
-
-  //  trait HasBound {
-  //
-  //    val bound: TypeBound
-  //  }
-
   /**
     * key observation:
     *
@@ -53,65 +38,109 @@ trait HasPoly1 extends HasPoly {
     * refinement rule(s)
     */
 
-  type Poly1[-B <: TypeBound] = Poly1.Base { type BB = B }
+  type Poly1[-B <: TypeBound] = Poly1.TypeLambda { type BB = B }
 
   object Poly1 {
 
-    abstract class Base(
+    /**
+      * the most general form of poly1 in DOT calculus takes a bound and generate a function it should be cast into
+      * TypeLambda in Scala 3. this is impossible in Scala 2 due to buggy bound inference
+      */
+    abstract class BoundLambda(
         implicit
         override val _definedAt: SrcDefinition
     ) extends PolyLike {
 
-      type Bound <: TypeBound
+      val typeDomain: TypeBound
+      type Bound <: typeDomain.Less
 
-      type Refine[Sub <: Bound] <: Circuit.TProj
-      def refine[Sub <: Bound](sub: Sub): Refine[Sub]
+      def refine[Sub <: Bound](sub: Sub): Circuit[?, ?]
     }
 
-    object Base {
+    object BoundLambda {
 
-      type Gt[-B <: TypeBound] = Base { type Bound >: B }
+      type Gt[-B <: TypeBound] = BoundLambda { type Bound >: B }
+
+      implicit class View(self: BoundLambda {})
     }
 
-    case class Is[I, O](backbone: Circuit[I, O]) extends Base {
-
-      type Bound <: TypeBound.Any.Less
-
-      case class Refine[Sub <: TypeBound]() extends Circuit.TProj {
-
-        override val projection: Circuit[I, O] = backbone
-      }
-
-      override def refine[Sub <: TypeBound](sub: Sub): Refine[Sub] = Refine[Sub]()
-
-    }
-    implicit def _fnIsPoly1[I, O](fn: Circuit[I, O]): Is[I, O] = Is(fn)
-
-    // weaker than Base, can only refine by providing a concrete type (instead of a bounded free type)
-    //  see https://stackoverflow.com/questions/79221926/in-scala-3-whats-the-meaning-of-unreducible-application-of-higher-kinded-type
-    //  for this issue
     // TODO: Scala 2 cannot figure out the correct bound for sub, cannot extend Base directly
-    trait Ctor extends Base {
-      val maxBound: TypeBound
 
-      final type Bound = maxBound.Less & TypeBound.Point // Scala 3 only support point bound
-      type F[T >: maxBound.Min <: maxBound.Max] <: Circuit[?, ?]
+    /**
+      * weaker than [[BoundLambda]], only works on a concrete type (instead of a bound). Major compiler spec upgrade
+      * required, see
+      *
+      * https://stackoverflow.com/questions/79221926/in-scala-3-whats-the-meaning-of-unreducible-application-of-higher-kinded-type
+      * https://github.com/scala/scala3/issues/22056
+      */
+    abstract class TypeLambda(
+        implicit
+        override val _definedAt: SrcDefinition
+    ) extends BoundLambda {
 
-      def f[T >: maxBound.Min <: maxBound.Max]: F[T]
+      type Bound = typeDomain.Less & TypeBound.Point
 
-      class Refine[Sub <: Bound](_sub: Sub) extends Circuit.TProj {
+      type Lambda[T >: typeDomain.Min <: typeDomain.Max] <: Circuit[?, ?]
+//      def lambda[Sub <: Bound](sub: Sub): Lambda[sub.Point]
 
-        val sub: TypeBound.PointAt[? >: maxBound.Min <: maxBound.Max] =
-          _sub.asInstanceOf[TypeBound.PointAt[? >: maxBound.Min <: maxBound.Max]]
+    }
 
-        override val projection: F[sub.Point] = f[sub.Point]
+    implicit class Is[I, O](backbone: Circuit[I, O]) extends TypeLambda()(backbone.definedAt) {
+
+      override val typeDomain = TypeBound.Any
+
+      override type Lambda[T >: typeDomain.Min <: typeDomain.Max] = Circuit[I, O]
+
+      override def refine[Sub <: Bound](sub: Sub): Circuit[I, O] = backbone
+    }
+//    implicit def _fnIsPoly1[I, O](fn: Circuit[I, O]): Is[I, O] = Is(fn)
+
+    final case class Cached[T_/\, TSelf <: TypeLambda](
+        backbone: TSelf,
+        getLookup: () => LookupMagnet[Any, Any] = () => Same.Native.Lookup[Any, Any]()
+    ) extends TypeLambda {
+
+      override val typeDomain: TypeBound = backbone.typeDomain
+
+      override type Lambda = Circuit.Cached[]
+
+//      override type In[T <: T_/\] = backbone.In[T]
+//      override type Out[T <: T_/\] = backbone.Out[T]
+
+      @transient lazy val lookup: LookupMagnet[Any, Any] = getLookup()
+
+      override def apply[T <: T_/\](arg: In[T]): Out[T] = {
+
+        lookup
+          .getOrElseUpdateOnce(arg)(
+            backbone.apply(arg)
+          )
+          .asInstanceOf[Out[T]]
       }
-      final override def refine[Sub <: Bound](sub: Sub): Refine[Sub] = {
 
-        implicitly[Sub <:< Ctor.this.Bound]
-
-        new Refine[Sub](sub)
+      def getExisting[T <: T_/\](arg: In[T]): Option[Out[T]] = {
+        lookup
+          .get(arg)
+          .map { v =>
+            v.asInstanceOf[Out[T]]
+          }
       }
+
+//      override type Lambda = this.type
+
+//      override def refine[Sub <: typeDomain.Less with TypeBound.Point](sub: Sub): Circuit = ???
+    }
+  }
+
+  object Dependent {
+
+    abstract class Base(
+        implicit
+        override val _definedAt: SrcDefinition
+    ) extends Poly1.TypeLambda {
+
+      type Out[T >: typeDomain.Min <: typeDomain.Max]
+      type Lambda[T >: typeDomain.Min <: typeDomain.Max] = Circuit[T, Out[T]]
     }
   }
 
@@ -121,9 +150,9 @@ trait HasPoly1 extends HasPoly {
 
 //    import maxBound.*
 
-    trait _Base extends Poly1.Base[maxBound.Less] {
-      final val maxBound = BoundView.this.maxBound
-    }
+//    trait _Base extends Poly1.BoundLambda[maxBound.Less] {
+//      final val typeDomain = BoundView.this.maxBound
+//    }
 
 //    abstract class OfKind[F[_ >: Min <: Max] <: Circuit[?, ?]](
 //        implicit
@@ -151,42 +180,13 @@ trait HasPoly1 extends HasPoly {
 //      }
 //    }
 
-    implicit def fnIsPoly1[I, O](v: Circuit[I, O]): OfKind.Is[I, O] = OfKind.Is(v)
+//    object Dependent {
+//
+//      type _FromOutK[O[_ >: Min <: Max]] = Circuit[_, O[_]]
+//    }
+//
+//    type Dependent[O[_ >: Min <: Max]] = OfKind[Dependent._FromOutK[O]]
 
-    object Dependent {
-
-      type _FromOutK[O[_ >: Min <: Max]] = Circuit[_, O[_]]
-    }
-
-    type Dependent[O[_ >: Min <: Max]] = OfKind[Dependent._FromOutK[O]]
-
-    final case class Cached[T_/\, TSelf <: _Base](
-        backbone: TSelf,
-        getLookup: () => LookupMagnet[Any, Any] = () => Same.Native.Lookup[Any, Any]()
-    ) extends _Base {
-
-      override type In[T <: T_/\] = backbone.In[T]
-      override type Out[T <: T_/\] = backbone.Out[T]
-
-      @transient lazy val lookup: LookupMagnet[Any, Any] = getLookup()
-
-      override def apply[T <: T_/\](arg: In[T]): Out[T] = {
-
-        lookup
-          .getOrElseUpdateOnce(arg)(
-            backbone.apply(arg)
-          )
-          .asInstanceOf[Out[T]]
-      }
-
-      def getExisting[T <: T_/\](arg: In[T]): Option[Out[T]] = {
-        lookup
-          .get(arg)
-          .map { v =>
-            v.asInstanceOf[Out[T]]
-          }
-      }
-    }
   }
 
   object Unbounded extends BoundView {
