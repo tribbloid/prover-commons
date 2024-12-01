@@ -62,7 +62,7 @@ object HigherOrder2 {
         |: : !-- CrossUnit
         |: : !-+ Pointwise
         |: :   !-- ${fn1.explain.nodeText}
-        |: :   !-+ Eager
+        |: :   !-+ CachedEager
         |: :     !-- ${fn2.explain.nodeText}
         |: !-- Blackbox(result <at HigherOrder2.scala:23>)
         |!-- Blackbox(result <at HigherOrder2.scala:22>)

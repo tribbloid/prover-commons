@@ -26,7 +26,7 @@ object HigherOrder1 {
       s2 ->
         s"""
           |+ Mapped
-          |!-+ Eager
+          |!-+ CachedEager
           |: !-- ${fn0.explain.nodeText}
           |!-- Blackbox(result <at HigherOrder1.scala:10>)
           |""".stripMargin

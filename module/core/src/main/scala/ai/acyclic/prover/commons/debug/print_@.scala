@@ -29,4 +29,4 @@ case class print_@(
   }
 }
 
-object print_@ extends print_@(SrcDefinition.Runtime(Nil)())
+object print_@ extends print_@(SrcDefinition.Runtime(Seq(classOf[print_@]))())

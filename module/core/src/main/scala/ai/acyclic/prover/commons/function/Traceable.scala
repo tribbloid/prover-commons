@@ -44,9 +44,11 @@ object Traceable {
 
     override def unapplyAll(value: Traceable): Destructured[Traceable] = {
 
-      val raw = value match {
+      val raw: Destructured[Traceable] = value match {
         case vv: Traceable with Product =>
           ProductInspection.unapplyProduct(vv, Nil)
+        case vv: Product =>
+          Destructured(vv.productPrefix, Nil, Seq(value.definedAt))
         case _ =>
           // not a product, both extensional equality & visualization have to rely on SrcDefinition
           Destructured(value.getClass.getSimpleName, Nil, Seq(value.definedAt))

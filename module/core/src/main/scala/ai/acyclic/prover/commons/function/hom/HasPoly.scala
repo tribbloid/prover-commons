@@ -21,6 +21,7 @@ trait HasPoly extends HasPolyLike {
       implicit
       override val _definedAt: SrcDefinition
   ) extends PolyLike {
+
     // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
 
     def apply[I](v: I)(

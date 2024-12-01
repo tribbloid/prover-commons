@@ -31,11 +31,11 @@ object SrcDefinition {
 
   case class Unknown(uuid: UUID) extends SrcDefinition {
 
-    override def fileName: String = "<?>"
+    override def fileName: String = "<unknown>"
 
-    override def lineNumber: Int = -1
+    override def lineNumber: Int = 0
 
-    override def methodName: String = "<?>"
+    override def methodName: String = ""
   }
 
   // only here as a backup, should use CompileTime in most cases for speed

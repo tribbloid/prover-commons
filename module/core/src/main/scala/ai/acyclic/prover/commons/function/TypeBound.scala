@@ -59,7 +59,11 @@ object TypeBound {
   }
 
   type Top = K[Nothing, Any]
-  val Any: Top = Erased()
+  trait Top_ extends TypeBound {
+    type Min = Nothing
+    type Max = Any
+  }
+  val Top: Top = Erased()
 
   trait Point extends TypeBound {
     type Point

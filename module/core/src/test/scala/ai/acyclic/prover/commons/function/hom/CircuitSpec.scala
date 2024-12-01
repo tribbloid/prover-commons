@@ -48,7 +48,7 @@ class CircuitSpec extends BaseSpec {
 
       val cc1 = cc.asInstanceOf[Circuit.Blackbox[Int, String]]
 
-      val cc2 = cc1.copy(fn = { v: Int => "" })(cc1._definedAt)
+      val cc2 = cc1.copy()(fn = { _: Int => "" })
 
       assert(cc == cc2)
     }

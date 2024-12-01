@@ -9,6 +9,7 @@ import scala.language.implicitConversions
 private[pending] trait PendingGroup extends CanRevokeAll {
 
   trait revokeAll_Lvl0 extends Hom.Poly {
+    self: Singleton =>
 
     implicit def last[T, C <: PendingEffect]: (T << C) Target T = at[T << C] { v =>
       v.asInstanceOf[T]
@@ -16,6 +17,7 @@ private[pending] trait PendingGroup extends CanRevokeAll {
   }
 
   object revokeAll extends revokeAll_Lvl0 {
+    self: Singleton =>
 
     implicit def chain[T, R, C <: PendingEffect](
         implicit

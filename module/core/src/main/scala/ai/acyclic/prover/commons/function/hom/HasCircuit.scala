@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.function.hom
 import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.function.{Product0, Traceable}
-import ai.acyclic.prover.commons.same.{EqualBy, Same}
+import ai.acyclic.prover.commons.same.Same
 import ai.acyclic.prover.commons.util.{Erased, SrcDefinition}
 
 import scala.language.implicitConversions
@@ -102,10 +102,12 @@ trait HasCircuit extends Capability.Universe {
         self: Circuit[I, O]
     ) extends Serializable {
 
-      def cached(
-          byLookup: => LookupMagnet[I, O] = Same.Native.Lookup[I, O]()
-      ): Circuit.Lazy[I, O] = {
-        new Circuit.Lazy[I, O](self)(() => byLookup)
+      def cached(byLookup: => LookupMagnet[I, O]): CachedLazy[I, O] = {
+        CachedLazy[I, O](self)(() => byLookup)
+      }
+
+      def cached(): CachedLazy[I, O] = {
+        CachedLazy[I, O](self)()
       }
     }
 
@@ -145,7 +147,7 @@ trait HasCircuit extends Capability.Universe {
       // TODO: this can be fold into Circuit?
 
       lazy val higher: Circuit.Tracing[Unit, Circuit[I, O]] =
-        Circuit.Tracing(Thunk.Eager(self))
+        Circuit.Tracing(Thunk.CachedEager(self))
 
       def map[O2](right: O => O2)(
           implicit
@@ -170,7 +172,7 @@ trait HasCircuit extends Capability.Universe {
           _definedAt: SrcDefinition
       ): Tracing[I, O] = {
 
-        val _right = Blackbox(right)
+        val _right = Blackbox(_definedAt)(right)
 
         val result =
           Circuit.Filtered[I, O](self, _right)
@@ -208,7 +210,6 @@ trait HasCircuit extends Capability.Universe {
         type In = I
         type Out = O
       }
-
     }
 
     trait Mixin
@@ -242,7 +243,7 @@ trait HasCircuit extends Capability.Universe {
       val I: Identity.type = Identity
       val B: Mapped.type = Mapped
       val C: Flipped.type = Flipped
-      val K: Thunk.Lazy.type = Thunk.Lazy
+      val K: Thunk.CachedLazy.type = Thunk.CachedLazy
 
       val Delta: Pointwise.type = Pointwise
       val Gamma: Duplicate.type = Duplicate
@@ -360,11 +361,10 @@ trait HasCircuit extends Capability.Universe {
 
     // there is no absorb right
 
-    case class Blackbox[I, R](fn: I => R)(
-        implicit
+    case class Blackbox[I, R](
         final override val _definedAt: SrcDefinition
-    ) extends Impl[I, R]
-        with Product0 {
+    )(fn: I => R)
+        extends Impl[I, R] {
 
       override def apply(arg: I): R = {
 
@@ -379,7 +379,7 @@ trait HasCircuit extends Capability.Universe {
       fn match {
         case Function1View(c, _) => c
         case _ =>
-          Blackbox[I, R](fn)
+          Blackbox[I, R](_definedAt)(fn)
       }
     }
 
@@ -396,7 +396,8 @@ trait HasCircuit extends Capability.Universe {
 
     trait Cached extends Pure
 
-    final case class Lazy[I, R](backbone: Circuit[I, R])(
+    // TODO: make a dependent class, also in Thunk
+    final case class CachedLazy[I, R](backbone: Circuit[I, R])(
         getLookup: () => LookupMagnet[I, R] = () => Same.Native.Lookup[I, R]()
     ) extends Impl[I, R]
         with Cached {
@@ -432,7 +433,7 @@ trait HasCircuit extends Capability.Universe {
 
       vanilla match {
         case fnView: self.Function1View[_, _] => fnView.self.asInstanceOf[Circuit.Impl[I, O]]
-        case _                                => self.Blackbox(vanilla)
+        case _                                => self.Blackbox(_definedAt)(vanilla)
       }
     }
   }
@@ -459,13 +460,13 @@ trait HasCircuit extends Capability.Universe {
       override def apply(arg: Unit): O = value
     }
 
-    final case class Lazy[O](gen: Thunk[O]) extends Cached_[O] {
+    final case class CachedLazy[O](gen: Thunk[O]) extends Cached_[O] {
 
       // equivalent to CachedLazy[Unit, O], but much faster
       @transient protected lazy val value: O = gen(())
     }
 
-    final case class Eager[O](value: O) extends Cached_[O] {}
+    final case class CachedEager[O](value: O) extends Cached_[O] {}
 
     private[HasCircuit] case class Function0View[O](
         self: Thunk[O],
@@ -480,9 +481,9 @@ trait HasCircuit extends Capability.Universe {
 
       //      override def normalise: Circuit[I, O] = self.normalise
 
-      def asLazy: Lazy[O] = Lazy(self)
+      def asLazy: CachedLazy[O] = CachedLazy(self)
 
-      def asEager: Eager[Thunk[O]] = Eager(self)
+      def asEager: CachedEager[Thunk[O]] = CachedEager(self)
     }
   }
 }

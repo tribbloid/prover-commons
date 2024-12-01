@@ -5,11 +5,15 @@ object Hom extends Hom_Imp0 {
   type :=>[-I, +R] = Circuit[I, R]
   val :=> : Circuit.type = Circuit
 
-  type :|~>[-I[_], +R[_]] = Poly1[Any, I, R]
-  val :|~> : Poly1.type = Poly1
+  type Poly1[-I[_], +R[_]] = TypeDomain.top.Poly1[I, R]
 
-  type :|->[+R[_]] = Dependent[Any, R]
-  val :|-> : Dependent.type = Dependent
+  type :|~>[-I[_], +R[_]] = TypeDomain.top.Poly1[I, R]
+  val :|~> = TypeDomain.top.Poly1
+
+  type Dependent[+R[_]] = TypeDomain.top.Dependent[R]
+
+  type :|->[+R[_]] = TypeDomain.top.Dependent[R]
+  val :|-> = TypeDomain.top.Dependent
 
   object Impl {
 
@@ -17,8 +21,8 @@ object Hom extends Hom_Imp0 {
 
     type Poly = Hom.Poly
 
-    type Poly1[T, I[_ <: T], R[_ <: T]] = Poly1.Impl[T, I, R]
+    type Poly1[I[_], R[_]] = TypeDomain.top.Poly1.Impl[I, R]
 
-    type Dependent[T, R[_ <: T]] = Dependent.Impl[T, R]
+    type Dependent[R[_]] = TypeDomain.top.Dependent.Impl[R]
   }
 }

@@ -16,6 +16,7 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
   }
 
   trait revokeAll_Imp0 extends Hom.Poly {
+    self: Singleton =>
 
     implicit def last[T, C <: Capability]: (T <> C) Target T = at[T <> C].apply { v =>
       v.asInstanceOf[T]
@@ -23,6 +24,7 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
   }
 
   trait revokeAll extends revokeAll_Imp0 {
+    self: Singleton =>
 
     implicit def chain[T, R, C <: Capability](
         implicit
@@ -30,7 +32,6 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
     ): (T <> C) Target R = at[T <> C] { v =>
       lemma(v.asInstanceOf[T])
     }
-
   }
 
   object revokeAll extends revokeAll

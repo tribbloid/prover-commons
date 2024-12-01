@@ -1,12 +1,17 @@
 package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.util.SrcDefinition
 
 object TraceableSpec {
 
   val t1: Traceable = new Traceable {}
 
-  case class T2() extends Traceable
+  case class T2()(
+      implicit
+      override val _definedAt: SrcDefinition
+  ) extends Traceable
+
   val t2: T2 = T2()
 
   object T3 extends T2()
@@ -32,15 +37,15 @@ class TraceableSpec extends BaseSpec {
   describe("of instances") {
 
     it("ad-hoc class") {
-      t1.definedAt.atLine.shouldBe("TraceableSpec.scala:9")
+      t1.definedAt.atLine.shouldBe("<unknown>:0")
     }
 
     it("class") {
-      t2.definedAt.atLine.shouldBe("TraceableSpec.scala:12")
+      t2.definedAt.atLine.shouldBe("TraceableSpec.scala:15")
     }
 
     it("object") {
-      T3.definedAt.atLine.shouldBe("TraceableSpec.scala:14")
+      T3.definedAt.atLine.shouldBe("TraceableSpec.scala:17")
     }
 
 //    it("single-abstract method") {

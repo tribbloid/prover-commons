@@ -6,7 +6,10 @@ import scala.reflect.ClassTag
 
 object ProductInspection {
 
-  def unapplyProduct[I <: Product](value: I, contents: Seq[Any]): Destructured[I] = {
+  def unapplyProduct[I <: Product](value: I, contents: Seq[Any])(
+      implicit
+      tI: ClassTag[I]
+  ): Destructured[I] = {
     val contentSet = contents.toSet
 
     val inductions_contents: Seq[Either[I, Any]] = {
@@ -26,14 +29,14 @@ object ProductInspection {
       result
     }
 
-    val induction: Seq[I] = inductions_contents.collect {
-      case Left(v) => v
-    }
-
     Destructured(
       value.productPrefix,
-      induction,
-      contents
+      induction = inductions_contents.collect {
+        case Left(v) => v
+      },
+      contents = inductions_contents.collect {
+        case Right(v) => v
+      }
     )
   }
 }
@@ -54,6 +57,6 @@ abstract class ProductInspection[
 
     val contents: Seq[Any] = unapplyContents(value)
 
-    ProductInspection.unapplyProduct[I](value, contents)
+    ProductInspection.unapplyProduct[I](value, contents)(tI)
   }
 }
