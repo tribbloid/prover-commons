@@ -1,20 +1,18 @@
 package ai.acyclic.prover.commons.viz
 
-import ai.acyclic.prover.commons.HasOuter
+import ai.acyclic.prover.commons.HasInner
 import ai.acyclic.prover.commons.meta.ScalaReflection
 import ai.acyclic.prover.commons.refl.Reflection
 
 class TypeVizBuilder[R <: Reflection](
     val reflection: R,
     val format: TypeHierarchy
-) {
+) extends HasInner {
 
   sealed abstract class _TypeViz(
       val reflection: R = TypeVizBuilder.this.reflection
   ) extends TypeViz[R]
-      with HasOuter {
-
-    def outer: ai.acyclic.prover.commons.viz.TypeVizBuilder[R] = TypeVizBuilder.this
+      with _Inner {
 
     override val format: TypeHierarchy = TypeVizBuilder.this.format
   }

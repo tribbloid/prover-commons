@@ -42,7 +42,7 @@ object CanEqual {
       value: T
   ) extends View.Equals.Base {
 
-    override lazy val canEqualProjections = Vector(this)
+    override lazy val canEqualProjections: Vector[Projection[T]] = Vector(this)
 
     def internalHashCode(): Int = {
       ???
@@ -327,10 +327,6 @@ object CanEqual {
       }
 
     }
-
-    def <~[T](value: T): Projection[T] = CanEqual.Projection(this.ForAny, value)
-
-    def apply[T] = <~[T] _
   }
 }
 
@@ -373,6 +369,10 @@ trait CanEqual[-LR] extends Plane {
 
   final def notEqual(x: LR, y: LR): Boolean = !areEqual(x, y)
 
+  def <~[T <: LR](value: T): Projection[T] = CanEqual.Projection(this, value)
+
+  def apply[T <: LR] = <~[T] _
+
   case object Lookup extends Serializable
 
   // a cache wrapper with a serialID, such that `values` will return the values in insertion order
@@ -395,10 +395,10 @@ trait CanEqual[-LR] extends Plane {
 
     @transient lazy val asMap: MapRepr[K, V] = {
 
-      val keyCodec = new Bijection[K, Projection[V]] {
-        override def apply(v1: K): Projection[V] = <~(v1)
+      val keyCodec = new Bijection[K, Projection[K]] {
+        override def apply(v1: K): Projection[K] = <~(v1)
 
-        override def invert(v1: Projection[V]): K = v1.value
+        override def invert(v1: Projection[K]): K = v1.value
       }
 
       val valueCodec = new Bijection[V, (V, Long)] {

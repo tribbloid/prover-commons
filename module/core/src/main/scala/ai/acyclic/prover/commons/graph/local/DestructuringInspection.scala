@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.local
 
-import ai.acyclic.prover.commons.HasOuter
+import ai.acyclic.prover.commons.HasInner
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
@@ -75,7 +75,7 @@ abstract class DestructuringInspection[
 
       val prefixElements: Vector[String] = {
 
-        val outers = HasOuter.outerListOf(value)
+        val outers = HasInner.outerListOf(value)
         val names = outers.collect {
           case v: Product => v.productPrefix
         }.toVector
