@@ -12,7 +12,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
   case class TypeID(
       self: Type
-  ) extends CanEqual.Native.EqualBy {
+  ) extends CanEqual.Native.Equals {
 
     lazy val allSymbols: Seq[Symbol] = {
 

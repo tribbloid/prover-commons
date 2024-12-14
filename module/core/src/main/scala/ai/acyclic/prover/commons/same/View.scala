@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.same
 
 object View {
 
-  type Equals = CanEqual.Native.EqualBy
+  type Equals = CanEqual.Native.Equals
 
   object Equals {
 

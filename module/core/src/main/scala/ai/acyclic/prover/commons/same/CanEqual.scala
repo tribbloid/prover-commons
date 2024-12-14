@@ -91,7 +91,7 @@ trait CanEqual extends Serializable {
     }
   }
 
-  trait EqualBy {
+  trait Equals {
 
     protected def samenessKey: Any
 
@@ -101,19 +101,19 @@ trait CanEqual extends Serializable {
 
     final def canEqual(that: Any): Boolean = {
       that match {
-        case _: EqualBy => true
-        case _          => false
+        case _: Equals => true
+        case _         => false
       }
     }
 
     final override def equals(that: Any): Boolean = {
       if (canEqual(that)) {
-        prove_validate(samenessKey, that.asInstanceOf[EqualBy].samenessKey)
+        prove_validate(samenessKey, that.asInstanceOf[Equals].samenessKey)
       } else false
     }
   }
 
-  case class Wrapper[T](override val samenessKey: T) extends EqualBy {
+  case class Wrapper[T](override val samenessKey: T) extends Equals {
 
     override def toString: String = "" + samenessKey
   }

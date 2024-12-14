@@ -47,7 +47,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(override val samenessKey: Node[V]) extends sameness.EqualBy {
+    case class NodeWrapper(override val samenessKey: Node[V]) extends sameness.Equals {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
