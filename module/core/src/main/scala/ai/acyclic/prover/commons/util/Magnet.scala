@@ -66,4 +66,42 @@ object Magnet {
 //      def unbox: Either[L, R] = self
 //    }
   }
+
+  // `=>` is not sealed, no need to use capability tagging
+  trait ComputeMagnet[+R] extends (() => R) {
+
+    final def get: R = apply()
+
+    def andThen[R2](fn: R => R2): ComputeMagnet[R2]
+  }
+
+  case object ComputeMagnet extends Capability {
+
+    implicit class NonPure[+R](v: () => R) extends ComputeMagnet[R] {
+
+      override def apply(): R = v()
+
+      override def andThen[R2](fn: R => R2): NonPure[R2] = NonPure(() => fn(v()))
+    }
+//    def NonPure[R](fn: => R) = new NonPure[R](() => fn)
+
+    class Lazy[+R](fn: () => R) extends ComputeMagnet[R] {
+
+      @transient private lazy val _v = fn()
+
+      override def apply(): R = _v
+
+      override def andThen[R2](fn: R => R2): Lazy[R2] = Lazy(fn(_v))
+    }
+    def Lazy[R](fn: => R) = new Lazy[R](() => fn)
+
+    class Eager[+R](private val _v: R) extends ComputeMagnet[R] {
+
+      override def apply(): R = _v
+
+      override def andThen[R2](fn: R => R2): Eager[R2] = Eager(fn(_v))
+    }
+
+    implicit def Eager[R](v: R): Eager[R] = new Eager(v)
+  }
 }
