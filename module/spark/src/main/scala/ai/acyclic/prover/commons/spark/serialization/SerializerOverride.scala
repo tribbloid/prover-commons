@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.spark.serialization
 
-import ai.acyclic.prover.commons.same.EqualBy
+import ai.acyclic.prover.commons.same.View
 import org.apache.hadoop.io.Writable
 import org.apache.spark.SerializableWritable
 import org.apache.spark.serializer.SerializerInstance
@@ -26,7 +26,7 @@ case class SerializerOverride[T: ClassTag](
     @transient private val _original: T,
     overrideImpl: () => Option[SerializerInstance] = () => None // no override by default
 ) extends Serializable
-    with EqualBy {
+    with View.Equals {
 
   @transient lazy val serOpt: Option[SerializerInstance] = overrideImpl.apply
 

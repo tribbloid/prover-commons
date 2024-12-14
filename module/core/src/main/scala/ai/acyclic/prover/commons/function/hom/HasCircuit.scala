@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.function.hom
 import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.function.{Product0, Traceable}
-import ai.acyclic.prover.commons.same.Same
+import ai.acyclic.prover.commons.same.CanEqual
 import ai.acyclic.prover.commons.util.{Erased, SrcDefinition}
 
 import scala.language.implicitConversions
@@ -398,7 +398,7 @@ trait HasCircuit extends Capability.Universe {
 
     // TODO: make a dependent class, also in Thunk
     final case class CachedLazy[I, R](backbone: Circuit[I, R])(
-        getLookup: () => LookupMagnet[I, R] = () => Same.Native.Lookup[I, R]()
+        getLookup: () => LookupMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
     ) extends Impl[I, R]
         with Cached {
 

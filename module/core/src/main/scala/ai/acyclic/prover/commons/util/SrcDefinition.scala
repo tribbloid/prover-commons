@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.debug.CallStackRef
-import ai.acyclic.prover.commons.same.EqualBy
+import ai.acyclic.prover.commons.same.View
 
 import java.util.UUID
 
-sealed trait SrcDefinition extends Serializable with EqualBy {
+sealed trait SrcDefinition extends Serializable with View.Equals {
   // TODO: can use Lihaoyi's sourcecode library
 
   def fileName: String

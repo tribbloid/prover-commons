@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.same
 
-import ai.acyclic.prover.commons.same.Same.{ByConstruction, Native}
+import ai.acyclic.prover.commons.same.CanEqual.{ByConstruction, Native}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class SameSpec extends BaseSpec {
 
-  import Same.*
+  import CanEqual.*
   import SameSpec.*
 
   it(ByMemory.getClass.getSimpleName) {

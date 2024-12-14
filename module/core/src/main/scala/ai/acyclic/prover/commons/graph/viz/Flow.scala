@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
 import ai.acyclic.prover.commons.graph.{Arrow, Engine}
-import ai.acyclic.prover.commons.same.Same
+import ai.acyclic.prover.commons.same.CanEqual
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
@@ -39,7 +39,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
   def apply[V](s: Graph_/\[V]): Viz[V] = Viz(s)
 
-  val sameness = Same.Native.Rounding[Node[?]](v => Some(v.identityKey))
+  val sameness = CanEqual.Native.Rounding[Node[?]](v => Some(v.identityKey))
 
   final override def visualise[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
 

@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.meta
 
 import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.function.hom.Hom.:=>
-import ai.acyclic.prover.commons.same.Same
+import ai.acyclic.prover.commons.same.CanEqual
 
 import scala.tools.reflect.ToolBox
 import scala.util.Try
@@ -12,7 +12,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
   case class TypeID(
       self: Type
-  ) extends Same.Native.EqualBy {
+  ) extends CanEqual.Native.EqualBy {
 
     lazy val allSymbols: Seq[Symbol] = {
 
@@ -320,7 +320,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
   }
 
   lazy val typeView: Hom.Circuit.CachedLazy[Type, TypeView] = {
-    :=>(TypeView.apply _).cached(Same.Native.Lookup())
+    :=>(TypeView.apply _).cached(CanEqual.Native.Lookup())
   }
 
 //  val typeCache = mutable.Map.empty[Type, TypeView]

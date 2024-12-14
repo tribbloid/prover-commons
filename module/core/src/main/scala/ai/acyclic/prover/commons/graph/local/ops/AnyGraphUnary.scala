@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.local.ops
 import ai.acyclic.prover.commons.graph.RewriterK
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Flow
-import ai.acyclic.prover.commons.same.Same
+import ai.acyclic.prover.commons.same.CanEqual
 
 trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
@@ -113,7 +113,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
       private val delegate = {
 
-        val evaled = Same.Native.Lookup[Any, ArgNode]()
+        val evaled = CanEqual.Native.Lookup[Any, ArgNode]()
 
         Transform(
           rewriter,
@@ -154,7 +154,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
       private val delegate = {
 
-        val evaled = Same.Native.Lookup[Any, Seq[ArgNode]]()
+        val evaled = CanEqual.Native.Lookup[Any, Seq[ArgNode]]()
 
         Transform(
           rewriter,

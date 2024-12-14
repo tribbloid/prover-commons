@@ -29,9 +29,9 @@ import scala.reflect.ClassTag
   *     - prove by construction if A & B are product or primitive types
   *     - prove by memory address in all other cases
   */
-trait Same extends Serializable {
+trait CanEqual extends Serializable {
 
-  import ai.acyclic.prover.commons.same.Same.*
+  import ai.acyclic.prover.commons.same.CanEqual.*
 
   protected def getHashNonTrivial(v: Any): Option[Int]
 
@@ -83,7 +83,7 @@ trait Same extends Serializable {
     result
   }
 
-  case class Rounding[T: ClassTag](fn: T => Option[Any]) extends ByUnapply[T](Same.this) {
+  case class Rounding[T: ClassTag](fn: T => Option[Any]) extends ByUnapply[T](CanEqual.this) {
 
     override protected def unapply(v1: T): Option[Vector[Any]] = {
 
@@ -92,7 +92,8 @@ trait Same extends Serializable {
   }
 
   trait EqualBy {
-    protected def samenessKey: Any // TODO: should be "equalityEvidence"
+
+    protected def samenessKey: Any
 
     final override def hashCode(): Int = {
       getHash(samenessKey)
@@ -109,7 +110,6 @@ trait Same extends Serializable {
       if (canEqual(that)) {
         prove_validate(samenessKey, that.asInstanceOf[EqualBy].samenessKey)
       } else false
-
     }
   }
 
@@ -178,7 +178,7 @@ trait Same extends Serializable {
   }
 }
 
-object Same {
+object CanEqual {
 
   object MemoryHash {
 
@@ -190,7 +190,7 @@ object Same {
 
   }
 
-  object ByMemory extends Same {
+  object ByMemory extends CanEqual {
     // always delegate to trivial case
 
     override protected def getHashNonTrivial(v: Any): Option[Int] = None
@@ -219,7 +219,7 @@ object Same {
 //    }
 //  }
 
-  object Native extends Same {
+  object Native extends CanEqual {
 
     override protected def getHashNonTrivial(v: Any): Option[Int] = Option(v).map(_.##)
 
@@ -233,7 +233,7 @@ object Same {
     }
   }
 
-  abstract class ByNormalise[T: ClassTag, R] extends Same {
+  abstract class ByNormalise[T: ClassTag, R] extends CanEqual {
 
     /*
     returns Some vector for elements used to create this object
@@ -250,7 +250,7 @@ object Same {
     }
   }
 
-  abstract class ByUnapply[T: ClassTag](outer: Same) extends ByNormalise[T, Vector[Any]] {
+  abstract class ByUnapply[T: ClassTag](outer: CanEqual) extends ByNormalise[T, Vector[Any]] {
 
     final override protected def getHashNonTrivial(v: Any): Option[Int] = {
       unapplyAny(v).map { vec =>
@@ -277,7 +277,7 @@ object Same {
     }
   }
 
-  case class ByConstruction(outer: Same) extends ByUnapply[Product](outer) {
+  case class ByConstruction(outer: CanEqual) extends ByUnapply[Product](outer) {
 
     final override def unapply(v: Product): Some[Vector[Any]] = {
 

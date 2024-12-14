@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.function.hom
 import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.function.TypeBound
 import ai.acyclic.prover.commons.function.TypeBound.Top
-import ai.acyclic.prover.commons.same.Same
+import ai.acyclic.prover.commons.same.CanEqual
 import ai.acyclic.prover.commons.util.{K, SrcDefinition}
 
 object HasPoly1 {}
@@ -62,7 +62,7 @@ trait HasPoly1 extends HasPoly {
         }
 
         final case class CachedLazy()(
-            getLookup: () => LookupMagnet[Any, Any] = () => Same.Native.Lookup[Any, Any]()
+            getLookup: () => LookupMagnet[Any, Any] = () => CanEqual.Native.Lookup[Any, Any]()
         ) extends Impl[In, Out]
             with ByRefine {
 

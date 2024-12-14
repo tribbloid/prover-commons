@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.spark.serialization
 
 import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.function.hom.Hom.:=>
-import ai.acyclic.prover.commons.same.Same
+import ai.acyclic.prover.commons.same.CanEqual
 import org.apache.spark.SparkConf
 import org.apache.spark.serializer.{JavaSerializer, KryoSerializer, Serializer, SerializerInstance}
 
@@ -33,7 +33,7 @@ object SerializerEnv {
   lazy val apply: Hom.Circuit.CachedLazy[SparkConf, Ops] = :=> { (v: SparkConf) =>
     Ops(v)
   }
-    .cached(Same.ByMemory.Lookup())
+    .cached(CanEqual.ByMemory.Lookup())
 
   lazy val Default: Ops = apply(new SparkConf())
 }
