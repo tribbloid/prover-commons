@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.function.hom
 import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.function.TypeBound
 import ai.acyclic.prover.commons.function.TypeBound.Top
-import ai.acyclic.prover.commons.same.CanEqual
+import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.util.{K, SrcDefinition}
 
 object HasPoly1 {}

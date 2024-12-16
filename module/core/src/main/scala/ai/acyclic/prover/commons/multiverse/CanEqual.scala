@@ -37,12 +37,14 @@ object CanEqual {
     }
   }
 
-  case class Projection[T](
-      canEqual: CanEqual[T],
-      value: T
-  ) extends View.Equals.Base {
+  trait Projection[T] extends View.Equals.Base {
 
-    override lazy val canEqualProjections: Vector[Projection[T]] = Vector(this)
+    def canEqual: CanEqual[T]
+    def value: T
+
+    {
+      canEqualProjections += this
+    }
 
     def internalHashCode(): Int = {
       ???
@@ -51,6 +53,14 @@ object CanEqual {
     def internalEquals(that: Projection[?]): Boolean = {
       ???
     }
+  }
+
+  case class Wrapper[T](
+      canEqual: CanEqual[T],
+      compute: () => T
+  ) extends Projection[T] {
+
+    override lazy val value: T = compute()
   }
 
   abstract class Impl[LR](
@@ -122,7 +132,9 @@ object CanEqual {
     }
   }
 
-  object ByStackMemory extends Impl[Any] {
+  // TODO: should be ByStackMemory
+
+  object ByMemory extends Impl[Any] {
     // always delegate to trivial case
 
     override def hashOf(v: Any): Int = {
@@ -344,7 +356,7 @@ trait CanEqual[-LR] extends Plane {
   def hashOf(v: LR): Int = {
 
     hashOfNonTrivial(v).getOrElse {
-      ByStackMemory.hashOfNonTrivial(v).get
+      ByMemory.hashOfNonTrivial(v).get
     }
   }
 
@@ -363,21 +375,19 @@ trait CanEqual[-LR] extends Plane {
     }
 
     determined.getOrElse(
-      ByStackMemory.areEqualNonTrivial(x, y).get
+      ByMemory.areEqualNonTrivial(x, y).get
     )
   }
 
   final def notEqual(x: LR, y: LR): Boolean = !areEqual(x, y)
 
-  def <~[T <: LR](value: T): Projection[T] = CanEqual.Projection(this, value)
-
-  def apply[T <: LR] = <~[T] _
+  def on[T <: LR](value: => T): Wrapper[T] = CanEqual.Wrapper(this, () => value)
 
   case object Lookup extends Serializable
 
   // a cache wrapper with a serialID, such that `values` will return the values in insertion order
   case class Lookup[K <: LR, V](
-      underlying: LookupMagnet[Projection[K], (V, Long)] = Caching.Soft.build[Projection[K], (V, Long)]()
+      underlying: LookupMagnet[Wrapper[K], (V, Long)] = Caching.Soft.build[Wrapper[K], (V, Long)]()
   ) extends LookupMagnet[K, V] {
 
     private val serialID: AtomicInteger = new AtomicInteger(0)
@@ -395,10 +405,10 @@ trait CanEqual[-LR] extends Plane {
 
     @transient lazy val asMap: MapRepr[K, V] = {
 
-      val keyCodec = new Bijection[K, Projection[K]] {
-        override def apply(v1: K): Projection[K] = <~(v1)
+      val keyCodec = new Bijection[K, Wrapper[K]] {
+        override def apply(v1: K): Wrapper[K] = on(v1)
 
-        override def invert(v1: Projection[K]): K = v1.value
+        override def invert(v1: Wrapper[K]): K = v1.value
       }
 
       val valueCodec = new Bijection[V, (V, Long)] {

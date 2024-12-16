@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.function
 import ai.acyclic.prover.commons.graph.local.DestructuringInspection.Destructured
 import ai.acyclic.prover.commons.graph.local.{DestructuringInspection, ProductInspection}
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
-import ai.acyclic.prover.commons.same.View
+import ai.acyclic.prover.commons.multiverse.View
 import ai.acyclic.prover.commons.util.SrcDefinition
 
 trait Traceable extends View.Equals.ByConstruction {

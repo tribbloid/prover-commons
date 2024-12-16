@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
 import ai.acyclic.prover.commons.graph.{Arrow, Engine}
-import ai.acyclic.prover.commons.same.CanEqual
+import ai.acyclic.prover.commons.multiverse.{CanEqual, NormalForm, View}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
@@ -39,7 +39,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
   def apply[V](s: Graph_/\[V]): Viz[V] = Viz(s)
 
-  val sameness = CanEqual.Native.Rounding[Node[?]](v => Some(v.identityKey))
+  val sameness = CanEqual.ByNormalise[Node[?]](v => Some(v.identityKey)) // TODO: should be CanEqual.ByNormalise
 
   final override def visualise[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
 
@@ -47,7 +47,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(override val samenessKey: Node[V]) extends sameness.Equals {
+    case class NodeWrapper(node: Node[V]) extends View.Equals {
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
@@ -107,7 +107,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
           .map(_.rectangular)
 
         val nodeText = {
-          lazy val nodeText = samenessKey.nodeText
+          lazy val nodeText = node.nodeText
 
           val ss = bindingOpt
             .map { binding =>

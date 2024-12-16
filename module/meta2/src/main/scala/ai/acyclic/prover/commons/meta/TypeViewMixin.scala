@@ -1,8 +1,7 @@
 package ai.acyclic.prover.commons.meta
 
 import ai.acyclic.prover.commons.function.hom.Hom
-import ai.acyclic.prover.commons.function.hom.Hom.:=>
-import ai.acyclic.prover.commons.same.CanEqual
+import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
 
 import scala.tools.reflect.ToolBox
 import scala.util.Try
@@ -10,9 +9,15 @@ import scala.util.Try
 private[meta] trait TypeViewMixin extends HasUniverse {
   self: ITyper =>
 
+  import Hom.:=>
+
   case class TypeID(
       self: Type
-  ) extends CanEqual.Native.Equals {
+  ) extends View.Equals {
+
+    {
+      canEqualProjections += CanEqual.Native.on(allSymbols -> showStr)
+    }
 
     lazy val allSymbols: Seq[Symbol] = {
 
@@ -34,8 +39,6 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     }
 
     lazy val showStr: String = self.toString
-
-    override def samenessKey: Any = allSymbols -> showStr
   }
 
   case class TypeView(

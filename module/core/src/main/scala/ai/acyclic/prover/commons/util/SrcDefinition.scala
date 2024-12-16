@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.debug.CallStackRef
-import ai.acyclic.prover.commons.same.View
+import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
 
 import java.util.UUID
 
@@ -22,8 +22,9 @@ sealed trait SrcDefinition extends Serializable with View.Equals {
     s"${methodName} <at $atLine>"
   }
 
-  override lazy val samenessKey: (String, Int, String) = {
-    (fileName, lineNumber, methodName)
+  {
+    canEqualProjections += CanEqual.Native.on((fileName, lineNumber, methodName))
+
   }
 }
 

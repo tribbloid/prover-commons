@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.multiverse
 
-import ai.acyclic.prover.commons.util.Magnet.OptionMagnet
-
 import scala.reflect.ClassTag
 
 object CanNormalise {
@@ -17,18 +15,18 @@ object CanNormalise {
   object Native extends CanNormalise[Any] {
 
     // JVM doesn't have a native normalisation rule
-    override def normalise(v: Any): OptionMagnet[NormalForm] = None
+    override def normalise(v: Any): Option[NormalForm] = None
   }
 
   implicit class Fn[T: ClassTag](
-      fn: T => OptionMagnet[NormalForm]
+      fn: T => Option[NormalForm]
   ) extends CanNormalise[T] {
 
-    override def normalise(v: T): OptionMagnet[NormalForm] = fn(v)
+    override def normalise(v: T): Option[NormalForm] = fn(v)
   }
 
   implicit class FnDirect[T: ClassTag](
-      fn: T => OptionMagnet[Any]
+      fn: T => Option[Any]
   ) extends Fn[T]({ v: T =>
         val result = fn(v).map(NormalForm(_))
         result
@@ -40,7 +38,7 @@ object CanNormalise {
 
       val outer = CanNormalise.this
 
-      override def normalise(v: Any): OptionMagnet[NormalForm] = {
+      override def normalise(v: Any): Option[NormalForm] = {
         rectifyArray(v) match {
           case v: T => self.normalise(v)
           case _    => None
@@ -54,6 +52,6 @@ trait CanNormalise[-T] extends Plane {
 
   trait NonTerminating extends AnyRef
 
-  def normalise(v: T): OptionMagnet[NormalForm]
+  def normalise(v: T): Option[NormalForm]
   // normalised form is assumed to be always equal `v`, validation may be required to be impl later
 }

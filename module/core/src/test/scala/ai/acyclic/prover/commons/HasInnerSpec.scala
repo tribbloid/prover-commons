@@ -76,7 +76,7 @@ class HasInnerSpec extends BaseSpec {
     it("NOT if the outer is not a path") {
 
       def a1 = A()
-      val b1: A#B = a1.B(1)
+      a1.B(1)
 
       //    implicitly[TypeCls[mm.type]]
 

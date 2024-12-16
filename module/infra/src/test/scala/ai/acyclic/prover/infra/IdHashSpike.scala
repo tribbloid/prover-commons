@@ -2,8 +2,6 @@ package ai.acyclic.prover.infra
 
 import ai.acyclic.prover.infra.testlib.BaseSpec
 
-import java.util.Random
-
 object IdHashSpike {
 
   case class V1(k: Long) extends AnyVal {

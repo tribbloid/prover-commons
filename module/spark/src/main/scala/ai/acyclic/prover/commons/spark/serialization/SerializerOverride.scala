@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.spark.serialization
 
-import ai.acyclic.prover.commons.same.View
+import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
 import org.apache.hadoop.io.Writable
 import org.apache.spark.SerializableWritable
 import org.apache.spark.serializer.SerializerInstance
@@ -27,6 +27,10 @@ case class SerializerOverride[T: ClassTag](
     overrideImpl: () => Option[SerializerInstance] = () => None // no override by default
 ) extends Serializable
     with View.Equals {
+
+  {
+    canEqualProjections += CanEqual.Native.on(value)
+  }
 
   @transient lazy val serOpt: Option[SerializerInstance] = overrideImpl.apply
 
@@ -67,6 +71,4 @@ case class SerializerOverride[T: ClassTag](
         throw new UnknownError("IMPOSSIBLE!")
     }
   }
-
-  override def samenessKey: Any = value
 }

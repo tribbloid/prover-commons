@@ -2,8 +2,8 @@ package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.collection.LookupMagnet
-import ai.acyclic.prover.commons.function.{Product0, Traceable}
-import ai.acyclic.prover.commons.same.CanEqual
+import ai.acyclic.prover.commons.function.Traceable
+import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.util.{Erased, SrcDefinition}
 
 import scala.language.implicitConversions

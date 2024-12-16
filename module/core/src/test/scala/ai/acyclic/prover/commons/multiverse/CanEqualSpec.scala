@@ -1,16 +1,15 @@
-package ai.acyclic.prover.commons.same
+package ai.acyclic.prover.commons.multiverse
 
-import ai.acyclic.prover.commons.same.CanEqual.{ByConstruction, Native}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-class SameSpec extends BaseSpec {
+class CanEqualSpec extends BaseSpec {
 
-  import CanEqual.*
-  import SameSpec.*
+  import CanEqualSpec.*
+  import ai.acyclic.prover.commons.multiverse.CanEqual.*
 
   it(ByMemory.getClass.getSimpleName) {
     val set = fixtures.map { v =>
-      ByMemory.Wrapper(v)
+      ByMemory.on(v)
     }.toSet
 
     set
@@ -27,7 +26,7 @@ class SameSpec extends BaseSpec {
 
   it(Native.getClass.getSimpleName) {
     val set = fixtures.map { v =>
-      Native.Wrapper(v)
+      Native.on(v)
     }.toSet
 
     set
@@ -41,9 +40,9 @@ class SameSpec extends BaseSpec {
       )
   }
 
-  it(ByConstruction.toString()) {
+  it(ByUnapply.toString) {
     val set = fixtures.map { v =>
-      byConstructionExample.Wrapper(v)
+      byUnapply.on(v)
     }.toSet
 
     set
@@ -56,9 +55,9 @@ class SameSpec extends BaseSpec {
       )
   }
 
-  it(ByConstruction.toString() + "-withTolerance") {
+  it(ByUnapplyAndNormalise.toString() + "-withTolerance") {
     val set = fixtures.map { v =>
-      withToleranceExample.Wrapper(v)
+      byNormalise.on(v)
     }.toSet
 
     set
@@ -87,7 +86,7 @@ class SameSpec extends BaseSpec {
 
 }
 
-object SameSpec {
+object CanEqualSpec {
 
   trait F {
 
@@ -109,12 +108,13 @@ object SameSpec {
     F2.E(2.0, 5)
   )
 
-  val byConstructionExample = ByConstruction(Native)
-
-  val withToleranceExample = byConstructionExample.copy(
-    outer = Native.Rounding[Double] { d =>
+  val byNormalise = CanEqual
+    .ByNormalise[Double] { d =>
       Some(d.toInt.toDouble)
     }
-  )
+    .ForAny
 
+  val byUnapply = CanEqual.ByUnapply(CanUnapply.Native)
+
+  val ByUnapplyAndNormalise = CanEqual.ByUnapply(CanUnapply.Native, byNormalise)
 }

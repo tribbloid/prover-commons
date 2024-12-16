@@ -18,8 +18,9 @@ object HasInner {
 
     val outer: AnyRef
 
-    @transient override def canEqualProjections =
-      super.canEqualProjections :+ (CanEqual.Native.<~(outer))
+    {
+      canEqualProjections += CanEqual.Native.on(outer)
+    }
   }
 
   object Inner {}

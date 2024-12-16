@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.multiverse
 
+import scala.collection.mutable.ArrayBuffer
+
 trait View {}
 
 object View {
@@ -11,7 +13,7 @@ object View {
     // what works needs to be done here?
     trait Base extends View with scala.Equals with CanEqual.Native.NonTerminating {
 
-      @transient def canEqualProjections: Vector[CanEqual.Projection[?]] = Vector.empty
+      final val canEqualProjections: ArrayBuffer[CanEqual.Projection[?]] = ArrayBuffer.empty
 
       final override def hashCode(): Int = {
 
@@ -55,7 +57,7 @@ object View {
       val canEqual: CanEqual.ByUnapply[Product] = {
 
         val fallback = CanEqual.ByNormalise[ByConstruction] { v =>
-          NormalForm(v.constructionID)
+          Some(v.constructionID)
         }
 
         CanEqual.ByUnapply(

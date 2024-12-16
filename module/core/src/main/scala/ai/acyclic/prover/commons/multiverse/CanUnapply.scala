@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.multiverse
 
-import scala.reflect.{classTag, ClassTag}
+import scala.reflect.ClassTag
 
 object CanUnapply {
 

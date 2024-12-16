@@ -18,7 +18,7 @@ object NormalForm {
 //    def isFinal: Boolean
   }
 
-  case class ^(value: Any, isFinal: Boolean = true) extends NormalForm {}
+  implicit class Final(val value: Any) extends NormalForm {}
 
-  def apply(value: Any, isFinal: Boolean = true): ^ = ^(value, isFinal)
+  def apply(value: Any): Final = Final(value)
 }
