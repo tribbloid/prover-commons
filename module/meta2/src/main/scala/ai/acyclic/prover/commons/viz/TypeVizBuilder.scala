@@ -17,23 +17,23 @@ class TypeVizBuilder[R <: Reflection](
     override val format: TypeHierarchy = TypeVizBuilder.this.format
   }
 
-  abstract class Weak extends _TypeViz() {
+  abstract class WeakType extends _TypeViz() {
 
     override type TTag[T] = WeakTypeTag[T]
 
     def withFormat(format: TypeHierarchy = TypeHierarchy.Default) =
-      new TypeVizBuilder(this.reflection, format).Weak
+      new TypeVizBuilder(this.reflection, format).WeakType
   }
-  object Weak extends Weak
+  object WeakType extends WeakType
 
-  abstract class Strong extends _TypeViz() {
+  abstract class ConcreteType extends _TypeViz() {
 
     override type TTag[T] = TypeTag[T]
 
     def withFormat(format: TypeHierarchy = TypeHierarchy.Default) =
-      new TypeVizBuilder(this.reflection, format).Strong
+      new TypeVizBuilder(this.reflection, format).ConcreteType
   }
-  object Strong extends Strong
+  object ConcreteType extends ConcreteType
 
 }
 

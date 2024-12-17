@@ -39,8 +39,6 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
   def apply[V](s: Graph_/\[V]): Viz[V] = Viz(s)
 
-  val sameness = CanEqual.ByNormalise[Node[?]](v => Some(v.identityKey)) // TODO: should be CanEqual.ByNormalise
-
   final override def visualise[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
 
   case class Viz[V](override val data: Graph_/\[V]) extends Visualized[V] {
@@ -48,6 +46,10 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
     lazy val bindingIndices = new AtomicInteger(0)
 
     case class NodeWrapper(node: Node[V]) extends View.Equals {
+
+      {
+        canEqualProjections += CanEqual.Native.on(node.identityKey)
+      }
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)

@@ -47,11 +47,12 @@ object CanEqual {
     }
 
     def internalHashCode(): Int = {
-      ???
+
+      canEqual.hashOf(value)
     }
 
     def internalEquals(that: Projection[?]): Boolean = {
-      ???
+      canEqual.areEqual(value, that.value.asInstanceOf[T])
     }
   }
 
@@ -61,6 +62,8 @@ object CanEqual {
   ) extends Projection[T] {
 
     override lazy val value: T = compute()
+
+    override def toString = "" + value
   }
 
   abstract class Impl[LR](
@@ -213,9 +216,9 @@ object CanEqual {
   ) extends CanEqual.Impl[LR] {
 
     override def hashOfNonTrivial(v: LR): Option[Int] = {
-      val normalFormOpt = normalise.normalise(v)
+      val normalisedOpt = normalise.normalise(v).map(_.value)
 
-      normalFormOpt
+      normalisedOpt
         .flatMap { n =>
           fallback.hashOfNonTrivial(n)
         }
@@ -224,7 +227,7 @@ object CanEqual {
     override def areEqualNonTrivial(v1: LR, v2: LR): Option[Boolean] = {
 
       val opts: Seq[Option[Any]] = Seq(v1, v2).map { v =>
-        normalise.normalise(v)
+        normalise.normalise(v).map(_.value)
       }
 
       val Seq(lOpt, rOpt) = opts
@@ -253,16 +256,18 @@ object CanEqual {
 
     final override def hashOfNonTrivial(v: LR): Option[Int] = {
 
-      canUnapply
+      val unappliedFormOpt = canUnapply
         .unapply(v)
-        .flatMap { p =>
-          val vs = p.elements
 
-          val subs: Vector[Option[Int]] = vs.map { v =>
+      unappliedFormOpt
+        .flatMap { form =>
+          val vs = form.elements
+
+          val subs: Vector[Option[Int]] = vs.map { vv =>
             this.ForAny
-              .hashOfNonTrivial(v)
+              .hashOfNonTrivial(vv)
               .orElse(
-                fallback.hashOfNonTrivial(v)
+                fallback.hashOfNonTrivial(vv)
               )
           }
 

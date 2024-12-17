@@ -7,7 +7,7 @@ class CanEqualSpec extends BaseSpec {
   import CanEqualSpec.*
   import ai.acyclic.prover.commons.multiverse.CanEqual.*
 
-  it(ByMemory.getClass.getSimpleName) {
+  it(ByMemory.toString) {
     val set = fixtures.map { v =>
       ByMemory.on(v)
     }.toSet
@@ -24,7 +24,7 @@ class CanEqualSpec extends BaseSpec {
       )
   }
 
-  it(Native.getClass.getSimpleName) {
+  it(Native.toString) {
     val set = fixtures.map { v =>
       Native.on(v)
     }.toSet
@@ -55,9 +55,11 @@ class CanEqualSpec extends BaseSpec {
       )
   }
 
-  it(ByUnapplyAndNormalise.toString() + "-withTolerance") {
+  it(ByUnapplyAndNormalise.toString + "-withTolerance") {
+//    val hashes = fixtures.map(v => ByUnapplyAndNormalise.on(v).hashCode())
+
     val set = fixtures.map { v =>
-      byNormalise.on(v)
+      ByUnapplyAndNormalise.on(v)
     }.toSet
 
     set
@@ -109,8 +111,9 @@ object CanEqualSpec {
   )
 
   val byNormalise = CanEqual
-    .ByNormalise[Double] { d =>
-      Some(d.toInt.toDouble)
+    .ByNormalise[Any] {
+      case d: Double => Some(d.toInt.toDouble)
+      case v @ _     => Some(v)
     }
     .ForAny
 

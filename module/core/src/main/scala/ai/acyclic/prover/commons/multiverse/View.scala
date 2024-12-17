@@ -48,8 +48,6 @@ object View {
     trait ByConstruction extends Base {
 
       final protected val constructionID: java.util.UUID = java.util.UUID.randomUUID()
-
-//      final override lazy val canEqualProjections = Vector(ByConstruction.canEqual.ForAny <~ this)
     }
 
     object ByConstruction {
