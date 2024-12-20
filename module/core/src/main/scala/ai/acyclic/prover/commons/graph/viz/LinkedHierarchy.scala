@@ -71,8 +71,6 @@ object LinkedHierarchy {
     def original: Any
   }
 
-  type SameRefs = mutable.ArrayBuffer[RefBindingLike]
-  def emptySameRefs = mutable.ArrayBuffer.empty[RefBindingLike]
 }
 
 trait LinkedHierarchy extends Visualisation.OfType {
@@ -98,11 +96,16 @@ trait LinkedHierarchy extends Visualisation.OfType {
   // shared between visualisations of multiple graphs
   case class Group() {
 
-    lazy val expanded: mutable.LinkedHashMap[Any, SameRefs] = mutable.LinkedHashMap.empty
-
-    lazy val binded: mutable.LinkedHashMap[Any, String] = mutable.LinkedHashMap.empty
-
     lazy val bindingIndices = new AtomicInteger(0)
+
+    case class RefCounting() {
+
+      lazy val bindings = mutable.ArrayBuffer.empty[RefBindingLike]
+
+      var nameOpt: Option[String] = None
+    }
+
+    lazy val refCountings: mutable.LinkedHashMap[Any, RefCounting] = mutable.LinkedHashMap.empty
 
     def visualize[V](data: Local.AnyGraph.Outbound[V]): Visualized[V] = Viz(data)
 
@@ -112,37 +115,36 @@ trait LinkedHierarchy extends Visualisation.OfType {
 
         case class node(
             override val original: Local.AnyGraph.Outbound.Node[V],
-            id: UUID = UUID.randomUUID()
+            id: UUID = UUID.randomUUID() // TODO: need to get rid of this
         ) extends NodeInGroup
             with RefBindingLike {
 
           {
-            sameRefs_shouldExpand
+            refCounting_shouldExpand
           }
 
           lazy val refKeyOpt: Option[Any] = original.identityKey
 
-          lazy val sameRefs_shouldExpand = {
+          lazy val refCounting_shouldExpand: (RefCounting, Boolean) = {
 
             val existing = refKeyOpt
               .map { refKey =>
-                val result = expanded
+                val result = refCountings
                   .get(refKey)
-                  .map { sameRefs =>
-                    binded.getOrElseUpdate(
-                      refKey,
-                      bindings(bindingIndices.getAndIncrement())
+                  .map { rc =>
+                    rc.nameOpt.getOrElse(
+                      rc.nameOpt = Some(bindingIndices.getAndIncrement().toString)
                     )
 
-                    sameRefs += this
-                    sameRefs -> false
+                    rc.bindings += this
+                    rc -> false
                   }
                   .getOrElse {
 
-                    val result = emptySameRefs
-                    result += this
+                    val result = RefCounting()
+                    result.bindings += this
 
-                    expanded.put(refKey, result)
+                    refCountings.put(refKey, result)
                     result -> true
                   }
                 result
@@ -150,24 +152,20 @@ trait LinkedHierarchy extends Visualisation.OfType {
 
             val result = existing
               .getOrElse {
-                emptySameRefs -> true
+                RefCounting() -> true
               }
-
             result
           }
 
-          def sameRefs: SameRefs = sameRefs_shouldExpand._1
-
-          def shouldExpand: Boolean = sameRefs_shouldExpand._2
+          def shouldExpand: Boolean = refCounting_shouldExpand._2
 
           lazy val bindingNameOpt: Option[String] = {
-
-            refKeyOpt.flatMap { k =>
-              binded.get(k)
+            refKeyOpt.flatMap { refKey =>
+              refCountings.get(refKey).flatMap(_.nameOpt)
             }
           }
 
-          override protected def getInduction: Seq[(Arrow.Outbound, RefBindings.node)] = {
+          override protected def getInduction: Seq[(Arrow.OutboundT.^, RefBindings.node)] = {
 
             val result = if (!shouldExpand) {
               Nil
@@ -176,7 +174,7 @@ trait LinkedHierarchy extends Visualisation.OfType {
               original.induction.map { tuple =>
                 val arrow = tuple._1: Arrow.Outbound
 
-                val target: RefBindings.node = RefBindings.node.apply(tuple._2)
+                val target: RefBindings.node = RefBindings.node(tuple._2)
 
                 arrow -> target
               }
