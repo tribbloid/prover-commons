@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
 import ai.acyclic.prover.commons.graph.{Arrow, Engine}
-import ai.acyclic.prover.commons.multiverse.{CanEqual, NormalForm, View}
+import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
@@ -41,7 +41,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
   final override def visualise[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
 
-  case class Viz[V](override val data: Graph_/\[V]) extends Visualized[V] {
+  case class Viz[V](unbox: Graph_/\[V]) extends Visualized[V] {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
@@ -139,7 +139,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
-      val unary = AnyGraphUnary.^(data, maxDepth)
+      val unary = AnyGraphUnary.^(unbox, maxDepth)
 
       val buildBuffers = unary
         .Traverse(
@@ -148,11 +148,11 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
             val newRelations: Seq[(NodeWrapper, NodeWrapper)] = node.induction.flatMap { v =>
               v._1.arrowType match {
-                case Arrow.Outbound =>
+                case Arrow.OutboundT =>
                   val to = nodeID2Wrapper.apply(v._2)
                   to.arrowsFrom += wrapper -> v._1.arrowText
                   Some(wrapper -> to)
-                case Arrow.Inbound =>
+                case Arrow.InboundT =>
                   val from = nodeID2Wrapper.apply(v._2)
                   wrapper.arrowsFrom += from -> v._1.arrowText
                   Some(from -> wrapper)

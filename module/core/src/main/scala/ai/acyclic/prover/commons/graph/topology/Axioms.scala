@@ -30,16 +30,16 @@ object Axioms {
   }
 
   { // sanity
-    val bounds = Summoner.summon[ExtractArrow.Gt[Lt_[Arrow.Outbound.^]]]
+    val bounds = Summoner.summon[ExtractArrow.Gt[Lt_[Arrow.OutboundT.^]]]
 
-    implicitly[bounds._Arrow =:= Arrow.Outbound.^]
+    implicitly[bounds._Arrow =:= Arrow.OutboundT.^]
   }
 
   trait AnyGraphT extends Axioms.Lt_[Arrow]
 
   object AnyGraphT extends Topology[AnyGraphT] {
 
-    trait OutboundT extends AnyGraphT with Axioms.Lt_[Arrow.Outbound.^]
+    trait OutboundT extends AnyGraphT with Axioms.Lt_[Arrow.OutboundT.^]
 
     object OutboundT extends Topology[OutboundT] {}
 

@@ -82,7 +82,7 @@ trait TypeOfMixin extends HasReflection {
   object VisualisationGroup extends Local.AnyGraph.Outbound.Group {
 
     // technically this layer could be collapsed into GraphRepr
-    trait node extends _Node with TypeOfMixin.VNodeLike {}
+    trait node extends NodeInGroup with TypeOfMixin.VNodeLike {}
   }
 
   // visualisations in the same group should not display redundant information

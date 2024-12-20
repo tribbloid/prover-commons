@@ -9,28 +9,27 @@ trait ForwardPlot {
 
   case class Forward(text: String) {
 
-    val arrowBuffer = mutable.Buffer.empty[(Arrow.Outbound.^, Forward)]
+    val arrowBuffer = mutable.Buffer.empty[(Arrow.OutboundT.^, Forward)]
 
     def from(fromNode: Forward, msg: String): this.type = {
 
-      fromNode.arrowBuffer += Arrow.Outbound.NoInfo(Option(msg).filter(_.nonEmpty)) -> this
+      fromNode.arrowBuffer += Arrow.`~>`.OfText(Option(msg).filter(_.nonEmpty)) -> this
       this
     }
   }
 
   object Forward extends Local.Semilattice.Upper.Inspection[Forward] {
 
-    case class node(value: Forward) extends _Node {
+    object inspect extends (Forward => inspect)
+    case class inspect(value: Forward) extends _Node {
 
-      override protected def getInduction: Seq[(_Arrow, Forward.this.node)] = {
+      override protected def getInduction: Seq[(_Arrow, Forward.this.inspect)] = {
 
         value.arrowBuffer.toSeq.map { v =>
-          v._1 -> node(v._2)
+          v._1 -> inspect(v._2)
         }
       }
-
     }
-
   }
 
 //  object G {

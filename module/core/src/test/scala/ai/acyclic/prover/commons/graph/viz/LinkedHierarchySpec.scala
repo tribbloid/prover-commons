@@ -25,14 +25,10 @@ class LinkedHierarchySpec extends BaseSpec {
         cyclic.withArrows.make.text_linkedHierarchy.toString shouldBe
           """
             |+ aaa ............................................................................. [0]
-            |!-: ( aaa |> bbb )
-            |  + bbb
-            |  !-: ( bbb |> ccc )
-            |  : + ccc
-            |  : !-: ( ccc |> aaa )
-            |  :   - aaa ... (see [0])
-            |  !-: ( bbb |> ddd )
-            |    - ddd
+            |!-⟦ aaa |> bbb ⟧+ bbb
+            |                !-⟦ bbb |> ccc ⟧+ ccc
+            |                :               !-⟦ ccc |> aaa ⟧- aaa ... (see [0])
+            |                !-⟦ bbb |> ddd ⟧- ddd
             |""".stripMargin
       }
 
@@ -56,26 +52,16 @@ class LinkedHierarchySpec extends BaseSpec {
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
-            |!-: ⎛ aaa         ⎞
-            |  : ⎢ %%%% |> bbb ⎟
-            |  : ⎝ %%%%        ⎠
-            |  + bbb
-            |  : %%%%
-            |  !-: ⎛ bbb         ⎞
-            |  : : ⎢ %%%% |> ccc ⎟
-            |  : : ⎝ %%%%        ⎠
-            |  : + ccc
-            |  : : %%%%
-            |  : !-: ⎛ ccc         ⎞
-            |  :   : ⎢ %%%% |> aaa ⎟
-            |  :   : ⎝ %%%%        ⎠
-            |  :   - aaa ... (see [0])
-            |  :     %%%%
-            |  !-: ⎛ bbb         ⎞
-            |    : ⎢ %%%% |> ddd ⎟
-            |    : ⎝ %%%%        ⎠
-            |    - ddd
-            |      %%%%
+            |!-┏ aaa         ┓+ bbb
+            |  ┃ %%%% |> bbb ┃: %%%%
+            |  ┗ %%%%        ┛!-┏ bbb         ┓+ ccc
+            |                 : ┃ %%%% |> ccc ┃: %%%%
+            |                 : ┗ %%%%        ┛!-┏ ccc         ┓- aaa ... (see [0])
+            |                 :                  ┃ %%%% |> aaa ┃  %%%%
+            |                 :                  ┗ %%%%        ┛
+            |                 !-┏ bbb         ┓- ddd
+            |                   ┃ %%%% |> ddd ┃  %%%%
+            |                   ┗ %%%%        ┛
             |""".stripMargin
       }
 

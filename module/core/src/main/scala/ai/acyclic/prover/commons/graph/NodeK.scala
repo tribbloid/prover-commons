@@ -52,6 +52,8 @@ trait NodeK[+L <: Axioms] extends Lawful.Structure[L] {
     */
   protected def identityKeyC: Option[Any] = evalCacheKeyC
   final lazy val identityKey = identityKeyC
+  // TODO: this should be fold in value
+  //  if not, it may define a single node with 2 conflicting values
 
   def map[V2](fn: Value => V2): Mapped[L, Value, V2] = Mapped(this: Node_~, fn)
 

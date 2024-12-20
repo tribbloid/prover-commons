@@ -23,26 +23,26 @@ object GraphFixture {
 
 //    override val node = { (value: GV) => new node(value) }
 
-    object node extends (GV => node)
-    case class node(
+    object inspect extends (GV => inspect)
+    case class inspect(
         override val value: GV
     ) extends OGraphNode {
 
-      override protected def getInduction: Seq[(Arrow.`~>`, node)] =
-        value.children.toSeq.map(v => node(v))
+      override protected def getInduction: Seq[(Arrow.`~>`, inspect)] =
+        value.children.toSeq.map(v => inspect(v))
     }
 
     object WithArrows extends Local.AnyGraph.Outbound.Inspection[GV] {
 
-      object node extends (GV => node)
-      case class node(override val value: GV) extends OGraphNode {
+      object inspect extends (GV => inspect)
+      case class inspect(override val value: GV) extends OGraphNode {
 
         override protected def getInduction: Seq[
-          (Arrow.`~>`, node)
+          (Arrow.`~>`, inspect)
         ] = {
           val children = value.children.toSeq
           val result = children.map { child =>
-            Arrow.Outbound.NoInfo(Some(s"${value.text} |> ${child.text}")) -> node(child)
+            Arrow.Outbound.OfText(Some(s"${value.text} |> ${child.text}")) -> inspect(child)
           }
           result
         }

@@ -26,12 +26,9 @@ class HierarchySpec extends BaseSpec {
           tn1.treeWithArrowTexts.text_hierarchy.toString shouldBe
             """
               |+ aaa
-              |!-: ( aaa |> bbb )
-              |: + bbb
-              |: !-: ( bbb |> ddd )
-              |:   - ddd
-              |!-: ( aaa |> ccc )
-              |  - ccc
+              |!-⟦ aaa |> bbb ⟧+ bbb
+              |:               !-⟦ bbb |> ddd ⟧- ddd
+              |!-⟦ aaa |> ccc ⟧- ccc
               |""".stripMargin
         }
 
@@ -53,21 +50,14 @@ class HierarchySpec extends BaseSpec {
             """
               |+ aaa
               |: %%%%%
-              |!-: ⎛ aaa          ⎞
-              |: : ⎢ %%%%% |> bbb ⎟
-              |: : ⎝ %%%%%        ⎠
-              |: + bbb
-              |: : %%%%%
-              |: !-: ⎛ bbb          ⎞
-              |:   : ⎢ %%%%% |> ddd ⎟
-              |:   : ⎝ %%%%%        ⎠
-              |:   - ddd
-              |:     %%%%%
-              |!-: ⎛ aaa          ⎞
-              |  : ⎢ %%%%% |> ccc ⎟
-              |  : ⎝ %%%%%        ⎠
-              |  - ccc
-              |    %%%%%
+              |!-┏ aaa          ┓+ bbb
+              |: ┃ %%%%% |> bbb ┃: %%%%%
+              |: ┗ %%%%%        ┛!-┏ bbb          ┓- ddd
+              |:                   ┃ %%%%% |> ddd ┃  %%%%%
+              |:                   ┗ %%%%%        ┛
+              |!-┏ aaa          ┓- ccc
+              |  ┃ %%%%% |> ccc ┃  %%%%%
+              |  ┗ %%%%%        ┛
               |""".stripMargin
         }
       }

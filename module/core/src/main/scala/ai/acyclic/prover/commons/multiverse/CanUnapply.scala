@@ -1,8 +1,15 @@
 package ai.acyclic.prover.commons.multiverse
 
+import ai.acyclic.prover.commons.multiverse.CanUnapply.Quotient
+
 import scala.reflect.ClassTag
 
 object CanUnapply {
+
+  object Bypass extends CanUnapply[Any] {
+
+    override def unapply(v: Any): Option[UnappliedForm] = None
+  }
 
   object Native extends CanUnapply[scala.Product] {
 
@@ -11,7 +18,7 @@ object CanUnapply {
       val schema = v.productElementNames.toVector
       val values = v.productIterator.toVector
 
-      Some(new UnappliedForm.Named(v.productPrefix, schema, values))
+      Some(new UnappliedForm.Named(schema, values, v.productPrefix))
     }
   }
 
@@ -24,12 +31,18 @@ object CanUnapply {
 
       val (ll, rr) = left.unapply(v) -> right.unapply(v)
 
-      val toBeRemoved = rr.toSet.flatMap { v: UnappliedForm =>
+      val _rr = rr.toSet
+
+      val keysToBeRemoved = _rr.flatMap { v: UnappliedForm =>
         v.schema.flatten
       }
 
+//      val valuesToBeRemoved = _rr.flatMap { v =>
+//        v.values
+//      }
+
       ll.map { v =>
-        v.removeKeys(toBeRemoved)
+        v.remove(keys = keysToBeRemoved)
       }
     }
   }
@@ -64,7 +77,20 @@ object CanUnapply {
 
 trait CanUnapply[-T] extends Plane {
 
-  trait NonTerminating extends AnyRef
-
   def unapply(v: T): Option[UnappliedForm]
+
+  case class AndThen[T2](that: UnappliedForm => UnappliedForm) extends CanUnapply[T] {
+
+    override def unapply(v: T): Option[UnappliedForm] = {
+
+      CanUnapply.this.unapply(v).map(that)
+    }
+  }
+
+  def quotient[T2 <: T: ClassTag](that: CanUnapply[T2]): Quotient[T2] = {
+
+    Quotient(this, that)
+  }
+
+  def /[T2 <: T: ClassTag](that: CanUnapply[T2]): Quotient[T2] = quotient[T2](that)
 }

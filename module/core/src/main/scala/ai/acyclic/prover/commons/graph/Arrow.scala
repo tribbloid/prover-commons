@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.util.Magnet.OptionMagnet
+
 import scala.collection.Factory
 import scala.language.implicitConversions
 
@@ -17,8 +19,6 @@ trait Arrow {
 
 object Arrow {
 
-  trait NoInfoLike extends Arrow
-
   sealed trait ArrowType extends Product {
 
     trait ^ extends Arrow {
@@ -26,8 +26,19 @@ object Arrow {
       override val arrowType: ArrowType.this.type = ArrowType.this
     }
 
+    trait NoInfo extends ^ {
+
+      final override def arrowTextC: None.type = None
+
+      case class OfText(text: OptionMagnet[String]) extends ^ {
+
+        @transient final override lazy val arrowTextC: Option[String] = text
+      }
+    }
+    object NoInfo extends NoInfo {}
+
     // TODO: this should be a magnet
-    implicit def pair[N](v: N): (^, N) = NoInfo() -> v
+    implicit def pair[N](v: N): (^, N) = NoInfo -> v
 
     implicit def pairMany[F[T] <: Iterable[T], N](vs: F[N])(
         implicit
@@ -37,35 +48,39 @@ object Arrow {
         pair(v)
       }
       toF.fromSpecific(mapped)
-    }
 
-    case class NoInfo(
-        override protected val arrowTextC: Option[String] = None
-    ) extends ^
-        with NoInfoLike {}
-
-    object NoInfo {
-
-      lazy val empty = NoInfo()
-    }
+//    case class NoInfo(
+//        override protected val arrowTextC: Option[String] = None
+//    ) extends ^
+//        with NoInfoLike {}
+//
+//    object NoInfo {
+//
+//      lazy val empty = NoInfo()
+//    }
 
 //    object NoInfo {
 //
 ////      lazy val empty: NoInfo = NoInfo()
-//    }
+    }
   }
 
   sealed abstract class Edge extends ArrowType {}
 
-  case object Outbound extends Edge
-  type `~>` = Outbound.^
-  object `~>` extends Outbound.NoInfo() {}
+  case object OutboundT extends Edge
+
+  type Outbound = OutboundT.^
+  val Outbound = OutboundT.NoInfo
+  type `~>` = Outbound
+  val `~>` = Outbound
 
   implicitly[`~>`.type <:< `~>`]
 
-  case object Inbound extends Edge
-  type `<~` = Inbound.^
-  object `<~` extends Inbound.NoInfo() {}
+  case object InboundT extends Edge
+  type Inbound = InboundT.^
+  val Inbound = InboundT.NoInfo
+  type `<~` = Inbound
+  val `<~` = Inbound
 
   implicitly[`<~`.type <:< `<~`]
 

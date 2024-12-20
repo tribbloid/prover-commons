@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
+import ai.acyclic.prover.commons.graph.Arrow.Outbound
 import ai.acyclic.prover.commons.graph.Engine
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
@@ -25,7 +26,7 @@ trait Hierarchy extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
   override val applicableToType: Local.Semilattice.Upper.type = Local.Semilattice.Upper
 
-  override lazy val maxDepth: Int = 20
+  override lazy val maxDepth: Int = 10
 
   lazy val FORK: Padding = Padding.ofHead("+", ":")
   lazy val LEAF: Padding = Padding.ofHead("-", " ")
@@ -44,7 +45,7 @@ trait Hierarchy extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
     Viz(data)
   }
 
-  case class Viz[V](override val data: Graph_/\[V]) extends Visualized[V] {
+  case class Viz[V](override val unbox: Graph_/\[V]) extends Visualized[V] {
 
     case class SubViz(head: Local.Semilattice.Upper.Node[V], depth: Int = maxDepth) {
 
@@ -60,30 +61,40 @@ trait Hierarchy extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
           val selfT = wText.pad.left(FORK)
 
-          val arrows_targets = head.induction
-          val groupedByTarget = arrows_targets
-            .groupBy { v =>
-              v._2
-            }
+          val arrows_targets: Seq[(Outbound, Local.Semilattice.Upper.Node[V])] =
+            head.induction
 
-          val children = arrows_targets.map(_._2)
-//            .distinct
+          // TODO: if mutliple arrows in a induction are all pointing to the same target
+          //  they will be displayed separately which is verbose
+          //  they can be aggregated but it can cause uncessary reference binding for LinkedHierarchy
+          //  as a result, no aggregation is done for now
 
-          val childrenTProtos: Seq[TextBlock] = children.toList.map { child =>
-            val arrowBlocksOpt = groupedByTarget(child)
-              .flatMap {
-                case (arrow, _) =>
-                  arrow.arrowText.map { text =>
-                    TextBlock(text).encloseIn.parenthesis.pad.left(ARROW)
+          val childrenTProtos: Seq[TextBlock] = arrows_targets.toList.map {
+            case (arrow, target) =>
+              val arrows = Seq(arrow)
+
+              val arrowBlocksOpt = if (arrows.size == 1 && arrows.forall(_.arrowText.isEmpty)) {
+
+                None
+              } else {
+
+                arrows
+                  .map { arrow =>
+                    val text = arrow.arrowText.getOrElse("")
+
+                    TextBlock(text) // .encloseIn.squareBracket
+                  }
+                  .reduceOption((x, y) => x.zipBottom(y))
+                  .map { block =>
+                    block.encloseIn.squareBracket
                   }
               }
-              .reduceOption((x, y) => x.zipBottom(y))
 
-            val childViz: SubViz = SubViz(child, depth - 1)
-            val childBlock = TextBlock(childViz.treeString)
+              val childViz: SubViz = SubViz(target, depth - 1)
+              val childBlock = TextBlock(childViz.treeString)
 
-            val all: TextBlock = arrowBlocksOpt.map(v => v.zipBottom(childBlock)).getOrElse(childBlock)
-            all.pad.left(LEAF)
+              val all: TextBlock = arrowBlocksOpt.map(v => v.zipRight(childBlock)).getOrElse(childBlock)
+              all.pad.left(LEAF)
           }
 
           val childrenTMid = childrenTProtos.dropRight(1).map { tt =>
@@ -106,7 +117,7 @@ trait Hierarchy extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
     }
 
     lazy val treeText: String = {
-      data.maxNodeOpt
+      unbox.maxNodeOpt
         .map { nn =>
           SubViz(nn).treeString
         }

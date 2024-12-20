@@ -1,25 +1,12 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.HasInner
+import ai.acyclic.prover.commons.{Delegating, HasInner}
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.topology.Axioms.AnyGraphT
-import ai.acyclic.prover.commons.graph.viz.Visualisation.HasData
 
 import scala.language.implicitConversions
 
 object Visualisation extends HasInner {
-
-  trait HasData[G] extends _Inner {
-
-    val data: G
-
-    //    override lazy val toString: String = "[MISSING]"
-  }
-
-  object HasData {
-
-    implicit def unbox[G <: Local.AnyGraph[?]](v: HasData[G]): G = v.data
-  }
 
   trait OfType extends Visualisation {
 
@@ -47,7 +34,7 @@ trait Visualisation {
 
   def visualise[V](data: Graph_/\[V]): Visualized[V]
 
-  trait Visualized[V] extends HasData[Graph_/\[V]] {}
+  trait Visualized[V] extends Delegating[Graph_/\[V]] {}
 
 //  trait Extensions {
 //

@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.topology.Axioms
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
@@ -46,16 +47,11 @@ object TreeFixture {
 
   case class NodeWithArrowText(value: TV) extends TreeNode {
 
-    override protected def getInduction: Seq[
-      (
-          ai.acyclic.prover.commons.graph.Arrow.Outbound.NoInfo,
-          ai.acyclic.prover.commons.graph.TreeFixture.NodeWithArrowText
-      )
-    ] = {
+    override protected def getInduction: Seq[(commons.graph.Arrow.Outbound, NodeWithArrowText)] = {
 
       val children = value.children
       val result = children.map { child =>
-        Arrow.Outbound.NoInfo(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
+        Arrow.Outbound.OfText(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
       }
       result.toSeq
     }

@@ -50,8 +50,6 @@ object CanNormalise {
 
 trait CanNormalise[-T] extends Plane {
 
-  trait NonTerminating extends AnyRef
-
   def normalise(v: T): Option[NormalForm]
   // normalised form is assumed to be always equal `v`, validation may be required to be impl later
 }

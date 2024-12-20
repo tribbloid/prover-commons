@@ -15,31 +15,40 @@ object UnappliedForm {
 
     def prefix: String // use "" if no prefix
 
-    def schema: Vector[Option[String]]
+    def schema: Seq[Option[String]]
 
-    def elements: Vector[T]
+    def values: Seq[T]
 
-    def kvPairs: Vector[(Option[String], T)]
+    def kvPairs: Seq[(Option[String], T)]
 
-    def removeKeys(toBeRemoved: Set[String]): Pairs = {
+    def remove(
+        keys: Set[String] = Set.empty,
+        values: Set[Any] = Set.empty
+    ): Pairs = {
 
-      val filtered = kvPairs.filter {
-        case (Some(k), _) =>
-          !toBeRemoved.contains(k)
+      val filtered = kvPairs.filterNot {
+        case (kOpt, v) =>
+          val keyContains = kOpt.forall { k =>
+            keys.contains(k)
+          }
+
+          val valueContains = values.contains(v)
+
+          keyContains || valueContains
       }
 
-      Pairs(prefix, filtered)
+      Pairs(filtered, prefix)
     }
   }
 
   case class Pairs(
-      override val prefix: String = "",
-      override val kvPairs: Vector[(Option[String], Any)]
+      override val kvPairs: Seq[(Option[String], Any)],
+      override val prefix: String = ""
   ) extends UnappliedForm {
 
-    override lazy val schema: Vector[Option[String]] = kvPairs.map(_._1)
+    override lazy val schema: Seq[Option[String]] = kvPairs.map(_._1)
 
-    @transient override lazy val elements: Vector[Any] = kvPairs.map(_._2)
+    @transient override lazy val values: Seq[Any] = kvPairs.map(_._2)
   }
 
   trait Schematic extends UnappliedForm {
@@ -47,8 +56,8 @@ object UnappliedForm {
     // due to dynamic loading, schema cannot be determined at compile time
     // TODO: or can it be?
 
-    @transient override lazy val kvPairs: Vector[(Option[String], Any)] = {
-      schema.zip(elements)
+    @transient override lazy val kvPairs: Seq[(Option[String], Any)] = {
+      schema.zip(values)
     }
   }
 
@@ -57,31 +66,33 @@ object UnappliedForm {
     val _schema = Vector(None)
   }
 
-  case class Singleton(element: Any) extends Schematic {
-
-    override def prefix: String = ""
+  case class Singleton(
+      element: Any,
+      override val prefix: String = ""
+  ) extends Schematic {
 
     override def schema: Vector[Option[String]] = Singleton._schema
 
-    @transient override lazy val elements: Vector[Any] = Vector(element)
+    @transient override lazy val values: Vector[Any] = Vector(element)
   }
 
-  case class Tuple(override val elements: Vector[Any]) extends Schematic {
-    override def prefix: String = ""
+  case class Tuple(
+      override val values: Vector[Any],
+      override val prefix: String = ""
+  ) extends Schematic {
 
-    override def schema: Vector[Option[String]] = elements.map { _ =>
+    override def schema: Vector[Option[String]] = values.map { _ =>
       None
     }
-
   }
 
   case class Named(
-      override val prefix: String = "",
       names: Vector[String],
-      override val elements: Vector[Any]
+      override val values: Vector[Any],
+      override val prefix: String = ""
   ) extends Schematic {
 
-    require(names.size == elements.size, "schema & elements must have the same size")
+    require(names.size == values.size, "schema & elements must have the same size")
 
     @transient override lazy val schema: Vector[Option[String]] = names.map(s => Some(s))
   }

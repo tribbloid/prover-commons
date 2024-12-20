@@ -1,9 +1,8 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.graph.local.DestructuringInspection.Destructured
-import ai.acyclic.prover.commons.graph.local.{DestructuringInspection, ProductInspection}
+import ai.acyclic.prover.commons.graph.local.UnapplyInspection
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
-import ai.acyclic.prover.commons.multiverse.View
+import ai.acyclic.prover.commons.multiverse.{CanUnapply, UnappliedForm, View}
 import ai.acyclic.prover.commons.util.SrcDefinition
 
 trait Traceable extends View.Equals.ByConstruction {
@@ -18,7 +17,7 @@ trait Traceable extends View.Equals.ByConstruction {
 
   @transient object explain {
 
-    private val node = Inspection.node(Traceable.this)
+    private val node = Inspection.inspect(Traceable.this)
 
     def nodeText: String = {
       node.nodeText
@@ -35,45 +34,43 @@ trait Traceable extends View.Equals.ByConstruction {
       viz.toString
     }
   }
-
-  override def toString = explain.nodeText
 }
 
 object Traceable {
 
-  object Inspection extends DestructuringInspection[Traceable, Traceable] {
+  object Inspection extends UnapplyInspection {
 
-    override def unapplyAll(value: Traceable): Destructured[Traceable] = {
+    override lazy val primary: CanUnapply[Any] = {
 
-      val raw: Destructured[Traceable] = value match {
-        case vv: Traceable with Product =>
-          ProductInspection.unapplyProduct(vv, Nil)
-        case vv: Product =>
-          Destructured(vv.productPrefix, Nil, Seq(value.definedAt))
-        case _ =>
-          // not a product, both extensional equality & visualization have to rely on SrcDefinition
-          Destructured(value.getClass.getSimpleName, Nil, Seq(value.definedAt))
+      val proto = CanUnapply.Native.AndThen { ff =>
+        val newPairs = ff.kvPairs.filter {
+          case (k, v) =>
+            v.isInstanceOf[Traceable]
+        }
+        UnappliedForm.Pairs(newPairs, ff.prefix)
       }
 
-      raw
+      proto.ForAny
     }
 
-    final override val node: Traceable => BuiltIn = { v =>
-      BuiltIn(v)
+    override lazy val inlined: CanUnapply[Any] = {
+
+      object proto extends CanUnapply[Traceable] {
+
+        override def unapply(v: Traceable): Option[UnappliedForm] = {
+          v match {
+            case vv: Product => CanUnapply.Native.unapply(vv)
+            case _ =>
+              Some(
+                UnappliedForm.Tuple(Vector(v.definedAt), v.getClass.getSimpleName)
+              )
+          }
+        }
+      }
+
+      proto.ForAny / primary
     }
+
   }
-
-//  trait Leaf extends Traceable with Product1[SrcPosition] {
-//
-//    def _1: SrcPosition = definedAt
-//  }
-//
-//  object Leaf {
-//
-//    abstract class CompileTime(
-//        implicit
-//        _defineAt: SrcPosition
-//    ) extends Leaf
-//  }
 
 }

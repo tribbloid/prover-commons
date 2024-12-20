@@ -11,7 +11,7 @@ object View {
   object Equals {
 
     // what works needs to be done here?
-    trait Base extends View with scala.Equals with CanEqual.Native.NonTerminating {
+    trait Base extends View with scala.Equals {
 
       final val canEqualProjections: ArrayBuffer[CanEqual.Projection[?]] = ArrayBuffer.empty
 
@@ -69,7 +69,7 @@ object View {
   // TODO: finish it later
 //  object Product {
 //
-//    trait Proto[T] extends View with scala.Product with CanUnapply.Native.NonTerminating {
+//    trait Proto[T] extends View with scala.Product  {
 //
 //      @transient lazy val unapplyForm = unapply(unapplyBy).get
 //

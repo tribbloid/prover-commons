@@ -37,7 +37,7 @@ object CanEqual {
     }
   }
 
-  trait Projection[T] extends View.Equals.Base {
+  sealed trait Projection[T] extends View.Equals {
 
     def canEqual: CanEqual[T]
     def value: T
@@ -46,12 +46,12 @@ object CanEqual {
       canEqualProjections += this
     }
 
-    def internalHashCode(): Int = {
+    private[multiverse] def internalHashCode(): Int = {
 
       canEqual.hashOf(value)
     }
 
-    def internalEquals(that: Projection[?]): Boolean = {
+    private[multiverse] def internalEquals(that: Projection[?]): Boolean = {
       canEqual.areEqual(value, that.value.asInstanceOf[T])
     }
   }
@@ -111,10 +111,7 @@ object CanEqual {
     // if a class override hash and equality method and delegate to Same, it will cause infinite loop
 
     override def hashOfNonTrivial(v: Any): Option[Int] = v match {
-      case v: NonTerminating =>
-        throw NoTerminationException(
-          s"cannot use `${v}`: ${v.getClass.getCanonicalName} in multiverse hashing, will cause infinite loop"
-        )
+
       case v =>
         Some(v.##)
     }
@@ -122,14 +119,6 @@ object CanEqual {
     override def areEqualNonTrivial(v1: Any, v2: Any): Option[Boolean] = {
 
       (v1, v2) match {
-        case (v: NonTerminating, _) =>
-          throw NoTerminationException(
-            s"cannot use `${v}`: left side ${v.getClass.getCanonicalName} in multiverse equality, will cause infinite loop"
-          )
-        case (_, v: NonTerminating) =>
-          throw NoTerminationException(
-            s"cannot use `${v}`: right side ${v.getClass.getCanonicalName} in multiverse equality, will cause infinite loop"
-          )
         case (ll, rr) => Some(ll == rr)
       }
     }
@@ -261,9 +250,9 @@ object CanEqual {
 
       unappliedFormOpt
         .flatMap { form =>
-          val vs = form.elements
+          val vs = form.values
 
-          val subs: Vector[Option[Int]] = vs.map { vv =>
+          val subs: Seq[Option[Int]] = vs.map { vv =>
             this.ForAny
               .hashOfNonTrivial(vv)
               .orElse(
@@ -295,8 +284,8 @@ object CanEqual {
           if (lkvs.prefix != rkvs.prefix) return Some(false);
           if (lkvs.schema != rkvs.schema) return Some(false);
 
-          val subs: Vector[Option[Boolean]] = lkvs.elements
-            .zip(rkvs.elements)
+          val subs: Seq[Option[Boolean]] = lkvs.values
+            .zip(rkvs.values)
             .map {
               case (lv, rv) =>
                 this.ForAny
@@ -350,8 +339,6 @@ object CanEqual {
 trait CanEqual[-LR] extends Plane {
 
   import CanEqual.*
-
-  trait NonTerminating extends AnyRef
 
   def hashOfNonTrivial(v: LR): Option[Int]
   // TODO: should return Int directly

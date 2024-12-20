@@ -127,21 +127,21 @@ trait Engine {
         */
       trait Group {
 
-        trait _Node extends NodeK.Untyped[_Axiom] with Element {
+        trait NodeInGroup extends NodeK.Untyped[_Axiom] with Element {
           self: Group.this.node =>
 
           type Value = Group.this.node
         }
 
-        type node <: _Node
+        type node <: NodeInGroup
 
         type Graph = GraphKOfTheEngine.Aux[_Axiom, node]
       }
 
       /**
-        * 3rd API, define a [[node]] constructor that works on every [[V]]
+        * 3rd API, define a [[inspect]] constructor that works on every [[V]]
         *
-        * implicit function allows [[node]] to act as an extension of [[V]]
+        * implicit function allows [[inspect]] to act as an extension of [[V]]
         *
         * @tparam V
         *   value type
@@ -150,8 +150,8 @@ trait Engine {
 
         type _Node = NodeImpl[V]
 
-        type node <: _Node
-        val node: V => node
+//        type node <: _Node
+        val inspect: V => _Node
 
         type Graph = GraphKOfTheEngine.Aux[_Axiom, V]
 
@@ -165,7 +165,7 @@ trait Engine {
 
         implicit class ValueOps(v: V) extends ValuesOps(Seq(v)) {
 
-          def asNode: node = node(v)
+          def asNode: _Node = inspect(v)
         }
       }
 

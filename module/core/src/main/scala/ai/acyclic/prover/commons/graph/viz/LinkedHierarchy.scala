@@ -106,14 +106,14 @@ trait LinkedHierarchy extends Visualisation.OfType {
 
     def visualize[V](data: Local.AnyGraph.Outbound[V]): Visualized[V] = Viz(data)
 
-    case class Viz[V](override val data: Graph_/\[V]) extends Visualized[V] {
+    case class Viz[V](override val unbox: Graph_/\[V]) extends Visualized[V] {
 
       object RefBindings extends Local.Tree.Group {
 
         case class node(
             override val original: Local.AnyGraph.Outbound.Node[V],
             id: UUID = UUID.randomUUID()
-        ) extends _Node
+        ) extends NodeInGroup
             with RefBindingLike {
 
           {
@@ -167,14 +167,14 @@ trait LinkedHierarchy extends Visualisation.OfType {
             }
           }
 
-          override protected def getInduction: Seq[(Arrow.Outbound.^, RefBindings.node)] = {
+          override protected def getInduction: Seq[(Arrow.Outbound, RefBindings.node)] = {
 
             val result = if (!shouldExpand) {
               Nil
             } else {
 
               original.induction.map { tuple =>
-                val arrow = tuple._1: Arrow.Outbound.^
+                val arrow = tuple._1: Arrow.Outbound
 
                 val target: RefBindings.node = RefBindings.node.apply(tuple._2)
 
@@ -201,7 +201,7 @@ trait LinkedHierarchy extends Visualisation.OfType {
       }
 
       lazy val delegates: Seq[Local.Tree[RefBindings.node]] = {
-        val roots: Vector[Local.AnyGraph.Outbound.Node[V]] = data.getEntries
+        val roots: Vector[Local.AnyGraph.Outbound.Node[V]] = unbox.getEntries
         roots.map { node =>
           val refBinding: RefBindings.node = RefBindings.node(node)
 
