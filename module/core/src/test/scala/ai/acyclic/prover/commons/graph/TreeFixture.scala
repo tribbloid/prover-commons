@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
-import ai.acyclic.prover.commons.graph.topology.Axioms
+import ai.acyclic.prover.commons.graph.topology.Induction
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 
 object TreeFixture {
@@ -101,10 +101,10 @@ object TreeFixture {
 
   implicit class TVView(self: TV) {
 
-    def tree: LocalEngine.GraphKOfTheEngine.Aux[Axioms.TreeT, TV] =
+    def tree: LocalEngine.GraphKOfTheEngine.Aux[Induction.TreeT, TV] =
       Local.Tree(node(self))
 
-    def treeWithArrowTexts: LocalEngine.GraphKOfTheEngine.Aux[Axioms.TreeT, TV] =
+    def treeWithArrowTexts: LocalEngine.GraphKOfTheEngine.Aux[Induction.TreeT, TV] =
       Local.Tree(NodeWithArrowText(self))
   }
 }

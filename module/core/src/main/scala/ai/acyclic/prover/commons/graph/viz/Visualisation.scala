@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.{Delegating, HasInner}
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.topology.Axioms.AnyGraphT
+import ai.acyclic.prover.commons.graph.topology.Induction.AnyGraphT
 
 import scala.language.implicitConversions
 

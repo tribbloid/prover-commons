@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Axioms, Lawful, Topology}
+import ai.acyclic.prover.commons.graph.topology.{Induction, Lawful, Topology}
 
 trait Engine {
   self: Singleton =>
 
-  import Axioms.*
+  import Induction.*
   import Engine.*
 
   type Batch[+T]

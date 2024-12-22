@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.topology
 import ai.acyclic.prover.commons.graph.{NodeK, RewriterK}
 
 trait Lawful {
-  type _Axiom <: Axioms
+  type _Axiom <: Induction
 
   type Node[v] = NodeK.Compat[_Axiom, v]
 
@@ -13,7 +13,7 @@ trait Lawful {
 
 object Lawful {
 
-  trait Structure[+X <: Axioms] extends Lawful {
+  trait Structure[+X <: Induction] extends Lawful {
 
     override type _Axiom <: X
 

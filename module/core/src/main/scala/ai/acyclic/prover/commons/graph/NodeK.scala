@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Axioms, Lawful}
+import ai.acyclic.prover.commons.graph.topology.{Induction, Lawful}
 
-trait NodeK[+L <: Axioms] extends Lawful.Structure[L] {
+trait NodeK[+L <: Induction] extends Lawful.Structure[L] {
 
   import NodeK.*
 
@@ -71,19 +71,19 @@ trait NodeK[+L <: Axioms] extends Lawful.Structure[L] {
 
 object NodeK {
 
-  type Aux[+L <: Axioms, V] = NodeK[L] { type Value = V }
-  type Compat[+L <: Axioms, +V] = Aux[L, ? <: V]
+  type Aux[+L <: Induction, V] = NodeK[L] { type Value = V }
+  type Compat[+L <: Induction, +V] = Aux[L, ? <: V]
 
-  trait Typed[+L <: Axioms, V] extends NodeK[L] { type Value = V }
+  trait Typed[+L <: Induction, V] extends NodeK[L] { type Value = V }
 
-  trait Untyped[+L <: Axioms] extends NodeK[L] {
+  trait Untyped[+L <: Induction] extends NodeK[L] {
     // actually self typed, but that doesn't convey any extra information
 
     type Value >: this.type
     final lazy val value: this.type = this
   }
 
-  case class Mapped[+L <: Axioms, V, V2](
+  case class Mapped[+L <: Induction, V, V2](
       original: NodeK.Compat[L, V],
       fn: V => V2
   ) extends Typed[L, V2] {
