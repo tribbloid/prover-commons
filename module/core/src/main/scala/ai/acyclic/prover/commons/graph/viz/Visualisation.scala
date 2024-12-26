@@ -1,8 +1,7 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.{Delegating, HasInner}
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.topology.Induction.AnyGraphT
+import ai.acyclic.prover.commons.{Delegating, HasInner}
 
 import scala.language.implicitConversions
 
@@ -10,9 +9,9 @@ object Visualisation extends HasInner {
 
   trait OfType extends Visualisation {
 
-    val applicableToType: Local.GraphTypeImpl[? <: AnyGraphT, ? <: AnyGraphT]
+    val applicableToType: Local.SubEngine[?]
 
-    implicitly[applicableToType.type <:< Local.GraphTypeImpl[?, ?]]
+    implicitly[applicableToType.type <:< Local.SubEngine[?]]
 
     final override type Graph_/\[V] = applicableToType.Graph[V]
     final override type Node_/\[V] = applicableToType.Node[V]
@@ -32,7 +31,7 @@ trait Visualisation {
   type Graph_/\[V] <: Local.AnyGraph[V]
   type Node_/\[V] <: Local.AnyGraph.Node[V]
 
-  def visualise[V](data: Graph_/\[V]): Visualized[V]
+  def visualise[V](data: Local.AnyGraph[V]): Visualized[V]
 
   trait Visualized[V] extends Delegating[Graph_/\[V]] {}
 

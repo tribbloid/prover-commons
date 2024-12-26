@@ -7,7 +7,7 @@ object ProductInspection extends ProductInspection {
 
   object Named extends ProductInspection {
 
-    override lazy val inspect: Any => local.ProductInspection._Node = { v =>
+    override lazy val inspect: Any => local.ProductInspection.NodeV = { v =>
       new Node(v) with Node.Named {}
     }
   }

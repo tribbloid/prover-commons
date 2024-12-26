@@ -19,7 +19,7 @@ object GraphFixture {
 
   object GV extends Local.AnyGraph.Outbound.Inspection[GV] {
 
-    implicitly[OGraphNode <:< Local.AnyGraph.Outbound.NodeImpl[GV]]
+    implicitly[OGraphNode <:< Local.AnyGraph.Outbound.Node_[GV]]
 
 //    override val node = { (value: GV) => new node(value) }
 
@@ -56,7 +56,7 @@ object GraphFixture {
     }
   }
 
-  trait OGraphNode extends Local.AnyGraph.Outbound.NodeImpl[GV] {
+  trait OGraphNode extends Local.AnyGraph.Outbound.Node_[GV] {
 
     override protected def getNodeText = value.text
 

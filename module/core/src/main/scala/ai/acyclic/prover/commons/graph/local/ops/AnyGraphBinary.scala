@@ -1,28 +1,36 @@
 package ai.acyclic.prover.commons.graph.local.ops
 
-import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 
 trait AnyGraphBinary extends Local.AnyGraph.Ops.Binary {
 
   override type Prev <: AnyGraphUnary
 
-  case class Union[VV]()(
+  case class Union[V]()(
       implicit
-      ev1: prev.ArgV <:< VV,
-      ev2: ArgV <:< VV
-  ) extends Local.AnyGraph.PlanImpl[VV] {
+      ev1: prev.arg.Value <:< V,
+      ev2: arg.Value <:< V
+  ) extends LocalEngine._PlanK[arg._Axiom] {
 
-    override def compute: Local.AnyGraph[VV] = {
+    override lazy val entries: Vector[Node[V]] = {
 
-      val e1: Seq[prev.ArgNode] = prev.distinctEntries
-      val e2: Seq[ArgNode] = arg.distinctEntries
+      val e1: Seq[prev.arg.NodeV] = prev.distinctEntries
+      val e2: Seq[arg.NodeV] = arg.distinctEntries.asInstanceOf[Seq[arg.NodeV]]
 
-      val roots1: Seq[prev.Arg.Node[VV]] = e1.map(n => n.upcast[VV])
-      val roots2: Seq[Arg.Node[VV]] = e2.map(n => n.upcast[VV])
+      val roots1: Seq[Node[V]] = e1
+        .map { (n: prev.arg.NodeV) =>
+          val ev1Fuck = ev1.asInstanceOf[n.Value <:< V]
 
-      Local.AnyGraph.makeExact(
-        (roots1 ++ roots2).distinct*
-      )
+          n.upcast[V](ev1Fuck).asInstanceOf[Node[V]]
+        }
+      val roots2: Seq[Node[V]] = e2
+        .map { (n: arg.NodeV) =>
+          val ev2Fuck = ev2.asInstanceOf[n.Value <:< V]
+
+          n.upcast[V](ev2Fuck)
+        }
+
+      (roots1 ++ roots2).toVector
     }
   }
 }

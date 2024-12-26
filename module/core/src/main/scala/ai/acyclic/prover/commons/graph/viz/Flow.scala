@@ -166,7 +166,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
         )
         .DepthFirst_Once
 
-      buildBuffers.resolve
+      buildBuffers.entries
 
       val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.lookup.values
         .map { nodeWrapper =>

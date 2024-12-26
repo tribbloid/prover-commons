@@ -57,9 +57,9 @@ object LinkedHierarchy {
           }
         )
         .DepthFirst
-        .compute
     }
 
+    override def visualise[V](data: Local.AnyGraph[V]): Visualized[V] = ???
   }
 
   object Default extends Default(Hierarchy.Default)
@@ -91,6 +91,8 @@ trait LinkedHierarchy extends Visualisation.OfType {
 
   protected def dryRun(tree: Local.Tree[? <: RefBindingLike]): Unit
 
+  override def visualise[V](data: Local.AnyGraph[V]): Visualized[V] = ???
+
   final override def visualise[V](data: Graph_/\[V]): Visualized[V] = Group().Viz(data)
 
   // shared between visualisations of multiple graphs
@@ -111,7 +113,7 @@ trait LinkedHierarchy extends Visualisation.OfType {
 
     case class Viz[V](override val unbox: Graph_/\[V]) extends Visualized[V] {
 
-      object RefBindings extends Local.Tree.Group {
+      object RefBindings extends Local.Tree.topology.Group {
 
         case class node(
             override val original: Local.AnyGraph.Outbound.Node[V],
@@ -165,14 +167,14 @@ trait LinkedHierarchy extends Visualisation.OfType {
             }
           }
 
-          override protected def getInduction: Seq[(Arrow.OutboundT.^, RefBindings.node)] = {
+          override protected lazy val induction: Seq[FBound] = {
 
             val result = if (!shouldExpand) {
               Nil
             } else {
 
               original.induction.map { tuple =>
-                val arrow = tuple._1: Arrow.Outbound
+                val arrow = tuple._1.asInstanceOf[Arrow.Outbound]: Arrow.Outbound
 
                 val target: RefBindings.node = RefBindings.node(tuple._2)
 
@@ -181,7 +183,7 @@ trait LinkedHierarchy extends Visualisation.OfType {
 
             }
 
-            result
+            result.asInstanceOf[Seq[FBound]]
           }
 
           override protected def getNodeText: String = {
@@ -199,7 +201,7 @@ trait LinkedHierarchy extends Visualisation.OfType {
       }
 
       lazy val delegates: Seq[Local.Tree[RefBindings.node]] = {
-        val roots: Vector[Local.AnyGraph.Outbound.Node[V]] = unbox.getEntries
+        val roots: Vector[Local.AnyGraph.Outbound.Node[V]] = unbox.entries
         roots.map { node =>
           val refBinding: RefBindings.node = RefBindings.node(node)
 

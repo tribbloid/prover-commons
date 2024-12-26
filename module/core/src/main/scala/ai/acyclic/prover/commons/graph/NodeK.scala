@@ -1,22 +1,25 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Induction, Lawful}
+import ai.acyclic.prover.commons.graph.topology.Induction
 
-trait NodeK[+L <: Induction] extends Lawful.Structure[L] {
+trait NodeK[+X <: Induction] extends NodeOrGraph[X] {
 
   import NodeK.*
+
+  type _Arrow = _Axiom#_Arrow
 
   def value: Value
 
   protected def getNodeText: String = value.toString
   final lazy val nodeText: String = getNodeText
 
-  private[this] type Node_~ = NodeK.Compat[L, Value]
+  private[this] type NodeLt = NodeK.Lt[_Axiom, Value]
 
-  protected def getInduction: Seq[(_Arrow, Node_~)]
-  lazy val induction: Seq[(_Arrow, Node_~)] = getInduction
+  type FBound = (_Arrow, NodeLt)
 
-  final lazy val discoverNodes: Seq[Node_~] = induction.map(_._2)
+  def induction: Seq[FBound]
+
+  final lazy val discoverNodes: Seq[NodeLt] = induction.map(_._2)
 
 //  final lazy val link_values: Seq[(_Arrow, Value)] = induction.map(v => v._1 -> v._2.value)
 
@@ -55,12 +58,12 @@ trait NodeK[+L <: Induction] extends Lawful.Structure[L] {
   // TODO: this should be fold in value
   //  if not, it may define a single node with 2 conflicting values
 
-  def map[V2](fn: Value => V2): Mapped[L, Value, V2] = Mapped(this: Node_~, fn)
+  def map[V2](fn: Value => V2): Mapped[X, Value, V2] = Mapped(this, fn)
 
   def upcast[V2](
       implicit
       ev: Value <:< V2
-  ): Mapped[L, Value, V2] = map((v: Value) => v: V2)
+  ): Mapped[X, Value, V2] = map((v: Value) => v: V2)
 
   object asIterable extends Iterable[Value] {
 
@@ -72,9 +75,9 @@ trait NodeK[+L <: Induction] extends Lawful.Structure[L] {
 object NodeK {
 
   type Aux[+L <: Induction, V] = NodeK[L] { type Value = V }
-  type Compat[+L <: Induction, +V] = Aux[L, ? <: V]
+  trait Aux_[+L <: Induction, V] extends NodeK[L] { type Value = V }
 
-  trait Typed[+L <: Induction, V] extends NodeK[L] { type Value = V }
+  type Lt[+L <: Induction, +V] = NodeK[L] { type Value <: V }
 
   trait Untyped[+L <: Induction] extends NodeK[L] {
     // actually self typed, but that doesn't convey any extra information
@@ -83,18 +86,18 @@ object NodeK {
     final lazy val value: this.type = this
   }
 
-  case class Mapped[+L <: Induction, V, V2](
-      original: NodeK.Compat[L, V],
+  case class Mapped[+X <: Induction, V, V2](
+      original: NodeK.Lt[X, V],
       fn: V => V2
-  ) extends Typed[L, V2] {
+  ) extends Aux_[X, V2] {
 
-    override val axioms: original.axioms.type = original.axioms
+    override type _Arrow = original._Arrow
 
     override def value: V2 = fn(original.value.asInstanceOf)
 
     override protected def getNodeText: String = original.nodeText
 
-    override protected def getInduction: Seq[(_Arrow, Mapped[L, V, V2])] = {
+    override protected def induction: Seq[(_Arrow, Mapped[X, V, V2])] = {
       original.induction.map {
         case (a, n) =>
           a -> Mapped(n, fn)

@@ -17,43 +17,49 @@ object Induction {
 
   trait Lt_[+A <: Arrow] extends Induction { type _Arrow <: A }
 
-  trait ExtractArrow[X <: Induction] { type _Arrow <: Arrow }
+//  trait ExtractArrow[X <: Induction] { type _Arrow <: Arrow }
+//
+//  object ExtractArrow {
+//
+//    type Gt[L <: Induction] = ExtractArrow[? >: L]
+//
+//    implicit def onlyCase[A <: Arrow]: ExtractArrow[Lt_[A]] { type _Arrow = A } =
+//      new ExtractArrow[Lt_[A]] {
+//        override type _Arrow = A
+//      }
+//  }
 
-  object ExtractArrow {
+//  { // sanity
+//    val bounds = Summoner.summon[ExtractArrow.Gt[Lt_[Arrow.OutboundT.^]]]
+//
+//    implicitly[bounds._Arrow =:= Arrow.OutboundT.^]
+//  }
 
-    type Gt[L <: Induction] = ExtractArrow[? >: L]
+  object AnyGraphT extends Topology {
 
-    implicit def onlyCase[A <: Arrow]: ExtractArrow[Lt_[A]] { type _Arrow = A } =
-      new ExtractArrow[Lt_[A]] {
-        override type _Arrow = A
+    type _Axiom = Induction
+
+    object OutboundT extends Topology {
+
+      trait _Axiom extends Induction {
+
+        override type _Arrow <: Arrow.Outbound
       }
+    }
   }
 
-  { // sanity
-    val bounds = Summoner.summon[ExtractArrow.Gt[Lt_[Arrow.OutboundT.^]]]
+  object PosetT extends Topology {
 
-    implicitly[bounds._Arrow =:= Arrow.OutboundT.^]
+    trait _Axiom extends Induction
   }
 
-  // TODO: these should be defined in topology
-  trait AnyGraphT extends Induction.Lt_[Arrow]
+  object SemilatticeT extends Topology {
 
-  object AnyGraphT extends Topology[AnyGraphT] {
+    trait _Axiom extends PosetT._Axiom
 
-    trait OutboundT extends AnyGraphT with Induction.Lt_[Arrow.OutboundT.^]
+    object UpperT extends Topology {
 
-    object OutboundT extends Topology[OutboundT] {}
-
-  }
-
-  trait PosetT extends AnyGraphT
-  object PosetT extends Topology[PosetT] {}
-
-  trait SemilatticeT extends PosetT
-  object SemilatticeT extends Topology[SemilatticeT] {
-
-    trait UpperT extends SemilatticeT with AnyGraphT.OutboundT
-    object UpperT extends Topology[UpperT] {
+      trait _Axiom extends SemilatticeT._Axiom with AnyGraphT.OutboundT._Axiom
 
       implicit class NodeOps[V](n: Node[V]) {
 
@@ -62,13 +68,21 @@ object Induction {
     }
   }
 
-  trait TreeT extends SemilatticeT.UpperT
-  object TreeT extends Topology[TreeT] {}
+  object TreeT extends Topology {
+
+    trait _Axiom extends SemilatticeT.UpperT._Axiom
+
+    case class Singleton[V](value: V) extends Node_[V] {
+
+      final override lazy val induction: collection.immutable.Nil.type = Nil
+    }
+
+  }
 
   private def __sanity[V](): Unit = {
 
-    implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
+    implicitly[SemilatticeT.Node[Int] <:< PosetT.Node[Int]]
 
-    implicitly[PosetT.Node[V] <:< AnyGraphT.Node[V]]
+    implicitly[SemilatticeT.Node[V] <:< PosetT.Node[V]]
   }
 }

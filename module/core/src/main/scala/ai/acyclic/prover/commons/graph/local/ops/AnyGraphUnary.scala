@@ -1,92 +1,101 @@
 package ai.acyclic.prover.commons.graph.local.ops
 
-import ai.acyclic.prover.commons.graph.RewriterK
+import ai.acyclic.prover.commons.graph.*
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.multiverse.CanEqual
 
 trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
-  {
-    implicitly[ArgLaw <:< Local.AnyGraph._Axiom]
-  }
+//  {
+//    implicitly[ArgLaw <:< Local.AnyGraph._Axiom]
+//  }
 
   import AnyGraphUnary.*
 
   def isEmpty: Boolean = arg.entries.isEmpty
 
-  lazy val distinctEntries: Vector[ArgNode] = arg.entries.distinct
+  lazy val distinctEntries: Vector[arg.NodeV] = arg.entries.distinct
 
   def text_flow(
       implicit
       format: Flow
-  ): format.Viz[ArgV] = format.Viz(arg)
+  ): format.Viz[arg.Value] = format.Viz(arg)
 
-  object asIterable extends Iterable[ArgV] {
+  // TODO: move into `object collect`
+  object asIterable extends Iterable[arg.Value] {
 
-    override def iterator: Iterator[ArgV] = {
-      val base = distinctEntries.iterator
+    override def iterator: Iterator[arg.Value] = {
+      val base: Iterator[arg.NodeV] = distinctEntries.iterator
 
-      base.flatMap { bb =>
-        bb.asIterable.iterator
-      }
-    }
-  }
-
-//  lazy val asLazyList: LazyList[inputG.Value] = asIterable.to(LazyList)
-
-  case class NodeMap[V2](
-      fn: ArgV => V2
-  ) extends Arg.PlanImpl[V2] {
-
-    override def compute: Arg.Graph[V2] = {
-
-      val known: Vector[ArgNode] = distinctEntries
-
-      val result = {
-
-        val newNode = known.map { n =>
-          n.map(v => fn(v): V2)
-        }
-
-        Local.AnyGraph.makeWithAxioms[ArgLaw, V2](newNode*)(argPlan.axioms)
+      val result = base.flatMap { bb: arg.NodeV =>
+        val result = bb.asIterable.map(v => v.asInstanceOf[arg.Value])
+        result
       }
 
       result
     }
   }
 
+//  lazy val asLazyList: LazyList[inputG.Value] = asIterable.to(LazyList)
+
+  case class NodeMap[V2](
+      fn: arg.Value => V2
+  ) extends LocalEngine._PlanK[arg._Axiom] {
+
+    type Value = V2
+
+    override lazy val entries: Vector[NodeV] = {
+
+      val newNode: Vector[NodeV] = distinctEntries.map { (n: arg.NodeV) =>
+        n.asInstanceOf[Node[arg.Value]].map { (v: arg.Value) =>
+          fn(v).asInstanceOf[Value]
+        }
+      }
+      newNode
+    }
+  }
+
   object NodeUpcast {
 
-    def apply[V2 >: ArgV]: NodeMap[V2] = NodeMap[V2](v => v: V2)
+    def apply[V2 >: arg.Value]: NodeMap[V2] = NodeMap[V2](v => v: V2)
   }
 
   // TODO:
   //  need to transcribe to a more constraining graph type
   case class Transform(
-      rewriter: ArgRewriter,
-      pruning: Pruning[ArgNode] = identity,
-      down: ArgNode => Seq[ArgNode] = v => Seq(v),
-      up: ArgNode => Seq[ArgNode] = v => Seq(v)
+      rewriter: arg.RewriterV,
+      down: arg.NodeV => Seq[arg.NodeV] = v => Seq(v),
+      up: arg.NodeV => Seq[arg.NodeV] = v => Seq(v),
+      pruning: Pruning[arg.NodeV] = identity
   ) {
 
-    trait TransformPlan extends Arg.PlanImpl[ArgV]
+    lazy val rewriterVerified: arg.RewriterV = rewriter.Verified
 
-    object DepthFirst extends TransformPlan {
+    trait _Plan extends LocalEngine._GraphK[arg._Axiom] {
 
-      private def transformInternal(node: ArgNode, depth: Int = maxDepth): Seq[ArgNode] = {
+      type _Axiom = arg._Axiom
+      type Value = arg.Value
+    }
+
+    object DepthFirst extends _Plan {
+
+      private def transformInternal(
+          node: arg.NodeV,
+          depth: Int
+      ): Seq[NodeV] = {
         if (depth > 0) {
 
-          def doTransform(n: ArgNode): Seq[ArgNode] = {
-            val downNs: Seq[ArgNode] = down(n)
+          def doTransform(n: arg.NodeV): Seq[arg.NodeV] = {
+            val downNs: Seq[arg.NodeV] = down(n)
 
-            val inductionTs: Seq[ArgNode] =
+            val inductionTs: Seq[arg.NodeV] =
               downNs.map { n =>
                 val successors = n.discoverNodes
-                val successorsTransformed = successors.flatMap { nn =>
-                  transformInternal(nn, depth - 1)
+                val successorsTransformed: Seq[arg.NodeV] = successors.flatMap { nn =>
+                  transformInternal(nn, depth - 1).asInstanceOf[Seq[arg.NodeV]]
                 }
-                val rewritten = rewriter.Verified.rewrite(n)(successorsTransformed)
+                val rewritten = rewriterVerified.rewrite(n)(successorsTransformed)
                 rewritten
               }
 
@@ -97,31 +106,35 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
             results
           }
 
-          pruning(doTransform).apply(node)
+          val result: Seq[NodeV] = pruning(doTransform).apply(node).asInstanceOf[Seq[NodeV]]
+          result
         } else {
-          Seq(node)
+          Seq(node.asInstanceOf[NodeV])
         }
       }
 
-      override def compute: LocalEngine.GraphKOfTheEngine.Unchecked[ArgLaw, ArgV] = {
-        val transformed: Seq[ArgNode] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
-        Local.AnyGraph.makeWithAxioms[ArgLaw, ArgV](transformed*)(argPlan.axioms)
+      override lazy val entries: Vector[NodeV] = {
+
+        val transformed: Vector[NodeV] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
+        transformed
       }
     }
 
-    object DepthFirst_Once extends TransformPlan {
+    object DepthFirst_Once extends _Plan {
 
       private val delegate = {
 
-        val evaled = CanEqual.Native.Lookup[Any, ArgNode]()
+        val evaled = CanEqual.Native.Lookup[Any, arg.NodeV]()
 
         Transform(
           rewriter,
+          down,
+          up,
           pruning = { fn =>
             { node =>
               val keyOpt = node.evalCacheKey
 
-              val result: Seq[ArgNode] = keyOpt.flatMap { key =>
+              val result: Seq[arg.NodeV] = keyOpt.flatMap { key =>
                 evaled.get(key)
               } match {
                 case Some(n) =>
@@ -136,28 +149,27 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
               result
             }
-          },
-          down,
-          up
+          }
         ).DepthFirst
       }
 
-      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[
-        AnyGraphUnary.this.ArgLaw,
-        AnyGraphUnary.this.ArgV
-      ] = {
-        delegate.compute
+      override lazy val entries: Vector[NodeV] = {
+
+        delegate.entries
       }
+
     }
 
-    object DepthFirst_Cached extends TransformPlan {
+    object DepthFirst_Cached extends _Plan {
 
       private val delegate = {
 
-        val evaled = CanEqual.Native.Lookup[Any, Seq[ArgNode]]()
+        val evaled = CanEqual.Native.Lookup[Any, Seq[arg.NodeV]]()
 
         Transform(
           rewriter,
+          down,
+          up,
           pruning = { fn =>
             { node =>
               val keyOpt = node.evalCacheKey
@@ -177,45 +189,39 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
               result
             }
-          },
-          down,
-          up
+          }
         ).DepthFirst
       }
 
-      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[
-        AnyGraphUnary.this.ArgLaw,
-        AnyGraphUnary.this.ArgV
-      ] = {
-        delegate.compute
+      override lazy val entries: Vector[NodeV] = {
+
+        delegate.entries
       }
     }
   }
 
   object TransformLinear {
     def apply(
-        rewriter: ArgRewriter,
-        down: ArgNode => ArgNode = v => v,
-        pruning: Pruning[ArgNode] = identity,
-        up: ArgNode => ArgNode = v => v
+        rewriter: arg.RewriterV,
+        down: arg.NodeV => arg.NodeV = v => v,
+        pruning: Pruning[arg.NodeV] = identity,
+        up: arg.NodeV => arg.NodeV = v => v
     ): Transform = Transform(
       rewriter,
-      pruning,
       v => Seq(down(v)),
-      v => Seq(up(v))
+      v => Seq(up(v)),
+      pruning
     )
   }
 
-  trait TraversePlan extends Arg.PlanImpl[ArgV]
-
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
-      down: ArgNode => Unit = { (_: ArgNode) => {} },
-      up: ArgNode => Unit = { (_: ArgNode) => {} }
+      down: arg.NodeV => Unit = { (_: arg.NodeV) => {} },
+      up: arg.NodeV => Unit = { (_: arg.NodeV) => {} }
   ) {
 
-    private val delegate = Transform(
-      rewriter = RewriterK.DoNotRewrite(arg.axioms),
+    @transient lazy val delegate: Transform = Transform(
+      rewriter = RewriterK.DoNotRewrite(),
       down = { v =>
         down(v); Seq(v)
       },
@@ -224,56 +230,37 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
       }
     )
 
-    object DepthFirst extends TraversePlan {
+    lazy val DepthFirst = delegate.DepthFirst
 
-      override def compute = {
-
-        delegate.DepthFirst.compute
-        arg
-      }
-    }
-
-    object DepthFirst_Once extends TraversePlan {
-
-      override def compute = {
-
-        delegate.DepthFirst_Once.compute
-        arg
-      }
-    }
+    lazy val DepthFirst_Once = delegate.DepthFirst_Once
   }
-
 }
 
 object AnyGraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[L <: Local.AnyGraph._Axiom, V](
-      argPlan: LocalEngine.PlanK.Compat[L, V],
+  case class ^[A <: Local.AnyGraph.Graph[?]](
+      arg: A,
       override val maxDepth: Int = 20
   ) extends AnyGraphUnary {
 
-    override type ArgLaw = L
+    type Arg = A
 
-    override type ArgV = V
-
-    def &&[L2 <: Local.AnyGraph._Axiom, V2](
-        argPlan: LocalEngine.PlanK.Compat[L2, V2],
+    def &&[B <: Local.AnyGraph.Graph[?]](
+        arg: B,
         maxDepth: Int = ^.this.maxDepth
-    ) = new &&[L2, V2](argPlan, maxDepth)
+    ) = new &&(arg, maxDepth)
 
-    case class &&[L2 <: Local.AnyGraph._Axiom, V2](
-        argPlan: LocalEngine.PlanK.Compat[L2, V2],
+    case class &&[B <: Local.AnyGraph.Graph[?]](
+        arg: B,
         override val maxDepth: Int = ^.this.maxDepth
     ) extends AnyGraphBinary {
 
+      type Arg = B
+
       override type Prev = ^.this.type
       override val prev: ^.this.type = ^.this
-
-      override type ArgLaw = L2
-
-      override type ArgV = V2
     }
   }
 

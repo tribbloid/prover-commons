@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.Arrow.Outbound
-import ai.acyclic.prover.commons.graph.Engine
+import ai.acyclic.prover.commons.graph.{Arrow, Engine}
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
@@ -61,8 +61,8 @@ trait Hierarchy extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
 
           val selfT = wText.pad.left(FORK)
 
-          val arrows_targets: Seq[(Outbound, Local.Semilattice.Upper.Node[V])] =
-            head.induction
+          val arrows_targets: Seq[(Arrow.`~>`, Local.Semilattice.Upper.Node[V])] =
+            head.induction.asInstanceOf[Seq[(Arrow.`~>`, Local.Semilattice.Upper.Node[V])]]
 
           // TODO: if mutliple arrows in a induction are all pointing to the same target
           //  they will be displayed separately which is verbose

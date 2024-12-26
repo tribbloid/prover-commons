@@ -1,20 +1,19 @@
 package ai.acyclic.prover.commons.graph.local
 
-import ai.acyclic.prover.commons.graph.Arrow
-
 object Local extends LocalEngine.Module {
 
-  private def compileTimeCheck[V](): Unit = {
+  private def __sanity[V](): Unit = {
 
     implicitly[Tree[Int] <:< Semilattice.Upper[Int]]
 
     implicitly[Tree[V] <:< Semilattice.Upper[V]]
 
-    implicitly[Local.Tree._Arrow <:< Arrow.OutboundT.^]
+//    implicitly[Local.Tree._Axiom <:< Arrow.Outbound]
 
-    implicitly[Local.AnyGraph.Outbound._Arrow <:< Local.Tree._Arrow]
+    implicitly[Local.Tree._Axiom <:< Local.Semilattice._Axiom]
+    implicitly[Local.Tree._Axiom <:< Local.AnyGraph.Outbound._Axiom]
 
-    val example = Local.AnyGraph.Outbound.empty[Int]
-    implicitly[example._Arrow <:< Local.Tree._Arrow]
+    val example: Local.Tree[Int] = Local.Tree.empty[Int]
+    implicitly[example._Axiom <:< Local.Tree._Axiom]
   }
 }

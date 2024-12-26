@@ -34,7 +34,7 @@ object TreeFixture {
     }
   }
 
-  trait TreeNode extends Local.Tree.NodeImpl[TV] {
+  trait TreeNode extends Local.Tree.Node_[TV] {
 
     final override protected def getNodeText: String = value.text
   }
@@ -101,10 +101,10 @@ object TreeFixture {
 
   implicit class TVView(self: TV) {
 
-    def tree: LocalEngine.GraphKOfTheEngine.Aux[Induction.TreeT, TV] =
+    def tree: LocalEngine._GraphK.Aux[Induction.TreeT, TV] =
       Local.Tree(node(self))
 
-    def treeWithArrowTexts: LocalEngine.GraphKOfTheEngine.Aux[Induction.TreeT, TV] =
+    def treeWithArrowTexts: LocalEngine._GraphK.Aux[Induction.TreeT, TV] =
       Local.Tree(NodeWithArrowText(self))
   }
 }

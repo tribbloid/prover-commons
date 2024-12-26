@@ -2,19 +2,19 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.topology.{Induction, Lawful}
 
-trait RewriterK[L <: Induction] extends Lawful.Structure[L] {
+trait RewriterK[X <: Induction] extends Lawful.Refined {
 
-  private[this] type NodeV = NodeK.Compat[L, Value]
+  override type _Axiom = X
+
+//  private[this] type NodeV = NodeV
 
   def rewrite(src: NodeV)(
       discoverNodes: Seq[NodeV]
   ): NodeV
 
-  object Verified extends RewriterK[L] {
+  object Verified extends RewriterK[X] {
 
     type Value = RewriterK.this.Value
-
-    val axioms: L = RewriterK.this.axioms
 
     override def rewrite(src: NodeV)(discoverNodes: Seq[NodeV]): NodeV = {
 
@@ -41,15 +41,15 @@ trait RewriterK[L <: Induction] extends Lawful.Structure[L] {
 object RewriterK {
 
   type Aux[X <: Induction, V] = RewriterK[X] { type Value = V }
-  trait Impl[X <: Induction, V] extends RewriterK[X] { type Value = V }
+  trait Aux_[X <: Induction, V] extends RewriterK[X] { type Value = V }
 
-  case class DoNotRewrite[L <: Induction, N](override val axioms: L) extends RewriterK[L] {
+  case class DoNotRewrite[L <: Induction, N]() extends RewriterK[L] {
 
     type Value = N
 
-    override def rewrite(src: NodeK.Compat[L, Value])(
-        discoverNodes: Seq[NodeK.Compat[L, Value]]
-    ): NodeK.Compat[L, Value] = src
+    override def rewrite(src: NodeK.Lt[L, Value])(
+        discoverNodes: Seq[NodeK.Lt[L, Value]]
+    ): NodeK.Lt[L, Value] = src
 
   }
 }
