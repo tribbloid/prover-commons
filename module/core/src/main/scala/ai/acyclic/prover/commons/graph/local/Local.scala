@@ -10,11 +10,11 @@ object Local extends LocalEngine.Module {
 
     implicitly[Tree[V] <:< Semilattice.Upper[V]]
 
-    implicitly[Local.Tree._Arrow <:< Arrow.OutboundT.^]
+    implicitly[Local.Tree.axioms._Arrow <:< Arrow.OutboundT.^]
 
-    implicitly[Local.AnyGraph.Outbound._Arrow <:< Local.Tree._Arrow]
+    implicitly[Local.AnyGraph.Outbound.axioms._Arrow <:< Local.Tree.axioms._Arrow]
 
     val example = Local.AnyGraph.Outbound.empty[Int]
-    implicitly[example._Arrow <:< Local.Tree._Arrow]
+    implicitly[example._Arrow <:< Local.Tree.axioms._Arrow]
   }
 }

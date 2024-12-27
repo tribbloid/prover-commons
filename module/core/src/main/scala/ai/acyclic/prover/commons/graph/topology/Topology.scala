@@ -12,7 +12,7 @@ abstract class Topology[X <: Induction] extends Refinement.Lawful {
 
   implicit def assuming(
       implicit
-      extractArrow: ExtractArrow.Gt[X]
+      extractArrow: ExtractArrow.Gt[X] // TODO: how to remove this crap?
   ): X { type _Arrow = extractArrow._Arrow } = Induction.assume[X { type _Arrow = extractArrow._Arrow }]
 }
 
