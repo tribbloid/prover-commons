@@ -1,12 +1,12 @@
 package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.graph.GraphK
+import ai.acyclic.prover.commons.graph.Refinement
 import ai.acyclic.prover.commons.graph.topology.Induction.ExtractArrow
 
-abstract class Topology[X <: Induction] extends Lawful {
+abstract class Topology[X <: Induction] extends Refinement.Lawful {
   self: Singleton =>
 
-  type Graph[v] = GraphK.Aux[_Axiom, v]
+  type Graph[v] = Refinement.GraphK.Aux[_Axiom, v]
 
   override type _Axiom = X
 

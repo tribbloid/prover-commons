@@ -44,7 +44,7 @@ object Traceable {
 
       val proto = CanUnapply.Native.AndThen { ff =>
         val newPairs = ff.kvPairs.filter {
-          case (k, v) =>
+          case (_, v) =>
             v.isInstanceOf[Traceable]
         }
         UnappliedForm.Pairs(newPairs, ff.prefix)

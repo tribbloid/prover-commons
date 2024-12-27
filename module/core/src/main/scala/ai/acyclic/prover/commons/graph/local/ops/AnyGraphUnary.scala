@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.local.ops
 
-import ai.acyclic.prover.commons.graph.RewriterK
+import ai.acyclic.prover.commons.graph.Refinement
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
 import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.multiverse.CanEqual
@@ -215,7 +215,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
   ) {
 
     private val delegate = Transform(
-      rewriter = RewriterK.DoNotRewrite(arg.axioms),
+      rewriter = Refinement.RewriterK.DoNotRewrite(arg.axioms),
       down = { v =>
         down(v); Seq(v)
       },

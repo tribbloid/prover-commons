@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Induction, Lawful, Topology}
+import ai.acyclic.prover.commons.graph.topology.{Induction, Topology}
 
 trait Engine {
   self: Singleton =>
@@ -11,16 +11,16 @@ trait Engine {
   type Batch[+T]
   def parallelize[T](seq: Seq[T]): Batch[T]
 
-  trait GraphKOfTheEngine[+X <: AnyGraphT] extends GraphK[X] with NodeOrGraph[X] {
+  trait GraphKOfTheEngine[+X <: AnyGraphT] extends Refinement.GraphK[X] {
 
     override type _E = Engine.this.type
     final override lazy val engine: _E = Engine.this
 
     override type Batch[+V] = Engine.this.Batch[V]
 
-    def getEntries: Batch[NodeK.Compat[X, Value]]
+    def getEntries: Batch[Refinement.NodeK.Lt[X, Value]]
 
-    lazy val entries: Batch[NodeK.Compat[X, Value]] = {
+    lazy val entries: Batch[Refinement.NodeK.Lt[X, Value]] = {
       getEntries
     }
   }
@@ -36,7 +36,7 @@ trait Engine {
       * Graph representation without any validation
       */
     case class Unchecked[X <: AnyGraphT, V](
-        getEntries: Batch[NodeK.Compat[X, V]]
+        getEntries: Batch[Refinement.NodeK.Lt[X, V]]
     )(
         override val axioms: X
     ) extends GraphKOfTheEngine[X] {
@@ -48,7 +48,7 @@ trait Engine {
 //    case class
   }
 
-  trait PlanK[+X <: AnyGraphT] extends Lawful.Structure[X] {
+  trait PlanK[+X <: AnyGraphT] extends Refinement.Structure[X] {
 
     private[this] type OGraph = GraphKOfTheEngine.Aux[X, Value]
 //    type ONode = NodeKind.Lt[L, Value]
@@ -79,7 +79,7 @@ trait Engine {
     lazy val asPlan = this
   }
 
-  trait _Lawful extends Lawful {
+  trait _Lawful extends Refinement.Lawful {
 
     override type _Axiom <: AnyGraphT
 
@@ -90,7 +90,7 @@ trait Engine {
     trait PlanImpl[v] extends PlanK.Impl[_Axiom, v]
   }
 
-  trait _Structure[+X <: AnyGraphT] extends _Lawful with Lawful.Structure[X] {}
+  trait _Structure[+X <: AnyGraphT] extends _Lawful with Refinement.Structure[X] {}
 
   trait Module {
 
@@ -117,7 +117,7 @@ trait Engine {
         * @tparam V
         *   value tyupe
         */
-      trait NodeImpl[V] extends NodeK.Typed[_Axiom, V] with Element with NodeOrGraph[_Axiom] {
+      trait NodeImpl[V] extends Refinement.NodeK.Aux_[_Axiom, V] with Element {
 
 //        override def asGraph: Graph[V] = makeExact[V](this)
       }
@@ -127,7 +127,7 @@ trait Engine {
         */
       trait Group {
 
-        trait NodeInGroup extends NodeK.Untyped[_Axiom] with Element {
+        trait NodeInGroup extends Refinement.NodeK.Untyped[_Axiom] with Element {
           self: Group.this.node =>
 
           type Value = Group.this.node
@@ -169,17 +169,17 @@ trait Engine {
         }
       }
 
-      trait RewriterImpl[V] extends RewriterK.Impl[_Axiom, V] with Element {}
+      trait RewriterImpl[V] extends Refinement.RewriterK.Impl[_Axiom, V] with Element {}
 
       def makeWithAxioms[XX <: _Axiom, V](
-          nodes: NodeK.Compat[XX, V]*
+          nodes: Refinement.NodeK.Lt[XX, V]*
       )(
           assuming: XX
       ): GraphKOfTheEngine.Unchecked[XX, V] =
         GraphKOfTheEngine.Unchecked[XX, V](parallelize(nodes))(assuming)
 
       def makeTightest[XX <: _Axiom, V](
-          nodes: NodeK.Compat[XX, V]*
+          nodes: Refinement.NodeK.Lt[XX, V]*
       )(
           implicit
           assuming: XX
@@ -187,12 +187,12 @@ trait Engine {
         makeWithAxioms[XX, V](nodes*)(assuming)
 
       def makeExact[V](
-          nodes: NodeK.Compat[_Axiom, V]*
+          nodes: Refinement.NodeK.Lt[_Axiom, V]*
       ): Graph[V] =
         makeWithAxioms[_Axiom, V](nodes*)(this.axioms)
 
       def apply[XX <: _Axiom, V]( // alias of makeTightest
-          nodes: NodeK.Compat[XX, V]*
+          nodes: Refinement.NodeK.Lt[XX, V]*
       )(
           implicit
           assuming: XX
