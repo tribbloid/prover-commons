@@ -11,7 +11,7 @@ object Refinement {
     type Rewriter[v] = RewriterK.Aux[_Axiom, v]
   }
 
-  trait Structure[+X <: Induction] extends Lawful {
+  trait Structure[+X <: Induction] extends Foundations.Lawful {
 
     override type _Axiom <: X
 
