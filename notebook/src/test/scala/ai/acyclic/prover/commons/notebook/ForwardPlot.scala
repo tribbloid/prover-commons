@@ -23,7 +23,7 @@ trait ForwardPlot {
     object inspect extends (Forward => inspect)
     case class inspect(value: Forward) extends _Node {
 
-      override protected def getInduction: Seq[(_Arrow, Forward.this.inspect)] = {
+      override def inductions: Seq[(_Arrow, Forward.this.inspect)] = {
 
         value.arrowBuffer.toSeq.map { v =>
           v._1 -> inspect(v._2)

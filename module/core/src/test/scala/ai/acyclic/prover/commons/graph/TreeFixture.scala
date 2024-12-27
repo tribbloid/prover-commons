@@ -36,18 +36,18 @@ object TreeFixture {
 
   trait TreeNode extends Local.Tree.NodeImpl[TV] {
 
-    final override protected def getNodeText: String = value.text
+    final override lazy val nodeText: String = value.text
   }
 
   case class node(value: TV) extends TreeNode {
 
-    override protected def getInduction: Seq[(Arrow.`~>`, node)] =
+    override lazy val inductions: Seq[(Arrow.`~>`, node)] =
       value.children.map(v => node(v)).toSeq
   }
 
   case class NodeWithArrowText(value: TV) extends TreeNode {
 
-    override protected def getInduction: Seq[(commons.graph.Arrow.Outbound, NodeWithArrowText)] = {
+    override lazy val inductions: Seq[(commons.graph.Arrow.Outbound, NodeWithArrowText)] = {
 
       val children = value.children
       val result = children.map { child =>

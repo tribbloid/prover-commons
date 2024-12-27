@@ -28,7 +28,7 @@ object GraphFixture {
         override val value: GV
     ) extends OGraphNode {
 
-      override protected def getInduction: Seq[(Arrow.`~>`, inspect)] =
+      override lazy val inductions: Seq[(Arrow.`~>`, inspect)] =
         value.children.toSeq.map(v => inspect(v))
     }
 
@@ -37,7 +37,7 @@ object GraphFixture {
       object inspect extends (GV => inspect)
       case class inspect(override val value: GV) extends OGraphNode {
 
-        override protected def getInduction: Seq[
+        override lazy val inductions: Seq[
           (Arrow.`~>`, inspect)
         ] = {
           val children = value.children.toSeq
@@ -58,7 +58,7 @@ object GraphFixture {
 
   trait OGraphNode extends Local.AnyGraph.Outbound.NodeImpl[GV] {
 
-    override protected def getNodeText = value.text
+    override lazy val nodeText = value.text
 
     override def evalCacheKeyC: Option[GV] = Some(value)
 

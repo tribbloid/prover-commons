@@ -6,8 +6,7 @@ object Priors {
 
     def value: Any
 
-    protected def getNodeText: String = value.toString
-    final lazy val nodeText: String = getNodeText
+    def nodeText: String = value.toString
 
     /**
       * Only affecting caching mechanism in resolving induction(s). Induction of the same node may be cached and reused

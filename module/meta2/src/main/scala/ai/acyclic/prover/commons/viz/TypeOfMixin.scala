@@ -107,7 +107,7 @@ trait TypeOfMixin extends HasReflection {
           .flatMap {
             case (_, vs) =>
               val argNode = this.copy(ir = vs.head).ArgNode
-              if (argNode.induction.isEmpty) None
+              if (argNode.inductions.isEmpty) None
               else Some(argNode)
           }
           .toSeq
@@ -144,7 +144,7 @@ trait TypeOfMixin extends HasReflection {
 
         final override lazy val identityKeyC: Some[TypeOfMixin.this.reflection.TypeID] = Some(node.reference)
 
-        override protected val getInduction: List[(Arrow.`~>`, node)] = {
+        override val inductions: List[(Arrow.`~>`, node)] = {
 
           node.superTypes_nonTransitive
             .filter { tv =>
@@ -167,7 +167,7 @@ trait TypeOfMixin extends HasReflection {
 
         final override lazy val identityKeyC: None.type = None
 
-        override protected lazy val getInduction: List[(Arrow.`~>`, node)] = {
+        override lazy val inductions: List[(Arrow.`~>`, node)] = {
           node.args.map { tt =>
             Nodes(TypeOps(tt).formattedBy(format.typeFormat)).SuperTypeNode
           }

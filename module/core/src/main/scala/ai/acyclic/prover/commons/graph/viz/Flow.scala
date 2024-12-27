@@ -146,7 +146,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
           down = { node =>
             val wrapper = nodeID2Wrapper(node)
 
-            val newRelations: Seq[(NodeWrapper, NodeWrapper)] = node.induction.flatMap { v =>
+            val newRelations: Seq[(NodeWrapper, NodeWrapper)] = node.inductions.flatMap { v =>
               v._1.arrowType match {
                 case Arrow.OutboundT =>
                   val to = nodeID2Wrapper.apply(v._2)

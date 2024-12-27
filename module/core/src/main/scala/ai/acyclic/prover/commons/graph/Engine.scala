@@ -276,7 +276,7 @@ trait Engine {
 
       case class Singleton[V](value: V) extends NodeImpl[V] {
 
-        final override lazy val getInduction: collection.immutable.Nil.type = Nil
+        final override lazy val inductions: collection.immutable.Nil.type = Nil
       }
 
       implicit class TreeNodeOps[V](n: NodeImpl[V]) {

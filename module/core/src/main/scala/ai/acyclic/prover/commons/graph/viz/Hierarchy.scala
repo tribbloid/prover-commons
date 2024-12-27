@@ -62,7 +62,7 @@ trait Hierarchy extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
           val selfT = wText.pad.left(FORK)
 
           val arrows_targets: Seq[(Outbound, Local.Semilattice.Upper.Node[V])] =
-            head.induction
+            head.inductions
 
           // TODO: if mutliple arrows in a induction are all pointing to the same target
           //  they will be displayed separately which is verbose

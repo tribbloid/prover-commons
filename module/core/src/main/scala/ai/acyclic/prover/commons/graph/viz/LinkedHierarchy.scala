@@ -53,7 +53,7 @@ object LinkedHierarchy {
       unary
         .Traverse(
           down = { n =>
-            n.induction
+            n.inductions
           }
         )
         .DepthFirst
@@ -165,13 +165,13 @@ trait LinkedHierarchy extends Visualisation.OfType {
             }
           }
 
-          override protected def getInduction: Seq[(Arrow.OutboundT.^, RefBindings.node)] = {
+          override lazy val inductions: Seq[(Arrow.OutboundT.^, RefBindings.node)] = {
 
             val result = if (!shouldExpand) {
               Nil
             } else {
 
-              original.induction.map { tuple =>
+              original.inductions.map { tuple =>
                 val arrow = tuple._1: Arrow.Outbound
 
                 val target: RefBindings.node = RefBindings.node(tuple._2)
@@ -184,7 +184,7 @@ trait LinkedHierarchy extends Visualisation.OfType {
             result
           }
 
-          override protected def getNodeText: String = {
+          override lazy val nodeText: String = {
 
             val originalText = original.nodeText
 

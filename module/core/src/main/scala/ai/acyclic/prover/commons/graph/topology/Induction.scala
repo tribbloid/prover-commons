@@ -57,7 +57,7 @@ object Induction {
 
       implicit class NodeOps[V](n: Node[V]) {
 
-        def isLeaf: Boolean = n.induction.isEmpty
+        def isLeaf: Boolean = n.inductions.isEmpty
       }
     }
   }

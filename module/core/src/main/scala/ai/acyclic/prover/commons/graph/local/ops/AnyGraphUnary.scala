@@ -82,7 +82,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
             val inductionTs: Seq[ArgNode] =
               downNs.map { n =>
-                val successors = n.discoverNodes
+                val successors = n.adjacentNodes
                 val successorsTransformed = successors.flatMap { nn =>
                   transformInternal(nn, depth - 1)
                 }

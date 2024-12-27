@@ -29,7 +29,7 @@ trait UnapplyInspection extends Local.Semilattice.Upper.Inspection[Any] with Has
 
       def prefix: String = primaryFormOpt.map(_.prefix).getOrElse(value.toString)
 
-      override protected lazy val getInduction: Seq[(_Arrow, _Node)] = {
+      override lazy val inductions: Seq[(_Arrow, _Node)] = {
 
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
@@ -43,7 +43,7 @@ trait UnapplyInspection extends Local.Semilattice.Upper.Inspection[Any] with Has
 
     trait Named extends Minimal {
 
-      override protected lazy val getInduction: Seq[(_Arrow, _Node)] = {
+      override lazy val inductions: Seq[(_Arrow, _Node)] = {
 
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
@@ -95,7 +95,7 @@ trait UnapplyInspection extends Local.Semilattice.Upper.Inspection[Any] with Has
 
     lazy val inlinedFormOpt = inlined.unapply(value)
 
-    @transient final override protected lazy val getNodeText: String = {
+    @transient final override lazy val nodeText: String = {
 
       val contents: Seq[Any] = inlinedFormOpt.map(_.values).getOrElse(Nil)
 

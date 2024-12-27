@@ -32,15 +32,14 @@ object Refinement {
 
     private[this] type NodeLt = NodeK.Lt[L, Value]
 
-    protected def getInduction: Seq[(_Arrow, NodeLt)]
-    lazy val induction: Seq[(_Arrow, NodeLt)] = getInduction
+    def inductions: Seq[(_Arrow, NodeLt)]
 
-    final lazy val discoverNodes: Seq[NodeLt] = induction.map(_._2)
+    final lazy val adjacentNodes: Seq[NodeLt] = inductions.map(_._2)
 
     object asIterable extends Iterable[Value] {
 
       override def iterator: Iterator[Value] =
-        Iterator(value) ++ discoverNodes.iterator.flatMap(n => n.asIterable.iterator)
+        Iterator(value) ++ adjacentNodes.iterator.flatMap(n => n.asIterable.iterator)
     }
   }
 
@@ -77,10 +76,10 @@ object Refinement {
 
       override def value: V2 = fn(original.value.asInstanceOf)
 
-      override protected def getNodeText: String = original.nodeText
+      override def nodeText: String = original.nodeText
 
-      override protected def getInduction: Seq[(_Arrow, Mapped[L, V, V2])] = {
-        original.induction.map {
+      override def inductions: Seq[(_Arrow, Mapped[L, V, V2])] = {
+        original.inductions.map {
           case (a, n) =>
             a -> Mapped(n, fn)
         }
@@ -122,7 +121,7 @@ object Refinement {
 
       override def rewrite(src: NodeV)(discoverNodes: Seq[NodeV]): NodeV = {
 
-        val oldDiscoverNodes = src.discoverNodes
+        val oldDiscoverNodes = src.adjacentNodes
         if (oldDiscoverNodes == discoverNodes) {
           // no need to rewrite, just return node as-is
           return src
@@ -131,7 +130,7 @@ object Refinement {
         val result = RewriterK.this.rewrite(src)(discoverNodes)
 
         require(
-          result.discoverNodes == discoverNodes,
+          result.adjacentNodes == discoverNodes,
           s"""Incompatible rewriter?
              |Rewrite result should be [${discoverNodes.mkString(", ")}]
              |but it is actually [${oldDiscoverNodes.mkString(", ")}]""".stripMargin
