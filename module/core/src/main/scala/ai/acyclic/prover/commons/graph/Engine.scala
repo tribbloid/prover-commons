@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.{Induction, Topology}
+import ai.acyclic.prover.commons.graph.topology.{Axiom, Topology}
 
 trait Engine {
   self: Singleton =>
 
-  import Induction.*
+  import Axiom.*
   import Engine.*
 
   type Batch[+T]
@@ -142,7 +142,7 @@ trait Engine {
 //        type node <: _Node
         val inspect: V => _Node
 
-        type Graph_ = GraphKOfTheEngine.Aux[_Axiom, V]
+        type Graph_ = GraphKOfTheEngine.Aux[X, V]
 
         implicit class ValuesOps(vs: IterableOnce[V]) {
 
@@ -189,59 +189,40 @@ trait Engine {
 
       def empty[V]: Graph[V] = makeExact[V]()
 
-      trait Ops extends HasMaxRecursionDepth {
+      trait Ops[Arg <: GraphKOfTheEngine[GraphTypeImpl.this._Axiom]] extends HasMaxRecursionDepth {
+
+        val arg: Arg
 
         val outer: GraphTypeImpl.this.type = GraphTypeImpl.this
-
-        // invariant type
-        // like `Plan`
-        //  all following types refers to the tightest bound of the actual graph structure
-
-        // UNLIKE `Plan`
-        //  implementation of `Ops` is subclass-compatible
-        //  e.g. it is possible to create a `GraphUnary` from a Tree
 
         type Prev
         val prev: Prev
 
-        type Accepting = GraphTypeImpl.this._Axiom
-
-        type Arg <: GraphKOfTheEngine[Accepting]
-        val arg: Arg
-
         type ArgNode = Refinement.NodeK.Lt[arg._Axiom, arg.Value]
         type ArgRewriter = Refinement.RewriterK.Aux[arg._Axiom, arg.Value]
 
+        abstract class Plan_[XX <: AnyGraphT, V] extends outer.Plan_[V] {}
       }
 
       object Ops {
 
-        type Aux[P <: PlanK[?]] = Ops { type InputPlan = P }
-
-        trait Unary extends Ops {
+        trait Unary[Arg] extends Ops[Arg] {
 
           type Prev = Unit
           val prev: Unit = {}
 
-          abstract class Plan_[V] extends outer.Plan_[V] {
+          abstract class Plan__[V] extends outer.Plan_[V] {
 
             type _Axiom = arg._Axiom
 
-            override val axiom = arg.axiom
+            override val axiom: arg._Axiom = arg.axiom
           }
         }
 
-        trait Binary extends Ops {
+        trait Binary[Arg] extends Ops[Arg] {
 
           type Prev <: Unary
 
-          abstract class Plan_[XX <: Induction, V](
-              implicit
-              override val axiom: XX
-          ) extends outer.Plan_[V] {
-
-            type _Axiom = XX
-          }
         }
       }
     }

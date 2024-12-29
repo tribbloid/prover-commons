@@ -29,8 +29,10 @@ class AnyGraphUnarySpec extends BaseSpec {
       val down = mutable.Buffer.empty[GV]
       val up = mutable.Buffer.empty[GV]
 
-      AnyGraphUnary
+      val ops: AnyGraphUnary.^[GraphFixture.GV.Graph_] = AnyGraphUnary
         .^(cyclic.make, 5)
+
+      ops
         .Traverse(
           n => down += n.value,
           n => up += n.value
@@ -69,8 +71,10 @@ class AnyGraphUnarySpec extends BaseSpec {
       val down = mutable.Buffer.empty[GV]
       val up = mutable.Buffer.empty[GV]
 
-      AnyGraphUnary
-        .^(cyclic.make, 5)
+      val ops =
+        AnyGraphUnary.^(cyclic.make, 5)
+
+      ops
         .Traverse(
           n => down += n.value,
           n => up += n.value

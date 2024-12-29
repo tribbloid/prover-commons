@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.topology.Induction
+import ai.acyclic.prover.commons.graph.topology.Axiom
 
 object Refinement {
 
@@ -11,7 +11,7 @@ object Refinement {
     type Rewriter[v] = RewriterK.Aux[_Axiom, v]
   }
 
-  trait Structure[+X <: Induction] {
+  trait Structure[+X <: Axiom] {
 
     type _Axiom <: X
 
@@ -21,12 +21,12 @@ object Refinement {
     type Value // bound type of values of this node and all its descendants, NOT the type of this value!
   }
 
-  trait NodeOrGraph[+X <: Induction] extends Refinement.Structure[X] {
+  trait NodeOrGraph[+X <: Axiom] extends Refinement.Structure[X] {
 
     //  def asGraph: GraphK.Aux[X, Value]
   }
 
-  trait NodeK[+L <: Induction] extends Priors.Node with Refinement.NodeOrGraph[L] {
+  trait NodeK[+L <: Axiom] extends Priors.Node with Refinement.NodeOrGraph[L] {
 
     def value: Value
 
@@ -45,12 +45,12 @@ object Refinement {
 
   object NodeK {
 
-    type Aux[+L <: Induction, V] = NodeK[L] { type Value = V }
-    trait Aux_[+L <: Induction, V] extends NodeK[L] { type Value = V }
+    type Aux[+L <: Axiom, V] = NodeK[L] { type Value = V }
+    trait Aux_[+L <: Axiom, V] extends NodeK[L] { type Value = V }
 
-    type Lt[+L <: Induction, +V] = NodeK[L] { type Value <: V }
+    type Lt[+L <: Axiom, +V] = NodeK[L] { type Value <: V }
 
-    implicit class LtView[L <: Induction, V](self: Lt[L, V]) {
+    implicit class LtView[L <: Axiom, V](self: Lt[L, V]) {
 
       def map[V2](fn: V => V2): Mapped[L, V, V2] = Mapped[L, V, V2](self, fn)
 
@@ -60,14 +60,14 @@ object Refinement {
       ): Mapped[L, V, V2] = map((v: V) => v: V2)
     }
 
-    trait Untyped[+L <: Induction] extends NodeK[L] {
+    trait Untyped[+L <: Axiom] extends NodeK[L] {
       // actually self typed, but that doesn't convey any extra information
 
       type Value >: this.type
       final lazy val value: this.type = this
     }
 
-    case class Mapped[L <: Induction, V, V2](
+    case class Mapped[L <: Axiom, V, V2](
         original: NodeK.Lt[L, V],
         fn: V => V2
     ) extends Aux_[L, V2] {
@@ -92,7 +92,7 @@ object Refinement {
     }
   }
 
-  trait GraphK[+X <: Induction] extends Priors.Graph with Refinement.NodeOrGraph[X] {
+  trait GraphK[+X <: Axiom] extends Priors.Graph with Refinement.NodeOrGraph[X] {
 
     type Batch[+_]
 
@@ -101,12 +101,12 @@ object Refinement {
 
   object GraphK {
 
-    type Aux[+X <: Induction, V] = GraphK[X] { type Value = V }
+    type Aux[+X <: Axiom, V] = GraphK[X] { type Value = V }
     // Acronym of "Less Than"
-    type Lt[+X <: Induction, +V] = GraphK[X] { type Value <: V }
+    type Lt[+X <: Axiom, +V] = GraphK[X] { type Value <: V }
   }
 
-  trait RewriterK[L <: Induction] extends Refinement.Structure[L] {
+  trait RewriterK[L <: Axiom] extends Refinement.Structure[L] {
 
     private type Node = NodeK.Lt[L, Value]
 
@@ -146,12 +146,12 @@ object Refinement {
 
   object RewriterK {
 
-    type Aux[X <: Induction, V] = RewriterK[X] { type Value = V }
-    trait Impl[X <: Induction, V] extends RewriterK[X] { type Value = V }
+    type Aux[X <: Axiom, V] = RewriterK[X] { type Value = V }
+    trait Impl[X <: Axiom, V] extends RewriterK[X] { type Value = V }
 
 //    type Lt[+X <: Induction, +V] = RewriterK[? <: X] { type Value <: V }
 
-    case class DoNotRewrite[L <: Induction, N](
+    case class DoNotRewrite[L <: Axiom, N](
         override val axiom: L
     ) extends RewriterK[L] {
 

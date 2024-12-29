@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.Refinement
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
-import ai.acyclic.prover.commons.graph.topology.Induction
+import ai.acyclic.prover.commons.graph.topology.Axiom
 import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.multiverse.CanEqual
 
@@ -38,7 +38,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   case class NodeMap[V2](
       fn: arg.Value => V2
-  ) extends Plan_[V2] {
+  ) extends Plan__[V2] {
 
     override def getEntries: Vector[Refinement.NodeK.Lt[arg._Axiom, V2]] = {
 
@@ -66,7 +66,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
       up: ArgNode => Seq[ArgNode] = v => Seq(v)
   ) {
 
-    trait TransformPlan extends Plan_[arg.Value]
+    trait TransformPlan extends Plan__[arg.Value]
 
     lazy val _rewriter: ArgRewriter = rewriter.Verified
 
@@ -202,7 +202,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
   }
 
   // TODO: the following should go through Transform, need test to ensure working
-  trait TraversePlan extends Plan_[arg.Value]
+  trait TraversePlan extends Plan__[arg.Value]
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(

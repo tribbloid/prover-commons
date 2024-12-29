@@ -6,22 +6,22 @@ import ai.acyclic.prover.commons.util.{Erased, Summoner}
 /**
   * a container of graph constraints
   */
-trait Induction extends Erased {
+trait Axiom extends Erased {
 
   type _Arrow <: Arrow
 }
 
-object Induction {
+object Axiom {
 
-  def assume[X <: Induction]: X = null.asInstanceOf[X]
+  def assume[X <: Axiom]: X = null.asInstanceOf[X]
 
-  trait Lt_[+A <: Arrow] extends Induction { type _Arrow <: A }
+  trait Lt_[+A <: Arrow] extends Axiom { type _Arrow <: A }
 
-  trait ExtractArrow[X <: Induction] { type _Arrow <: Arrow }
+  trait ExtractArrow[X <: Axiom] { type _Arrow <: Arrow }
 
   object ExtractArrow {
 
-    type Gt[L <: Induction] = ExtractArrow[? >: L]
+    type Gt[L <: Axiom] = ExtractArrow[? >: L]
 
     implicit def onlyCase[A <: Arrow]: ExtractArrow[Lt_[A]] { type _Arrow = A } =
       new ExtractArrow[Lt_[A]] {
@@ -36,11 +36,11 @@ object Induction {
   }
 
   // TODO: these should be defined in topology
-  trait AnyGraphT extends Induction.Lt_[Arrow]
+  trait AnyGraphT extends Axiom.Lt_[Arrow]
 
   object AnyGraphT extends Topology[AnyGraphT] {
 
-    trait OutboundT extends AnyGraphT with Induction.Lt_[Arrow.OutboundT.^]
+    trait OutboundT extends AnyGraphT with Axiom.Lt_[Arrow.OutboundT.^]
 
     object OutboundT extends Topology[OutboundT] {}
 
