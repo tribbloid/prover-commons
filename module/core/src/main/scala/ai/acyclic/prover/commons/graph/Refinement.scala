@@ -13,8 +13,10 @@ object Refinement {
 
   trait Structure[+X <: Induction] {
 
-    val axioms: X
-    final type _Arrow = axioms._Arrow
+    type _Axiom <: X
+
+    val axiom: _Axiom
+    final type _Arrow = axiom._Arrow
 
     type Value // bound type of values of this node and all its descendants, NOT the type of this value!
   }
@@ -65,12 +67,13 @@ object Refinement {
       final lazy val value: this.type = this
     }
 
-    case class Mapped[+L <: Induction, V, V2](
+    case class Mapped[L <: Induction, V, V2](
         original: NodeK.Lt[L, V],
         fn: V => V2
     ) extends Aux_[L, V2] {
 
-      override val axioms: original.axioms.type = original.axioms
+      type _Axiom = original._Axiom
+      override val axiom: original.axiom.type = original.axiom
 
       override def value: V2 = fn(original.value.asInstanceOf)
 
@@ -105,19 +108,21 @@ object Refinement {
 
   trait RewriterK[L <: Induction] extends Refinement.Structure[L] {
 
-    private[this] type NodeV = NodeK.Lt[L, Value]
+    private type Node = NodeK.Lt[L, Value]
 
-    def rewrite(src: NodeV)(
-        discoverNodes: Seq[NodeV]
-    ): NodeV
+    // TODO: this interface is problematic, should
+    def rewrite(src: Node)(
+        discoverNodes: Seq[Node]
+    ): Node
 
     object Verified extends RewriterK[L] {
 
+      type _Axiom = RewriterK.this._Axiom
+      val axiom: RewriterK.this.axiom.type = RewriterK.this.axiom
+
       type Value = RewriterK.this.Value
 
-      val axioms: L = RewriterK.this.axioms
-
-      override def rewrite(src: NodeV)(discoverNodes: Seq[NodeV]): NodeV = {
+      override def rewrite(src: Node)(discoverNodes: Seq[Node]): Node = {
 
         val oldDiscoverNodes = src.adjacentNodes
         if (oldDiscoverNodes == discoverNodes) {
@@ -144,7 +149,13 @@ object Refinement {
     type Aux[X <: Induction, V] = RewriterK[X] { type Value = V }
     trait Impl[X <: Induction, V] extends RewriterK[X] { type Value = V }
 
-    case class DoNotRewrite[L <: Induction, N](override val axioms: L) extends RewriterK[L] {
+//    type Lt[+X <: Induction, +V] = RewriterK[? <: X] { type Value <: V }
+
+    case class DoNotRewrite[L <: Induction, N](
+        override val axiom: L
+    ) extends RewriterK[L] {
+
+      override type _Axiom = L
 
       type Value = N
 

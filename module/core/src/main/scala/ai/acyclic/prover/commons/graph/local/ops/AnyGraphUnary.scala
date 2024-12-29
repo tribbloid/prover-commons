@@ -2,13 +2,14 @@ package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.Refinement
 import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
+import ai.acyclic.prover.commons.graph.topology.Induction
 import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.multiverse.CanEqual
 
 trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.AnyGraph._Axiom]
+    implicitly[arg.axiom.type <:< Local.AnyGraph._Axiom]
   }
 
   import AnyGraphUnary.*
@@ -20,11 +21,11 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
   def text_flow(
       implicit
       format: Flow
-  ): format.Viz[ArgV] = format.Viz(arg)
+  ): format.Viz[arg.Value] = format.Viz(arg)
 
-  object asIterable extends Iterable[ArgV] {
+  object asIterable extends Iterable[arg.Value] {
 
-    override def iterator: Iterator[ArgV] = {
+    override def iterator: Iterator[arg.Value] = {
       val base = distinctEntries.iterator
 
       base.flatMap { bb =>
@@ -36,29 +37,24 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 //  lazy val asLazyList: LazyList[inputG.Value] = asIterable.to(LazyList)
 
   case class NodeMap[V2](
-      fn: ArgV => V2
-  ) extends Arg.PlanImpl[V2] {
+      fn: arg.Value => V2
+  ) extends Plan_[V2] {
 
-    override def compute: Arg.Graph[V2] = {
+    override def getEntries: Vector[Refinement.NodeK.Lt[arg._Axiom, V2]] = {
 
       val known: Vector[ArgNode] = distinctEntries
 
-      val result = {
-
-        val newNode = known.map { n =>
-          n.map(v => fn(v): V2)
-        }
-
-        Local.AnyGraph.makeWithAxioms[ArgLaw, V2](newNode*)(argPlan.axioms)
+      val newNode = known.map { n =>
+        n.map(v => fn(v): V2)
       }
 
-      result
+      newNode
     }
   }
 
   object NodeUpcast {
 
-    def apply[V2 >: ArgV]: NodeMap[V2] = NodeMap[V2](v => v: V2)
+    def apply[V2 >: arg.Value]: NodeMap[V2] = NodeMap[V2](v => v: V2)
   }
 
   // TODO:
@@ -70,7 +66,9 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
       up: ArgNode => Seq[ArgNode] = v => Seq(v)
   ) {
 
-    trait TransformPlan extends Arg.PlanImpl[ArgV]
+    trait TransformPlan extends Plan_[arg.Value]
+
+    lazy val _rewriter: ArgRewriter = rewriter.Verified
 
     object DepthFirst extends TransformPlan {
 
@@ -86,7 +84,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
                 val successorsTransformed = successors.flatMap { nn =>
                   transformInternal(nn, depth - 1)
                 }
-                val rewritten = rewriter.Verified.rewrite(n)(successorsTransformed)
+                val rewritten = _rewriter.rewrite(n)(successorsTransformed)
                 rewritten
               }
 
@@ -103,9 +101,11 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
         }
       }
 
-      override def compute: LocalEngine.GraphKOfTheEngine.Unchecked[ArgLaw, ArgV] = {
-        val transformed: Seq[ArgNode] = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
-        Local.AnyGraph.makeWithAxioms[ArgLaw, ArgV](transformed*)(argPlan.axioms)
+      override def getEntries: Vector[ArgNode] = {
+
+        val transformed = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
+
+        transformed
       }
     }
 
@@ -142,11 +142,9 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
         ).DepthFirst
       }
 
-      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[
-        AnyGraphUnary.this.ArgLaw,
-        AnyGraphUnary.this.ArgV
-      ] = {
-        delegate.compute
+      override def getEntries: Vector[ArgNode] = {
+
+        delegate.getEntries
       }
     }
 
@@ -183,11 +181,8 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
         ).DepthFirst
       }
 
-      override def compute: ai.acyclic.prover.commons.graph.local.LocalEngine.GraphKOfTheEngine.Unchecked[
-        AnyGraphUnary.this.ArgLaw,
-        AnyGraphUnary.this.ArgV
-      ] = {
-        delegate.compute
+      override def getEntries: Vector[ArgNode] = {
+        delegate.getEntries
       }
     }
   }
@@ -206,7 +201,8 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
     )
   }
 
-  trait TraversePlan extends Arg.PlanImpl[ArgV]
+  // TODO: the following should go through Transform, need test to ensure working
+  trait TraversePlan extends Plan_[arg.Value]
 
   // NOT ForeachNode! Traversal may visit a node multiple times.
   case class Traverse(
@@ -215,7 +211,7 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
   ) {
 
     private val delegate = Transform(
-      rewriter = Refinement.RewriterK.DoNotRewrite(arg.axioms),
+      rewriter = Refinement.RewriterK.DoNotRewrite(arg.axiom),
       down = { v =>
         down(v); Seq(v)
       },
@@ -226,19 +222,17 @@ trait AnyGraphUnary extends Local.AnyGraph.Ops.Unary {
 
     object DepthFirst extends TraversePlan {
 
-      override def compute = {
+      override def getEntries: Vector[ArgNode] = {
 
-        delegate.DepthFirst.compute
-        arg
+        delegate.DepthFirst.getEntries
       }
     }
 
     object DepthFirst_Once extends TraversePlan {
 
-      override def compute = {
+      override def getEntries: Vector[ArgNode] = {
 
-        delegate.DepthFirst_Once.compute
-        arg
+        delegate.DepthFirst_Once.getEntries
       }
     }
   }
@@ -249,31 +243,27 @@ object AnyGraphUnary {
 
   type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
 
-  case class ^[L <: Local.AnyGraph._Axiom, V](
-      argPlan: LocalEngine.PlanK.Compat[L, V],
+  case class ^[A <: Local.AnyGraph[?]](
+      override val arg: A,
       override val maxDepth: Int = 20
   ) extends AnyGraphUnary {
 
-    override type ArgLaw = L
+    type Arg = A
 
-    override type ArgV = V
-
-    def &&[L2 <: Local.AnyGraph._Axiom, V2](
-        argPlan: LocalEngine.PlanK.Compat[L2, V2],
+    def ><[B <: Local.AnyGraph[?]](
+        argPlan: B,
         maxDepth: Int = ^.this.maxDepth
-    ) = new &&[L2, V2](argPlan, maxDepth)
+    ) = new _Binary(argPlan, maxDepth)
 
-    case class &&[L2 <: Local.AnyGraph._Axiom, V2](
-        argPlan: LocalEngine.PlanK.Compat[L2, V2],
+    case class _Binary[B <: Local.AnyGraph[?]](
+        override val arg: B,
         override val maxDepth: Int = ^.this.maxDepth
     ) extends AnyGraphBinary {
 
+      type Arg = B
+
       override type Prev = ^.this.type
       override val prev: ^.this.type = ^.this
-
-      override type ArgLaw = L2
-
-      override type ArgV = V2
     }
   }
 

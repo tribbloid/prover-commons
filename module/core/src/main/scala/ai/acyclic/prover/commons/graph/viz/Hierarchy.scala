@@ -22,9 +22,7 @@ object Hierarchy {
   case object Indent2Minimal extends Indent2Minimal {}
 }
 
-trait Hierarchy extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
-
-  override val applicableToType: Local.Semilattice.Upper.type = Local.Semilattice.Upper
+abstract class Hierarchy extends Visualisation.OfType(Local.Semilattice.Upper) with Engine.HasMaxRecursionDepth {
 
   override lazy val maxDepth: Int = 10
 

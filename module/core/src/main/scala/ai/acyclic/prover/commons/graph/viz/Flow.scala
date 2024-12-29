@@ -23,11 +23,9 @@ object Flow {
   }
 }
 
-trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
+abstract class Flow extends Visualisation.OfType(Local.AnyGraph) with Engine.HasMaxRecursionDepth {
 
   import Local.AnyGraph.*
-
-  override val applicableToType: Local.AnyGraph.type = Local.AnyGraph
 
   override lazy val maxDepth: Int = 20
 
@@ -166,7 +164,7 @@ trait Flow extends Visualisation.OfType with Engine.HasMaxRecursionDepth {
         )
         .DepthFirst_Once
 
-      buildBuffers.resolve
+      buildBuffers
 
       val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.lookup.values
         .map { nodeWrapper =>

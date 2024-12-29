@@ -57,9 +57,7 @@ object LinkedHierarchy {
           }
         )
         .DepthFirst
-        .compute
     }
-
   }
 
   object Default extends Default(Hierarchy.Default)
@@ -73,11 +71,9 @@ object LinkedHierarchy {
 
 }
 
-trait LinkedHierarchy extends Visualisation.OfType {
+abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbound) {
 
   import LinkedHierarchy.*
-
-  final override val applicableToType: Local.AnyGraph.Outbound.type = Local.AnyGraph.Outbound
 
   def __sanity[T](): Unit = {
 

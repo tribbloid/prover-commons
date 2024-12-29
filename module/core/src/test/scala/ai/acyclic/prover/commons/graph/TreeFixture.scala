@@ -102,9 +102,9 @@ object TreeFixture {
   implicit class TVView(self: TV) {
 
     def tree: LocalEngine.GraphKOfTheEngine.Aux[Induction.TreeT, TV] =
-      Local.Tree(node(self))
+      Local.Tree.makeExact(node(self))
 
     def treeWithArrowTexts: LocalEngine.GraphKOfTheEngine.Aux[Induction.TreeT, TV] =
-      Local.Tree(NodeWithArrowText(self))
+      Local.Tree.makeExact(NodeWithArrowText(self))
   }
 }

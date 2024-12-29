@@ -6,24 +6,22 @@ import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy
 trait OutboundGraphUnary extends Local.AnyGraph.Outbound.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.AnyGraph.Outbound._Axiom]
+    implicitly[arg.axiom.type <:< Local.AnyGraph.Outbound._Axiom]
   }
 
   def text_linkedHierarchy(
       implicit
       group: LinkedHierarchy#Group
-  ): group.Viz[ArgV] = group.Viz(arg)
+  ): group.Viz[arg.Value] = group.Viz(arg)
 }
 
 object OutboundGraphUnary {
 
-  case class ^[L <: Local.AnyGraph.Outbound._Axiom, V](
-      argPlan: LocalEngine.PlanK.Compat[L, V],
+  case class ^[A <: Local.AnyGraph.Outbound[?]](
+      override val arg: A,
       override val maxDepth: Int = 20
   ) extends OutboundGraphUnary {
 
-    override type ArgLaw = L
-
-    override type ArgV = V
+    override type Arg = A
   }
 }

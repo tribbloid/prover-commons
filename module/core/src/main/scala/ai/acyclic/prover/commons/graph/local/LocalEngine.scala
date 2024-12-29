@@ -10,31 +10,25 @@ object LocalEngine extends Engine {
   final type Batch[+T] = Vector[T]
   def parallelize[T](seq: Seq[T]): Batch[T] = seq.toVector
 
-  implicit def graphAsUnary[L <: Local.AnyGraph._Axiom, V](
-      self: LocalEngine.GraphKOfTheEngine.Aux[L, V]
-  ): AnyGraphUnary.^[L, V] = {
+  implicit def graphAsUnary[A <: Local.AnyGraph[?]](
+      prev: A
+  ): AnyGraphUnary.^[A] = {
 
-    val leaf = self.asPlan
-
-    AnyGraphUnary.^(leaf)
+    AnyGraphUnary.^(prev)
   }
 
-  implicit def outboundGraphAsUnary[L <: Local.AnyGraph.Outbound._Axiom, V](
-      self: LocalEngine.GraphKOfTheEngine.Aux[L, V]
-  ): OutboundGraphUnary.^[L, V] = {
+  implicit def outboundGraphAsUnary[A <: Local.AnyGraph.Outbound[?]](
+      prev: A
+  ): OutboundGraphUnary.^[A] = {
 
-    val leaf = self.asPlan
-
-    OutboundGraphUnary.^(leaf)
+    OutboundGraphUnary.^(prev)
   }
 
-  implicit def upperSemilatticeAsUnary[L <: Local.Semilattice.Upper._Axiom, V](
-      self: LocalEngine.GraphKOfTheEngine.Aux[L, V]
-  ): UpperSemilatticeUnary.^[L, V] = {
+  implicit def upperSemilatticeAsUnary[A <: Local.Semilattice.Upper[?]](
+      prev: A
+  ): UpperSemilatticeUnary.^[A] = {
 
-    val leaf = self.asPlan
-
-    UpperSemilatticeUnary.^(leaf)
+    UpperSemilatticeUnary.^(prev)
   }
 
 }

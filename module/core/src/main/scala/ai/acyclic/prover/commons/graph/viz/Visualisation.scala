@@ -6,19 +6,17 @@ import ai.acyclic.prover.commons.graph.topology.Induction.AnyGraphT
 
 object Visualisation extends HasInner {
 
-  trait OfType extends Visualisation {
-
-    val applicableToType: Local.GraphTypeImpl[? <: AnyGraphT, ? <: AnyGraphT]
-
-    implicitly[applicableToType.type <:< Local.GraphTypeImpl[?, ?]]
+  abstract class OfType[X <: AnyGraphT, Y <: X](
+      val applicableToType: Local.GraphTypeImpl[X, Y]
+  ) extends Visualisation {
 
     final override type Graph_/\[V] = applicableToType.Graph[V]
     final override type Node_/\[V] = applicableToType.Node[V]
 
     def visualiseNode[V](node: Node_/\[V]): Visualized[V] = {
 
-      val graph = applicableToType.makeExact[V](node)
-      val result = visualise(graph)
+      val graph: applicableToType.Graph[V] = applicableToType.makeExact[V](node)
+      val result: Visualized[V] = visualise(graph)
       result
     }
   }

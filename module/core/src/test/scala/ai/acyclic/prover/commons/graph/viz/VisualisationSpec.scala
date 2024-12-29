@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 class VisualisationSpec extends BaseSpec {
 
   for (
-    viz: Visualisation.OfType <- Seq(
+    viz <- Seq(
       Hierarchy.Default,
       LinkedHierarchy.Default,
       Flow.Default

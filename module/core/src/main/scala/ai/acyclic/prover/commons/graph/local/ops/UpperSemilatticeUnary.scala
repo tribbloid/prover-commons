@@ -10,7 +10,7 @@ import scala.util.control.Breaks
 trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
   {
-    implicitly[ArgLaw <:< Local.Semilattice.Upper._Axiom]
+    implicitly[arg.axiom.type <:< Local.Semilattice.Upper._Axiom]
   }
 
   lazy val maxNodeOpt: Option[ArgNode] = {
@@ -31,9 +31,9 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
 
       Breaks.breakable {
 
-        val unary = AnyGraphUnary.^(arg.asPlan, maxDepth)
+        val graphOps = AnyGraphUnary.^(arg, maxDepth)
 
-        unary
+        graphOps
           .Traverse(
             down = { n =>
               val counterOpt = id_counters.get(n.identityKey)
@@ -51,7 +51,6 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
             }
           )
           .DepthFirst
-          .resolve
 
       }
 
@@ -65,18 +64,16 @@ trait UpperSemilatticeUnary extends Local.Semilattice.Upper.Ops.Unary {
   def text_hierarchy(
       implicit
       format: Hierarchy
-  ): format.Viz[ArgV] = format.Viz(arg)
+  ): format.Viz[arg.Value] = format.Viz(arg)
 }
 
 object UpperSemilatticeUnary {
 
-  case class ^[L <: Local.Semilattice.Upper._Axiom, V](
-      argPlan: LocalEngine.PlanK.Compat[L, V],
+  case class ^[A <: Local.Semilattice.Upper[?]](
+      override val arg: A,
       override val maxDepth: Int = 20
   ) extends UpperSemilatticeUnary {
 
-    override type ArgLaw = L
-
-    override type ArgV = V
+    override type Arg = A
   }
 }

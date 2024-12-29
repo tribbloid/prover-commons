@@ -18,9 +18,9 @@ trait Engine {
 
     override type Batch[+V] = Engine.this.Batch[V]
 
-    def getEntries: Batch[Refinement.NodeK.Lt[X, Value]]
+    def getEntries: Batch[Refinement.NodeK.Lt[_Axiom, Value]]
 
-    lazy val entries: Batch[Refinement.NodeK.Lt[X, Value]] = {
+    lazy val entries: Batch[Refinement.NodeK.Lt[_Axiom, Value]] = {
       getEntries
     }
   }
@@ -29,8 +29,7 @@ trait Engine {
 
     type Aux[+X <: AnyGraphT, V] = GraphKOfTheEngine[X] { type Value = V }
 
-    // Acronym of "Less Than"
-    type Compat[+X <: AnyGraphT, +V] = Aux[X, ? <: V]
+    type Lt[+X <: AnyGraphT, +V] = GraphKOfTheEngine[X] { type Value <: V }
 
     /**
       * Graph representation without any validation
@@ -38,66 +37,48 @@ trait Engine {
     case class Unchecked[X <: AnyGraphT, V](
         getEntries: Batch[Refinement.NodeK.Lt[X, V]]
     )(
-        override val axioms: X
+        override val axiom: X
     ) extends GraphKOfTheEngine[X] {
 
+      type _Axiom = X
+
       type Value = V
+
+      { // sanity
+
+        implicitly[Unchecked[X, V] <:< GraphKOfTheEngine.Aux[X, V]]
+        implicitly[Unchecked[X, V] <:< GraphKOfTheEngine.Lt[X, V]]
+
+      }
       // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
     }
-
-//    case class
   }
 
-  trait PlanK[+X <: AnyGraphT] extends Refinement.Structure[X] {
-
-    private[this] type OGraph = GraphKOfTheEngine.Aux[X, Value]
-//    type ONode = NodeKind.Lt[L, Value]
-
-    def compute: OGraph
-
-    final lazy val resolve: OGraph = compute
-
-    lazy val axioms: X = resolve.axioms
-  }
+  trait PlanK[+X <: AnyGraphT] extends GraphKOfTheEngine[X] {}
 
   object PlanK {
 
-    type Compat[+X <: AnyGraphT, V] = PlanK[X] { type Value = V }
-
-    trait Impl[X <: AnyGraphT, V] extends PlanK[X] {
+    type Aux[+X <: AnyGraphT, V] = PlanK[X] { type Value = V }
+    trait Aux_[X <: AnyGraphT, V] extends PlanK[X] {
       type Value = V
     }
 
-  }
-
-  implicit class LeafPlan[X <: AnyGraphT, V](
-      override val compute: GraphKOfTheEngine.Aux[X, V]
-  ) extends PlanK[X] {
-
-    override type Value = V
-
-    lazy val asPlan = this
   }
 
   trait _Lawful extends Refinement.Lawful {
 
     override type _Axiom <: AnyGraphT
 
-    type Graph[v] = GraphKOfTheEngine.Aux[_Axiom, v]
+    type Graph[v] = GraphKOfTheEngine.Lt[_Axiom, v]
 
-    type Plan[v] = PlanK.Compat[_Axiom, v]
-
-    trait PlanImpl[v] extends PlanK.Impl[_Axiom, v]
+    type Plan_[v] = PlanK.Aux_[_Axiom, v]
   }
 
   trait _Structure[+X <: AnyGraphT] extends Refinement.Structure[X] {
 
-    type Graph[v] = GraphKOfTheEngine.Aux[axioms.type, v]
+    type Graph[v] = GraphKOfTheEngine.Aux[axiom.type, v]
 
-    type Plan[v] = PlanK.Compat[axioms.type, v]
-
-    trait PlanImpl[v] extends PlanK.Impl[axioms.type, v]
-
+    type Plan[v] = PlanK.Aux[axiom.type, v]
   }
 
   trait Module {
@@ -106,7 +87,7 @@ trait Engine {
         topology: Topology[X] // this is a phantom object only used to infer type parameters
     )(
         implicit
-        val axioms: Y
+        val axiom: Y
     ) extends _Lawful {
 
       type _Axiom = X
@@ -115,7 +96,9 @@ trait Engine {
         // TODO: I don't think this trait should exist, Node and Rewriter should be agnostic to engines (local or distributed)
         //  Rewriter in addition should compile into e-graph
 
-        final lazy val axioms: Y = GraphTypeImpl.this.axioms
+        type _Axiom = X
+
+        final lazy val axiom: Y = GraphTypeImpl.this.axiom
       }
 
       /**
@@ -159,13 +142,13 @@ trait Engine {
 //        type node <: _Node
         val inspect: V => _Node
 
-        type Graph = GraphKOfTheEngine.Aux[_Axiom, V]
+        type Graph_ = GraphKOfTheEngine.Aux[_Axiom, V]
 
         implicit class ValuesOps(vs: IterableOnce[V]) {
 
-          def make: Graph = {
+          def make: Graph_ = {
             val nodes = vs.iterator.to(Seq).map(_.asNode)
-            makeExact(nodes*)
+            makeExact[V](nodes*)
           }
         }
 
@@ -194,21 +177,21 @@ trait Engine {
 
       def makeExact[V](
           nodes: Refinement.NodeK.Lt[_Axiom, V]*
-      ): Graph[V] =
-        makeWithAxioms[_Axiom, V](nodes*)(this.axioms)
+      ): GraphKOfTheEngine.Unchecked[X, V] =
+        makeWithAxioms[_Axiom, V](nodes*)(this.axiom)
 
       def apply[XX <: _Axiom, V]( // alias of makeTightest
           nodes: Refinement.NodeK.Lt[XX, V]*
       )(
           implicit
           assuming: XX
-      ): GraphKOfTheEngine.Aux[XX, V] = makeTightest[XX, V](nodes*)
+      ): GraphKOfTheEngine.Unchecked[XX, V] = makeTightest[XX, V](nodes*)
 
       def empty[V]: Graph[V] = makeExact[V]()
 
       trait Ops extends HasMaxRecursionDepth {
 
-        def outer = GraphTypeImpl.this
+        val outer: GraphTypeImpl.this.type = GraphTypeImpl.this
 
         // invariant type
         // like `Plan`
@@ -221,25 +204,14 @@ trait Engine {
         type Prev
         val prev: Prev
 
-        type AcceptingLaw = GraphTypeImpl.this._Axiom
-        type ArgLaw <: AcceptingLaw
-        type ArgV
+        type Accepting = GraphTypeImpl.this._Axiom
 
-        object Arg extends _Lawful {
+        type Arg <: GraphKOfTheEngine[Accepting]
+        val arg: Arg
 
-          type _Axiom = ArgLaw
-        }
+        type ArgNode = Refinement.NodeK.Lt[arg._Axiom, arg.Value]
+        type ArgRewriter = Refinement.RewriterK.Aux[arg._Axiom, arg.Value]
 
-        type ArgPlan = Arg.Plan[ArgV]
-
-        def argPlan: ArgPlan
-
-        type Arg = Arg.Graph[ArgV]
-
-        lazy val arg: Arg = argPlan.resolve
-
-        type ArgNode = Arg.Node[ArgV]
-        type ArgRewriter = Arg.Rewriter[ArgV]
       }
 
       object Ops {
@@ -250,11 +222,26 @@ trait Engine {
 
           type Prev = Unit
           val prev: Unit = {}
+
+          abstract class Plan_[V] extends outer.Plan_[V] {
+
+            type _Axiom = arg._Axiom
+
+            override val axiom = arg.axiom
+          }
         }
 
         trait Binary extends Ops {
 
           type Prev <: Unary
+
+          abstract class Plan_[XX <: Induction, V](
+              implicit
+              override val axiom: XX
+          ) extends outer.Plan_[V] {
+
+            type _Axiom = XX
+          }
         }
       }
     }
@@ -287,7 +274,7 @@ trait Engine {
 
       implicit class TreeNodeOps[V](n: NodeImpl[V]) {
 
-        def mkTree: Tree[V] = Tree(n)
+        def mkTree: Tree[V] = Tree.makeExact[V](n)
       }
     }
 
