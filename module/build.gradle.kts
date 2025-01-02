@@ -16,8 +16,8 @@ allprojects {
 
                 additionalParameters.addAll(
                     listOf(
-//                        "-Xsource:3-cross",
-                        "-Xsource:3",
+//                        "-Xsource:3",
+                        "-Xsource:3-cross", // maximally similar to Scala 3
                         // quickfix should be disabled ASAP after migration
 //                        "-quickfix:any",
 //                        "-quickfix:cat=scala3-migration",
