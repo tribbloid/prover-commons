@@ -2,39 +2,37 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.topology.Axiom
 
-object Refinement {
+object Foundation {
 
-  trait Lawful extends Foundations.Lawful {
+  trait Lawful extends Foundation0.Lawful {
 
-    type Node[v] = NodeK.Lt[_Axiom, v]
+    type Node[+v] = NodeK.Lt[_Axiom, v]
 
-    type Rewriter[v] = RewriterK.Aux[_Axiom, v]
+    type Setter[v] = Setter.Aux[_Axiom, v]
   }
 
   trait Structure[+X <: Axiom] {
 
-    type _Axiom <: X
-
-    val axiom: _Axiom
+    val axiom: X
     final type _Arrow = axiom._Arrow
 
     type Value // bound type of values of this node and all its descendants, NOT the type of this value!
   }
 
-  trait NodeOrGraph[+X <: Axiom] extends Refinement.Structure[X] {
+  trait NodeOrGraph[+X <: Axiom.Top] extends Foundation.Structure[X] {
 
     //  def asGraph: GraphK.Aux[X, Value]
   }
 
-  trait NodeK[+L <: Axiom] extends Priors.Node with Refinement.NodeOrGraph[L] {
+  trait NodeK[+L <: Axiom.Top] extends Priors.Node with Foundation.NodeOrGraph[L] {
 
     def value: Value
 
-    private[this] type NodeLt = NodeK.Lt[L, Value]
+    private[this] type _NodeLt = NodeK.Lt[L, Value]
 
-    def inductions: Seq[(_Arrow, NodeLt)]
+    def inductions: Seq[(_Arrow, _NodeLt)]
 
-    final lazy val adjacentNodes: Seq[NodeLt] = inductions.map(_._2)
+    final lazy val adjacentNodes: Seq[_NodeLt] = inductions.map(_._2)
 
     object asIterable extends Iterable[Value] {
 
@@ -45,12 +43,12 @@ object Refinement {
 
   object NodeK {
 
-    type Aux[+L <: Axiom, V] = NodeK[L] { type Value = V }
-    trait Aux_[+L <: Axiom, V] extends NodeK[L] { type Value = V }
+    type Aux[+L <: Axiom.Top, V] = NodeK[L] { type Value = V }
+    trait Aux_[+L <: Axiom.Top, V] extends NodeK[L] { type Value = V }
 
-    type Lt[+L <: Axiom, +V] = NodeK[L] { type Value <: V }
+    type Lt[+L <: Axiom.Top, +V] = NodeK[L] { type Value <: V }
 
-    implicit class LtView[L <: Axiom, V](self: Lt[L, V]) {
+    implicit class LtView[L <: Axiom.Top, V](self: Lt[L, V]) {
 
       def map[V2](fn: V => V2): Mapped[L, V, V2] = Mapped[L, V, V2](self, fn)
 
@@ -60,53 +58,43 @@ object Refinement {
       ): Mapped[L, V, V2] = map((v: V) => v: V2)
     }
 
-    trait Untyped[+L <: Axiom] extends NodeK[L] {
-      // actually self typed, but that doesn't convey any extra information
-
-      type Value >: this.type
-      final lazy val value: this.type = this
-    }
-
-    case class Mapped[L <: Axiom, V, V2](
-        original: NodeK.Lt[L, V],
+    case class Mapped[X <: Axiom.Top, V, V2](
+        original: NodeK.Lt[X, V],
         fn: V => V2
-    ) extends Aux_[L, V2] {
+    ) extends Aux_[X, V2] {
 
-      type _Axiom = original._Axiom
       override val axiom: original.axiom.type = original.axiom
 
       override def value: V2 = fn(original.value.asInstanceOf)
 
       override def nodeText: String = original.nodeText
 
-      override def inductions: Seq[(_Arrow, Mapped[L, V, V2])] = {
+      override def inductions: Seq[(_Arrow, Mapped[X, V, V2])] = {
         original.inductions.map {
           case (a, n) =>
             a -> Mapped(n, fn)
         }
       }
 
-      override def identityKeyC: Option[Any] = original.identityKey
+      override def identityC: Option[Any] = original.identity
 
       override def evalCacheKeyC: Option[Any] = original.evalCacheKey
     }
   }
 
-  trait GraphK[+X <: Axiom] extends Priors.Graph with Refinement.NodeOrGraph[X] {
+  trait GraphK[+X <: Axiom.Top] extends Priors.Graph with Foundation.NodeOrGraph[X] {
 
-    type Batch[+_]
-
-    def getEntries: Batch[NodeK.Lt[X, Value]]
+    def entries: engine.Batch[NodeK.Lt[X, Value]]
   }
 
   object GraphK {
 
-    type Aux[+X <: Axiom, V] = GraphK[X] { type Value = V }
+    type Aux[+X <: Axiom.Top, V] = GraphK[X] { type Value = V }
     // Acronym of "Less Than"
-    type Lt[+X <: Axiom, +V] = GraphK[X] { type Value <: V }
+    type Lt[+X <: Axiom.Top, +V] = GraphK[X] { type Value <: V }
   }
 
-  trait RewriterK[L <: Axiom] extends Refinement.Structure[L] {
+  trait Setter[L <: Axiom.Top] extends Foundation.Structure[L] {
 
     private type Node = NodeK.Lt[L, Value]
 
@@ -115,12 +103,11 @@ object Refinement {
         discoverNodes: Seq[Node]
     ): Node
 
-    object Verified extends RewriterK[L] {
+    object Verified extends Setter[L] {
 
-      type _Axiom = RewriterK.this._Axiom
-      val axiom: RewriterK.this.axiom.type = RewriterK.this.axiom
+      val axiom: Setter.this.axiom.type = Setter.this.axiom
 
-      type Value = RewriterK.this.Value
+      type Value = Setter.this.Value
 
       override def rewrite(src: Node)(discoverNodes: Seq[Node]): Node = {
 
@@ -130,7 +117,7 @@ object Refinement {
           return src
         }
 
-        val result = RewriterK.this.rewrite(src)(discoverNodes)
+        val result = Setter.this.rewrite(src)(discoverNodes)
 
         require(
           result.adjacentNodes == discoverNodes,
@@ -144,18 +131,14 @@ object Refinement {
     }
   }
 
-  object RewriterK {
+  object Setter {
 
-    type Aux[X <: Axiom, V] = RewriterK[X] { type Value = V }
-    trait Impl[X <: Axiom, V] extends RewriterK[X] { type Value = V }
+    type Aux[X <: Axiom.Top, V] = Setter[X] { type Value = V }
+    trait Aux_[X <: Axiom.Top, V] extends Setter[X] { type Value = V }
 
-//    type Lt[+X <: Induction, +V] = RewriterK[? <: X] { type Value <: V }
-
-    case class DoNotRewrite[L <: Axiom, N](
+    case class DoNotRewrite[L <: Axiom.Top, N](
         override val axiom: L
-    ) extends RewriterK[L] {
-
-      override type _Axiom = L
+    ) extends Setter[L] {
 
       type Value = N
 

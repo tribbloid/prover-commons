@@ -19,7 +19,7 @@ object GraphFixture {
 
   object GV extends Local.AnyGraph.Outbound.Inspection[GV] {
 
-    implicitly[OGraphNode <:< Local.AnyGraph.Outbound.NodeImpl[GV]]
+    implicitly[OGraphNode <:< Local.AnyGraph.Outbound.Node_[GV]]
 
 //    override val node = { (value: GV) => new node(value) }
 
@@ -56,16 +56,16 @@ object GraphFixture {
     }
   }
 
-  trait OGraphNode extends Local.AnyGraph.Outbound.NodeImpl[GV] {
+  trait OGraphNode extends Local.AnyGraph.Outbound.Node_[GV] {
 
     override lazy val nodeText = value.text
 
     override def evalCacheKeyC: Option[GV] = Some(value)
 
-    override def identityKeyC: Option[Any] = Some(value.text)
+    override def identityC: Option[Any] = Some(value.text)
   }
 
-  case class GVRewriter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.RewriterImpl[GV] {
+  case class GVRewriter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.Setter_[GV] {
 
     override def rewrite(src: AnyGraph.Node[GV])(
         inductions: Seq[AnyGraph.Node[GV]]

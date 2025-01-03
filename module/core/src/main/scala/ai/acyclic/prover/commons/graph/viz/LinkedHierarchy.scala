@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
 import ai.acyclic.prover.commons.typesetting.TextBlock
 
 import java.util.UUID
@@ -45,12 +44,9 @@ object LinkedHierarchy {
   ) extends LinkedHierarchy {
 
     override def dryRun(tree: Local.Tree[? <: RefBindingLike]): Unit = {
-      val unary = {
-        AnyGraphUnary
-          .^(tree, backbone.maxDepth)
-      }
 
-      unary
+      val _tree = tree.asAnyGraphOps
+      _tree
         .Traverse(
           down = { n =>
             n.inductions
@@ -77,8 +73,8 @@ abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbo
 
   def __sanity[T](): Unit = {
 
-    implicitly[Graph_/\[T] =:= Local.AnyGraph.Outbound[T]]
-    implicitly[Node_/\[T] =:= Local.AnyGraph.Outbound.Node[T]]
+    implicitly[MaxGraph[T] =:= Local.AnyGraph.Outbound[T]]
+    implicitly[MaxNode[T] =:= Local.AnyGraph.Outbound.Node[T]]
   }
 
   def backbone: Hierarchy
@@ -87,7 +83,7 @@ abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbo
 
   protected def dryRun(tree: Local.Tree[? <: RefBindingLike]): Unit
 
-  final override def visualise[V](data: Graph_/\[V]): Visualized[V] = Group().Viz(data)
+  final override def show[V](data: MaxGraph[V]): Visual[V] = Group().Viz(data)
 
   // shared between visualisations of multiple graphs
   case class Group() {
@@ -103,11 +99,11 @@ abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbo
 
     lazy val refCountings: mutable.LinkedHashMap[Any, RefCounting] = mutable.LinkedHashMap.empty
 
-    def visualize[V](data: Local.AnyGraph.Outbound[V]): Visualized[V] = Viz(data)
+    def visualize[V](data: Local.AnyGraph.Outbound[V]): Visual[V] = Viz(data)
 
-    case class Viz[V](override val unbox: Graph_/\[V]) extends Visualized[V] {
+    case class Viz[V](override val unbox: MaxGraph[V]) extends Visual[V] {
 
-      object RefBindings extends Local.Tree.Group {
+      object RefBindings extends Local.Tree.NodeGroup {
 
         case class node(
             override val original: Local.AnyGraph.Outbound.Node[V],
@@ -119,7 +115,7 @@ abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbo
             refCounting_shouldExpand
           }
 
-          lazy val refKeyOpt: Option[Any] = original.identityKey
+          lazy val refKeyOpt: Option[Any] = original.identity
 
           lazy val refCounting_shouldExpand: (RefCounting, Boolean) = {
 
@@ -194,9 +190,8 @@ abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbo
         }
       }
 
-      lazy val delegates: Seq[Local.Tree[RefBindings.node]] = {
-        val roots: Vector[Local.AnyGraph.Outbound.Node[V]] = unbox.getEntries
-        roots.map { node =>
+      lazy val delegates: Local.Batch[Local.Tree[RefBindings.node]] = {
+        unbox.entries.map { node =>
           val refBinding: RefBindings.node = RefBindings.node(node)
 
           Local.Tree.makeExact(refBinding)
@@ -205,7 +200,7 @@ abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbo
 
       def dryRun(): Unit = {
 
-        delegates.foreach { g =>
+        delegates.collect.foreach { g =>
           LinkedHierarchy.this.dryRun(g)
         }
       }
@@ -217,6 +212,7 @@ abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbo
           .map { v =>
             backbone.Viz(v).toString
           }
+          .collect
           .mkString("\n")
       }
     }

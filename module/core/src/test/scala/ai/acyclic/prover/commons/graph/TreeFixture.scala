@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons
-import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.topology.Axiom
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 
@@ -34,7 +34,7 @@ object TreeFixture {
     }
   }
 
-  trait TreeNode extends Local.Tree.NodeImpl[TV] {
+  trait TreeNode extends Local.Tree.Node_[TV] {
 
     final override lazy val nodeText: String = value.text
   }
@@ -101,10 +101,10 @@ object TreeFixture {
 
   implicit class TVView(self: TV) {
 
-    def tree: LocalEngine.GraphKOfTheEngine.Aux[Axiom.TreeT, TV] =
+    def tree =
       Local.Tree.makeExact(node(self))
 
-    def treeWithArrowTexts: LocalEngine.GraphKOfTheEngine.Aux[Axiom.TreeT, TV] =
+    def treeWithArrowTexts: Local.Graph.Aux[Axiom.TreeT, TV] =
       Local.Tree.makeExact(NodeWithArrowText(self))
   }
 }

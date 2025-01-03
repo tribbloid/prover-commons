@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.viz
 
-import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
-import ai.acyclic.prover.commons.graph.local.{Local, LocalEngine}
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy.RefBindingLike
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
 import ai.acyclic.prover.commons.viz.format.TypeFormat
@@ -24,11 +23,11 @@ case class TypeHierarchy(
 
       def recursiveDryRun(): Unit = {
 
-        val unary: AnyGraphUnary.^[Local.Tree[RefBindingLike]] = LocalEngine.graphAsUnary(tree)
+        val _tree = tree.asAnyGraphOps
 
-        implicitly[unary.ArgNode <:< Local.Tree.Node[RefBindingLike]]
+        implicitly[_tree.ArgNode <:< Local.Tree.Node[RefBindingLike]]
 
-        unary
+        _tree
           .Traverse(
             down = { (v: Local.Tree.Node[RefBindingLike]) =>
               v.value.original match {

@@ -38,12 +38,12 @@ abstract class Hierarchy extends Visualisation.OfType(Local.Semilattice.Upper) w
 
   lazy val SPACE = " "
 
-  final override def visualise[V](data: Local.Semilattice.Upper[V]): Viz[V] = {
+  final override def show[V](data: Local.Semilattice.Upper[V]): Viz[V] = {
 
     Viz(data)
   }
 
-  case class Viz[V](override val unbox: Graph_/\[V]) extends Visualized[V] {
+  case class Viz[V](override val unbox: MaxGraph[V]) extends Visual[V] {
 
     case class SubViz(head: Local.Semilattice.Upper.Node[V], depth: Int = maxDepth) {
 

@@ -13,6 +13,12 @@ trait Axiom extends Erased {
 
 object Axiom {
 
+  type Top = Topology.AnyGraphT._Axiom
+
+  class Concrete[X <: Arrow]() extends Axiom {
+    type _Arrow = X
+  }
+
   def assume[X <: Axiom]: X = null.asInstanceOf[X]
 
   trait Lt_[+A <: Arrow] extends Axiom { type _Arrow <: A }
@@ -30,45 +36,15 @@ object Axiom {
   }
 
   { // sanity
-    val bounds = Summoner.summon[ExtractArrow.Gt[Lt_[Arrow.OutboundT.^]]]
+    val bounds = Summoner.summon[ExtractArrow.Gt[Lt_[Arrow.Outbound]]]
 
-    implicitly[bounds._Arrow =:= Arrow.OutboundT.^]
+    implicitly[bounds._Arrow =:= Arrow.Outbound]
   }
-
-  // TODO: these should be defined in topology
-  trait AnyGraphT extends Axiom.Lt_[Arrow]
-
-  object AnyGraphT extends Topology[AnyGraphT] {
-
-    trait OutboundT extends AnyGraphT with Axiom.Lt_[Arrow.OutboundT.^]
-
-    object OutboundT extends Topology[OutboundT] {}
-
-  }
-
-  trait PosetT extends AnyGraphT
-  object PosetT extends Topology[PosetT] {}
-
-  trait SemilatticeT extends PosetT
-  object SemilatticeT extends Topology[SemilatticeT] {
-
-    trait UpperT extends SemilatticeT with AnyGraphT.OutboundT
-    object UpperT extends Topology[UpperT] {
-
-      implicit class NodeOps[V](n: Node[V]) {
-
-        def isLeaf: Boolean = n.inductions.isEmpty
-      }
-    }
-  }
-
-  trait TreeT extends SemilatticeT.UpperT
-  object TreeT extends Topology[TreeT] {}
 
   private def __sanity[V](): Unit = {
 
-    implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
+    implicitly[Topology.PosetT.Node[Int] <:< Topology.AnyGraphT.Node[Int]]
 
-    implicitly[PosetT.Node[V] <:< AnyGraphT.Node[V]]
+    implicitly[Topology.PosetT.Node[V] <:< Topology.AnyGraphT.Node[V]]
   }
 }

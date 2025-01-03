@@ -2,43 +2,34 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.topology.{Axiom, Topology}
 
-trait Engine {
+trait Engine extends Priors.HasBatch {
   self: Singleton =>
 
-  import Axiom.*
   import Engine.*
 
-  type Batch[+T]
-  def parallelize[T](seq: Seq[T]): Batch[T]
+  type Node[+X <: Axiom.Top, +V] = Foundation.NodeK.Lt[X, V]
+  type Setter[X <: Axiom.Top, V] = Foundation.Setter.Aux[X, V]
 
-  trait GraphKOfTheEngine[+X <: AnyGraphT] extends Refinement.GraphK[X] {
+  trait Graph[+X <: Axiom.Top] extends Foundation.GraphK[X] {
 
-    override type _E = Engine.this.type
-    final override lazy val engine: _E = Engine.this
-
-    override type Batch[+V] = Engine.this.Batch[V]
-
-    def getEntries: Batch[Refinement.NodeK.Lt[_Axiom, Value]]
-
-    lazy val entries: Batch[Refinement.NodeK.Lt[_Axiom, Value]] = {
-      getEntries
-    }
+    final override lazy val engine: Engine.this.type = Engine.this
   }
 
-  object GraphKOfTheEngine {
+  object Graph {
 
-    type Aux[+X <: AnyGraphT, V] = GraphKOfTheEngine[X] { type Value = V }
+    type Aux[+X <: Axiom.Top, V] = Graph[X] { type Value = V }
+    trait Aux_[+X <: Axiom.Top, V] extends Graph[X] { type Value = V }
 
-    type Lt[+X <: AnyGraphT, +V] = GraphKOfTheEngine[X] { type Value <: V }
+    type Lt[+X <: Axiom.Top, +V] = Graph[X] { type Value <: V }
 
     /**
       * Graph representation without any validation
       */
-    case class Unchecked[X <: AnyGraphT, V](
-        getEntries: Batch[Refinement.NodeK.Lt[X, V]]
+    case class Unchecked[X <: Axiom.Top, V](
+        entries: Batch[Foundation.NodeK.Lt[X, V]]
     )(
         override val axiom: X
-    ) extends GraphKOfTheEngine[X] {
+    ) extends Graph[X] {
 
       type _Axiom = X
 
@@ -46,230 +37,141 @@ trait Engine {
 
       { // sanity
 
-        implicitly[Unchecked[X, V] <:< GraphKOfTheEngine.Aux[X, V]]
-        implicitly[Unchecked[X, V] <:< GraphKOfTheEngine.Lt[X, V]]
+        implicitly[Unchecked[X, V] <:< Graph.Aux[X, V]]
+        implicitly[Unchecked[X, V] <:< Graph.Lt[X, V]]
 
       }
       // TODO: implement Lawful variant which summons corresponding Topology.Law and validate the graph
     }
   }
 
-  trait PlanK[+X <: AnyGraphT] extends GraphKOfTheEngine[X] {}
+  abstract class GraphType[X <: Axiom.Top](
+      val axiom: X // this is a phantom object only used to infer type parameters
+  ) extends Foundation.Lawful {
 
-  object PlanK {
+    type _Axiom = X
+    type Graph[+V] = Graph.Lt[X, V]
 
-    type Aux[+X <: AnyGraphT, V] = PlanK[X] { type Value = V }
-    trait Aux_[X <: AnyGraphT, V] extends PlanK[X] {
-      type Value = V
+    abstract class Plan[V] extends Graph.Aux_[X, V] {
+
+      override val axiom: GraphType.this.axiom.type = axiom
     }
 
-  }
+    def makeWithAxioms[XX <: X, V](
+        nodes: Foundation.NodeK.Lt[XX, V]*
+    )(
+        assuming: XX
+    ): Graph.Unchecked[XX, V] =
+      Graph.Unchecked[XX, V](parallelize(nodes))(assuming)
 
-  trait _Lawful extends Refinement.Lawful {
-
-    override type _Axiom <: AnyGraphT
-
-    type Graph[v] = GraphKOfTheEngine.Lt[_Axiom, v]
-
-    type Plan_[v] = PlanK.Aux_[_Axiom, v]
-  }
-
-  trait _Structure[+X <: AnyGraphT] extends Refinement.Structure[X] {
-
-    type Graph[v] = GraphKOfTheEngine.Aux[axiom.type, v]
-
-    type Plan[v] = PlanK.Aux[axiom.type, v]
-  }
-
-  trait Module {
-
-    sealed abstract class GraphTypeImpl[X <: AnyGraphT, Y <: X](
-        topology: Topology[X] // this is a phantom object only used to infer type parameters
+    def makeTightest[XX <: X, V](
+        nodes: Foundation.NodeK.Lt[XX, V]*
     )(
         implicit
-        val axiom: Y
-    ) extends _Lawful {
+        assuming: XX
+    ): Graph.Unchecked[XX, V] =
+      makeWithAxioms[XX, V](nodes*)(assuming)
 
-      type _Axiom = X
+    def makeExact[V](
+        nodes: Foundation.NodeK.Lt[X, V]*
+    ): Graph.Unchecked[X, V] =
+      makeWithAxioms[X, V](nodes*)(this.axiom)
 
-      trait Element extends _Structure[_Axiom] {
-        // TODO: I don't think this trait should exist, Node and Rewriter should be agnostic to engines (local or distributed)
-        //  Rewriter in addition should compile into e-graph
+    def apply[XX <: X, V]( // alias of makeTightest
+        nodes: Foundation.NodeK.Lt[XX, V]*
+    )(
+        implicit
+        assuming: XX
+    ): Graph.Unchecked[XX, V] = makeTightest[XX, V](nodes*)
 
-        type _Axiom = X
-
-        final lazy val axiom: Y = GraphTypeImpl.this.axiom
-      }
-
-      /**
-        * 1st API, most universal
-        * @tparam V
-        *   value tyupe
-        */
-      trait NodeImpl[V] extends Refinement.NodeK.Aux_[_Axiom, V] with Element {
-
-//        override def asGraph: Graph[V] = makeExact[V](this)
-      }
-
-      /**
-        * 2nd API, all [[node]] under the same group can be connected to other [[node]]
-        */
-      trait Group {
-
-        trait NodeInGroup extends Refinement.NodeK.Untyped[_Axiom] with Element {
-          self: Group.this.node =>
-
-          type Value = Group.this.node
-        }
-
-        type node <: NodeInGroup
-
-        type Graph = GraphKOfTheEngine.Aux[_Axiom, node]
-      }
-
-      /**
-        * 3rd API, define a [[inspect]] constructor that works on every [[V]]
-        *
-        * implicit function allows [[inspect]] to act as an extension of [[V]]
-        *
-        * @tparam V
-        *   value type
-        */
-      trait Inspection[V] {
-
-        type _Node = NodeImpl[V]
-
-//        type node <: _Node
-        val inspect: V => _Node
-
-        type Graph_ = GraphKOfTheEngine.Aux[X, V]
-
-        implicit class ValuesOps(vs: IterableOnce[V]) {
-
-          def make: Graph_ = {
-            val nodes = vs.iterator.to(Seq).map(_.asNode)
-            makeExact[V](nodes*)
-          }
-        }
-
-        implicit class ValueOps(v: V) extends ValuesOps(Seq(v)) {
-
-          def asNode: _Node = inspect(v)
-        }
-      }
-
-      trait RewriterImpl[V] extends Refinement.RewriterK.Impl[_Axiom, V] with Element {}
-
-      def makeWithAxioms[XX <: _Axiom, V](
-          nodes: Refinement.NodeK.Lt[XX, V]*
-      )(
-          assuming: XX
-      ): GraphKOfTheEngine.Unchecked[XX, V] =
-        GraphKOfTheEngine.Unchecked[XX, V](parallelize(nodes))(assuming)
-
-      def makeTightest[XX <: _Axiom, V](
-          nodes: Refinement.NodeK.Lt[XX, V]*
-      )(
-          implicit
-          assuming: XX
-      ): GraphKOfTheEngine.Unchecked[XX, V] =
-        makeWithAxioms[XX, V](nodes*)(assuming)
-
-      def makeExact[V](
-          nodes: Refinement.NodeK.Lt[_Axiom, V]*
-      ): GraphKOfTheEngine.Unchecked[X, V] =
-        makeWithAxioms[_Axiom, V](nodes*)(this.axiom)
-
-      def apply[XX <: _Axiom, V]( // alias of makeTightest
-          nodes: Refinement.NodeK.Lt[XX, V]*
-      )(
-          implicit
-          assuming: XX
-      ): GraphKOfTheEngine.Unchecked[XX, V] = makeTightest[XX, V](nodes*)
-
-      def empty[V]: Graph[V] = makeExact[V]()
-
-      trait Ops[Arg <: GraphKOfTheEngine[GraphTypeImpl.this._Axiom]] extends HasMaxRecursionDepth {
-
-        val arg: Arg
-
-        val outer: GraphTypeImpl.this.type = GraphTypeImpl.this
-
-        type Prev
-        val prev: Prev
-
-        type ArgNode = Refinement.NodeK.Lt[arg._Axiom, arg.Value]
-        type ArgRewriter = Refinement.RewriterK.Aux[arg._Axiom, arg.Value]
-
-        abstract class Plan_[XX <: AnyGraphT, V] extends outer.Plan_[V] {}
-      }
-
-      object Ops {
-
-        trait Unary[Arg] extends Ops[Arg] {
-
-          type Prev = Unit
-          val prev: Unit = {}
-
-          abstract class Plan__[V] extends outer.Plan_[V] {
-
-            type _Axiom = arg._Axiom
-
-            override val axiom: arg._Axiom = arg.axiom
-          }
-        }
-
-        trait Binary[Arg] extends Ops[Arg] {
-
-          type Prev <: Unary
-
-        }
-      }
-    }
-
-    object AnyGraph extends GraphTypeImpl(AnyGraphT) {
-
-      object Outbound extends GraphTypeImpl(AnyGraphT.OutboundT) {}
-      type Outbound[V] = Outbound.Graph[V]
-
-    }
-    type AnyGraph[V] = AnyGraph.Graph[V]
-
-    object Poset extends GraphTypeImpl(PosetT) {}
-    type Poset[V] = Poset.Graph[V]
-
-    object Semilattice extends GraphTypeImpl(SemilatticeT) {
-
-      object Upper extends GraphTypeImpl(SemilatticeT.UpperT) {}
-      type Upper[V] = Upper.Graph[V]
-
-    }
-    type Semilattice[V] = Semilattice.Graph[V]
-
-    object Tree extends GraphTypeImpl(TreeT) {
-
-      case class Singleton[V](value: V) extends NodeImpl[V] {
-
-        final override lazy val inductions: collection.immutable.Nil.type = Nil
-      }
-
-      implicit class TreeNodeOps[V](n: NodeImpl[V]) {
-
-        def mkTree: Tree[V] = Tree.makeExact[V](n)
-      }
-    }
-
-    type Tree[V] = Tree.Graph[V]
-
-//    private def sanity[C <: Axiom]: Unit = { // sanity
-//
-//      val example: GraphBuilderLike[C] = ???
-//
-//      implicitly[example._Axiom <:< example.Axiom_/\]
-//      implicitly[example.Axiom_/\ <:< C]
-//      implicitly[example._Axiom <:< C]
-//    }
+    def empty[V]: Graph[V] = makeExact[V]()
   }
+
+  sealed abstract class GraphTypeImpl[X <: Axiom.Top, A <: Arrow](
+      val reify: Topology.Reify[X, A] // this is a phantom object only used to infer type parameters
+  ) extends GraphType[X](reify.concreteAxiom) {
+
+    type Node_[V] = reify.Node_[V]
+    type Setter_[V] = reify.Setter_[V]
+
+    type NodeGroup = reify.NodeGroup
+
+    type Inspection[V] = reify.Inspection[V]
+  }
+
+  abstract class Ops[
+      X <: Axiom.Top,
+      V
+  ](
+      val arg: Graph.Lt[X, V]
+  ) extends HasMaxRecursionDepth {
+
+    type Prev
+    val prev: Prev
+
+    type ArgNode = Foundation.NodeK.Lt[X, V]
+    type ArgSetter = Foundation.Setter.Aux[X, V]
+
+  }
+
+  object Ops {
+
+    trait Unary[
+        X <: Axiom.Top,
+        V
+    ] extends Ops[X, V] {
+
+      type Prev = Unit
+      val prev: Unit = {}
+
+      abstract class Plan[V] extends Graph.Aux_[X, V] {
+
+        override val axiom: arg.axiom.type = arg.axiom
+      }
+    }
+
+    trait Binary[
+        X <: Axiom.Top,
+        V
+    ] extends Ops[X, V] {
+
+      type Prev = Unary[X, V]
+    }
+  }
+
+  object AnyGraph extends GraphTypeImpl(Topology.AnyGraphT.reify) {
+
+    object Outbound extends GraphTypeImpl(Topology.AnyGraphT.OutboundT.reify) {}
+    type Outbound[V] = Outbound.Graph[V]
+
+  }
+  type AnyGraph[V] = AnyGraph.Graph[V]
+
+  object Poset extends GraphTypeImpl(Topology.PosetT.reify) {}
+  type Poset[V] = Poset.Graph[V]
+
+  object Semilattice extends GraphTypeImpl(Topology.SemilatticeT.reify) {
+
+    object Upper extends GraphTypeImpl(Topology.SemilatticeT.UpperT.reify) {}
+    type Upper[V] = Upper.Graph[V]
+
+  }
+  type Semilattice[V] = Semilattice.Graph[V]
+
+  object Tree extends GraphTypeImpl(Topology.TreeT.reify) {
+
+    case class Singleton[V](value: V) extends reify.Node_[V] {
+
+      final override lazy val inductions: collection.immutable.Nil.type = Nil
+    }
+
+    implicit class TreeNodeOps[V](n: reify.Node_[V]) {
+
+      def mkTree: Tree[V] = Tree.makeExact[V](n)
+    }
+  }
+
+  type Tree[V] = Tree.Graph[V]
 }
 
 object Engine {

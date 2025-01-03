@@ -48,20 +48,6 @@ object Arrow {
         pair(v)
       }
       toF.fromSpecific(mapped)
-
-//    case class NoInfo(
-//        override protected val arrowTextC: Option[String] = None
-//    ) extends ^
-//        with NoInfoLike {}
-//
-//    object NoInfo {
-//
-//      lazy val empty = NoInfo()
-//    }
-
-//    object NoInfo {
-//
-////      lazy val empty: NoInfo = NoInfo()
     }
   }
 

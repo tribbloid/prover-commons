@@ -79,7 +79,7 @@ trait TypeOfMixin extends HasReflection {
     implicit def asNodes(v: TypeOf[?]): v.vizGroup.Nodes = v.nodes
   }
 
-  object VisualisationGroup extends Local.AnyGraph.Outbound.Group {
+  object VisualisationGroup extends Local.AnyGraph.Outbound.NodeGroup {
 
     // technically this layer could be collapsed into GraphRepr
     trait node extends NodeInGroup with TypeOfMixin.VNodeLike {}
@@ -142,7 +142,7 @@ trait TypeOfMixin extends HasReflection {
 
       case object SuperTypeNode extends node {
 
-        final override lazy val identityKeyC: Some[TypeOfMixin.this.reflection.TypeID] = Some(node.reference)
+        final override lazy val identityC: Some[TypeOfMixin.this.reflection.TypeID] = Some(node.reference)
 
         override val inductions: List[(Arrow.`~>`, node)] = {
 
@@ -165,7 +165,7 @@ trait TypeOfMixin extends HasReflection {
 
       case object ArgNode extends node {
 
-        final override lazy val identityKeyC: None.type = None
+        final override lazy val identityC: None.type = None
 
         override lazy val inductions: List[(Arrow.`~>`, node)] = {
           node.args.map { tt =>

@@ -18,9 +18,9 @@ class VisualisationSpec extends BaseSpec {
 
 //      implicitly[tt.type <:< Local.GraphType[_, _]]
 
-      val empty: viz.Graph_/\[Int] = tt.empty[Int]
+      val empty: viz.MaxGraph[Int] = tt.empty[Int]
 
-      val s = viz.visualise(empty).toString
+      val s = viz.show(empty).toString
 
       assert(s == "")
     }

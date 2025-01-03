@@ -16,7 +16,7 @@ class ProductInspectionSpec extends BaseSpec {
     it("tree") {
 
       viz
-        .visualiseNode(ii.inspect(tree0))
+        .showNode(ii.inspect(tree0))
         .toString
         .shouldBe(
           """
@@ -36,7 +36,7 @@ class ProductInspectionSpec extends BaseSpec {
     it("multi-tree") {
 
       viz
-        .visualiseNode(ii.inspect(multiTree))
+        .showNode(ii.inspect(multiTree))
         .toString
         .shouldBe(
           """
@@ -54,7 +54,7 @@ class ProductInspectionSpec extends BaseSpec {
     it("diamond") {
 
       viz
-        .visualiseNode(ii.inspect(diamond))
+        .showNode(ii.inspect(diamond))
         .toString
         .shouldBe(
           """
@@ -81,7 +81,7 @@ class ProductInspectionSpec extends BaseSpec {
     it("tree") {
 
       viz
-        .visualiseNode(ii.inspect(tree0))
+        .showNode(ii.inspect(tree0))
         .toString
         .shouldBe(
           """
@@ -101,7 +101,7 @@ class ProductInspectionSpec extends BaseSpec {
     it("multi-tree") {
 
       viz
-        .visualiseNode(ii.inspect(multiTree))
+        .showNode(ii.inspect(multiTree))
         .toString
         .shouldBe(
           """

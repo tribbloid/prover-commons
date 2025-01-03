@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.multiverse.CanUnapply
 
 object UnapplyInspection {}
 
-trait UnapplyInspection extends Local.Semilattice.Upper.Inspection[Any] with HasInner {
+trait UnapplyInspection extends Local.Semilattice.Upper.reify.Inspection[Any] with HasInner {
 
   def primary: CanUnapply[Any] // for induction
   def inlined: CanUnapply[Any] // for content
@@ -21,7 +21,7 @@ trait UnapplyInspection extends Local.Semilattice.Upper.Inspection[Any] with Has
 
   object Node {
 
-    trait Minimal extends _Node with _Inner {
+    trait Minimal extends _Node_ with _Inner {
 
       override lazy val evalCacheKeyC: Option[Any] = Some(value)
 
@@ -29,11 +29,11 @@ trait UnapplyInspection extends Local.Semilattice.Upper.Inspection[Any] with Has
 
       def prefix: String = primaryFormOpt.map(_.prefix).getOrElse(value.toString)
 
-      override lazy val inductions: Seq[(_Arrow, _Node)] = {
+      override lazy val inductions: Seq[(_Arrow, _Node_)] = {
 
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
-        val result: Seq[(_Arrow, _Node)] = inductions.map { kv =>
+        val result: Seq[(_Arrow, _Node_)] = inductions.map { kv =>
           Arrow.`~>` -> inspect(kv._2)
         }
 
@@ -43,11 +43,11 @@ trait UnapplyInspection extends Local.Semilattice.Upper.Inspection[Any] with Has
 
     trait Named extends Minimal {
 
-      override lazy val inductions: Seq[(_Arrow, _Node)] = {
+      override lazy val inductions: Seq[(_Arrow, _Node_)] = {
 
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
-        val result: Seq[(_Arrow, _Node)] = inductions.map { kv =>
+        val result: Seq[(_Arrow, _Node_)] = inductions.map { kv =>
           Arrow.`~>`.OfText(kv._1) -> inspect(kv._2)
         }
 
@@ -113,7 +113,7 @@ trait UnapplyInspection extends Local.Semilattice.Upper.Inspection[Any] with Has
     }
   }
 
-  override lazy val inspect: Any => local.ProductInspection._Node = { v =>
+  override lazy val inspect: Any => local.ProductInspection._Node_ = { v =>
     new Node(v)
   }
 }

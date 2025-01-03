@@ -2,35 +2,32 @@ package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.{Delegating, HasInner}
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.topology.Axiom.AnyGraphT
+import ai.acyclic.prover.commons.graph.topology.Axiom.Top
 
-object Visualisation extends HasInner {
+object Visualisation extends HasInner { // TODO: should be a mixin
 
-  abstract class OfType[X <: AnyGraphT, Y <: X](
-      val applicableToType: Local.GraphTypeImpl[X, Y]
+  abstract class OfType[X <: Top](
+      val applicableToType: Local.GraphType[X]
   ) extends Visualisation {
 
-    final override type Graph_/\[V] = applicableToType.Graph[V]
-    final override type Node_/\[V] = applicableToType.Node[V]
+    override type MaxGraph[V] = applicableToType.Graph[V]
+    type MaxNode[V] = applicableToType.Node[V]
 
-    def visualiseNode[V](node: Node_/\[V]): Visualized[V] = {
+    def showNode[V](node: MaxNode[V]): Visual[V] = {
 
       val graph: applicableToType.Graph[V] = applicableToType.makeExact[V](node)
-      val result: Visualized[V] = visualise(graph)
+      val result: Visual[V] = show(graph)
       result
     }
   }
-
 }
 
 trait Visualisation {
 
-  type Graph_/\[V] <: Local.AnyGraph[V]
-  type Node_/\[V] <: Local.AnyGraph.Node[V]
+  type MaxGraph[V] <: Local.AnyGraph[V]
 
-  def visualise[V](data: Graph_/\[V]): Visualized[V]
-
-  trait Visualized[V] extends Delegating[Graph_/\[V]] {}
+  type Visual[V] = Delegating[MaxGraph[V]] {}
+  def show[V](data: MaxGraph[V]): Visual[V]
 
 //  trait Extensions {
 //
