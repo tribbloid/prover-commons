@@ -13,7 +13,7 @@ class LinkedHierarchySpec extends BaseSpec {
     describe("treeString") {
       it("cyclic graph") {
 
-        cyclic.make.text_linkedHierarchy.toString shouldBe
+        cyclic.make.text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-+ bbb
@@ -22,7 +22,7 @@ class LinkedHierarchySpec extends BaseSpec {
             |  !-- ddd
             |""".stripMargin
 
-        cyclic.withArrows.make.text_linkedHierarchy.toString shouldBe
+        cyclic.withArrows.make.text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-⟦ aaa |> bbb ⟧+ bbb
@@ -34,7 +34,7 @@ class LinkedHierarchySpec extends BaseSpec {
 
       it(" ... with multiple lines") {
 
-        cyclic2.make.text_linkedHierarchy.toString shouldBe
+        cyclic2.make.text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -48,7 +48,7 @@ class LinkedHierarchySpec extends BaseSpec {
             |      %%%%
             |""".stripMargin
 
-        cyclic2.withArrows.make.text_linkedHierarchy.toString shouldBe
+        cyclic2.withArrows.make.text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -67,7 +67,7 @@ class LinkedHierarchySpec extends BaseSpec {
 
       it("diamond semilattice") {
 
-        diamond.make.text_linkedHierarchy.toString shouldBe
+        diamond.make.text_linkedHierarchy().toString shouldBe
           """
             |+ aaa
             |!-+ bbb

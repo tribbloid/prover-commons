@@ -18,8 +18,8 @@ class AnyGraphUnarySpec extends BaseSpec {
       .^(cyclic.make)
       .NodeUpcast[Any]
 
-    result.text_flow.toString.shouldBe(
-      cyclic.make.text_flow.toString
+    result.text_flow().toString.shouldBe(
+      cyclic.make.text_flow().toString
     )
   }
 
@@ -132,7 +132,7 @@ class AnyGraphUnarySpec extends BaseSpec {
 
       val tt = proto.DepthFirst
 
-      tt.text_flow.toString.shouldBe(
+      tt.text_flow().toString.shouldBe(
         """
           |     ┌────────┐
           |     │aaa+0-13│
@@ -162,7 +162,7 @@ class AnyGraphUnarySpec extends BaseSpec {
 
       val tt = proto.DepthFirst_Once
 
-      tt.text_flow.toString.shouldBe(
+      tt.text_flow().toString.shouldBe(
         """
           |     ┌───────┐
           |     │aaa+0-9│
@@ -192,7 +192,7 @@ class AnyGraphUnarySpec extends BaseSpec {
 
       val tt = proto.DepthFirst_Cached
 
-      tt.text_flow.toString.shouldBe(
+      tt.text_flow().toString.shouldBe(
         """
           |     ┌───────┐
           |     │aaa+0-9│

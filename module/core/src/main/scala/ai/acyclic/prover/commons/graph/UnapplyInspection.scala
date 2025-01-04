@@ -1,12 +1,12 @@
-package ai.acyclic.prover.commons.graph.local
+package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.HasInner
-import ai.acyclic.prover.commons.graph.{local, Arrow}
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.multiverse.CanUnapply
 
 object UnapplyInspection {}
 
-trait UnapplyInspection extends Local.Semilattice.Upper.reify.Inspection[Any] with HasInner {
+trait UnapplyInspection extends Local.Semilattice.Upper.topologyImpls.Inspection[Any] with HasInner {
 
   def primary: CanUnapply[Any] // for induction
   def inlined: CanUnapply[Any] // for content
@@ -21,7 +21,7 @@ trait UnapplyInspection extends Local.Semilattice.Upper.reify.Inspection[Any] wi
 
   object Node {
 
-    trait Minimal extends _Node_ with _Inner {
+    trait Minimal extends Node_ with _Inner {
 
       override lazy val evalCacheKeyC: Option[Any] = Some(value)
 
@@ -29,11 +29,11 @@ trait UnapplyInspection extends Local.Semilattice.Upper.reify.Inspection[Any] wi
 
       def prefix: String = primaryFormOpt.map(_.prefix).getOrElse(value.toString)
 
-      override lazy val inductions: Seq[(_Arrow, _Node_)] = {
+      override lazy val inductions: Seq[(_Arrow, Node_)] = {
 
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
-        val result: Seq[(_Arrow, _Node_)] = inductions.map { kv =>
+        val result: Seq[(_Arrow, Node_)] = inductions.map { kv =>
           Arrow.`~>` -> inspect(kv._2)
         }
 
@@ -43,11 +43,11 @@ trait UnapplyInspection extends Local.Semilattice.Upper.reify.Inspection[Any] wi
 
     trait Named extends Minimal {
 
-      override lazy val inductions: Seq[(_Arrow, _Node_)] = {
+      override lazy val inductions: Seq[(_Arrow, Node_)] = {
 
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
-        val result: Seq[(_Arrow, _Node_)] = inductions.map { kv =>
+        val result: Seq[(_Arrow, Node_)] = inductions.map { kv =>
           Arrow.`~>`.OfText(kv._1) -> inspect(kv._2)
         }
 
@@ -113,7 +113,7 @@ trait UnapplyInspection extends Local.Semilattice.Upper.reify.Inspection[Any] wi
     }
   }
 
-  override lazy val inspect: Any => local.ProductInspection._Node_ = { v =>
+  override lazy val inspect: Any => ProductInspection.Node_ = { v =>
     new Node(v)
   }
 }

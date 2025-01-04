@@ -19,10 +19,7 @@ object Foundation {
     type Value // bound type of values of this node and all its descendants, NOT the type of this value!
   }
 
-  trait NodeOrGraph[+X <: Axiom.Top] extends Foundation.Structure[X] {
-
-    //  def asGraph: GraphK.Aux[X, Value]
-  }
+  trait NodeOrGraph[+X <: Axiom.Top] extends Foundation.Structure[X] {}
 
   trait NodeK[+L <: Axiom.Top] extends Priors.Node with Foundation.NodeOrGraph[L] {
 

@@ -30,7 +30,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |""".stripMargin
     )
 
-    viz.text_flow.toString.shouldBe(
+    viz.text_flow().toString.shouldBe(
       """
         | ┌───────────────────────────────────────────────────────────────────────────────────────────┐
         | │ai.acyclic.prover.commons.viz.TypeVizSpec.S2K[ai.acyclic.prover.commons.viz.TypeVizSpec.S1]│
@@ -63,7 +63,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |""".stripMargin
     )
 
-    viz.text_flow.toString.shouldBe(
+    viz.text_flow().toString.shouldBe(
       """
         |                                               ┌────────────────────────────────────────────┐
         |                                               │ai.acyclic.prover.commons.viz.TypeVizSpec.S2│

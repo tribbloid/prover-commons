@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.viz
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.topology.Topology.AnyGraphT.OutboundT
 import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.refl.HasReflection
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
@@ -36,24 +37,20 @@ trait TypeOfMixin extends HasReflection {
 
     lazy val typeStr: String = nodes.typeText
 
-    lazy val graph = Local.AnyGraph
-      .Outbound(nodes.SuperTypeNode)
+    lazy val graph: Local.Graph.Unchecked[OutboundT._Axiom, VisualisationGroup.node] =
+      Local.AnyGraph.Outbound(nodes.SuperTypeNode)
 
-    lazy val text_hierarchy: format.DelegateFormat.Group#Viz[VisualisationGroup.node] =
-      graph.text_linkedHierarchy(vizGroup.delegateGroup)
-
-    lazy val text_flow =
-      graph.text_flow(Flow.Default)
+    object showman extends Local.Show(graph)
 
     override def toString: String = {
 
-      text_hierarchy.toString
+      showman.text_hierarchy().toString
     }
 
     def should_=:=(that: TypeOf[?] = null): Unit = {
 
       val Seq(s1, s2) = Seq(this, that).map { v =>
-        Option(v).map(_.text_hierarchy.toString)
+        Option(v).map(_.showman.text_hierarchy().toString)
       }
 
       val diff = StringDiff(s1, s2, Seq(this.getClass))

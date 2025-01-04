@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function
 
-import ai.acyclic.prover.commons.graph.local.UnapplyInspection
+import ai.acyclic.prover.commons.graph.UnapplyInspection
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
 import ai.acyclic.prover.commons.multiverse.{CanUnapply, UnappliedForm, View}
 import ai.acyclic.prover.commons.util.SrcDefinition

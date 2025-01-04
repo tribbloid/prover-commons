@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.notebook
 
 import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.graph.local.Local
 
 object SplainPluginVersions extends ForwardPlot {
 
@@ -27,10 +28,10 @@ class SplainPluginVersions extends BaseSpec {
 
   it("plot") {
 
-    val g = scalaV.make
+    val g = Local(scalaV)
 
-    print_@(g.text_flow.toString)
+    print_@(g.text_flow().toString)
 
-    print_@(g.text_linkedHierarchy.toString)
+    print_@(g.text_linkedHierarchy().toString)
   }
 }

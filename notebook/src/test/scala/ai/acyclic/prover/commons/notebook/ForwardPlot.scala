@@ -21,7 +21,7 @@ trait ForwardPlot {
   object Forward extends Local.Semilattice.Upper.Inspection[Forward] {
 
     object inspect extends (Forward => inspect)
-    case class inspect(value: Forward) extends _Node_ {
+    case class inspect(value: Forward) extends Node_ {
 
       override def inductions: Seq[(_Arrow, Forward.this.inspect)] = {
 

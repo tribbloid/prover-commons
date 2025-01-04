@@ -11,16 +11,16 @@ abstract class Topology extends Foundation.Lawful {
 
   type _Graph[v] = Foundation.GraphK.Lt[_Axiom, v]
 //
-//  implicit def assuming(
-//      implicit
-//      extractArrow: ExtractArrow.Gt[_Axiom] // TODO: how to remove this crap?
-//  ): Axiom.Concrete[extractArrow._Arrow] = Axiom.Concrete[extractArrow._Arrow]
+  implicit def concreteAxiom(
+      implicit
+      extractArrow: ExtractArrow.Gt[_Axiom] // TODO: how to remove this crap?
+  ): Axiom.Concrete[extractArrow._Arrow] & _Axiom = Erased.apply[Axiom.Concrete[extractArrow._Arrow] & _Axiom]
 
   def reify(
       implicit
-      extractArrow: ExtractArrow.Gt[_Axiom] // TODO: how to remove this crap?
-  ): Topology.Reify[_Axiom, extractArrow._Arrow] =
-    Topology.Reify[_Axiom, extractArrow._Arrow](this)(Erased.apply[Axiom.Concrete[extractArrow._Arrow] & _Axiom])
+      extractArrow: ExtractArrow.Gt[_Axiom]
+  ): Topology.Impls[_Axiom, extractArrow._Arrow] =
+    Topology.Impls[_Axiom, extractArrow._Arrow](this)(concreteAxiom)
 }
 
 object Topology {
@@ -30,7 +30,7 @@ object Topology {
 //      extractArrow: ExtractArrow.Gt[t._Axiom] // TODO: how to remove this crap?
 //  ): Reify[t._Axiom, extractArrow._Arrow] = Topology.Reify(t)(Axiom.Concrete[extractArrow._Arrow])
 
-  case class Reify[
+  case class Impls[
       X <: Axiom.Top,
       A <: Arrow
   ](val topology: Topology { type _Axiom = X })(
@@ -39,10 +39,12 @@ object Topology {
 
     trait _Structure extends Foundation.Structure[Axiom.Concrete[A] with X] {
 
-      override val axiom = Reify.this.concreteAxiom
+      override val axiom = Impls.this.concreteAxiom
     }
 
     trait Node_[V] extends Foundation.NodeK.Aux_[X, V] with _Structure {}
+
+    trait Setter_[V] extends Foundation.Setter.Aux_[X, V] with _Structure {}
 
     /**
       * 2nd API, all [[node]] under the same group can be connected to other [[node]]
@@ -68,13 +70,14 @@ object Topology {
       */
     trait Inspection[V] {
 
-      type _Node_ = Node_[V]
+      type Node_ = Impls.this.Node_[V]
 
       //        type node <: _Node
-      val inspect: V => Node_[V]
+      val inspect: V => Node_
+
+      implicit def asNode(v: V): Node_ = inspect(v)
     }
 
-    trait Setter_[V] extends Foundation.Setter.Aux_[X, V] with _Structure {}
   }
 
   object AnyGraphT extends Topology {
@@ -110,5 +113,10 @@ object Topology {
   object TreeT extends Topology {
 
     trait _Axiom extends SemilatticeT.UpperT._Axiom
+  }
+
+  {
+    // sanity
+    implicitly[Topology.SemilatticeT.UpperT._Axiom]
   }
 }

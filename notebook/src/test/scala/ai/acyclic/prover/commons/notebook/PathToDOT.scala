@@ -1,6 +1,8 @@
 package ai.acyclic.prover.commons.notebook
 
 import ai.acyclic.prover.commons.debug.print_@
+import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.topology.Topology.SemilatticeT.UpperT
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 object PathToDOT extends ForwardPlot {
@@ -86,19 +88,19 @@ class PathToDOT extends BaseSpec {
 
   it("lambda cube") {
 
-    val g = LambdaCube.f.make
+    val g: Local.Graph.Unchecked[UpperT._Axiom, Forward] = Local(LambdaCube.f)
 
-    print_@(g.text_flow.toString)
+    print_@(g.text_flow().toString)
 
-    print_@(g.text_linkedHierarchy.toString)
+    print_@(g.text_linkedHierarchy().toString)
   }
 
   it("DOT") {
 
-    val g = ToDOT.f.make
+    val g = Local(ToDOT.f)
 
-    print_@(g.text_flow.toString)
+    print_@(g.text_flow().toString)
 
-    print_@(g.text_linkedHierarchy.toString)
+    print_@(g.text_linkedHierarchy().toString)
   }
 }

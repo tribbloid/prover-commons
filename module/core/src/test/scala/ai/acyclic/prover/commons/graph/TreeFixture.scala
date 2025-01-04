@@ -104,7 +104,7 @@ object TreeFixture {
     def tree =
       Local.Tree.makeExact(node(self))
 
-    def treeWithArrowTexts: Local.Graph.Aux[Axiom.TreeT, TV] =
-      Local.Tree.makeExact(NodeWithArrowText(self))
+    def treeWithArrowTexts: Local.Tree.Graph[TV] =
+      Local(NodeWithArrowText(self))
   }
 }

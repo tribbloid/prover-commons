@@ -17,7 +17,7 @@ class AnyGraphBinarySpec extends BaseSpec {
 
       val uu = AnyGraphUnary.^(g1).><(g2).Union[GraphFixture.GV]()
 
-      uu.text_flow.toString.shouldBe(
+      uu.text_flow().toString.shouldBe(
         """
           |   ┌─────┐
           |   │ aaa │
@@ -53,7 +53,7 @@ class AnyGraphBinarySpec extends BaseSpec {
 
       val uu = AnyGraphUnary.^(g1).><(g2).Union[GraphFixture.GV]()
 
-      uu.text_flow.toString.shouldBe(
+      uu.text_flow().toString.shouldBe(
         """
           |    ┌─────────┐
           |    │   bbb   │

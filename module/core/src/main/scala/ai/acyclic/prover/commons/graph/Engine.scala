@@ -45,6 +45,13 @@ trait Engine extends Priors.HasBatch {
     }
   }
 
+  private def makeWithAxioms[XX <: Axiom.Top, V](
+      nodes: Foundation.NodeK.Lt[XX, V]*
+  )(
+      assuming: XX
+  ): Graph.Unchecked[XX, V] =
+    Graph.Unchecked[XX, V](parallelize(nodes))(assuming)
+
   abstract class GraphType[X <: Axiom.Top](
       val axiom: X // this is a phantom object only used to infer type parameters
   ) extends Foundation.Lawful {
@@ -57,46 +64,37 @@ trait Engine extends Priors.HasBatch {
       override val axiom: GraphType.this.axiom.type = axiom
     }
 
-    def makeWithAxioms[XX <: X, V](
-        nodes: Foundation.NodeK.Lt[XX, V]*
-    )(
-        assuming: XX
-    ): Graph.Unchecked[XX, V] =
-      Graph.Unchecked[XX, V](parallelize(nodes))(assuming)
-
-    def makeTightest[XX <: X, V](
-        nodes: Foundation.NodeK.Lt[XX, V]*
-    )(
-        implicit
-        assuming: XX
-    ): Graph.Unchecked[XX, V] =
-      makeWithAxioms[XX, V](nodes*)(assuming)
-
     def makeExact[V](
         nodes: Foundation.NodeK.Lt[X, V]*
     ): Graph.Unchecked[X, V] =
       makeWithAxioms[X, V](nodes*)(this.axiom)
 
-    def apply[XX <: X, V]( // alias of makeTightest
-        nodes: Foundation.NodeK.Lt[XX, V]*
-    )(
-        implicit
-        assuming: XX
-    ): Graph.Unchecked[XX, V] = makeTightest[XX, V](nodes*)
-
     def empty[V]: Graph[V] = makeExact[V]()
+
+    object makeTightest {
+
+      def apply[XX <: X, V](
+          nodes: Foundation.NodeK.Lt[XX, V]*
+      )(
+          implicit
+          assuming: XX
+      ): Graph.Unchecked[XX, V] =
+        makeWithAxioms[XX, V](nodes*)(assuming)
+    }
   }
 
-  sealed abstract class GraphTypeImpl[X <: Axiom.Top, A <: Arrow](
-      val reify: Topology.Reify[X, A] // this is a phantom object only used to infer type parameters
-  ) extends GraphType[X](reify.concreteAxiom) {
+  implicit def graphTypeAsMake(v: GraphType[?]): v.makeTightest.type = v.makeTightest
 
-    type Node_[V] = reify.Node_[V]
-    type Setter_[V] = reify.Setter_[V]
+  sealed abstract class GraphImpls[X <: Axiom.Top, A <: Arrow](
+      val topologyImpls: Topology.Impls[X, A] // this is a phantom object only used to infer type parameters
+  ) extends GraphType[X](topologyImpls.concreteAxiom) {
 
-    type NodeGroup = reify.NodeGroup
+    type Node_[V] = topologyImpls.Node_[V]
+    type Setter_[V] = topologyImpls.Setter_[V]
 
-    type Inspection[V] = reify.Inspection[V]
+    type NodeGroup = topologyImpls.NodeGroup
+
+    type Inspection[V] = topologyImpls.Inspection[V]
   }
 
   abstract class Ops[
@@ -139,33 +137,33 @@ trait Engine extends Priors.HasBatch {
     }
   }
 
-  object AnyGraph extends GraphTypeImpl(Topology.AnyGraphT.reify) {
+  object AnyGraph extends GraphImpls(Topology.AnyGraphT.reify) {
 
-    object Outbound extends GraphTypeImpl(Topology.AnyGraphT.OutboundT.reify) {}
+    object Outbound extends GraphImpls(Topology.AnyGraphT.OutboundT.reify) {}
     type Outbound[V] = Outbound.Graph[V]
 
   }
   type AnyGraph[V] = AnyGraph.Graph[V]
 
-  object Poset extends GraphTypeImpl(Topology.PosetT.reify) {}
+  object Poset extends GraphImpls(Topology.PosetT.reify) {}
   type Poset[V] = Poset.Graph[V]
 
-  object Semilattice extends GraphTypeImpl(Topology.SemilatticeT.reify) {
+  object Semilattice extends GraphImpls(Topology.SemilatticeT.reify) {
 
-    object Upper extends GraphTypeImpl(Topology.SemilatticeT.UpperT.reify) {}
+    object Upper extends GraphImpls(Topology.SemilatticeT.UpperT.reify) {}
     type Upper[V] = Upper.Graph[V]
 
   }
   type Semilattice[V] = Semilattice.Graph[V]
 
-  object Tree extends GraphTypeImpl(Topology.TreeT.reify) {
+  object Tree extends GraphImpls(Topology.TreeT.reify) {
 
-    case class Singleton[V](value: V) extends reify.Node_[V] {
+    case class Singleton[V](value: V) extends topologyImpls.Node_[V] {
 
       final override lazy val inductions: collection.immutable.Nil.type = Nil
     }
 
-    implicit class TreeNodeOps[V](n: reify.Node_[V]) {
+    implicit class TreeNodeOps[V](n: topologyImpls.Node_[V]) {
 
       def mkTree: Tree[V] = Tree.makeExact[V](n)
     }
@@ -180,4 +178,6 @@ object Engine {
 
     def maxDepth: Int
   }
+
+  implicit def engineAsMake(self: Engine): self.AnyGraph.makeTightest.type = self.AnyGraph.makeTightest
 }

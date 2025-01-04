@@ -32,7 +32,7 @@ object GraphFixture {
         value.children.toSeq.map(v => inspect(v))
     }
 
-    object WithArrows extends Local.AnyGraph.Outbound.Inspection[GV] {
+    object InspectGV extends Local.AnyGraph.Outbound.Inspection[GV] {
 
       object inspect extends (GV => inspect)
       case class inspect(override val value: GV) extends OGraphNode {
@@ -51,7 +51,7 @@ object GraphFixture {
 
     implicit class GVOps(vs: Seq[GV]) {
 
-      def withArrows: WithArrows.ValuesOps = WithArrows.ValuesOps(vs: Seq[GV])
+      def withArrows = InspectGV.inspect(vs: Seq[GV])
 
     }
   }
