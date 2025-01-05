@@ -13,9 +13,9 @@ trait Axiom extends Erased {
 
 object Axiom {
 
-  type Top = Topology.AnyGraphT._Axiom
+  type Top = Topology.AnyGraph._Axiom
 
-  class Concrete[X <: Arrow]() extends Axiom {
+  class Reify[X <: Arrow]() extends Axiom {
     type _Arrow = X
   }
 
@@ -43,8 +43,8 @@ object Axiom {
 
   private def __sanity[V](): Unit = {
 
-    implicitly[Topology.PosetT.Node[Int] <:< Topology.AnyGraphT.Node[Int]]
+    implicitly[Topology.Poset.Node[Int] <:< Topology.AnyGraph.Node[Int]]
 
-    implicitly[Topology.PosetT.Node[V] <:< Topology.AnyGraphT.Node[V]]
+    implicitly[Topology.Poset.Node[V] <:< Topology.AnyGraph.Node[V]]
   }
 }

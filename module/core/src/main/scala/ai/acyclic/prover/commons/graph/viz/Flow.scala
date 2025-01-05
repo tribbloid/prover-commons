@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.{Arrow, Engine}
+import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
@@ -22,11 +22,11 @@ object Flow {
   }
 }
 
-abstract class Flow extends Visualisation.OfType(Local.AnyGraph) with Engine.HasMaxRecursionDepth {
+abstract class Flow extends Visualisation.Local(Local.AnyGraph) {
 
   import Local.AnyGraph.*
 
-  override lazy val maxDepth: Int = 20
+  override lazy val maxRecursionDepth: Int = 20
 
   def layoutPreferences: ascii.layout.prefs.LayoutPrefs
 
@@ -136,7 +136,7 @@ abstract class Flow extends Visualisation.OfType(Local.AnyGraph) with Engine.Has
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
-      val _unbox = unbox.asAnyGraphOps
+      val _unbox = unbox.ops_anyGraph
       val buildBuffers = _unbox
         .Traverse(
           down = { node =>

@@ -2,12 +2,11 @@ package ai.acyclic.prover.commons.graph.local
 
 import ai.acyclic.prover.commons.graph.Engine
 
-import scala.language.implicitConversions
-import ai.acyclic.prover.commons.graph.ops.{AnyGraphMixin, UpperSemilatticeMixin}
+import ai.acyclic.prover.commons.graph.ops.{AnyGraphMixin, PosetMixin, UpperSemilatticeMixin}
 import ai.acyclic.prover.commons.graph.topology.Axiom
 import ai.acyclic.prover.commons.graph.viz.{Flow, Hierarchy, LinkedHierarchy}
 
-object Local extends Engine with AnyGraphMixin with UpperSemilatticeMixin {
+object Local extends Engine with AnyGraphMixin with PosetMixin with UpperSemilatticeMixin {
 
   implicit class Batch[+V](
       val collect: Seq[V]
@@ -23,7 +22,7 @@ object Local extends Engine with AnyGraphMixin with UpperSemilatticeMixin {
 
   def parallelize[T](seq: Seq[T]): Batch[T] = Batch(seq)
 
-  abstract class Show[X <: Axiom.Top, V](graph: Graph.Lt[X, V]) {
+  abstract class CanShow[X <: Axiom.Top, V](graph: Graph[X, V]) {
 
     def text_flow(
         viz: Flow = Flow.Default
@@ -37,27 +36,27 @@ object Local extends Engine with AnyGraphMixin with UpperSemilatticeMixin {
         viz: LinkedHierarchy = LinkedHierarchy.Default
     )(
         implicit
-        < : Graph.Lt[X, V] <:< Local.AnyGraph.Outbound[V]
-    ) = {
+        < : Graph[X, V] <:< Local.Diverging.Graph[V]
+    ): viz.Visual[V] = {
 
       viz.show[V](graph)
     }
 
     def text_hierarchy(viz: Hierarchy = Hierarchy.Default)(
         implicit
-        < : Graph.Lt[X, V] <:< Local.Semilattice.Upper[V]
-    ) = {
+        < : Graph[X, V] <:< Local.Diverging.UpperSemilattice[V]
+    ): viz.Visual[V] = {
 
       viz.show[V](graph)
     }
   }
 
-  implicit class showGraph[X <: Axiom.Top, V](graph: Graph.Lt[X, V]) extends Show[X, V](graph) {}
+  implicit class showGraph[X <: Axiom.Top, V](graph: Graph[X, V]) extends CanShow[X, V](graph) {}
 
   implicit class showNode[X <: Axiom.Top, V](node: Node[X, V])(
       implicit
       assuming: X
-  ) extends Show[X, V](
+  ) extends CanShow[X, V](
         Local[X, V](node)
       ) {}
 }

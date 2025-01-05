@@ -17,9 +17,9 @@ object GraphFixture {
     val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren*)
   }
 
-  object GV extends Local.AnyGraph.Outbound.Inspection[GV] {
+  object GV extends Local.Diverging.Graph.Inspection[GV] {
 
-    implicitly[OGraphNode <:< Local.AnyGraph.Outbound.Node_[GV]]
+    implicitly[OGraphNode <:< Local.Diverging.Graph.Node_[GV]]
 
 //    override val node = { (value: GV) => new node(value) }
 
@@ -32,7 +32,7 @@ object GraphFixture {
         value.children.toSeq.map(v => inspect(v))
     }
 
-    object InspectGV extends Local.AnyGraph.Outbound.Inspection[GV] {
+    object InspectGV extends Local.Diverging.Graph.Inspection[GV] {
 
       object inspect extends (GV => inspect)
       case class inspect(override val value: GV) extends OGraphNode {
@@ -51,12 +51,12 @@ object GraphFixture {
 
     implicit class GVOps(vs: Seq[GV]) {
 
-      def withArrows = InspectGV.inspect(vs: Seq[GV])
+      def withArrows = vs.map(InspectGV.inspect)
 
     }
   }
 
-  trait OGraphNode extends Local.AnyGraph.Outbound.Node_[GV] {
+  trait OGraphNode extends Local.Diverging.Graph.Node_[GV] {
 
     override lazy val nodeText = value.text
 
@@ -65,7 +65,7 @@ object GraphFixture {
     override def identityC: Option[Any] = Some(value.text)
   }
 
-  case class GVRewriter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.Setter_[GV] {
+  case class GVSetter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.Setter_[GV] {
 
     override def rewrite(src: AnyGraph.Node[GV])(
         inductions: Seq[AnyGraph.Node[GV]]

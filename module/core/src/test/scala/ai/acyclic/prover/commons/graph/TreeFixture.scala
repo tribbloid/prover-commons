@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.topology.Axiom
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 
 object TreeFixture {
@@ -34,7 +33,7 @@ object TreeFixture {
     }
   }
 
-  trait TreeNode extends Local.Tree.Node_[TV] {
+  trait TreeNode extends Local.Diverging.Tree.Node_[TV] {
 
     final override lazy val nodeText: String = value.text
   }
@@ -62,7 +61,7 @@ object TreeFixture {
   implicit lazy val treeFormat: Hierarchy = {
 
     object Top5 extends Hierarchy.Indent2 {
-      override lazy val maxDepth: Int = 5
+      override lazy val maxRecursionDepth: Int = 5
     }
     Top5
   }
@@ -102,9 +101,9 @@ object TreeFixture {
   implicit class TVView(self: TV) {
 
     def tree =
-      Local.Tree.makeExact(node(self))
+      Local.Diverging.Tree.makeExact(node(self))
 
-    def treeWithArrowTexts: Local.Tree.Graph[TV] =
+    def treeWithArrowTexts: Local.Diverging.Tree.Graph[TV] =
       Local(NodeWithArrowText(self))
   }
 }

@@ -43,9 +43,9 @@ object LinkedHierarchy {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def dryRun(tree: Local.Tree[? <: RefBindingLike]): Unit = {
+    override def dryRun(tree: Local.Diverging.Tree[? <: RefBindingLike]): Unit = {
 
-      val _tree = tree.asAnyGraphOps
+      val _tree = tree.ops_anyGraph
       _tree
         .Traverse(
           down = { n =>
@@ -54,6 +54,8 @@ object LinkedHierarchy {
         )
         .DepthFirst
     }
+
+    override def maxRecursionDepth: Int = backbone.maxRecursionDepth
   }
 
   object Default extends Default(Hierarchy.Default)
@@ -67,21 +69,21 @@ object LinkedHierarchy {
 
 }
 
-abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbound) {
+abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph) {
 
   import LinkedHierarchy.*
 
   def __sanity[T](): Unit = {
 
-    implicitly[MaxGraph[T] =:= Local.AnyGraph.Outbound[T]]
-    implicitly[MaxNode[T] =:= Local.AnyGraph.Outbound.Node[T]]
+    implicitly[MaxGraph[T] =:= Local.Diverging.Graph[T]]
+    implicitly[MaxNode[T] =:= Local.Diverging.Graph.Node[T]]
   }
 
   def backbone: Hierarchy
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  protected def dryRun(tree: Local.Tree[? <: RefBindingLike]): Unit
+  protected def dryRun(tree: Local.Diverging.Tree[? <: RefBindingLike]): Unit
 
   final override def show[V](data: MaxGraph[V]): Visual[V] = Group().Viz(data)
 
@@ -99,14 +101,14 @@ abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbo
 
     lazy val refCountings: mutable.LinkedHashMap[Any, RefCounting] = mutable.LinkedHashMap.empty
 
-    def visualize[V](data: Local.AnyGraph.Outbound[V]): Visual[V] = Viz(data)
+    def visualize[V](data: Local.Diverging.Graph[V]): Visual[V] = Viz(data)
 
     case class Viz[V](override val unbox: MaxGraph[V]) extends Visual[V] {
 
-      object RefBindings extends Local.Tree.NodeGroup {
+      object RefBindings extends Local.Diverging.Tree.NodeGroup {
 
         case class node(
-            override val original: Local.AnyGraph.Outbound.Node[V],
+            override val original: Local.Diverging.Graph.Node[V],
             id: UUID = UUID.randomUUID() // TODO: need to get rid of this
         ) extends NodeInGroup
             with RefBindingLike {
@@ -190,11 +192,11 @@ abstract class LinkedHierarchy extends Visualisation.OfType(Local.AnyGraph.Outbo
         }
       }
 
-      lazy val delegates: Local.Batch[Local.Tree[RefBindings.node]] = {
+      lazy val delegates: Local.Batch[Local.Diverging.Tree[RefBindings.node]] = {
         unbox.entries.map { node =>
           val refBinding: RefBindings.node = RefBindings.node(node)
 
-          Local.Tree.makeExact(refBinding)
+          Local.Diverging.Tree.makeExact(refBinding)
         }
       }
 

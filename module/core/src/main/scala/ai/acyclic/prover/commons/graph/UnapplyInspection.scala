@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.multiverse.CanUnapply
 
 object UnapplyInspection {}
 
-trait UnapplyInspection extends Local.Semilattice.Upper.topologyImpls.Inspection[Any] with HasInner {
+trait UnapplyInspection extends Local.Diverging.UpperSemilattice.topologyImpls.Inspection[Any] with HasInner {
 
   def primary: CanUnapply[Any] // for induction
   def inlined: CanUnapply[Any] // for content

@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.graph
 
-import ai.acyclic.prover.commons.graph.local
 import ai.acyclic.prover.commons.multiverse.CanUnapply
 
 object ProductInspection extends ProductInspection {

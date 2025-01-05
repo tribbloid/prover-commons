@@ -1,27 +1,24 @@
 package ai.acyclic.prover.commons.graph.ops
 
 import ai.acyclic.prover.commons.graph.topology.{Axiom, Topology}
-import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.graph.{Engine, Foundation}
 import ai.acyclic.prover.commons.multiverse.CanEqual
+
+import scala.language.implicitConversions
 
 trait AnyGraphMixin {
   self: Engine =>
 
   case class AnyGraphOps1[
-      X <: Topology.AnyGraphT._Axiom,
+      X <: Topology.AnyGraph._Axiom,
       V
   ](
-      override val arg: Graph.Lt[X, V],
-      override val maxDepth: Int = 20
-  ) extends Ops(arg)
-      with Ops.Unary[X, V] {
+      override val arg: Graph[X, V]
+  ) extends Ops.Unary[X, V](arg) {
 
     {
       implicitly[arg.axiom.type <:< AnyGraph._Axiom]
     }
-
-    def asAnyGraphOps: this.type = this
 
     import AnyGraphOps1.*
 
@@ -66,7 +63,7 @@ trait AnyGraphMixin {
       }
     }
 
-    object NodeUpcast {
+    object NodeUpcast { // TODO: remove, All Graphs are already [+V]
 
       def apply[V2 >: V]: NodeMap[V2] = NodeMap[V2](v => v: V2)
     }
@@ -86,7 +83,7 @@ trait AnyGraphMixin {
 
       object DepthFirst extends TransformPlan {
 
-        private def transformInternal(node: ArgNode, depth: Int = maxDepth): Seq[ArgNode] = {
+        private def transformInternal(node: ArgNode, depth: Int = arg.maxRecursionDepth): Seq[ArgNode] = {
           if (depth > 0) {
 
             def doTransform(n: ArgNode): Seq[ArgNode] = {
@@ -117,7 +114,7 @@ trait AnyGraphMixin {
 
         override def entries: Batch[ArgNode] = {
 
-          val transformed = distinctEntries.flatMap(n => transformInternal(n, maxDepth))
+          val transformed = distinctEntries.flatMap(n => transformInternal(n, maxRecursionDepth))
 
           transformed
         }
@@ -254,24 +251,33 @@ trait AnyGraphMixin {
     def ><[
         X2 >: X <: Axiom.Top,
         V2 >: V
-    ](arg2: Graph.Lt[X2, V2]) = {
+    ](arg2: Graph[X2, V2]): AnyGraphOps2[X2, V2] = {
 
-      val upcasted = this.copy[X2, V2]()
+//      val upcasted = this.copy[X2, V2]()
 
-      AnyGraphOps2[X2, V2](upcasted, arg2)
+      AnyGraphOps2[X2, V2](this, arg2)
     }
+
+    def ops_anyGraph: AnyGraphOps1[X, V] = this
   }
 
   object AnyGraphOps1 {
 
     type Pruning[N] = (N => Seq[N]) => (N => Seq[N])
+
+    implicit def upcast[
+        X <: Topology.AnyGraph._Axiom,
+        V
+    ](self: AnyGraphOps1[? <: X, ? <: V]): AnyGraphOps1[X, V] = {
+      self.copy[X, V]()
+    }
   }
 
-  implicit def anyGraph1[
-      X <: Topology.AnyGraphT._Axiom,
+  implicit def imp_anyGraph[
+      X <: Topology.AnyGraph._Axiom,
       V
   ](
-      arg: Graph.Lt[X, V]
+      arg: Graph[X, V]
   ): AnyGraphOps1[X, V] = AnyGraphOps1[X, V](arg)
 
   case class AnyGraphOps2[
@@ -279,11 +285,8 @@ trait AnyGraphMixin {
       VV
   ](
       override val prev: AnyGraphOps1[X, VV],
-      override val arg: Graph.Lt[X, VV]
-  ) extends Ops(arg)
-      with Ops.Binary[X, VV] {
-
-    override def maxDepth: Int = prev.maxDepth
+      override val arg: Graph[X, VV]
+  ) extends Ops.Binary[X, VV](arg) {
 
     // union by node identity
     // always an anygraph, union of 2 semilattices may contain cycles

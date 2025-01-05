@@ -3,8 +3,6 @@ package ai.acyclic.prover.commons.viz
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.topology.Topology.AnyGraphT.OutboundT
-import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.refl.HasReflection
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
@@ -24,6 +22,13 @@ trait TypeOfMixin extends HasReflection {
 
   val format: TypeHierarchy
 
+  object TypeOf {
+
+    implicit class Show[T](self: TypeOf[T]) extends Local.CanShow(self.graph) {}
+
+    implicit def asNodes(v: TypeOf[?]): v.vizGroup.Nodes = v.nodes
+  }
+
   class TypeOf[T](
       //  TODO: this API won't work for multiple types (e.g. showing common join & meet in heyting algebra)
       //   it should be replaced by a more general construct
@@ -37,20 +42,18 @@ trait TypeOfMixin extends HasReflection {
 
     lazy val typeStr: String = nodes.typeText
 
-    lazy val graph: Local.Graph.Unchecked[OutboundT._Axiom, VisualisationGroup.node] =
-      Local.AnyGraph.Outbound(nodes.SuperTypeNode)
-
-    object showman extends Local.Show(graph)
+    lazy val graph: Local.Diverging.UpperSemilattice[VisualisationGroup.node] =
+      Local.Diverging.UpperSemilattice(nodes.SuperTypeNode)
 
     override def toString: String = {
 
-      showman.text_hierarchy().toString
+      this.text_linkedHierarchy().toString
     }
 
     def should_=:=(that: TypeOf[?] = null): Unit = {
 
       val Seq(s1, s2) = Seq(this, that).map { v =>
-        Option(v).map(_.showman.text_hierarchy().toString)
+        Option(v).map(_.text_linkedHierarchy().toString)
       }
 
       val diff = StringDiff(s1, s2, Seq(this.getClass))
@@ -71,12 +74,7 @@ trait TypeOfMixin extends HasReflection {
     def =!=(that: TypeOf[?] = null): Unit = should_=:=(that)
   }
 
-  object TypeOf {
-
-    implicit def asNodes(v: TypeOf[?]): v.vizGroup.Nodes = v.nodes
-  }
-
-  object VisualisationGroup extends Local.AnyGraph.Outbound.NodeGroup {
+  object VisualisationGroup extends Local.Diverging.UpperSemilattice.NodeGroup {
 
     // technically this layer could be collapsed into GraphRepr
     trait node extends NodeInGroup with TypeOfMixin.VNodeLike {}
@@ -95,7 +93,7 @@ trait TypeOfMixin extends HasReflection {
 
       val node: TypeOps = ir.typeOps
 
-      lazy val argGraph: Local.AnyGraph.Outbound[VisualisationGroup.node] = {
+      lazy val argGraph: Local.Diverging.Graph[VisualisationGroup.node] = {
 
         val equivalentIRs = ir.EquivalentTypes.recursively
 
@@ -109,7 +107,7 @@ trait TypeOfMixin extends HasReflection {
           }
           .toSeq
 
-        Local.AnyGraph.Outbound(argNodes*)
+        Local.Diverging.Graph(argNodes*)
       }
 
       lazy val typeText: String = ir.text

@@ -20,18 +20,24 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
     val viz = TypeViz[S2K[S1]]
 
-    viz.text_hierarchy.toString.shouldBe(
-      """
+    viz
+      .text_hierarchy()
+      .toString
+      .shouldBe(
+        """
         |+ ai.acyclic.prover.commons.viz.TypeVizSpec.S2K[ai.acyclic.prover.commons.viz.TypeVizSpec.S1]
         |:       ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.S2K [ 1 ARG ] :
         |:       ┃ !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.S1
         |:       ┃   !-- Object ... (see [0])
         |!-- Object .......................................................................... [0]
         |""".stripMargin
-    )
+      )
 
-    viz.text_flow().toString.shouldBe(
-      """
+    viz
+      .text_flow()
+      .toString
+      .shouldBe(
+        """
         | ┌───────────────────────────────────────────────────────────────────────────────────────────┐
         | │ai.acyclic.prover.commons.viz.TypeVizSpec.S2K[ai.acyclic.prover.commons.viz.TypeVizSpec.S1]│
         | │      ┏ + ai.acyclic.prover.commons.viz.TypeVizSpec.S2K [ 1 ARG ] :                        │
@@ -44,15 +50,18 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |                                           │Object│
         |                                           └──────┘
         |""".stripMargin
-    )
+      )
   }
 
   it("trait with self-referencing arg") {
 
     val viz = TypeViz[S2]
 
-    viz.text_hierarchy.toString.shouldBe(
-      """
+    viz
+      .text_hierarchy()
+      .toString
+      .shouldBe(
+        """
         |+ ai.acyclic.prover.commons.viz.TypeVizSpec.S2 .................................... [1]
         |!-+ ai.acyclic.prover.commons.viz.TypeVizSpec.S1
         |: !-- Object .......................................................................... [0]
@@ -61,10 +70,13 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |  :       ┃ !-- ai.acyclic.prover.commons.viz.TypeVizSpec.S2 ... (see [1])
         |  !-- Object ... (see [0])
         |""".stripMargin
-    )
+      )
 
-    viz.text_flow().toString.shouldBe(
-      """
+    viz
+      .text_flow()
+      .toString
+      .shouldBe(
+        """
         |                                               ┌────────────────────────────────────────────┐
         |                                               │ai.acyclic.prover.commons.viz.TypeVizSpec.S2│
         |                                               └──────────────┬──────────────┬──────────────┘
@@ -83,7 +95,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
         |                                                                  │Object│
         |                                                                  └──────┘
         |""".stripMargin
-    )
+      )
 
   }
 
@@ -91,16 +103,19 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
     val viz = TypeViz[String]
 
-    viz.text_hierarchy.toString.shouldBe(
-      """
+    viz
+      .text_hierarchy()
+      .toString
+      .shouldBe(
+        """
         |+ String .......................................................................... [0]
         |!-- Comparable[String]
         |:         ┏ + Comparable [ 1 ARG ] :
         |:         ┃ !-- String ... (see [0])
         |!-- java.io.Serializable
         |""".stripMargin,
-      mode = SuperSet
-    )
+        mode = SuperSet
+      )
   }
 
   it("HList") {

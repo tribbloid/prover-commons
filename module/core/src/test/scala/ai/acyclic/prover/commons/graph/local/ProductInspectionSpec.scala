@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph.local
 
+import ai.acyclic.prover.commons.graph.ProductInspection
 import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy
 import ai.acyclic.prover.commons.testlib.BaseSpec
 

@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.notebook
 
 import ai.acyclic.prover.commons.debug.print_@
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.topology.Topology.SemilatticeT.UpperT
+import ai.acyclic.prover.commons.graph.topology.DivergingForm.UpperSemilattice
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 object PathToDOT extends ForwardPlot {
@@ -88,7 +88,7 @@ class PathToDOT extends BaseSpec {
 
   it("lambda cube") {
 
-    val g: Local.Graph.Unchecked[UpperT._Axiom, Forward] = Local(LambdaCube.f)
+    val g: Local.Graph.Unchecked[UpperSemilattice._Axiom, Forward] = Local(LambdaCube.f)
 
     print_@(g.text_flow().toString)
 

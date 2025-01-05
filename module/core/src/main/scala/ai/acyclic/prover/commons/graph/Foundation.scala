@@ -1,51 +1,51 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons.graph.Foundation.Graph.K
 import ai.acyclic.prover.commons.graph.topology.Axiom
 
 object Foundation {
 
   trait Lawful extends Foundation0.Lawful {
 
-    type Node[+v] = NodeK.Lt[_Axiom, v]
+    type Node[+v] = Foundation.Node.K[_Axiom, v]
 
-    type Setter[v] = Setter.Aux[_Axiom, v]
+    type Setter[v] = Foundation.Setter[_Axiom, v]
   }
 
-  trait Structure[+X <: Axiom] {
+  trait Structure[
+      +X <: Axiom.Top,
+      +V // fixed-point bound: type of values of this node and all its descendants, NOT the type of node value
+  ] {
 
     val axiom: X
     final type _Arrow = axiom._Arrow
 
-    type Value // bound type of values of this node and all its descendants, NOT the type of this value!
+//    private type _Node = Node[X, V] TODO: how to compile them?
+//    private type _Setter = Setter[X, V]
+//    private type _Graph = Graph[X, V]
   }
 
-  trait NodeOrGraph[+X <: Axiom.Top] extends Foundation.Structure[X] {}
+  trait NodeOrGraph[+X <: Axiom.Top, +V] extends Foundation.Structure[X, V] {}
 
-  trait NodeK[+L <: Axiom.Top] extends Priors.Node with Foundation.NodeOrGraph[L] {
+  type Node[+X <: Axiom.Top, +V] = Node.K[X, V]
+  object Node {
 
-    def value: Value
+    trait K[+X <: Axiom.Top, +V] extends Priors.Node with Foundation.NodeOrGraph[X, V] {
 
-    private[this] type _NodeLt = NodeK.Lt[L, Value]
+      def value: V
 
-    def inductions: Seq[(_Arrow, _NodeLt)]
+      def inductions: Seq[(_Arrow, Node.K[X, V])]
 
-    final lazy val adjacentNodes: Seq[_NodeLt] = inductions.map(_._2)
+      final lazy val adjacentNodes: Seq[Node.K[X, V]] = inductions.map(_._2)
 
-    object asIterable extends Iterable[Value] {
+      object asIterable extends Iterable[V] {
 
-      override def iterator: Iterator[Value] =
-        Iterator(value) ++ adjacentNodes.iterator.flatMap(n => n.asIterable.iterator)
+        override def iterator: Iterator[V] =
+          Iterator(value) ++ adjacentNodes.iterator.flatMap(n => n.asIterable.iterator)
+      }
     }
-  }
 
-  object NodeK {
-
-    type Aux[+L <: Axiom.Top, V] = NodeK[L] { type Value = V }
-    trait Aux_[+L <: Axiom.Top, V] extends NodeK[L] { type Value = V }
-
-    type Lt[+L <: Axiom.Top, +V] = NodeK[L] { type Value <: V }
-
-    implicit class LtView[L <: Axiom.Top, V](self: Lt[L, V]) {
+    implicit class LtView[L <: Axiom.Top, V](self: Node[L, V]) {
 
       def map[V2](fn: V => V2): Mapped[L, V, V2] = Mapped[L, V, V2](self, fn)
 
@@ -56,9 +56,9 @@ object Foundation {
     }
 
     case class Mapped[X <: Axiom.Top, V, V2](
-        original: NodeK.Lt[X, V],
+        original: Node[X, V],
         fn: V => V2
-    ) extends Aux_[X, V2] {
+    ) extends Node[X, V2] {
 
       override val axiom: original.axiom.type = original.axiom
 
@@ -79,71 +79,63 @@ object Foundation {
     }
   }
 
-  trait GraphK[+X <: Axiom.Top] extends Priors.Graph with Foundation.NodeOrGraph[X] {
+  type Graph[+X <: Axiom.Top, +V] = K[X, V]
+  object Graph {
 
-    def entries: engine.Batch[NodeK.Lt[X, Value]]
-  }
+    trait K[+X <: Axiom.Top, +V] extends Priors.Graph with Foundation.NodeOrGraph[X, V] {
 
-  object GraphK {
-
-    type Aux[+X <: Axiom.Top, V] = GraphK[X] { type Value = V }
-    // Acronym of "Less Than"
-    type Lt[+X <: Axiom.Top, +V] = GraphK[X] { type Value <: V }
-  }
-
-  trait Setter[L <: Axiom.Top] extends Foundation.Structure[L] {
-
-    private type Node = NodeK.Lt[L, Value]
-
-    // TODO: this interface is problematic, should
-    def rewrite(src: Node)(
-        discoverNodes: Seq[Node]
-    ): Node
-
-    object Verified extends Setter[L] {
-
-      val axiom: Setter.this.axiom.type = Setter.this.axiom
-
-      type Value = Setter.this.Value
-
-      override def rewrite(src: Node)(discoverNodes: Seq[Node]): Node = {
-
-        val oldDiscoverNodes = src.adjacentNodes
-        if (oldDiscoverNodes == discoverNodes) {
-          // no need to rewrite, just return node as-is
-          return src
-        }
-
-        val result = Setter.this.rewrite(src)(discoverNodes)
-
-        require(
-          result.adjacentNodes == discoverNodes,
-          s"""Incompatible rewriter?
-             |Rewrite result should be [${discoverNodes.mkString(", ")}]
-             |but it is actually [${oldDiscoverNodes.mkString(", ")}]""".stripMargin
-        )
-
-        result
-      }
+      def entries: engine.Batch[Node[X, V]]
     }
+
+    type Lt[+X <: Axiom.Top, +V] = K[X, V]
   }
 
+  type Setter[X <: Axiom.Top, V] = Setter.K[X, V]
   object Setter {
 
-    type Aux[X <: Axiom.Top, V] = Setter[X] { type Value = V }
-    trait Aux_[X <: Axiom.Top, V] extends Setter[X] { type Value = V }
+    trait K[X <: Axiom.Top, V] extends Foundation.Structure[X, V] {
 
-    case class DoNotRewrite[L <: Axiom.Top, N](
-        override val axiom: L
-    ) extends Setter[L] {
+      private type _Node = Node[X, V]
 
-      type Value = N
+      // TODO: this interface is problematic, should
+      def rewrite(src: _Node)(
+          discoverNodes: Seq[_Node]
+      ): _Node
 
-      override def rewrite(src: NodeK.Lt[L, Value])(
-          discoverNodes: Seq[NodeK.Lt[L, Value]]
-      ): NodeK.Lt[L, Value] = src
+      object Verified extends K[X, V] {
+
+        val axiom: K.this.axiom.type = K.this.axiom
+
+        override def rewrite(src: _Node)(discoverNodes: Seq[_Node]): _Node = {
+
+          val oldDiscoverNodes = src.adjacentNodes
+          if (oldDiscoverNodes == discoverNodes) {
+            // no need to rewrite, just return node as-is
+            return src
+          }
+
+          val result = K.this.rewrite(src)(discoverNodes)
+
+          require(
+            result.adjacentNodes == discoverNodes,
+            s"""Incompatible rewriter?
+               |Rewrite result should be [${discoverNodes.mkString(", ")}]
+               |but it is actually [${oldDiscoverNodes.mkString(", ")}]""".stripMargin
+          )
+
+          result
+        }
+      }
+    }
+
+    case class DoNotRewrite[X <: Axiom.Top, V](
+        override val axiom: X
+    ) extends K[X, V] {
+
+      override def rewrite(src: Node[X, V])(
+          discoverNodes: Seq[Node[X, V]]
+      ): Node[X, V] = src
 
     }
   }
-
 }

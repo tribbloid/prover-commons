@@ -3,25 +3,15 @@ package ai.acyclic.prover.commons.graph.local.ops
 import ai.acyclic.prover.commons.graph.GraphFixture
 import ai.acyclic.prover.commons.graph.GraphFixture.GV.inspect
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.ops.AnyGraphUnary
+import ai.acyclic.prover.commons.graph.topology.Topology
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 
-class AnyGraphUnarySpec extends BaseSpec {
+class AnyGraphOpsSpec extends BaseSpec {
 
   import GraphFixture.*
-
-  it("Upcast") {
-    val result = AnyGraphUnary
-      .^(cyclic.make)
-      .NodeUpcast[Any]
-
-    result.text_flow().toString.shouldBe(
-      cyclic.make.text_flow().toString
-    )
-  }
 
   describe("Traverse") {
 
@@ -30,10 +20,7 @@ class AnyGraphUnarySpec extends BaseSpec {
       val down = mutable.Buffer.empty[GV]
       val up = mutable.Buffer.empty[GV]
 
-      val ops: AnyGraphUnary.^[GraphFixture.GV.Graph_] = AnyGraphUnary
-        .^(cyclic.make, 5)
-
-      ops
+      Local(cyclic*)
         .Traverse(
           n => down += n.value,
           n => up += n.value
@@ -72,10 +59,7 @@ class AnyGraphUnarySpec extends BaseSpec {
       val down = mutable.Buffer.empty[GV]
       val up = mutable.Buffer.empty[GV]
 
-      val ops =
-        AnyGraphUnary.^(cyclic.make, 5)
-
-      ops
+      Local(cyclic*)
         .Traverse(
           n => down += n.value,
           n => up += n.value
@@ -110,10 +94,14 @@ class AnyGraphUnarySpec extends BaseSpec {
 
     def proto = {
       val inc = new AtomicInteger(0)
-      val result = AnyGraphUnary
-        .^(diamond.make: Local.AnyGraph[GV], 4)
+
+      def _diamond = Local(diamond*)
+        .withMaxRecursionDepth(4)
+        .toX[Topology.AnyGraph._Axiom] // fuck scala implicit search
+
+      val result = _diamond
         .TransformLinear(
-          GVRewriter(v => inspect(v)),
+          GVSetter(v => inspect(v)),
           down = { v =>
             val result = v.value.copy(text = v.value.text + "+" + inc.getAndIncrement(), Nil)
             result.children ++= v.value.children
@@ -132,8 +120,10 @@ class AnyGraphUnarySpec extends BaseSpec {
 
       val tt = proto.DepthFirst
 
-      tt.text_flow().toString.shouldBe(
-        """
+      tt.text_flow()
+        .toString
+        .shouldBe(
+          """
           |     ┌────────┐
           |     │aaa+0-13│
           |     └──┬──┬──┘
@@ -155,15 +145,17 @@ class AnyGraphUnarySpec extends BaseSpec {
           | │eee+3-4│ │eee+9-10│
           | └───────┘ └────────┘
           |""".stripMargin
-      )
+        )
     }
 
     it("DepthFirst_Once") {
 
       val tt = proto.DepthFirst_Once
 
-      tt.text_flow().toString.shouldBe(
-        """
+      tt.text_flow()
+        .toString
+        .shouldBe(
+          """
           |     ┌───────┐
           |     │aaa+0-9│
           |     └──┬──┬─┘
@@ -185,15 +177,17 @@ class AnyGraphUnarySpec extends BaseSpec {
           | │eee+3-4│ │eee│
           | └───────┘ └───┘
           |""".stripMargin
-      )
+        )
     }
 
     it("DepthFirst_Cached") {
 
       val tt = proto.DepthFirst_Cached
 
-      tt.text_flow().toString.shouldBe(
-        """
+      tt.text_flow()
+        .toString
+        .shouldBe(
+          """
           |     ┌───────┐
           |     │aaa+0-9│
           |     └──┬──┬─┘
@@ -217,7 +211,7 @@ class AnyGraphUnarySpec extends BaseSpec {
           |     │eee+3-4│
           |     └───────┘
           |""".stripMargin
-      )
+        )
     }
   }
 

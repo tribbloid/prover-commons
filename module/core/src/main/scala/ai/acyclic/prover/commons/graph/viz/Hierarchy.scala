@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.Arrow.Outbound
-import ai.acyclic.prover.commons.graph.Engine
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
@@ -22,9 +21,10 @@ object Hierarchy {
   case object Indent2Minimal extends Indent2Minimal {}
 }
 
-abstract class Hierarchy extends Visualisation.OfType(Local.Semilattice.Upper) with Engine.HasMaxRecursionDepth {
+// TODO: should extend to Poset
+abstract class Hierarchy extends Visualisation.Local(Local.Diverging.Poset) {
 
-  override lazy val maxDepth: Int = 10
+  override lazy val maxRecursionDepth: Int = 10
 
   lazy val FORK: Padding = Padding.ofHead("+", ":")
   lazy val LEAF: Padding = Padding.ofHead("-", " ")
@@ -38,14 +38,14 @@ abstract class Hierarchy extends Visualisation.OfType(Local.Semilattice.Upper) w
 
   lazy val SPACE = " "
 
-  final override def show[V](data: Local.Semilattice.Upper[V]): Viz[V] = {
+  final override def show[V](data: Local.Diverging.Poset[V]): Viz[V] = {
 
     Viz(data)
   }
 
   case class Viz[V](override val unbox: MaxGraph[V]) extends Visual[V] {
 
-    case class SubViz(head: Local.Semilattice.Upper.Node[V], depth: Int = maxDepth) {
+    case class SubViz(head: Local.Diverging.Poset.Node[V], depth: Int = maxRecursionDepth) {
 
       lazy val treeString: String = {
 
@@ -59,8 +59,7 @@ abstract class Hierarchy extends Visualisation.OfType(Local.Semilattice.Upper) w
 
           val selfT = wText.pad.left(FORK)
 
-          val arrows_targets: Seq[(Outbound, Local.Semilattice.Upper.Node[V])] =
-            head.inductions
+          val arrows_targets: Seq[(Outbound, Local.Diverging.Poset.Node[V])] = head.inductions
 
           // TODO: if mutliple arrows in a induction are all pointing to the same target
           //  they will be displayed separately which is verbose
@@ -115,7 +114,7 @@ abstract class Hierarchy extends Visualisation.OfType(Local.Semilattice.Upper) w
     }
 
     lazy val treeText: String = {
-      unbox.maxNodeOpt
+      unbox.maxNodes
         .map { nn =>
           SubViz(nn).treeString
         }

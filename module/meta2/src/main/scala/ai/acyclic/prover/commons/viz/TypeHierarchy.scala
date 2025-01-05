@@ -19,17 +19,17 @@ case class TypeHierarchy(
 
   object DelegateFormat extends LinkedHierarchy.Default(backbone) {
 
-    override def dryRun(tree: Local.Tree[RefBindingLike]): Unit = {
+    override def dryRun(tree: Local.Diverging.Tree[RefBindingLike]): Unit = {
 
       def recursiveDryRun(): Unit = {
 
-        val _tree = tree.asAnyGraphOps
+        val _tree = tree.ops_anyGraph
 
-        implicitly[_tree.ArgNode <:< Local.Tree.Node[RefBindingLike]]
+        implicitly[_tree.ArgNode <:< Local.Diverging.Tree.Node[RefBindingLike]]
 
         _tree
           .Traverse(
-            down = { (v: Local.Tree.Node[RefBindingLike]) =>
+            down = { (v: Local.Diverging.Tree.Node[RefBindingLike]) =>
               v.value.original match {
                 case vNode: TypeOfMixin.VNodeLike =>
                   vNode.argDryRun()

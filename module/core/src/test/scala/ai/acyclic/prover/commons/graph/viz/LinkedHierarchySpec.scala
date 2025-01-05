@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.GraphFixture
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class LinkedHierarchySpec extends BaseSpec {
@@ -13,7 +14,7 @@ class LinkedHierarchySpec extends BaseSpec {
     describe("treeString") {
       it("cyclic graph") {
 
-        cyclic.make.text_linkedHierarchy().toString shouldBe
+        Local(cyclic*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-+ bbb
@@ -22,7 +23,7 @@ class LinkedHierarchySpec extends BaseSpec {
             |  !-- ddd
             |""".stripMargin
 
-        cyclic.withArrows.make.text_linkedHierarchy().toString shouldBe
+        Local(cyclic.withArrows*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-⟦ aaa |> bbb ⟧+ bbb
@@ -34,7 +35,7 @@ class LinkedHierarchySpec extends BaseSpec {
 
       it(" ... with multiple lines") {
 
-        cyclic2.make.text_linkedHierarchy().toString shouldBe
+        Local(cyclic2*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -48,7 +49,7 @@ class LinkedHierarchySpec extends BaseSpec {
             |      %%%%
             |""".stripMargin
 
-        cyclic2.withArrows.make.text_linkedHierarchy().toString shouldBe
+        Local(cyclic2.withArrows*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -67,7 +68,7 @@ class LinkedHierarchySpec extends BaseSpec {
 
       it("diamond semilattice") {
 
-        diamond.make.text_linkedHierarchy().toString shouldBe
+        Local(diamond*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa
             |!-+ bbb

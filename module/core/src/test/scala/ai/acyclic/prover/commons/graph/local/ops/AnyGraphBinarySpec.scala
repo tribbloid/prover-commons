@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.graph.local.ops
 
 import ai.acyclic.prover.commons.graph.GraphFixture
-import ai.acyclic.prover.commons.graph.ops.AnyGraphUnary
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class AnyGraphBinarySpec extends BaseSpec {
@@ -12,13 +12,15 @@ class AnyGraphBinarySpec extends BaseSpec {
 
     it("of semilattice") {
 
-      val g1: GraphFixture.GV.Graph_ = diamond.make
-      val g2: GraphFixture.GV.Graph_ = Appendage.p1.make
+      val g1 = Local(diamond*)
+      val g2 = Local(Appendage.p1*)
 
-      val uu = AnyGraphUnary.^(g1).><(g2).Union[GraphFixture.GV]()
+      val uu = g1.><(g2).Union()
 
-      uu.text_flow().toString.shouldBe(
-        """
+      uu.text_flow()
+        .toString
+        .shouldBe(
+          """
           |   ┌─────┐
           |   │ aaa │
           |   └┬──┬─┘
@@ -43,18 +45,20 @@ class AnyGraphBinarySpec extends BaseSpec {
           |   │ eee │
           |   └─────┘
           |""".stripMargin
-      )
+        )
     }
 
     it("of graph") {
 
-      val g1 = cyclic.make
-      val g2 = Appendage.p1.make
+      val g1 = Local(cyclic*)
+      val g2 = Local(Appendage.p1*)
 
-      val uu = AnyGraphUnary.^(g1).><(g2).Union[GraphFixture.GV]()
+      val uu = g1.><(g2).Union()
 
-      uu.text_flow().toString.shouldBe(
-        """
+      uu.text_flow()
+        .toString
+        .shouldBe(
+          """
           |    ┌─────────┐
           |    │   bbb   │
           |    └─┬┬─┬────┘
@@ -74,7 +78,7 @@ class AnyGraphBinarySpec extends BaseSpec {
           | │eee│ │ aaa │ │ddd│
           | └───┘ └─────┘ └───┘
           |""".stripMargin
-      )
+        )
     }
   }
 }

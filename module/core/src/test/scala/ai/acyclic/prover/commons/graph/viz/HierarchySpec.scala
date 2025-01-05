@@ -134,7 +134,7 @@ class HierarchySpec extends BaseSpec {
   }
 
   describe(Hierarchy.Indent2Minimal.productPrefix) {
-    implicit lazy val format = Hierarchy.Indent2Minimal
+    Hierarchy.Indent2Minimal
 
     describe("treeString") {
       it("supports nodes each with 1 line str") {
