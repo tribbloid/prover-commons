@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
 import ai.acyclic.prover.commons.util.{Erased, Summoner}
 
 /**
@@ -9,6 +9,11 @@ import ai.acyclic.prover.commons.util.{Erased, Summoner}
 trait Axiom extends Erased {
 
   type _Arrow <: Arrow
+
+  def verify[X >: this.type <: Axiom.Top, V](graph: Foundation.Graph[X, V]): Unit = {
+    // by default, do nothing
+    // TODO: may have diamond subtyping problem
+  }
 }
 
 object Axiom {
