@@ -38,7 +38,7 @@ abstract class Flow extends Visualisation.Local(Local.AnyGraph) {
 
   final override def show[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
 
-  case class Viz[V](val unbox: MaxGraph[V]) extends Visual[V] {
+  case class Viz[V](unbox: MaxGraph[V]) extends Visual[V] {
 
     lazy val bindingIndices = new AtomicInteger(0)
 

@@ -122,7 +122,7 @@ trait Engine extends Priors.HasBatch {
 
       type MaxGraph <: Axiom.Top
 
-      final def maxRecursionDepth: Int = {
+      final lazy val maxRecursionDepth: Int = {
         arg match {
           case Graph.Transforming(_, d) => d
           case _                        => HasMaxRecursionDepth.Default.maxRecursionDepth
@@ -146,6 +146,10 @@ trait Engine extends Priors.HasBatch {
     ) extends Ops[X, V] {
 
       type Prev = Unary[X, V]
+
+      final def maxRecursionDepth: Int = {
+        prev.maxRecursionDepth
+      }
     }
   }
 

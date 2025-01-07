@@ -15,7 +15,7 @@ class HierarchySpec extends BaseSpec {
       describe("finite tree") {
         it("each node has 1 line of text") {
 
-          tn1.tree.text_hierarchy.toString shouldBe
+          tn1.tree.text_hierarchy().toString shouldBe
             """
               |+ aaa
               |!-+ bbb
@@ -23,7 +23,7 @@ class HierarchySpec extends BaseSpec {
               |!-- ccc
               |""".stripMargin
 
-          tn1.treeWithArrowTexts.text_hierarchy.toString shouldBe
+          tn1.treeWithArrowTexts.text_hierarchy().toString shouldBe
             """
               |+ aaa
               |!-⟦ aaa |> bbb ⟧+ bbb
@@ -34,7 +34,7 @@ class HierarchySpec extends BaseSpec {
 
         it("each node has multiple lines of text") {
 
-          tn2.tree.text_hierarchy.toString shouldBe
+          tn2.tree.text_hierarchy().toString shouldBe
             """
               |+ aaa
               |: %%%%%
@@ -46,7 +46,7 @@ class HierarchySpec extends BaseSpec {
               |    %%%%%
               |""".stripMargin
 
-          tn2.treeWithArrowTexts.text_hierarchy.toString shouldBe
+          tn2.treeWithArrowTexts.text_hierarchy().toString shouldBe
             """
               |+ aaa
               |: %%%%%
@@ -63,7 +63,10 @@ class HierarchySpec extends BaseSpec {
       }
 
       it("infinite tree") {
-        treeInf.tree.text_hierarchy.toString shouldBe
+        treeInf.tree
+          .withMaxRecursionDepth(5)
+          .text_hierarchy()
+          .toString shouldBe
           """
             |+ abcdefgh
             |!-+ abcdefg
@@ -134,12 +137,11 @@ class HierarchySpec extends BaseSpec {
   }
 
   describe(Hierarchy.Indent2Minimal.productPrefix) {
-    Hierarchy.Indent2Minimal
 
     describe("treeString") {
       it("supports nodes each with 1 line str") {
 
-        tn1.tree.text_hierarchy.toString shouldBe
+        tn1.tree.text_hierarchy(Hierarchy.Indent2Minimal).toString shouldBe
           """
             |aaa
             | ‣ bbb
@@ -151,7 +153,7 @@ class HierarchySpec extends BaseSpec {
 
       it("... or not") {
 
-        tn2.tree.text_hierarchy.toString shouldBe
+        tn2.tree.text_hierarchy(Hierarchy.Indent2Minimal).toString shouldBe
           """
             |aaa
             |%%%%%

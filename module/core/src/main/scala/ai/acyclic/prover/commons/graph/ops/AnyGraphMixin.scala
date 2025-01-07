@@ -212,9 +212,6 @@ trait AnyGraphMixin {
       )
     }
 
-    // TODO: the following should go through Transform, need test to ensure working
-    trait TraversePlan extends Plan[V]
-
     // NOT ForeachNode! Traversal may visit a node multiple times.
     case class Traverse(
         down: ArgNode => Unit = { (_: ArgNode) => {} },
@@ -231,9 +228,13 @@ trait AnyGraphMixin {
         }
       )
 
+      trait TraversePlan extends Plan[V] {
+        override val entries: Batch[ArgNode] // must evaluate eagerly
+      }
+
       object DepthFirst extends TraversePlan {
 
-        override def entries: Batch[ArgNode] = {
+        override val entries: Batch[ArgNode] = {
 
           delegate.DepthFirst.entries
         }
@@ -241,7 +242,7 @@ trait AnyGraphMixin {
 
       object DepthFirst_Once extends TraversePlan {
 
-        override def entries: Batch[ArgNode] = {
+        override val entries: Batch[ArgNode] = {
 
           delegate.DepthFirst_Once.entries
         }
@@ -298,10 +299,11 @@ trait AnyGraphMixin {
         val e2: Batch[ArgNode] = arg.distinctEntries
 
         // the axiom bound can be tighten further
-//        val roots1: Seq[Foundation.NodeK.Lt[Axiom.AnyGraphT, VV]] = e1.map(n => n.upcast[VV])
-//        val roots2: Seq[Foundation.NodeK.Lt[Axiom.AnyGraphT, VV]] = e2.map(n => n.upcast[VV])
+        //        val roots1: Seq[Foundation.NodeK.Lt[Axiom.AnyGraphT, VV]] = e1.map(n => n.upcast[VV])
+        //        val roots2: Seq[Foundation.NodeK.Lt[Axiom.AnyGraphT, VV]] = e2.map(n => n.upcast[VV])
 
-        (e1 union e2).distinct
+        val result = (e1 union e2).distinct
+        result
       }
     }
   }

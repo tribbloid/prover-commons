@@ -17,7 +17,9 @@ object Local extends Engine with AnyGraphMixin with PosetMixin with UpperSemilat
 
     override def flatMap[U](f: V => IterableOnce[U]): Batch[U] = collect.flatMap(f)
 
-    override def union[V2 >: V](that: Batch[V2]): Batch[V2] = collect ++ that.collect
+    override def union[V2 >: V](that: Batch[V2]): Batch[V2] = {
+      collect ++ that.collect
+    }
   }
 
   def parallelize[T](seq: Seq[T]): Batch[T] = Batch(seq)
