@@ -93,7 +93,7 @@ trait Engine extends Priors.HasBatch {
     type Node_[V] = topologyImpls.Node_[V]
     type Setter_[V] = topologyImpls.Setter_[V]
 
-    type NodeGroup = topologyImpls.NodeGroup
+    type Codomain = topologyImpls.Codomain
 
     type Inspection[V] = topologyImpls.Inspection[V]
   }

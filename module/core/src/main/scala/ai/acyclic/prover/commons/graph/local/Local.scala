@@ -24,7 +24,10 @@ object Local extends Engine with AnyGraphMixin with PosetMixin with UpperSemilat
 
   def parallelize[T](seq: Seq[T]): Batch[T] = Batch(seq)
 
-  abstract class CanShow[X <: Axiom.Top, V](graph: Graph[X, V]) {
+  abstract class VisualOps[X <: Axiom.Top, V](
+      graph: Graph[X, V],
+      group: LinkedHierarchy#Group = LinkedHierarchy.Default.Group()
+  ) {
 
     def text_flow(
         viz: Flow = Flow.Default
@@ -34,7 +37,7 @@ object Local extends Engine with AnyGraphMixin with PosetMixin with UpperSemilat
     }
 
     def text_linkedHierarchy(
-        group: LinkedHierarchy#Group = LinkedHierarchy.Default.Group(),
+        group: LinkedHierarchy#Group = group,
         viz: LinkedHierarchy = LinkedHierarchy.Default
     )(
         implicit
@@ -52,13 +55,4 @@ object Local extends Engine with AnyGraphMixin with PosetMixin with UpperSemilat
       viz.show[V](graph)
     }
   }
-
-  implicit class showGraph[X <: Axiom.Top, V](graph: Graph[X, V]) extends CanShow[X, V](graph) {}
-
-  implicit class showNode[X <: Axiom.Top, V](node: Node[X, V])(
-      implicit
-      assuming: X
-  ) extends CanShow[X, V](
-        Local[X, V](node)
-      ) {}
 }

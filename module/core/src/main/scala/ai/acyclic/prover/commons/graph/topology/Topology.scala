@@ -44,15 +44,15 @@ object Topology {
     /**
       * 2nd API, all [[node]] under the same group can be connected to other [[node]]
       */
-    trait NodeGroup {
+    trait Codomain {
 
-      trait NodeInGroup extends Node_[node] {
-        self: NodeGroup.this.node =>
+      trait Node_ extends Impls.this.Node_[node] {
+        self: Codomain.this.node =>
 
         def value: node = this
       }
 
-      type node <: NodeInGroup
+      type node <: Node_ // TODO: should be "FixedPoint"
     }
 
     /**

@@ -83,7 +83,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  protected def dryRun(tree: Local.Diverging.Tree[? <: RefBindingLike]): Unit
+  def dryRun(tree: Local.Diverging.Tree[? <: RefBindingLike]): Unit
 
   final override def show[V](data: MaxGraph[V]): Visual[V] = Group().Viz(data)
 
@@ -96,7 +96,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
       lazy val bindings = mutable.ArrayBuffer.empty[RefBindingLike]
 
-      var nameOpt: Option[String] = None
+      @volatile var nameOpt: Option[String] = None
     }
 
     lazy val refCountings: mutable.LinkedHashMap[Any, RefCounting] = mutable.LinkedHashMap.empty
@@ -105,12 +105,12 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
     case class Viz[V](override val unbox: MaxGraph[V]) extends Visual[V] {
 
-      object RefBindings extends Local.Diverging.Tree.NodeGroup {
+      object RefBindings extends Local.Diverging.Tree.Codomain {
 
         case class node(
             override val original: Local.Diverging.Graph.Node[V],
             id: UUID = UUID.randomUUID() // TODO: need to get rid of this
-        ) extends NodeInGroup
+        ) extends Node_
             with RefBindingLike {
 
           {
@@ -123,14 +123,12 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
             val existing = refKeyOpt
               .map { refKey =>
-                val result = refCountings
-                  .get(refKey)
-                  .map { rc =>
-                    rc.nameOpt.getOrElse(
-                      rc.nameOpt = Some(bindingIndices.getAndIncrement().toString)
-                    )
+                val rcOpt = refCountings.get(refKey)
 
+                val result = rcOpt
+                  .map { rc =>
                     rc.bindings += this
+                    if (rc.nameOpt.isEmpty) rc.nameOpt = Some(bindingIndices.getAndIncrement().toString)
                     rc -> false
                   }
                   .getOrElse {
@@ -153,7 +151,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
           def shouldExpand: Boolean = refCounting_shouldExpand._2
 
-          lazy val bindingNameOpt: Option[String] = {
+          def bindingNameOpt: Option[String] = {
             refKeyOpt.flatMap { refKey =>
               refCountings.get(refKey).flatMap(_.nameOpt)
             }
@@ -182,17 +180,19 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
             val originalText = original.nodeText
 
-            bindingNameOpt
+            val result = bindingNameOpt
               .map { name =>
                 if (shouldExpand) addSrcAnnotation(originalText, name)
                 else addRefAnnotation(originalText, name)
               }
               .getOrElse(originalText)
+
+            result
           }
         }
       }
 
-      lazy val delegates: Local.Batch[Local.Diverging.Tree[RefBindings.node]] = {
+      lazy val refBindingBatch: Local.Batch[Local.Diverging.Tree[RefBindings.node]] = {
         unbox.entries.map { node =>
           val refBinding: RefBindings.node = RefBindings.node(node)
 
@@ -200,21 +200,20 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
         }
       }
 
-      def dryRun(): Unit = {
+      lazy val dryRunOnce: Unit = {
 
-        delegates.collect.foreach { g =>
+        refBindingBatch.collect.foreach { g =>
           LinkedHierarchy.this.dryRun(g)
         }
       }
 
       override lazy val toString: String = {
-        dryRun()
+        dryRunOnce
 
-        delegates
+        refBindingBatch.collect
           .map { v =>
             backbone.Viz(v).toString
           }
-          .collect
           .mkString("\n")
       }
     }

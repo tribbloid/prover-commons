@@ -21,7 +21,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
     val viz = TypeViz[S2K[S1]]
 
     viz
-      .text_hierarchy()
+      .text_linkedHierarchy()
       .toString
       .shouldBe(
         """
@@ -58,7 +58,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
     val viz = TypeViz[S2]
 
     viz
-      .text_hierarchy()
+      .text_linkedHierarchy()
       .toString
       .shouldBe(
         """
@@ -104,7 +104,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
     val viz = TypeViz[String]
 
     viz
-      .text_hierarchy()
+      .text_linkedHierarchy()
       .toString
       .shouldBe(
         """

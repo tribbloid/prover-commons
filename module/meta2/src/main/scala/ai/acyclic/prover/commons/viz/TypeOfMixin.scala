@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.viz
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy
 import ai.acyclic.prover.commons.refl.HasReflection
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
@@ -12,7 +13,7 @@ object TypeOfMixin {
 
   trait VNodeLike {
 
-    def argDryRun(): Unit
+    lazy val argDryRun: Unit = {}
   }
 }
 
@@ -24,9 +25,9 @@ trait TypeOfMixin extends HasReflection {
 
   object TypeOf {
 
-    implicit class Show[T](self: TypeOf[T]) extends Local.CanShow(self.graph) {}
+    implicit def asNodes(v: TypeOf[?]): v.TypeRefBatch#Nodes = v.TypeRefBatch().nodes
 
-    implicit def asNodes(v: TypeOf[?]): v.vizGroup.Nodes = v.nodes
+    implicit def asShow(v: TypeOf[?]): v.TypeRefBatch#ShowType = v.TypeRefBatch().ShowType()
   }
 
   class TypeOf[T](
@@ -37,13 +38,33 @@ trait TypeOfMixin extends HasReflection {
 
     lazy val typeOps: TypeOps = TypeOps(reflection.typeView(tt))
 
-    lazy val vizGroup: VisualisationGroup = VisualisationGroup()
-    lazy val nodes: vizGroup.Nodes = vizGroup.Nodes(typeOps.formattedBy(format.typeFormat))
+    case class TypeRefBatch(
+        override val vizGroup: format.DelegateFormat.Group = format.DelegateFormat.Group()
+    ) extends TypeRefBindings {
 
-    lazy val typeStr: String = nodes.typeText
+      lazy val nodes: Nodes = Nodes(typeOps.formattedBy(format.typeFormat))
 
-    lazy val graph: Local.Diverging.UpperSemilattice[VisualisationGroup.node] =
-      Local.Diverging.UpperSemilattice(nodes.SuperTypeNode)
+      lazy val typeStr: String = nodes.typeText
+
+      lazy val graph: Local.Diverging.Graph[TypeRefBindings.node] = {
+        Local.Diverging.Graph.makeExact(nodes.SuperTypeNode)
+
+        /**
+          * CAUTION: [[nodes.SuperTypeNode]] is a semilattice node in Heyting algebra.
+          *
+          * BUT if counting reference it becomes a diverging graph, potentially with cycle.
+          *
+          * which is why it returned a [[Local.Diverging.Graph]] constructed from
+          * [[Local.Diverging.UpperSemilattice.Node]]
+          */
+      }
+
+      case class ShowType() extends Local.VisualOps(graph, vizGroup)
+    }
+
+    lazy val typeStr = {
+      TypeRefBatch().typeStr
+    }
 
     override def toString: String = {
 
@@ -74,18 +95,18 @@ trait TypeOfMixin extends HasReflection {
     def =!=(that: TypeOf[?] = null): Unit = should_=:=(that)
   }
 
-  object VisualisationGroup extends Local.Diverging.UpperSemilattice.NodeGroup {
+  object TypeRefBindings extends Local.Diverging.UpperSemilattice.Codomain {
 
     // technically this layer could be collapsed into GraphRepr
-    trait node extends NodeInGroup with TypeOfMixin.VNodeLike {}
+    trait node extends Node_ with TypeOfMixin.VNodeLike {}
   }
 
   // visualisations in the same group should not display redundant information
-  case class VisualisationGroup() {
+  trait TypeRefBindings { // TODO: only 1 subclass, no need to be a layer of abstraction
 
-    import VisualisationGroup.*
+    import TypeRefBindings.*
 
-    lazy val delegateGroup: format.DelegateFormat.Group = format.DelegateFormat.Group()
+    val vizGroup: format.DelegateFormat.Group
 
     case class Nodes(
         ir: TypeIR
@@ -93,7 +114,7 @@ trait TypeOfMixin extends HasReflection {
 
       val node: TypeOps = ir.typeOps
 
-      lazy val argGraph: Local.Diverging.Graph[VisualisationGroup.node] = {
+      lazy val argGraph: Local.Diverging.Graph[TypeRefBindings.node] = {
 
         val equivalentIRs = ir.EquivalentTypes.recursively
 
@@ -112,7 +133,9 @@ trait TypeOfMixin extends HasReflection {
 
       lazy val typeText: String = ir.text
 
-      lazy val argViz: delegateGroup.Viz[VisualisationGroup.node] = delegateGroup.Viz(argGraph)
+      lazy val argViz: vizGroup.Viz[TypeRefBindings.node] = {
+        vizGroup.Viz(argGraph)
+      }
 
       lazy val argText: String = {
 
@@ -152,9 +175,9 @@ trait TypeOfMixin extends HasReflection {
 
         override lazy val toString: String = fullText
 
-        override def argDryRun(): Unit = {
+        override lazy val argDryRun: Unit = {
 
-          argViz.dryRun()
+          argViz.dryRunOnce
         }
       }
 
@@ -179,7 +202,6 @@ trait TypeOfMixin extends HasReflection {
           else s"$ttStr [ $size ARGS ] :"
         }
 
-        override def argDryRun(): Unit = {}
       }
     }
   }

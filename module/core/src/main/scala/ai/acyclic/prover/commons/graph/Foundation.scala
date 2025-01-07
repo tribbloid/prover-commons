@@ -1,6 +1,8 @@
 package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.Foundation.Graph.K
+import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.local.Local.VisualOps
 import ai.acyclic.prover.commons.graph.topology.Axiom
 
 object Foundation {
@@ -138,4 +140,13 @@ object Foundation {
 
     }
   }
+
+  implicit class showGraph[X <: Axiom.Top, V](graph: Local.Graph[X, V]) extends VisualOps[X, V](graph) {}
+
+  implicit class showNode[X <: Axiom.Top, V](node: Foundation.this.Node[X, V])(
+      implicit
+      assuming: X
+  ) extends VisualOps[X, V](
+        Local[X, V](node)
+      ) {}
 }
