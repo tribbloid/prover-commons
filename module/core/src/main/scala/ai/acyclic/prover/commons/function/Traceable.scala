@@ -23,13 +23,13 @@ trait Traceable extends View.Equals.ByConstruction {
       node.nodeText
     }
 
-    def text_hierarchy: String = {
+    def text_hierarchy(): String = {
 
       val viz = Hierarchy.Default.showNode(node)
       viz.toString
     }
 
-    def text_linkedHierarchy: String = {
+    def text_linkedHierarchy(): String = {
       val viz = LinkedHierarchy.Default.showNode(node)
       viz.toString
     }

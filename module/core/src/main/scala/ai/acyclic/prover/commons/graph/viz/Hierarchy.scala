@@ -38,14 +38,14 @@ abstract class Hierarchy extends Visualisation.Local(Local.Diverging.Poset) {
 
   lazy val SPACE = " "
 
-  final override def show[V](data: Local.Diverging.Poset[V]): Viz[V] = {
+  final override def show[V](data: Local.Diverging.Poset[V]): Viz = {
 
     Viz(data)
   }
 
-  case class Viz[V](override val unbox: MaxGraph[V]) extends Visual[V] {
+  case class Viz(override val unbox: MaxGraph[?]) extends Visual {
 
-    case class SubViz(head: Local.Diverging.Poset.Node[V], depth: Int = Viz.this.maxRecursionDepth) {
+    case class SubViz(head: Local.Diverging.Poset.Node[?], depth: Int = Viz.this.maxRecursionDepth) {
 
       lazy val treeString: String = {
 
@@ -59,7 +59,7 @@ abstract class Hierarchy extends Visualisation.Local(Local.Diverging.Poset) {
 
           val selfT = wText.pad.left(FORK)
 
-          val arrows_targets: Seq[(Outbound, Local.Diverging.Poset.Node[V])] = head.inductions
+          val arrows_targets: Seq[(Outbound, Local.Diverging.Poset.Node[?])] = head.inductions
 
           // TODO: if mutliple arrows in a induction are all pointing to the same target
           //  they will be displayed separately which is verbose

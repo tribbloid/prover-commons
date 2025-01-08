@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.viz
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
+import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.refl.HasReflection
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
@@ -20,13 +21,11 @@ trait TypeOfMixin extends HasReflection {
 
   import reflection.*
 
-  val format: TypeHierarchy
+  val treeFormat: TypeTreeFormat
 
   object TypeOf {
 
-    implicit def asNodes(v: TypeOf[?]): v.TypeRefBatch#Nodes = v.TypeRefBatch().nodes
-
-    implicit def asShow(v: TypeOf[?]): v.TypeRefBatch#ShowType = v.TypeRefBatch().ShowType()
+    implicit def asNodes(v: TypeOf[?]): v.TypeRefBatch#TypeIRView = v.TypeRefBatch().ir
   }
 
   class TypeOf[T](
@@ -38,31 +37,45 @@ trait TypeOfMixin extends HasReflection {
     lazy val typeOps: TypeOps = TypeOps(reflection.typeView(tt))
 
     case class TypeRefBatch(
-        override val vizGroup: format.DelegateFormat.Group = format.DelegateFormat.Group()
+        override val vizGroup: treeFormat._LinkedHierarchyFormat.Group = treeFormat._LinkedHierarchyFormat.Group()
     ) extends TypeRefBindings {
 
-      lazy val nodes: Nodes = Nodes(typeOps.formattedBy(format.typeFormat))
+      lazy val ir: TypeIRView = TypeIRView(typeOps.formattedBy(treeFormat.typeFormat))
 
-      lazy val typeStr: String = nodes.typeText
+      lazy val typeStr: String = ir.typeText
+
+      lazy val node: ir.SuperTypeNode.type = ir.SuperTypeNode
 
       lazy val graph: Local.Diverging.Graph[TypeRefBindings.node] = {
-        Local.Diverging.Graph.makeExact(nodes.SuperTypeNode)
 
         /**
-          * CAUTION: [[nodes.SuperTypeNode]] is a semilattice node in Heyting algebra.
+          * CAUTION: [[irView.SuperTypeNode]] is a semilattice node in Heyting algebra.
           *
           * BUT if counting reference it becomes a diverging graph, potentially with cycle.
           *
           * which is why it returned a [[Local.Diverging.Graph]] constructed from
           * [[Local.Diverging.UpperSemilattice.Node]]
           */
+        Local.Diverging.Graph.makeExact(node)
       }
-
-      case class ShowType() extends Local.VisualOps(graph, vizGroup)
     }
 
     lazy val typeStr: String = {
       TypeRefBatch().typeStr
+    }
+
+    def text_linkedHierarchy(
+        vizGroup: treeFormat._LinkedHierarchyFormat.Group = treeFormat._LinkedHierarchyFormat.Group()
+    ): treeFormat._LinkedHierarchyFormat.Visual = {
+      vizGroup.Viz(TypeRefBatch(vizGroup).graph)
+    }
+
+    def text_flow(
+        vizGroup: treeFormat._LinkedHierarchyFormat.Group = treeFormat._LinkedHierarchyFormat.Group()
+    ): Flow.Default.Visual = {
+      TypeRefBatch(vizGroup).node.text_flow(
+        treeFormat._FlowFormat
+      )
     }
 
     override def toString: String = {
@@ -105,9 +118,9 @@ trait TypeOfMixin extends HasReflection {
 
     import TypeRefBindings.*
 
-    val vizGroup: format.DelegateFormat.Group
+    val vizGroup: treeFormat._LinkedHierarchyFormat.Group
 
-    case class Nodes(
+    case class TypeIRView(
         ir: TypeIR
     ) {
 
@@ -125,11 +138,11 @@ trait TypeOfMixin extends HasReflection {
               tv.toString != "Any" // skipped for being too trivial
             }
             .map { tv =>
-              Nodes(TypeOps(tv).formattedBy(format.typeFormat)).SuperTypeNode
+              TypeIRView(TypeOps(tv).formattedBy(treeFormat.typeFormat)).SuperTypeNode
             }
         }
 
-        private lazy val dependentArgs = EquivalentArgs.nonEmpty
+        private lazy val dependentArgs = Args.nonEmpty
 
         override lazy val scanArgsOnce: Unit = {
           dependentArgs.foreach { args =>
@@ -158,7 +171,7 @@ trait TypeOfMixin extends HasReflection {
 
         override lazy val inductions: List[(Arrow.`~>`, node)] = {
           node.args.map { tt =>
-            Nodes(TypeOps(tt).formattedBy(format.typeFormat)).SuperTypeNode
+            TypeIRView(TypeOps(tt).formattedBy(treeFormat.typeFormat)).SuperTypeNode
           }
         }
 
@@ -175,7 +188,7 @@ trait TypeOfMixin extends HasReflection {
 
       }
 
-      object EquivalentArgs {
+      object Args {
 
         lazy val graph: Local.Diverging.Graph[TypeRefBindings.node] = {
 
@@ -185,7 +198,7 @@ trait TypeOfMixin extends HasReflection {
             .groupBy(_.typeOps)
             .flatMap {
               case (_, vs) =>
-                val argNode = Nodes.this.copy(ir = vs.head).ArgNode
+                val argNode = TypeIRView.this.copy(ir = vs.head).ArgNode
                 if (argNode.inductions.isEmpty) None
                 else Some(argNode)
             }
@@ -194,17 +207,16 @@ trait TypeOfMixin extends HasReflection {
           Local.Diverging.Graph.makeExact(argNodes*)
         }
 
-        lazy val nonEmpty: Option[EquivalentArgs.type] = {
-          if (!format._showArgs || graph.isEmpty)
+        lazy val nonEmpty: Option[Args.type] = {
+          if (!treeFormat._showArgs || graph.isEmpty)
             None
           else
             Some(this)
         }
 
-        lazy val visual: vizGroup.Viz[TypeRefBindings.node] = {
+        lazy val visual: vizGroup.Viz = {
           vizGroup.Viz(graph)
         }
-
       }
     }
   }

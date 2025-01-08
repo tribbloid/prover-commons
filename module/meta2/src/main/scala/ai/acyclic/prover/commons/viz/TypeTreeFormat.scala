@@ -2,23 +2,25 @@ package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy.RefBindingLike
-import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
+import ai.acyclic.prover.commons.graph.viz.{Flow, Hierarchy, LinkedHierarchy}
 import ai.acyclic.prover.commons.viz.format.TypeFormat
 
 import scala.language.implicitConversions
 
-case class TypeHierarchy(
+case class TypeTreeFormat(
     typeFormat: TypeFormat,
     backbone: Hierarchy = Hierarchy.Default,
-    showArgs: TypeHierarchy.ShowArgs = TypeHierarchy.ShowArgs.default
+    showArgs: TypeTreeFormat.ShowArgs = TypeTreeFormat.ShowArgs.default
 ) {
 
-  lazy val _showArgs: Boolean = showArgs != TypeHierarchy.NoArg
+  lazy val _showArgs: Boolean = showArgs != TypeTreeFormat.NoArg
 
-  lazy val _expandArgsBeforeSubtypes: Boolean = showArgs == TypeHierarchy.ArgsBeforeSuperTypes
+  lazy val _expandArgsBeforeSubtypes: Boolean = showArgs == TypeTreeFormat.ArgsBeforeSuperTypes
+
+  val _FlowFormat: Flow.Default.type = Flow.Default
 
   // TODO : this has to be removed! otherwise TypeVisualization can only use 1 format!
-  object DelegateFormat extends LinkedHierarchy.Default(backbone) {
+  object _LinkedHierarchyFormat extends LinkedHierarchy.Default(backbone) {
 
     override def scanReferences(tree: Local.Diverging.Tree[RefBindingLike]): Unit = {
 
@@ -53,7 +55,7 @@ case class TypeHierarchy(
 
 }
 
-object TypeHierarchy {
+object TypeTreeFormat {
 
   sealed trait ShowArgs
 
@@ -67,9 +69,9 @@ object TypeHierarchy {
   object NoArg extends ShowArgs
 
   object Default
-      extends TypeHierarchy(
+      extends TypeTreeFormat(
         TypeFormat.Default
       )
 
-  implicit def fromBase(base: TypeFormat): TypeHierarchy = TypeHierarchy(base)
+  implicit def fromBase(base: TypeFormat): TypeTreeFormat = TypeTreeFormat(base)
 }

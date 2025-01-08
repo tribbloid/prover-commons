@@ -7,6 +7,7 @@ import ai.acyclic.prover.commons.typesetting.TextBlock
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 object LinkedHierarchy {
 
@@ -83,7 +84,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
   def scanReferences(tree: Local.Diverging.Tree[RefBindingLike]): Unit
 
-  final override def show[V](data: MaxGraph[V]): Visual[V] = Group().Viz(data)
+  final override def show[V](data: MaxGraph[V]): Visual = Group().Viz(data)
 
   // shared between visualisations of multiple graphs
   case class Group() {
@@ -92,14 +93,12 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
     case class RefCounting() {
 
-      lazy val bindings = mutable.ArrayBuffer.empty[RefBindingLike]
+      lazy val bindings: ArrayBuffer[RefBindingLike] = mutable.ArrayBuffer.empty[RefBindingLike]
 
       @volatile var nameOpt: Option[String] = None
     }
 
     lazy val refCountings: mutable.LinkedHashMap[Any, RefCounting] = mutable.LinkedHashMap.empty
-
-    def visualize[V](data: Local.Diverging.Graph[V]): Visual[V] = Viz(data)
 
     object RefBindings extends Local.Diverging.Tree.Codomain {
 
@@ -188,8 +187,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
       }
     }
 
-    // TODO: no need,
-    case class Viz[V](override val unbox: MaxGraph[V]) extends Visual[V] {
+    case class Viz(override val unbox: MaxGraph[?]) extends Visual {
 
       lazy val refBindingBatch: Local.Batch[Local.Diverging.Tree[RefBindings.node]] = {
         unbox.entries.map { node =>

@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.graph.Foundation.Graph.K
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.local.Local.VisualOps
+import ai.acyclic.prover.commons.graph.local.VisualOps
 import ai.acyclic.prover.commons.graph.topology.Axiom
 
 object Foundation {

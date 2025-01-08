@@ -34,7 +34,7 @@ trait TypeViz[R <: Reflection] extends TermAndTypeOfMixin {
 object TypeViz {
 
   def default[R <: Reflection](reflection: R) =
-    new TypeVizBuilder[R](reflection, TypeHierarchy.Default).WeakType
+    new TypeVizBuilder[R](reflection, TypeTreeFormat.Default).WeakType
 
   trait TestFixtures { // TODO: move to test
 

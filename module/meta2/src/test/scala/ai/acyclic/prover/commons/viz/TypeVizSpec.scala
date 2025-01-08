@@ -270,21 +270,8 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
           """
             |+ ai.acyclic.prover.commons.viz.TypeVizSpec.W.type
             |!-+ ai.acyclic.prover.commons.viz.TypeVizSpec.W.type
-            |  !-- java.io.Serializable ............................................................ [0]
-            |  !-+ scala.runtime.AbstractFunction1[Int,ai.acyclic.prover.commons.viz.TypeVizSpec.W]
-            |    :       ┏ + scala.runtime.AbstractFunction1 [ 2 ARGS ] :
-            |    :       ┃ !-+ Int ............................................................................. [2]
-            |    :       ┃ : !-- AnyVal
-            |    :       ┃ !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.W ..................................... [3]
-            |    :       ┃   !-- java.io.Serializable ... (see [0])
-            |    :       ┃   !-+ Product
-            |    :       ┃   : !-- Equals
-            |    :       ┃   !-- Object ... (see [1])
-            |    !-+ Int => ai.acyclic.prover.commons.viz.TypeVizSpec.W
-            |      :       ┏ + Function1 [ 2 ARGS ] :
-            |      :       ┃ !-- Int ... (see [2])
-            |      :       ┃ !-- ai.acyclic.prover.commons.viz.TypeVizSpec.W ... (see [3])
-            |      !-- Object .......................................................................... [1]
+            |  !-- java.io.Serializable
+            |  !-- Object
             |""".stripMargin
         )
     }

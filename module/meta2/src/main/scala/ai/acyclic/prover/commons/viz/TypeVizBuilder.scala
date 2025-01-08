@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.refl.Reflection
 
 class TypeVizBuilder[R <: Reflection](
     val reflection: R,
-    val format: TypeHierarchy
+    val format: TypeTreeFormat
 ) extends HasInner {
 
   sealed abstract class _TypeViz(
@@ -14,14 +14,14 @@ class TypeVizBuilder[R <: Reflection](
   ) extends TypeViz[R]
       with _Inner {
 
-    override val format: TypeHierarchy = TypeVizBuilder.this.format
+    override val treeFormat: TypeTreeFormat = TypeVizBuilder.this.format
   }
 
   abstract class WeakType extends _TypeViz() {
 
     override type TTag[T] = WeakTypeTag[T]
 
-    def withFormat(format: TypeHierarchy = TypeHierarchy.Default) =
+    def withFormat(format: TypeTreeFormat = TypeTreeFormat.Default) =
       new TypeVizBuilder(this.reflection, format).WeakType
   }
   object WeakType extends WeakType
@@ -30,7 +30,7 @@ class TypeVizBuilder[R <: Reflection](
 
     override type TTag[T] = TypeTag[T]
 
-    def withFormat(format: TypeHierarchy = TypeHierarchy.Default) =
+    def withFormat(format: TypeTreeFormat = TypeTreeFormat.Default) =
       new TypeVizBuilder(this.reflection, format).ConcreteType
   }
   object ConcreteType extends ConcreteType
@@ -39,5 +39,5 @@ class TypeVizBuilder[R <: Reflection](
 
 object TypeVizBuilder {
 
-  object RuntimeDefault extends TypeVizBuilder(ScalaReflection, TypeHierarchy.Default) {}
+  object RuntimeDefault extends TypeVizBuilder(ScalaReflection, TypeTreeFormat.Default) {}
 }

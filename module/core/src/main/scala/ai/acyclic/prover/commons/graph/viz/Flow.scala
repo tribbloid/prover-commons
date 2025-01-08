@@ -34,15 +34,13 @@ abstract class Flow extends Visualisation.Local(Local.AnyGraph) {
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  def apply[V](s: MaxGraph[V]): Viz[V] = Viz(s)
+  final override def show[V](data: Local.AnyGraph[V]): Viz = Viz(data)
 
-  final override def show[V](data: Local.AnyGraph[V]): Viz[V] = Viz(data)
-
-  case class Viz[V](unbox: MaxGraph[V]) extends Visual[V] {
+  case class Viz(unbox: MaxGraph[?]) extends Visual {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(node: Node[V]) extends View.Equals {
+    case class NodeWrapper(node: Node[?]) extends View.Equals {
 
       {
         canEqualProjections += CanEqual.Native.on(node.identity)
