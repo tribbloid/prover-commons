@@ -21,6 +21,7 @@ object Visualisation extends HasInner { // TODO: should be a mixin
       val result: Visual[V] = show(graph)
       result
     }
+
   }
 }
 
@@ -36,6 +37,12 @@ trait Visualisation extends HasMaxRecursionDepth {
         case _                        => HasMaxRecursionDepth.Default.maxRecursionDepth
       }
     }
+
+    def text: String
+
+    final override def toString = text
+
+    def mermaidDiagram: String = ??? // TODO: impl later
 
   } // TODO: do we really need this?
   def show[V](data: MaxGraph[V]): Visual[V]

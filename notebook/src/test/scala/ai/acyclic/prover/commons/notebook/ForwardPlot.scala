@@ -16,6 +16,8 @@ trait ForwardPlot {
       fromNode.arrowBuffer += Arrow.`~>`.OfText(Option(msg).filter(_.nonEmpty)) -> this
       this
     }
+
+    override def toString: String = text
   }
 
   object Forward extends Local.Diverging.UpperSemilattice.Inspection[Forward] {

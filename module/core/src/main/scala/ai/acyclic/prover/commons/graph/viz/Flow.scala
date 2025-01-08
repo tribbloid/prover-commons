@@ -175,7 +175,7 @@ abstract class Flow extends Visualisation.Local(Local.AnyGraph) {
       ascii.graph.Graph(nodeSet, relationBuffer.toList)
     }
 
-    override lazy val toString: String = {
+    override lazy val text: String = {
 
       GraphLayout.renderGraph(asciiDiagram, layoutPrefs = _layoutPreferences)
     }

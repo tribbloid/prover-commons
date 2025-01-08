@@ -3,7 +3,6 @@ package ai.acyclic.prover.commons.viz
 import ai.acyclic.prover.commons.diff.StringDiff
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.viz.LinkedHierarchy
 import ai.acyclic.prover.commons.refl.HasReflection
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
@@ -13,7 +12,7 @@ object TypeOfMixin {
 
   trait VNodeLike {
 
-    lazy val argDryRun: Unit = {}
+    lazy val scanArgsOnce: Unit = {}
   }
 }
 
@@ -62,7 +61,7 @@ trait TypeOfMixin extends HasReflection {
       case class ShowType() extends Local.VisualOps(graph, vizGroup)
     }
 
-    lazy val typeStr = {
+    lazy val typeStr: String = {
       TypeRefBatch().typeStr
     }
 
@@ -113,50 +112,7 @@ trait TypeOfMixin extends HasReflection {
     ) {
 
       val node: TypeOps = ir.typeOps
-
-      lazy val argGraph: Local.Diverging.Graph[TypeRefBindings.node] = {
-
-        val equivalentIRs = ir.EquivalentTypes.recursively
-
-        val argNodes = equivalentIRs
-          .groupBy(_.typeOps)
-          .flatMap {
-            case (_, vs) =>
-              val argNode = this.copy(ir = vs.head).ArgNode
-              if (argNode.inductions.isEmpty) None
-              else Some(argNode)
-          }
-          .toSeq
-
-        Local.Diverging.Graph(argNodes*)
-      }
-
       lazy val typeText: String = ir.text
-
-      lazy val argViz: vizGroup.Viz[TypeRefBindings.node] = {
-        vizGroup.Viz(argGraph)
-      }
-
-      lazy val argText: String = {
-
-        argViz.toString
-      }
-
-      lazy val fullText: String = {
-
-        if (!format._showArgs || argGraph.isEmpty) {
-          typeText
-        } else {
-
-          val indentedArgText =
-            TextBlock(argText).pad
-              .left(Padding.argLeftBracket)
-              .indent("      ")
-              .build
-
-          typeText + "\n" + indentedArgText
-        }
-      }
 
       case object SuperTypeNode extends node {
 
@@ -173,11 +129,26 @@ trait TypeOfMixin extends HasReflection {
             }
         }
 
-        override lazy val toString: String = fullText
+        private lazy val dependentArgs = EquivalentArgs.nonEmpty
 
-        override lazy val argDryRun: Unit = {
+        override lazy val scanArgsOnce: Unit = {
+          dependentArgs.foreach { args =>
+            args.visual.scanReferencesOnce
+          }
+        }
 
-          argViz.dryRunOnce
+        override lazy val nodeText: String = {
+          dependentArgs
+            .map { args =>
+              val indentedArgText =
+                TextBlock(args.visual.toString).pad
+                  .left(Padding.argLeftBracket)
+                  .indent("      ")
+                  .build
+
+              typeText + "\n" + indentedArgText
+            }
+            .getOrElse(typeText)
         }
       }
 
@@ -191,7 +162,7 @@ trait TypeOfMixin extends HasReflection {
           }
         }
 
-        override lazy val toString: String = {
+        override lazy val nodeText: String = {
 
           val ttStr = node.as.typeConstructor.toString
 
@@ -200,6 +171,38 @@ trait TypeOfMixin extends HasReflection {
           if (size == 1) s"$ttStr [ $size ARG ] :"
           else if (size == 0) s"$ttStr [ No ARG ]"
           else s"$ttStr [ $size ARGS ] :"
+        }
+
+      }
+
+      object EquivalentArgs {
+
+        lazy val graph: Local.Diverging.Graph[TypeRefBindings.node] = {
+
+          val equivalentIRs = ir.EquivalentTypes.recursively
+
+          val argNodes = equivalentIRs
+            .groupBy(_.typeOps)
+            .flatMap {
+              case (_, vs) =>
+                val argNode = Nodes.this.copy(ir = vs.head).ArgNode
+                if (argNode.inductions.isEmpty) None
+                else Some(argNode)
+            }
+            .toSeq
+
+          Local.Diverging.Graph.makeExact(argNodes*)
+        }
+
+        lazy val nonEmpty: Option[EquivalentArgs.type] = {
+          if (!format._showArgs || graph.isEmpty)
+            None
+          else
+            Some(this)
+        }
+
+        lazy val visual: vizGroup.Viz[TypeRefBindings.node] = {
+          vizGroup.Viz(graph)
         }
 
       }

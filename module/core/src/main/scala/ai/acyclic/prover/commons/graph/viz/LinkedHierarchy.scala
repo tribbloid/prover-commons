@@ -43,7 +43,7 @@ object LinkedHierarchy {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def dryRun(tree: Local.Diverging.Tree[? <: RefBindingLike]): Unit = {
+    override def scanReferences(tree: Local.Diverging.Tree[RefBindingLike]): Unit = {
 
       val _tree = tree.ops_anyGraph
       _tree
@@ -81,9 +81,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
   def backbone: Hierarchy
 
-  lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
-
-  def dryRun(tree: Local.Diverging.Tree[? <: RefBindingLike]): Unit
+  def scanReferences(tree: Local.Diverging.Tree[RefBindingLike]): Unit
 
   final override def show[V](data: MaxGraph[V]): Visual[V] = Group().Viz(data)
 
@@ -103,94 +101,95 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
     def visualize[V](data: Local.Diverging.Graph[V]): Visual[V] = Viz(data)
 
-    case class Viz[V](override val unbox: MaxGraph[V]) extends Visual[V] {
+    object RefBindings extends Local.Diverging.Tree.Codomain {
 
-      object RefBindings extends Local.Diverging.Tree.Codomain {
+      case class node(
+          override val original: Local.Diverging.Graph.Node[?],
+          id: UUID = UUID.randomUUID() // TODO: need to get rid of this
+      ) extends Node_
+          with RefBindingLike {
 
-        case class node(
-            override val original: Local.Diverging.Graph.Node[V],
-            id: UUID = UUID.randomUUID() // TODO: need to get rid of this
-        ) extends Node_
-            with RefBindingLike {
+        {
+          refCounting_shouldExpand
+        }
 
-          {
-            refCounting_shouldExpand
-          }
+        lazy val refKeyOpt: Option[Any] = original.identity
 
-          lazy val refKeyOpt: Option[Any] = original.identity
+        lazy val refCounting_shouldExpand: (RefCounting, Boolean) = {
 
-          lazy val refCounting_shouldExpand: (RefCounting, Boolean) = {
+          val existing = refKeyOpt
+            .map { refKey =>
+              val rcOpt = refCountings.get(refKey)
 
-            val existing = refKeyOpt
-              .map { refKey =>
-                val rcOpt = refCountings.get(refKey)
+              val result = rcOpt
+                .map { rc =>
+                  rc.bindings += this
+                  if (rc.nameOpt.isEmpty) rc.nameOpt = Some(bindingIndices.getAndIncrement().toString)
+                  rc -> false
+                }
+                .getOrElse {
 
-                val result = rcOpt
-                  .map { rc =>
-                    rc.bindings += this
-                    if (rc.nameOpt.isEmpty) rc.nameOpt = Some(bindingIndices.getAndIncrement().toString)
-                    rc -> false
-                  }
-                  .getOrElse {
+                  val result = RefCounting()
+                  result.bindings += this
 
-                    val result = RefCounting()
-                    result.bindings += this
-
-                    refCountings.put(refKey, result)
-                    result -> true
-                  }
-                result
-              }
-
-            val result = existing
-              .getOrElse {
-                RefCounting() -> true
-              }
-            result
-          }
-
-          def shouldExpand: Boolean = refCounting_shouldExpand._2
-
-          def bindingNameOpt: Option[String] = {
-            refKeyOpt.flatMap { refKey =>
-              refCountings.get(refKey).flatMap(_.nameOpt)
-            }
-          }
-
-          override lazy val inductions: Seq[(Arrow.OutboundT.^, RefBindings.node)] = {
-
-            val result = if (!shouldExpand) {
-              Nil
-            } else {
-
-              original.inductions.map { tuple =>
-                val arrow = tuple._1: Arrow.Outbound
-
-                val target: RefBindings.node = RefBindings.node(tuple._2)
-
-                arrow -> target
-              }
-
+                  refCountings.put(refKey, result)
+                  result -> true
+                }
+              result
             }
 
-            result
-          }
+          val result = existing
+            .getOrElse {
+              RefCounting() -> true
+            }
+          result
+        }
 
-          override lazy val nodeText: String = {
+        def shouldExpand: Boolean = refCounting_shouldExpand._2
 
-            val originalText = original.nodeText
-
-            val result = bindingNameOpt
-              .map { name =>
-                if (shouldExpand) addSrcAnnotation(originalText, name)
-                else addRefAnnotation(originalText, name)
-              }
-              .getOrElse(originalText)
-
-            result
+        def bindingNameOpt: Option[String] = {
+          refKeyOpt.flatMap { refKey =>
+            refCountings.get(refKey).flatMap(_.nameOpt)
           }
         }
+
+        override lazy val inductions: Seq[(Arrow.OutboundT.^, RefBindings.node)] = {
+
+          val result = if (!shouldExpand) {
+            Nil
+          } else {
+
+            original.inductions.map { tuple =>
+              val arrow = tuple._1: Arrow.Outbound
+
+              val target: RefBindings.node = RefBindings.node(tuple._2)
+
+              arrow -> target
+            }
+
+          }
+
+          result
+        }
+
+        override lazy val nodeText: String = {
+
+          val originalText = original.nodeText
+
+          val result = bindingNameOpt
+            .map { name =>
+              if (shouldExpand) addSrcAnnotation(originalText, name)
+              else addRefAnnotation(originalText, name)
+            }
+            .getOrElse(originalText)
+
+          result
+        }
       }
+    }
+
+    // TODO: no need,
+    case class Viz[V](override val unbox: MaxGraph[V]) extends Visual[V] {
 
       lazy val refBindingBatch: Local.Batch[Local.Diverging.Tree[RefBindings.node]] = {
         unbox.entries.map { node =>
@@ -200,15 +199,15 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
         }
       }
 
-      lazy val dryRunOnce: Unit = {
+      lazy val scanReferencesOnce: Unit = {
 
         refBindingBatch.collect.foreach { g =>
-          LinkedHierarchy.this.dryRun(g)
+          LinkedHierarchy.this.scanReferences(g)
         }
       }
 
-      override lazy val toString: String = {
-        dryRunOnce
+      override lazy val text: String = {
+        scanReferencesOnce
 
         refBindingBatch.collect
           .map { v =>

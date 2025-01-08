@@ -22,7 +22,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
     viz
       .text_linkedHierarchy()
-      .toString
+      .text
       .shouldBe(
         """
         |+ ai.acyclic.prover.commons.viz.TypeVizSpec.S2K[ai.acyclic.prover.commons.viz.TypeVizSpec.S1]

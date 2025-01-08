@@ -113,14 +113,12 @@ abstract class Hierarchy extends Visualisation.Local(Local.Diverging.Poset) {
       }
     }
 
-    lazy val treeText: String = {
+    lazy val text: String = {
       unbox.maxNodes
         .map { nn =>
           SubViz(nn).treeString
         }
         .mkString("\n")
     }
-
-    override def toString: String = treeText
   }
 }

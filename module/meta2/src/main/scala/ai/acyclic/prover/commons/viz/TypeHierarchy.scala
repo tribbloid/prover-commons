@@ -17,22 +17,21 @@ case class TypeHierarchy(
 
   lazy val _expandArgsBeforeSubtypes: Boolean = showArgs == TypeHierarchy.ArgsBeforeSuperTypes
 
+  // TODO : this has to be removed! otherwise TypeVisualization can only use 1 format!
   object DelegateFormat extends LinkedHierarchy.Default(backbone) {
 
-    override def dryRun(tree: Local.Diverging.Tree[RefBindingLike]): Unit = {
+    override def scanReferences(tree: Local.Diverging.Tree[RefBindingLike]): Unit = {
 
-      def recursiveDryRun(): Unit = {
+      lazy val scanArgsOnce: Unit = {
 
         val _tree = tree.ops_anyGraph
-
-        implicitly[_tree.ArgNode <:< Local.Diverging.Tree.Node[RefBindingLike]]
 
         _tree
           .Traverse(
             down = { (v: Local.Diverging.Tree.Node[RefBindingLike]) =>
               v.value.original match {
                 case vNode: TypeOfMixin.VNodeLike =>
-                  vNode.argDryRun()
+                  vNode.scanArgsOnce
                 case _ => // do nothing
               }
             }
@@ -42,12 +41,12 @@ case class TypeHierarchy(
 
       if (_expandArgsBeforeSubtypes) {
 
-        recursiveDryRun()
-        super.dryRun(tree)
+        scanArgsOnce
+        super.scanReferences(tree)
       } else {
 
-        super.dryRun(tree)
-        recursiveDryRun()
+        super.scanReferences(tree)
+        scanArgsOnce
       }
     }
   }
