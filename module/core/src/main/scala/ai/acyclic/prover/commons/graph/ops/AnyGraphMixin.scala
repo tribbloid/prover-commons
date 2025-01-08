@@ -34,13 +34,13 @@ trait AnyGraphMixin {
 //        format: Flow
 //    ): format.Viz[V] = format.Viz(arg)
 
-    def collectAll: LazyList[V] = {
+    def collectAll: LazyList[Node[X, V]] = {
 
       val base = distinctEntries.collect.to(LazyList)
 
       base
         .flatMap { bb =>
-          bb.asIterable.iterator
+          bb.dependentNodes
         }
         .to(LazyList)
     }
@@ -91,7 +91,7 @@ trait AnyGraphMixin {
 
               val inductionTs: Seq[ArgNode] =
                 downNs.map { n =>
-                  val successors = n.adjacentNodes
+                  val successors = n.dependentNodes
                   val successorsTransformed = successors.flatMap { nn =>
                     transformInternal(nn, depth - 1)
                   }
