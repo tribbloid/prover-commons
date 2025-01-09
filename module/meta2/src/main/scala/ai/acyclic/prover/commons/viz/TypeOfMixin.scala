@@ -40,7 +40,7 @@ trait TypeOfMixin extends HasReflection {
         ir: TypeIR
     ) {
 
-      def base: TypeOps = ir.typeView
+      def base: TypeView = ir.typeView
 
       lazy val typeText: String = ir.text
 
@@ -178,7 +178,7 @@ trait TypeOfMixin extends HasReflection {
       val tt: universe.Type
   ) {
 
-    private lazy val ops: TypeOps = reflection.typeView(tt)
+    private lazy val ops: TypeView = reflection.typeView(tt)
 
     private lazy val ir = TypeIR(ops, treeFormat.typeFormat)
 

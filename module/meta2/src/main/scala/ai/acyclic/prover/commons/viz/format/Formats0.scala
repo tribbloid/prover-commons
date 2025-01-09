@@ -9,7 +9,7 @@ object Formats0 {
   trait TypeInfo[T] extends FormatOvrd
   case object TypeInfo extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val self = tt.as.toString
 
       val genArgs = tt.genArgs
@@ -23,7 +23,7 @@ object Formats0 {
   trait TypeImpl[T] extends FormatOvrd
   case object TypeImpl extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val t: ITyper#Type = tt.as
       t.toString + ": " + t.getClass.getSimpleName
     }
@@ -32,7 +32,7 @@ object Formats0 {
   trait KindName[T] extends FormatOvrd
   case object KindName extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       tt.as.typeConstructor.toString
     }
   }
@@ -40,7 +40,7 @@ object Formats0 {
   trait ClassName[T]
   case object ClassName extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       tt.as.typeSymbol.asClass.fullName
     }
   }

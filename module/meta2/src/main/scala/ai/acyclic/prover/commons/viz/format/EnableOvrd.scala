@@ -9,7 +9,7 @@ case class EnableOvrd(
     base: TypeFormat
 ) extends Formats1.HasBase {
 
-  final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+  final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
     val u = refl.getUniverse
 
     val companions_args = {

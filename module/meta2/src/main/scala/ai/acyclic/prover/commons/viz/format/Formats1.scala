@@ -17,7 +17,7 @@ object Formats1 { // higher-order format constructors
 
     def before(refl: Reflection): refl.TypeView => refl.TypeView
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val beforeFn = before(refl)
 
       val transformRoot = beforeFn(tt)
@@ -48,7 +48,7 @@ object Formats1 { // higher-order format constructors
       bases: TypeFormat*
   ) extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val byBases = bases.map { base =>
         tt.formattedBy(base)
       }
@@ -63,7 +63,7 @@ object Formats1 { // higher-order format constructors
       bases: TypeFormat*
   ) extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val trials = bases
         .to(LazyList)
         .flatMap { (base: TypeFormat) =>
@@ -95,7 +95,7 @@ object Formats1 { // higher-order format constructors
 
       override def constructor: TypeFormat => TypeFormat = v => Hide.HidePackage(v)
 
-      final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+      final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
         val byBase = tt.formattedBy(base)
 
         val full = byBase.text
@@ -124,7 +124,7 @@ object Formats1 { // higher-order format constructors
 
       override def constructor: TypeFormat => TypeFormat = v => Hide.HideStatic(v)
 
-      final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+      final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
         type Formatting = refl.TypeIR
 
         val byBase = tt.formattedBy(base)
@@ -154,7 +154,7 @@ object Formats1 { // higher-order format constructors
       transformer: TypeFormat => TypeFormat
   ) extends TransformDown {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val transformedBase = transformer(base)
 
       val byBase = tt.formattedBy(transformedBase)
