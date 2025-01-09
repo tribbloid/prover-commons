@@ -15,10 +15,10 @@ object Visualisation extends HasInner { // TODO: should be a mixin
     override type MaxGraph[V] = applicableToType.Graph[V]
     type MaxNode[V] = applicableToType.Node[V]
 
-    def showNode[V](node: MaxNode[V]): Visual = {
+    def showNode[V](node: MaxNode[V]): IVisual = {
 
       val graph: applicableToType.Graph[V] = applicableToType.makeExact[V](node)
-      val result: Visual = show(graph)
+      val result: IVisual = show(graph)
       result
     }
 
@@ -29,7 +29,7 @@ trait Visualisation extends HasMaxRecursionDepth {
 
   type MaxGraph[V] <: Local.AnyGraph[V]
 
-  trait Visual extends Delegating[MaxGraph[?]] with HasMaxRecursionDepth {
+  trait IVisual extends Delegating[MaxGraph[?]] with HasMaxRecursionDepth {
 
     final lazy val maxRecursionDepth: Int = {
       unbox match {
@@ -45,5 +45,5 @@ trait Visualisation extends HasMaxRecursionDepth {
     def mermaidDiagram: String = ??? // TODO: impl later
 
   } // TODO: do we really need this?
-  def show[V](data: MaxGraph[V]): Visual
+  def show[V](data: MaxGraph[V]): IVisual
 }

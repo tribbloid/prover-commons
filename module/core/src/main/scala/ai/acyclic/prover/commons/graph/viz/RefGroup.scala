@@ -3,7 +3,6 @@ package ai.acyclic.prover.commons.graph.viz
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.Local.Diverging
-import ai.acyclic.prover.commons.graph.topology.Topology
 import ai.acyclic.prover.commons.typesetting.TextBlock
 
 import java.util.UUID
@@ -70,11 +69,13 @@ case class RefGroup() {
 
   lazy val refCountings: mutable.LinkedHashMap[Any, RefCounting] = mutable.LinkedHashMap.empty
 
-  def build[V](source: Local.Diverging.Graph[V]) = {
+  def convertNode[V](source: Diverging.Graph.Node[V]): Node = RefDomain.node(source)
+
+  def convertGraph[V](source: Local.Diverging.Graph[V]): Local.Diverging.Poset.Graph[RefDomain.node] = {
     // TODO: more engine
 
     val refs: Local.Batch[Node] = source.entries.map { v =>
-      RefDomain.node(v)
+      convertNode(v)
     }
 
     Local.Diverging.Poset.buildExact(refs)

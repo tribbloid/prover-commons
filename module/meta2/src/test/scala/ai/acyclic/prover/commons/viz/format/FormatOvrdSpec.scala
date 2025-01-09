@@ -19,13 +19,13 @@ class FormatOvrdSpec extends BaseSpec {
 
     it("1") {
 
-      viz[String].typeStr.shouldBe("String: ClassNoArgsTypeRef")
+      viz[String].text.shouldBe("String: ClassNoArgsTypeRef")
     }
 
     it("2") {
       val tt = ScalaReflection.universe.typeOf[Undefined[Int]]
 
-      viz[Undefined[Int]].typeStr.shouldBe(
+      viz[Undefined[Int]].text.shouldBe(
         s"$tt: ClassArgsTypeRef"
       )
     }
@@ -35,20 +35,20 @@ class FormatOvrdSpec extends BaseSpec {
 
     it("1") {
 
-      viz[SingletonName[3]].typeStr.shouldBe("3")
+      viz[SingletonName[3]].text.shouldBe("3")
     }
 
     it("2") {
 
       val o = W_Singleton(3)
-      viz[o._Info].typeStr.shouldBe("3")
+      viz[o._Info].text.shouldBe("3")
     }
 
     it("3") {
 
 //      viz[Only[global.type]].should_=:=()
 
-      viz[SingletonName[global.type]].typeStr.shouldBe(
+      viz[SingletonName[global.type]].text.shouldBe(
         "3"
       )
     }
@@ -57,7 +57,7 @@ class FormatOvrdSpec extends BaseSpec {
 
       val o3: W_Singleton[3] = W_Singleton(global)
 
-      viz[o3._Info].typeStr
+      viz[o3._Info].text
         .shouldBe(
           "3"
         )
@@ -68,16 +68,16 @@ class FormatOvrdSpec extends BaseSpec {
       val local = 3
       val o2 = W_Singleton(local)
 
-      viz[o2._Info].typeStr
+      viz[o2._Info].text
         .shouldBe(
           s"${classOf[SingletonName[?]].getCanonicalName}[local.type]: ClassArgsTypeRef"
         )
 
-      viz[W_Singleton[Int]#_Info].typeStr.shouldBe(
+      viz[W_Singleton[Int]#_Info].text.shouldBe(
         s"${classOf[SingletonName[?]].getCanonicalName}[Int]: ClassArgsTypeRef"
       )
 
-      viz[W_Singleton[Int]#_InfoWFallback].typeStr.shouldBe(
+      viz[W_Singleton[Int]#_InfoWFallback].text.shouldBe(
         s"${FormatOvrdSpec.getClass.getCanonicalName.stripSuffix("$")}.W_Singleton"
       )
     }
@@ -86,13 +86,13 @@ class FormatOvrdSpec extends BaseSpec {
   describe("~~") {
 
     it("1") {
-      viz[W_~~[3]#_Info].typeStr.shouldBe("3 3 Int(3): UniqueConstantType")
+      viz[W_~~[3]#_Info].text.shouldBe("3 3 Int(3): UniqueConstantType")
     }
 
     it("2") {
 
       val o = W_~~(3)
-      viz[o._Info].typeStr.shouldBe("3 3 Int(3): UniqueConstantType")
+      viz[o._Info].text.shouldBe("3 3 Int(3): UniqueConstantType")
     }
   }
 }

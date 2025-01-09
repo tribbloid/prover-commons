@@ -41,6 +41,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     lazy val showStr: String = self.toString
   }
 
+  type TypeOps = TypeView
   case class TypeView(
       unbox: Type
   ) extends ApiView[Type] {

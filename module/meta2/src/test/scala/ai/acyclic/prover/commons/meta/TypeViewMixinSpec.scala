@@ -9,19 +9,19 @@ class TypeViewMixinSpec extends BaseSpec {
 
     it("object") {
 
-      val v = TypeViz.apply[TypeViewMixinSpec.type].typeOps
+      val v = TypeViz.apply[TypeViewMixinSpec.type].typeView
       assert(v.onlyInstance == TypeViewMixinSpec)
     }
 
     it("constant") {
 
-      val v = TypeViz[3].typeOps
+      val v = TypeViz[3].typeView
       assert(v.onlyInstance == 3)
     }
 
     it("unique value") {
 
-      val v = TypeViz[TypeViewMixinSpec.a.type].typeOps
+      val v = TypeViz[TypeViewMixinSpec.a.type].typeView
       assert(v.onlyInstance == 3)
     }
 
@@ -35,7 +35,7 @@ class TypeViewMixinSpec extends BaseSpec {
 
       val a = 3
 
-      val v = TypeViz[a.type].typeOps
+      val v = TypeViz[a.type].typeView
       intercept[UnsupportedOperationException] {
 
         assert(v.onlyInstance == 3)

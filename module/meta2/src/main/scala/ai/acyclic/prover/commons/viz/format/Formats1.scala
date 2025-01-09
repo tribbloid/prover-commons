@@ -100,7 +100,7 @@ object Formats1 { // higher-order format constructors
 
         val full = byBase.text
 
-        val constructor = byBase.typeOps.constructor
+        val constructor = byBase.typeView.constructor
 
         val shorten = if (full.startsWith(constructor.canonicalName)) {
 
@@ -131,7 +131,7 @@ object Formats1 { // higher-order format constructors
 
         val full = byBase.text
 
-        val constructor = byBase.typeOps.constructor
+        val constructor = byBase.typeView.constructor
 
         val shorten = if (full.startsWith(constructor.canonicalName)) {
           constructor.Prefixes.static.simpleName + full.stripPrefix(constructor.canonicalName)
@@ -181,7 +181,7 @@ object Formats1 { // higher-order format constructors
 
         val subFormat = RecursiveForm(part.format, transformer)
 
-        val result = part.formattedBy(subFormat)
+        val result = part.typeView.formattedBy(subFormat)
 
         val from = part.text
         val to = result.text

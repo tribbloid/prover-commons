@@ -88,6 +88,7 @@ trait Engine extends Priors.HasBatch {
         nodes: Foundation.Node[X, V]*
     ): Graph[V] =
       buildExact[V](parallelize(nodes))
+
     object makeTightest {
 
       def apply[XX <: X, V](

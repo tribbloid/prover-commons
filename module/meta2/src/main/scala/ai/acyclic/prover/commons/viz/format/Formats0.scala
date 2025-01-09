@@ -15,7 +15,7 @@ object Formats0 {
       val genArgs = tt.genArgs
 
       self <:% genArgs.map { part =>
-        refl.TypeOps(part).formattedBy(this)
+        part.formattedBy(this)
       }
     }
   }

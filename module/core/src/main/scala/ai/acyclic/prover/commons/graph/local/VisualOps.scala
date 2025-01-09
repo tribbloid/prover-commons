@@ -9,7 +9,7 @@ abstract class VisualOps[X <: Axiom.Top, V](
 
   def text_flow(
       viz: Flow = Flow.Default
-  ): viz.Visual = {
+  ): viz.IVisual = {
 
     viz.show[V](graph)
   }
@@ -19,7 +19,7 @@ abstract class VisualOps[X <: Axiom.Top, V](
   )(
       implicit
       < : Local.Graph[X, V] <:< Local.Diverging.Graph[V]
-  ): viz.Visual = {
+  ): viz.IVisual = {
 
     viz.show[V](graph)
   }
@@ -27,7 +27,7 @@ abstract class VisualOps[X <: Axiom.Top, V](
   def text_hierarchy(viz: Hierarchy = Hierarchy.Default)(
       implicit
       < : Local.Graph[X, V] <:< Local.Diverging.UpperSemilattice[V]
-  ): viz.Visual = {
+  ): viz.IVisual = {
 
     viz.show[V](graph)
   }

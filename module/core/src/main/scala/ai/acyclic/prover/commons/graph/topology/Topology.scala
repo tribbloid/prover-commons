@@ -44,9 +44,9 @@ object Topology {
     /**
       * 2nd API, all [[node]] under the same group can be connected to other [[node]]
       */
-    trait Codomain {
+    trait Codomain { // TODO: actually both a domain & a codomain
 
-      trait Node_ extends Impls.this.Node_[node] {
+      trait Node_ extends Impls.this.Node_[node] { // TODO: should be 'INode'
         self: Codomain.this.node =>
 
         def value: node = this

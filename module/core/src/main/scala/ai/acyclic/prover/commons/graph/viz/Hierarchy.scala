@@ -43,7 +43,7 @@ abstract class Hierarchy extends Visualisation.Local(Local.Diverging.Poset) {
     Viz(data)
   }
 
-  case class Viz(override val unbox: MaxGraph[?]) extends Visual {
+  case class Viz(override val unbox: MaxGraph[?]) extends IVisual {
 
     case class SubViz(head: Local.Diverging.Poset.Node[?], depth: Int = Viz.this.maxRecursionDepth) {
 

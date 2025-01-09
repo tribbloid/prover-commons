@@ -20,7 +20,7 @@ class Formats1Spec extends BaseSpec {
 
       it("Parametric") {
 
-        viz[XX[XX[YY.type]]].typeStr.shouldBe(
+        viz[XX[XX[YY.type]]].text.shouldBe(
           "Beans.XX[Beans.XX[Beans.YY.type]]"
         )
       }
@@ -29,13 +29,13 @@ class Formats1Spec extends BaseSpec {
 
         viz[
           XX[YY.type] :: XX[YY.type] :: XX[YY.type] :: HNil
-        ].typeStr.shouldBe(
+        ].text.shouldBe(
           "Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: HNil"
         )
 
         viz[
           XX[YY.type] :: XX[YY.type] :: (T1 :: T2 :: HNil) :: HNil
-        ].typeStr.shouldBe(
+        ].text.shouldBe(
           "Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: (Beans.T1 :: Beans.T2 :: HNil) :: HNil"
         )
       }
@@ -48,20 +48,20 @@ class Formats1Spec extends BaseSpec {
 
       it("Parametric") {
 
-        viz[T1].typeStr.shouldBe(
+        viz[T1].text.shouldBe(
           "Beans.XX[Beans.XX[Beans.YY.type]]"
         )
       }
 
       it("Infix") {
 
-        viz[T2].typeStr.shouldBe(
+        viz[T2].text.shouldBe(
           "Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: HNil"
         )
       }
 
       it("Inner Type") {
-        viz[T3].typeStr.shouldBe(
+        viz[T3].text.shouldBe(
           "Beans.XX[Beans.XX[Beans.YY.type]]#ZZ[Beans.YY.type]"
         )
       }
@@ -85,7 +85,7 @@ class Formats1Spec extends BaseSpec {
       val viz = TypeViz.withFormat(format)
 
       it("Parametric") {
-        viz[Ovrd.Ref].typeStr.shouldBe(
+        viz[Ovrd.Ref].text.shouldBe(
           "Beans.XX[Beans.XX[Int(3)]]"
         )
       }
@@ -110,42 +110,42 @@ class Formats1Spec extends BaseSpec {
 
       it("Parametric") {
 
-        viz[Ovrd.Plain].typeStr.shouldBe(
+        viz[Ovrd.Plain].text.shouldBe(
           "Beans.XX[Beans.XX[3]]"
         )
 
-        viz[Ovrd.Plain2].typeStr.shouldBe(
+        viz[Ovrd.Plain2].text.shouldBe(
           "Beans.XX[Beans.YY[3,3]]"
         )
       }
 
       it(" ... with fallback") {
-        viz[Ovrd.Ref].typeStr.shouldBe(
+        viz[Ovrd.Ref].text.shouldBe(
           "Beans.XX[Beans.XX[Int(3)]]"
         )
       }
 
       it("Infix") {
 
-        viz[Ovrd.Plain].typeStr.shouldBe(
+        viz[Ovrd.Plain].text.shouldBe(
           "Beans.XX[Beans.XX[3]]"
         )
       }
 
       it(" ... mixed 1") {
-        viz[Ovrd.T2].typeStr.shouldBe(
+        viz[Ovrd.T2].text.shouldBe(
           "Beans.XX[3] :: Beans.XX[Int(3)] :: HNil"
         )
       }
 
       it(" ... mixed 2") {
-        viz[Ovrd.T3].typeStr.shouldBe(
+        viz[Ovrd.T3].text.shouldBe(
           "Beans.XX[3] :: Beans.XX[3] :: Beans.XX[Int(3)] :: HNil"
         )
       }
 
       it(" ... mixed 3") {
-        viz[Ovrd.T4].typeStr.shouldBe(
+        viz[Ovrd.T4].text.shouldBe(
           "Beans.XX[3] :: Beans.XX[3] :: Beans.XX[3] :: Beans.XX[Int(3)] :: HNil"
         )
       }
@@ -158,7 +158,7 @@ class Formats1Spec extends BaseSpec {
 
       it("Parametric") {
 
-        viz[T1].typeStr.shouldBe(
+        viz[T1].text.shouldBe(
           "XX[XX[YY.type]]"
         )
       }
@@ -167,13 +167,13 @@ class Formats1Spec extends BaseSpec {
 
         viz[
           T2
-        ].typeStr.shouldBe(
+        ].text.shouldBe(
           "XX[YY.type] :: XX[YY.type] :: XX[YY.type] :: HNil"
         )
       }
 
       it("Inner Type") {
-        viz[T3].typeStr.shouldBe(
+        viz[T3].text.shouldBe(
           "XX[XX[YY.type]]#ZZ[YY.type]"
         )
       }
@@ -182,7 +182,7 @@ class Formats1Spec extends BaseSpec {
 
         viz[
           Beans
-        ].typeStr.shouldBe(
+        ].text.shouldBe(
           "Beans"
         )
       }

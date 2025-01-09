@@ -4,17 +4,15 @@ import ai.acyclic.prover.commons.graph.local.Local
 
 object LinkedHierarchy {
 
-  class Default(
-      val backbone: Hierarchy
+  case class Default(
+      backbone: Hierarchy = Hierarchy.Default,
+      override val getRefGroup: () => RefGroup = () => RefGroup()
   ) extends LinkedHierarchy { // TODO: remove, identical to supertype
 
     override def maxRecursionDepth: Int = backbone.maxRecursionDepth
   }
 
-  object Default extends Default(Hierarchy.Default)
-
-//  implicit def newGroup: Default.RefGroup = Default.RefGroup()
-
+  object Default extends Default(Hierarchy.Default, () => RefGroup())
 }
 
 abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph) {
@@ -25,16 +23,18 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
     implicitly[MaxNode[T] =:= Local.Diverging.Graph.Node[T]]
   }
 
-  def backbone: Hierarchy
+  val backbone: Hierarchy
+  val getRefGroup: () => RefGroup
 
-  final override def show[V](data: MaxGraph[V]): Visual = Viz(data)
+  final override def show[V](data: MaxGraph[V]): IVisual = Viz(data)
 
-  case class Viz(override val unbox: MaxGraph[?]) extends Visual {
+  case class Viz(
+      override val unbox: MaxGraph[?],
+      refGroup: RefGroup = getRefGroup()
+  ) extends IVisual {
 
-    val refGroup: RefGroup = RefGroup()
-
-    private lazy val refPoset: Local.Diverging.Poset.Graph[refGroup.RefDomain.node] = {
-      refGroup.build(unbox)
+    lazy val refPoset: Local.Diverging.Poset.Graph[refGroup.RefDomain.node] = {
+      refGroup.convertGraph(unbox)
     }
 
     override lazy val text: String = {

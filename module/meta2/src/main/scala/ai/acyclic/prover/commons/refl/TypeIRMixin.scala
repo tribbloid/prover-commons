@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.refl
 
+import ai.acyclic.prover.commons.Delegating
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 import ai.acyclic.prover.commons.viz.TypeIROutput
 import ai.acyclic.prover.commons.viz.format.TypeFormat
@@ -25,7 +26,7 @@ trait TypeIRMixin {
   }
 
   case class TypeIR(
-      typeOps: TypeOps,
+      typeView: TypeView,
       format: TypeFormat
   ) extends IRLike {
 
@@ -34,6 +35,7 @@ trait TypeIRMixin {
     lazy val output: TypeIROutput = format.resolve(self).apply(this)
 
     def text: String = output.text
+
     lazy val annotations: Seq[TypeIR] = {
 
       val result = output.annotations.collect {
@@ -53,7 +55,7 @@ trait TypeIRMixin {
 //        (annotations ++ derivedFrom)
         derivedFrom
           .filter { v =>
-            v.typeOps.as =:= TypeIR.this.typeOps.as
+            v.typeView.as =:= TypeIR.this.typeView.as
           }
 
       lazy val recursively: Seq[TypeIR] = {
@@ -102,7 +104,7 @@ trait TypeIRMixin {
       s"""
            |$text
            |$formatBlock
-           |${typeOps.toString}
+           |${typeView.toString}
            |""".stripMargin.trim
     }
 
@@ -125,7 +127,18 @@ trait TypeIRMixin {
 
   object TypeIR {
 
-    implicit def asTypeView(v: TypeIR): TypeOps = v.typeOps
+    implicit def unbox(v: TypeIR): TypeView = v.typeView
+  }
+
+  case class _FormattingOps(val unbox: TypeView) extends Delegating[TypeView] {
+
+//    val outer: TypeIRMixin.this.type = TypeIRMixin.this
+
+    def formattedBy(format: TypeFormat): TypeIR = {
+      val result = TypeIR(this, format)
+      result.text
+      result
+    }
   }
 
   case class GroupTag(
@@ -134,5 +147,16 @@ trait TypeIRMixin {
   ) extends IRLike {
 
     def isEmpty: Boolean = children.isEmpty
+  }
+}
+
+object TypeIRMixin {
+
+  implicit def _formattingOps(
+      unbox: rr.TypeView forSome {
+        val rr: TypeIRMixin & Reflection
+      }
+  ): unbox.outer._FormattingOps = {
+    unbox.outer._FormattingOps(unbox.asInstanceOf[unbox.outer.TypeView]) // fuck scala
   }
 }

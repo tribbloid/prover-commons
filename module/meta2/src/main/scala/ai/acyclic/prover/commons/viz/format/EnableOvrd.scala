@@ -62,7 +62,7 @@ case class EnableOvrd(
 
           try {
             val outputs = argTypes.map { arg =>
-              companion.resolve(refl).apply(refl.TypeOps(arg))
+              companion.resolve(refl).apply(arg)
             }
 
             val textParts = outputs
