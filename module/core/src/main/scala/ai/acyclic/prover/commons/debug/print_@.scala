@@ -14,7 +14,7 @@ class print_@()(
     val result: String =
       s"""
          |${v.toString}
-         |\tat ${src.toString}
+         |\tat ${src.longText}
     """.stripMargin
 
     result

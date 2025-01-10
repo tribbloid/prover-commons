@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.util
 import ai.acyclic.prover.commons.debug.CallStackRef
 import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
 
+import java.io.File
 import java.util.UUID
 
 sealed trait SrcDefinition extends Serializable with View.Equals {
@@ -10,21 +11,25 @@ sealed trait SrcDefinition extends Serializable with View.Equals {
 
   def fileName: String
 
+  lazy val shortFileName: String = fileName.split(File.separator).last
+
   def lineNumber: Int
 
   def methodName: String
 
-  lazy val atLine: String = {
-    s"${fileName}:${lineNumber}"
+  object AtLine {
+
+    lazy val short: String = { s"${shortFileName}:${lineNumber}" }
+    lazy val long: String = { s"${fileName}:${lineNumber}" }
   }
 
-  override lazy val toString: String = {
-    s"${methodName} <at $atLine>"
-  }
+  lazy val shortText = s"${methodName} <at ${AtLine.short}>"
+  lazy val longText = s"${methodName} <at ${AtLine.long}>"
+
+  override def toString: String = { shortText }
 
   {
     canEqualProjections += CanEqual.Native.on((fileName, lineNumber, methodName))
-
   }
 }
 
@@ -88,7 +93,7 @@ object SrcDefinition {
 
   }
 
-  private type _FileName = sourcecode.FileName
+  private type _FileName = sourcecode.File
 
   case class CompileTime()(
       implicit

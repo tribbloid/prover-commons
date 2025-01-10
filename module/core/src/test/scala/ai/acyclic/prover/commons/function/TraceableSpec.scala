@@ -37,15 +37,15 @@ class TraceableSpec extends BaseSpec {
   describe("of instances") {
 
     it("ad-hoc class") {
-      t1.definedAt.atLine.shouldBe("<unknown>:0")
+      t1.definedAt.AtLine.short.shouldBe("<unknown>:0")
     }
 
     it("class") {
-      t2.definedAt.atLine.shouldBe("TraceableSpec.scala:15")
+      t2.definedAt.AtLine.short.shouldBe("TraceableSpec.scala:15")
     }
 
     it("object") {
-      T3.definedAt.atLine.shouldBe("TraceableSpec.scala:17")
+      T3.definedAt.AtLine.short.shouldBe("TraceableSpec.scala:17")
     }
 
 //    it("single-abstract method") {
