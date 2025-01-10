@@ -25,7 +25,7 @@ object Reflection {
         val rr: TypeIRMixin & Reflection
       }
   ): unbox.outer._FormattingExt = {
-    unbox.outer._FormattingOps(unbox.asInstanceOf[unbox.outer.TypeView]) // fuck scala
+    unbox.outer._FormattingExt(unbox.asInstanceOf[unbox.outer.TypeView]) // fuck scala
   }
 
   trait Runtime extends Reflection with HasUniverse.Runtime {}

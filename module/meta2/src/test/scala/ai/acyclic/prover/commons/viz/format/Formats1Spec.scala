@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.viz.TypeViz
 import ai.acyclic.prover.commons.viz.format.Formats0.TypeInfo
 import ai.acyclic.prover.commons.viz.format.Formats1.{RecursiveForm, Trials}
 import ai.acyclic.prover.commons.viz.format.beans.Beans
-import shapeless.{::, HNil}
+import formless.hlist.{::, HNil}
 
 class Formats1Spec extends BaseSpec {
 

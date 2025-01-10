@@ -43,7 +43,7 @@ trait HasPolyLike extends HasCircuit {
       ): _case.type = _case
     }
 
-    object asShapelessPoly1 extends shapeless.Poly1 {
+    object asShapelessPoly1 extends formless.hlist.Poly1 {
 
       implicit def rewrite[I, R](
           implicit

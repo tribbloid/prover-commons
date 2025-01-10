@@ -19,12 +19,12 @@ class TryCompileMacros(val c: whitebox.Context) extends SerializingLift.Mixin {
   type CodeTree = Tree
 
   // TODO: from shapeless.test.IllTypedMacros, no idea what it is for
-  def rectifyCode(codeStr: String): String = {
-
-    val dummy0 = TermName(c.freshName())
-    val dummy1 = TermName(c.freshName())
-    s"object $dummy0 { val $dummy1 = { $codeStr } }"
-  }
+//  def rectifyCode(codeStr: String): String = {
+//
+//    val dummy0 = TermName(c.freshName())
+//    val dummy1 = TermName(c.freshName())
+//    s"object $dummy0 { val $dummy1 = { $codeStr } }"
+//  }
 
   final def tree2Str(code: CodeTree): String = {
 

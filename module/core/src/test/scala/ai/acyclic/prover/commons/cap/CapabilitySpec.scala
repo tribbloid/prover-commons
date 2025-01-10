@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.cap
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import shapeless.test.illTyped
 
 class CapabilitySpec extends BaseSpec {
   import CapabilitySpec.*
@@ -31,7 +30,7 @@ class CapabilitySpec extends BaseSpec {
       {
         val revoked = revokeAll(ex1)
         assert(revoked == ex1)
-        illTyped("revoked: Ex ^: Subject.Cap1")
+        shouldNotCompile("revoked: Ex ^: Subject.Cap1")
       }
 
       {
@@ -39,7 +38,7 @@ class CapabilitySpec extends BaseSpec {
         // buggy compiler! circumventing
 
         assert(revoked == ex12)
-        illTyped("revoked: Ex ^: Subject.Cap1")
+        shouldNotCompile("revoked: Ex ^: Subject.Cap1")
       }
     }
   }
@@ -50,7 +49,7 @@ class CapabilitySpec extends BaseSpec {
 
       val revoked: Ex <> Cap1 = ex12
       assert(revoked == ex12)
-      illTyped("revoked: Ex ^: Subject.Cap2")
+      shouldNotCompile("revoked: Ex ^: Subject.Cap2")
     }
 
     it("by function") {
@@ -58,7 +57,7 @@ class CapabilitySpec extends BaseSpec {
       val revoked = (new Cap1 {}).revoke(ex12)
       assert(revoked == ex12)
       val _: Ex <> Cap2 = revoked
-      illTyped("revoked: Ex ^: Subject.Cap1")
+      shouldNotCompile("revoked: Ex ^: Subject.Cap1")
     }
   }
 

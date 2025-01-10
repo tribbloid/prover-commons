@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.viz.format.beans
 
 import ai.acyclic.prover.commons.viz.format.FormatOvrd.SingletonName
-import shapeless.{::, HNil}
+import formless.hlist.{::, HNil}
 
 trait Beans {
   trait XX[T] {

@@ -64,9 +64,11 @@ class CircuitSpec extends BaseSpec {
       fn0.explain.nodeText
     )
 
-    fn0.explain.text_hierarchy.shouldBe(
-      s"- ${fn0.toString}"
-    )
+    fn0.explain
+      .text_hierarchy()
+      .shouldBe(
+        s"- ${fn0.toString}"
+      )
   }
 
   describe("chain") {
@@ -81,9 +83,11 @@ class CircuitSpec extends BaseSpec {
           it(i.toString) {
 
             val normal = fn.normalise
-            normal.explain.text_hierarchy.shouldBe(
-              s
-            )
+            normal.explain
+              .text_hierarchy()
+              .shouldBe(
+                s
+              )
 
             val r1 = fn.apply(1)
             assert(r1 == 3)
@@ -100,9 +104,11 @@ class CircuitSpec extends BaseSpec {
           it(i.toString) {
 
             val normal = fn.normalise
-            normal.explain.text_hierarchy.shouldBe(
-              s
-            )
+            normal.explain
+              .text_hierarchy()
+              .shouldBe(
+                s
+              )
 
             val r1 = fn.apply(1)
             assert(r1 == "2b")
@@ -119,9 +125,11 @@ class CircuitSpec extends BaseSpec {
           it(i.toString) {
 
             val normal = fn.normalise
-            normal.explain.text_hierarchy.shouldBe(
-              s
-            )
+            normal.explain
+              .text_hierarchy()
+              .shouldBe(
+                s
+              )
 
             val r1 = fn.apply(1)
             assert(r1 == "10b")
@@ -139,9 +147,11 @@ class CircuitSpec extends BaseSpec {
         it(i.toString) {
 
           val normal = fn.normalise
-          normal.explain.text_hierarchy.shouldBe(
-            s
-          )
+          normal.explain
+            .text_hierarchy()
+            .shouldBe(
+              s
+            )
 
           val r1 = fn.apply(1 -> 2L)
           assert(r1 == List(3.0, 4.1, 5.2))
@@ -159,9 +169,11 @@ class CircuitSpec extends BaseSpec {
         it("1-" + i.toString) {
 
           val normal = fn.normalise
-          normal.explain.text_hierarchy.shouldBe(
-            s
-          )
+          normal.explain
+            .text_hierarchy()
+            .shouldBe(
+              s
+            )
         }
     }
 
@@ -171,9 +183,11 @@ class CircuitSpec extends BaseSpec {
         it("2-" + i.toString) {
 
           val normal = fn.normalise
-          normal.explain.text_hierarchy.shouldBe(
-            s
-          )
+          normal.explain
+            .text_hierarchy()
+            .shouldBe(
+              s
+            )
 
           //          val r1 = fn.apply(1 -> 2L)
         }
