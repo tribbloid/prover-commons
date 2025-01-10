@@ -148,19 +148,18 @@ trait TypeOfMixin extends HasReflection {
           }
         }
 
-        private lazy val dependentArgs = Args.nonEmpty
-
         override lazy val scanArgsOnce: Unit = {
-          dependentArgs.foreach { args =>
-            args.visual.scanLinks
+          Args.visualOpt.foreach { v =>
+            v.scanLinks
           }
         }
 
         override lazy val nodeText: String = {
-          dependentArgs
-            .map { args =>
+
+          Args.visualOpt
+            .map { v =>
               val indentedArgText =
-                TextBlock(args.visual.toString).pad
+                TextBlock(v.toString).pad
                   .left(Padding.argLeftBracket)
                   .indent("      ")
                   .build
@@ -196,8 +195,7 @@ trait TypeOfMixin extends HasReflection {
 
       object Args {
 
-        lazy val graph: Local.Diverging.Graph[TypeRefBindings.node] = {
-
+        private lazy val allNode: Seq[node] = {
           val equivalentIRs = ir.EquivalentTypes.recursively
 
           val argNodes = equivalentIRs
@@ -209,19 +207,25 @@ trait TypeOfMixin extends HasReflection {
                 else Some(argNode)
             }
             .toSeq
-
-          Local.Diverging.Graph.makeExact(argNodes*)
+          argNodes
         }
 
-        lazy val nonEmpty: Option[Args.type] = {
-          if (!treeFormat._showArgs || graph.isEmpty)
-            None
-          else
-            Some(this)
-        }
+        lazy val visualOpt: Option[vizGroup.Viz] = {
+          if (!treeFormat._showArgs || allNode.isEmpty) None
+          else {
 
-        lazy val visual: vizGroup.Viz = {
-          vizGroup.Viz(graph)
+            val graph: Local.Diverging.Graph[TypeRefBindings.node] = {
+
+              val argNodes = allNode
+
+              Local.Diverging.Graph.makeExact(argNodes*)
+            }
+
+            val result: vizGroup.Viz = {
+              vizGroup.Viz(graph)
+            }
+            Some(result)
+          }
         }
       }
     }

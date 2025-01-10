@@ -91,7 +91,7 @@ case class RefGroup[V]() {
         with RefNode {
 
       {
-        // for RefNode all inductions have to be eagerly computed to build a complete refCountings
+        // inductions are eagerly computed to build a complete refCountings
         refCounting_isOwner
         inductions
       }

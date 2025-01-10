@@ -22,29 +22,6 @@ trait AnyGraphMixin {
 
     import AnyGraphOps1.*
 
-    // TODO: these should be removed
-    def isEmpty: Boolean = arg.entries.isEmpty
-
-    lazy val distinctEntries: Batch[Node[X, V]] = arg.entries.distinct
-    // end TODO
-
-    // TODO: move to LocalEngine for now
-//    def text_flow(
-//        implicit
-//        format: Flow
-//    ): format.Viz[V] = format.Viz(arg)
-
-    def collectAll: LazyList[V] = {
-
-      val base = distinctEntries.collect.to(LazyList)
-
-      base
-        .flatMap { bb =>
-          bb.asIterable.iterator
-        }
-        .to(LazyList)
-    }
-
     //  lazy val asLazyList: LazyList[inputG.Value] = asIterable.to(LazyList)
 
     case class NodeMap[V2](
@@ -53,7 +30,7 @@ trait AnyGraphMixin {
 
       override def entries: Batch[Node[X, V2]] = {
 
-        val known = distinctEntries
+        val known = arg.distinctEntries
 
         val newNode = known.map { n =>
           n.map(v => fn(v): V2)
@@ -114,7 +91,7 @@ trait AnyGraphMixin {
 
         override def entries: Batch[ArgNode] = {
 
-          val transformed = distinctEntries.flatMap(n => transformInternal(n, maxRecursionDepth))
+          val transformed = arg.distinctEntries.flatMap(n => transformInternal(n, maxRecursionDepth))
 
           transformed
         }
@@ -295,7 +272,7 @@ trait AnyGraphMixin {
 
       override lazy val entries: Batch[AnyGraph.Node[VV]] = {
 
-        val e1: Batch[prev.ArgNode] = prev.distinctEntries
+        val e1: Batch[prev.ArgNode] = prev.arg.distinctEntries
         val e2: Batch[ArgNode] = arg.distinctEntries
 
         // the axiom bound can be tighten further

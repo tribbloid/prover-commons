@@ -25,6 +25,28 @@ trait Engine extends Priors.HasBatch {
 
       def toX[_X >: X <: Axiom.Top]: K[_X, V] = this
       def toV[_V >: V]: K[X, _V] = this
+
+      // --- from Ops
+
+      def isEmpty: Boolean = entries.isEmpty
+
+      lazy val distinctEntries: Batch[Node[X, V]] = entries.distinct
+
+      def collectAllNodes: LazyList[Node[X, V]] = {
+
+        val base = distinctEntries.collect.to(LazyList)
+
+        base
+          .flatMap { bb =>
+            bb.inductionNodes
+          }
+          .to(LazyList)
+      }
+
+      def collectAll: LazyList[V] = {
+
+        collectAllNodes.map(_.value)
+      }
     }
 
     /**

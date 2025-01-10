@@ -36,15 +36,12 @@ object Foundation {
 
       def value: V
 
+      // TODO: should this be an IndexedSeq to rule out lazy execution?
       def inductions: Seq[(_Arrow, Node.K[X, V])]
 
       final lazy val inductionNodes: Seq[Node.K[X, V]] = inductions.map(_._2)
 
-      object asIterable extends Iterable[V] {
-
-        override def iterator: Iterator[V] =
-          Iterator(value) ++ inductionNodes.iterator.flatMap(n => n.asIterable.iterator)
-      }
+      final lazy val inductionValues: Seq[V] = inductionNodes.map(_.value)
     }
 
     implicit class LtView[L <: Axiom.Top, V](self: Node[L, V]) {
