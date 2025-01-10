@@ -2,7 +2,8 @@ package ai.acyclic.prover.commons.debug
 
 import ai.acyclic.prover.commons.util.SrcDefinition
 
-case class print_@(
+class print_@()(
+    implicit
     src: SrcDefinition
 ) {
 
@@ -29,4 +30,15 @@ case class print_@(
   }
 }
 
-object print_@ extends print_@(SrcDefinition.Runtime(Seq(classOf[print_@]))())
+object print_@ {
+
+  def apply[T](
+      v: T
+  )(
+      implicit
+      src: SrcDefinition
+  ): Unit = {
+
+    new print_@().apply(v)
+  }
+}

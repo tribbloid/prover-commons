@@ -15,7 +15,7 @@ case class StringDiff(
 
   import StringDiff.*
 
-  private val _printFn = new print_@(
+  private val _printFn = new print_@()(
     SrcDefinition.Runtime(
       classes :+
         this.getClass

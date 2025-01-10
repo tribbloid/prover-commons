@@ -31,7 +31,7 @@ case class BenchmarkResults[T](
 
 //    LoggerFactory.getLogger(this.getClass).info(info)
 
-    print_@(info)
+    print_@.apply(info)
   }
 }
 
