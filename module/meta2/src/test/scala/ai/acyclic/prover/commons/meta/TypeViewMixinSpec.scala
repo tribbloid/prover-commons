@@ -2,8 +2,11 @@ package ai.acyclic.prover.commons.meta
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
+import shapeless.Witness
 
 class TypeViewMixinSpec extends BaseSpec {
+
+  import TypeViewMixinSpec.*
 
   describe("getOnlyInstance on") {
 
@@ -21,7 +24,7 @@ class TypeViewMixinSpec extends BaseSpec {
 
     it("unique value") {
 
-      val v = TypeViz[TypeViewMixinSpec.a.type].typeOps
+      val v = TypeViz[TypeViewMixinSpec.singleton.type].typeOps
       assert(v.onlyInstance == 3)
     }
 
@@ -41,16 +44,66 @@ class TypeViewMixinSpec extends BaseSpec {
         assert(v.onlyInstance == 3)
       }
     }
+  }
 
+  describe("isBuiltIn") {
+
+    it("scala built-in type") {
+
+      val v = TypeViz[Product].typeOps
+      assert(v.isBuiltIn)
+    }
+
+    describe("java built-in type") {
+
+      it("1") {
+
+        val v = TypeViz[String].typeOps
+        assert(v.isBuiltIn)
+      }
+
+      it("2") {
+
+        val v = TypeViz[Object].typeOps
+        assert(v.isBuiltIn)
+      }
+    }
+
+    it("mixin of built-in types") {
+
+      val v = TypeViz[Serializable & Product].typeOps
+      assert(!v.isBuiltIn)
+    }
+
+    it("singleton") {
+
+      val v = TypeViz[singleton.type].typeOps
+      assert(!v.isBuiltIn)
+    }
+
+    it("local") {
+
+      val w = 3
+
+      val v = TypeViz[w.type].typeOps
+      assert(!v.isBuiltIn)
+    }
+
+    it("witness") {
+
+      val v = TypeViz[singletonW.T].typeOps
+      assert(!v.isBuiltIn)
+    }
   }
 }
 
 object TypeViewMixinSpec {
 
-  val a = 3
+  val singleton = 3
 
-  val b = new Object {
-
-    val c = 3
-  }
+  val singletonW = Witness(3)
+//  val b = new Object {
+//
+//    val c = 3
+//  }
 }

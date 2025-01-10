@@ -91,7 +91,7 @@ trait AnyGraphMixin {
 
               val inductionTs: Seq[ArgNode] =
                 downNs.map { n =>
-                  val successors = n.adjacentNodes
+                  val successors = n.inductionNodes
                   val successorsTransformed = successors.flatMap { nn =>
                     transformInternal(nn, depth - 1)
                   }

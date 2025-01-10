@@ -45,8 +45,6 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       unbox: Type
   ) extends ApiView[Type] {
 
-    TypeViewMixin.this
-
     private lazy val _deAlias = unbox.dealias
     final def dealias: TypeView = typeView(_deAlias)
 
@@ -54,8 +52,24 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       TypeID(unbox)
     }
 
-    lazy val reference: TypeID = {
+    lazy val id_deAlias: TypeID = {
       TypeID(_deAlias)
+    }
+
+    lazy val isBuiltIn: Boolean = {
+
+      if (this.termSymbol != universe.NoSymbol) {
+        false // contains term, not built-in
+      } else if (this.typeSymbol.isClass) {
+        val ownerSymbols = SymbolView(this.typeSymbol).ownerOpt
+
+        val names = ownerSymbols.map(_.fullName)
+
+        names.forall(v => builtInPackageNames.contains(v))
+      } else {
+        false // not a class, not built-in
+      }
+
     }
 
     def =:=(that: TypeView): Boolean = {
@@ -104,7 +118,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       }
     }
 
-    // TODO: this should be removed as the only instance may not be exposed at compile time
+    // TODO: this should return an Option or Try as the only instance may not be exposed at compile time
     //  use singletonValue if possible
     lazy val onlyInstance: Any = {
 
@@ -203,7 +217,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       lazy val all: BreadcrumbView = {
 
         val list = internal.list.filter { tt =>
-          tt.toString != "<root>"
+          tt.toString != ROOT
         }
 
         val result = BreadcrumbView(list)
@@ -281,7 +295,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     }
 
     lazy val superTypes: List[TypeView] = baseTypes
-      .filterNot(tt => tt.reference == this.reference)
+      .filterNot(tt => tt.id_deAlias == this.id_deAlias)
 
     lazy val superTypes_transitive: List[TypeView] = {
       superTypes.flatMap { tt =>
@@ -337,4 +351,5 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 object TypeViewMixin {
 
   val ALIAS_SPLITTER = " ≅ "
+
 }

@@ -38,12 +38,12 @@ object Foundation {
 
       def inductions: Seq[(_Arrow, Node.K[X, V])]
 
-      final lazy val adjacentNodes: Seq[Node.K[X, V]] = inductions.map(_._2)
+      final lazy val inductionNodes: Seq[Node.K[X, V]] = inductions.map(_._2)
 
       object asIterable extends Iterable[V] {
 
         override def iterator: Iterator[V] =
-          Iterator(value) ++ adjacentNodes.iterator.flatMap(n => n.asIterable.iterator)
+          Iterator(value) ++ inductionNodes.iterator.flatMap(n => n.asIterable.iterator)
       }
     }
 
@@ -110,7 +110,7 @@ object Foundation {
 
         override def rewrite(src: _Node)(discoverNodes: Seq[_Node]): _Node = {
 
-          val oldDiscoverNodes = src.adjacentNodes
+          val oldDiscoverNodes = src.inductionNodes
           if (oldDiscoverNodes == discoverNodes) {
             // no need to rewrite, just return node as-is
             return src
@@ -119,7 +119,7 @@ object Foundation {
           val result = K.this.rewrite(src)(discoverNodes)
 
           require(
-            result.adjacentNodes == discoverNodes,
+            result.inductionNodes == discoverNodes,
             s"""Incompatible rewriter?
                |Rewrite result should be [${discoverNodes.mkString(", ")}]
                |but it is actually [${oldDiscoverNodes.mkString(", ")}]""".stripMargin

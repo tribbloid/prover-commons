@@ -7,7 +7,7 @@ trait ITyper extends SymbolViewMixin with TypeViewMixin {
     val tt = universe.typeOf[ITyper.type]
     val sv = symbolView(tt.typeSymbol)
 
-    sv.Owners.internal.leftOpt.get
+    sv.Owners.allInternal.leftOpt.get
   }
 }
 

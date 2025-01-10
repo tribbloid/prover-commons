@@ -44,7 +44,7 @@ object LinkedHierarchy {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def scanReferences(tree: Local.Diverging.Tree[RefBindingLike]): Unit = {
+    override def scanLinks(tree: Local.Diverging.Tree[RefBindingLike]): Unit = {
 
       val _tree = tree.ops_anyGraph
       _tree
@@ -55,8 +55,6 @@ object LinkedHierarchy {
         )
         .DepthFirst
     }
-
-    override def maxRecursionDepth: Int = backbone.maxRecursionDepth
   }
 
   object Default extends Default(Hierarchy.Default)
@@ -82,7 +80,9 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
   def backbone: Hierarchy
 
-  def scanReferences(tree: Local.Diverging.Tree[RefBindingLike]): Unit
+  override def maxRecursionDepth: Int = backbone.maxRecursionDepth
+
+  def scanLinks(tree: Local.Diverging.Tree[RefBindingLike]): Unit
 
   final override def show[V](data: MaxGraph[V]): Visual = Group().Viz(data)
 
@@ -200,7 +200,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
       lazy val scanReferencesOnce: Unit = {
 
         refBindingBatch.collect.foreach { g =>
-          LinkedHierarchy.this.scanReferences(g)
+          LinkedHierarchy.this.scanLinks(g)
         }
       }
 

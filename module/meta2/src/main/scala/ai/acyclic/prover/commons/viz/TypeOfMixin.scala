@@ -129,17 +129,23 @@ trait TypeOfMixin extends HasReflection {
 
       case object SuperTypeNode extends node {
 
-        final override lazy val identityC: Some[TypeOfMixin.this.reflection.TypeID] = Some(node.reference)
+        final override lazy val identityC: Some[TypeOfMixin.this.reflection.TypeID] = Some(node.id_deAlias)
 
         override val inductions: List[(Arrow.`~>`, node)] = {
 
-          node.superTypes_nonTransitive
-            .filter { tv =>
-              tv.toString != "Any" // skipped for being too trivial
-            }
-            .map { tv =>
-              TypeIRView(TypeOps(tv).formattedBy(treeFormat.typeFormat)).SuperTypeNode
-            }
+          if (node.isBuiltIn) {
+            Nil
+          } // do not expand built-in types
+          else {
+
+            node.superTypes_nonTransitive
+              .filter { tv =>
+                tv.toString != "Any" // skipped for being too trivial
+              }
+              .map { tv =>
+                TypeIRView(TypeOps(tv).formattedBy(treeFormat.typeFormat)).SuperTypeNode
+              }
+          }
         }
 
         private lazy val dependentArgs = Args.nonEmpty
