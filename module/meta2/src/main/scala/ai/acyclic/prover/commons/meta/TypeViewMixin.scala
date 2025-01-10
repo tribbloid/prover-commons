@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
 
 import scala.tools.reflect.ToolBox
-import scala.util.Try
+import scala.util.{Success, Try}
 
 private[meta] trait TypeViewMixin extends HasUniverse {
   self: ITyper =>
@@ -118,13 +118,12 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       }
     }
 
-    // TODO: this should return an Option or Try as the only instance may not be exposed at compile time
-    //  use singletonValue if possible
-    lazy val onlyInstance: Any = {
+    // may fail, constructor may not be in the classpath at compile time
+    lazy val onlyInstanceAtCompileTime: Try[Any] = {
 
       _deAlias match {
         case v: universe.ConstantType @unchecked =>
-          v.value.value
+          Success(v.value.value)
         case v @ _ =>
           val onlySym = typeView(v).singletonSymbol
 
@@ -135,24 +134,27 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
           lazy val pathInfo = s"$path : ${onlySym.getClass}"
 
-          try {
-            val result = tool.eval(tool.parse(path))
+          Try {
 
-            if (result == null) {
-              throw new UnsupportedOperationException(
-                s"$pathInfo is not initialised yet"
-              )
+            try {
+              val result = tool.eval(tool.parse(path))
+
+              if (result == null) {
+                throw new UnsupportedOperationException(
+                  s"$pathInfo is not initialised yet"
+                )
+              }
+
+              result
+
+            } catch {
+              case e: Throwable =>
+                throw new UnsupportedOperationException(
+                  s"cannot evaluate $pathInfo, it may be undefined at this compiler stage" +
+                    "\n\t" + e.toString,
+                  e
+                )
             }
-
-            result
-
-          } catch {
-            case e: Throwable =>
-              throw new UnsupportedOperationException(
-                s"cannot evaluate $pathInfo, it may be undefined in this compilation stage" +
-                  "\n\t" + e.toString,
-                e
-              )
           }
       }
     }

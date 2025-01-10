@@ -13,19 +13,19 @@ class TypeViewMixinSpec extends BaseSpec {
     it("object") {
 
       val v = TypeViz.apply[TypeViewMixinSpec.type].typeOps
-      assert(v.onlyInstance == TypeViewMixinSpec)
+      assert(v.onlyInstanceAtCompileTime.get == TypeViewMixinSpec)
     }
 
     it("constant") {
 
       val v = TypeViz[3].typeOps
-      assert(v.onlyInstance == 3)
+      assert(v.onlyInstanceAtCompileTime.get == 3)
     }
 
     it("unique value") {
 
       val v = TypeViz[TypeViewMixinSpec.singleton.type].typeOps
-      assert(v.onlyInstance == 3)
+      assert(v.onlyInstanceAtCompileTime.get == 3)
     }
 
 //    it(" ... more complex") { TODO: compiler error
@@ -41,7 +41,7 @@ class TypeViewMixinSpec extends BaseSpec {
       val v = TypeViz[a.type].typeOps
       intercept[UnsupportedOperationException] {
 
-        assert(v.onlyInstance == 3)
+        assert(v.onlyInstanceAtCompileTime.get == 3)
       }
     }
   }
