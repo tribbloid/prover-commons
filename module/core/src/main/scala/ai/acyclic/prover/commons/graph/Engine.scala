@@ -12,19 +12,20 @@ trait Engine extends Priors.HasBatch {
   type Node[+X <: Axiom.Top, +V] = Foundation.Node[X, V]
   type Setter[X <: Axiom.Top, V] = Foundation.Setter[X, V]
 
-  trait Graph[+X <: Axiom.Top, +V] extends Foundation.Graph[X, V] {
-
-    final override lazy val engine: Engine.this.type = Engine.this
-
-    def withMaxRecursionDepth(maxRecursionDepth: Int): Graph[X, V] = {
-      Graph.Transforming(this, maxRecursionDepth)
-    }
-
-    def toX[_X >: X <: Axiom.Top]: Graph[_X, V] = this
-    def toV[_V >: V]: Graph[X, _V] = this
-  }
-
+  type Graph[+X <: Axiom.Top, +V] = Graph.K[X, V]
   object Graph {
+
+    trait K[+X <: Axiom.Top, +V] extends Foundation.Graph[X, V] {
+
+      final override lazy val engine: Engine.this.type = Engine.this
+
+      def withMaxRecursionDepth(maxRecursionDepth: Int): K[X, V] = {
+        Graph.Transforming(this, maxRecursionDepth)
+      }
+
+      def toX[_X >: X <: Axiom.Top]: K[_X, V] = this
+      def toV[_V >: V]: K[X, _V] = this
+    }
 
     /**
       * Graph representation without any validation
@@ -33,12 +34,12 @@ trait Engine extends Priors.HasBatch {
         entries: Batch[Foundation.Node[X, V]]
     )(
         override val axiom: X
-    ) extends Graph[X, V] {}
+    ) extends K[X, V] {}
 
     case class Transforming[X <: Axiom.Top, V](
-        delegate: Graph[X, V],
+        delegate: K[X, V],
         maxRecursionDepth: Int
-    ) extends Graph[X, V] {
+    ) extends K[X, V] {
       override val axiom: X = delegate.axiom
       override def entries: engine.Batch[Node[X, V]] = {
         delegate.entries
@@ -46,12 +47,12 @@ trait Engine extends Priors.HasBatch {
     }
   }
 
-  private def makeWithAxioms[XX <: Axiom.Top, V](
-      nodes: Foundation.Node[XX, V]*
+  private def buildFromAxioms[XX <: Axiom.Top, V](
+      nodes: Batch[Foundation.Node[XX, V]]
   )(
       assuming: XX
-  ): Graph.Unchecked[XX, V] =
-    Graph.Unchecked[XX, V](parallelize(nodes))(assuming)
+  ): Graph.K[XX, V] =
+    Graph.Unchecked[XX, V](nodes)(assuming)
 
   abstract class GraphType[X <: Axiom.Top](
       val axiom: X // this is a phantom object only used to infer type parameters
@@ -65,12 +66,28 @@ trait Engine extends Priors.HasBatch {
       override val axiom: GraphType.this.axiom.type = axiom
     }
 
-    def makeExact[V](
-        nodes: Foundation.Node[X, V]*
-    ): Graph.Unchecked[X, V] =
-      makeWithAxioms[X, V](nodes*)(this.axiom)
+    def buildExact[V](
+        nodes: Batch[Foundation.Node[X, V]]
+    ): Graph[V] =
+      buildFromAxioms[X, V](nodes)(GraphType.this.axiom)
+
+    object buildTightest {
+
+      def apply[XX <: X, V](
+          nodes: Batch[Foundation.Node[XX, V]]
+      )(
+          implicit
+          assuming: XX
+      ): Graph.K[XX, V] =
+        buildFromAxioms[XX, V](nodes)(assuming)
+    }
 
     def empty[V]: Graph[V] = makeExact[V]()
+
+    def makeExact[V](
+        nodes: Foundation.Node[X, V]*
+    ): Graph[V] =
+      buildExact[V](parallelize(nodes))
 
     object makeTightest {
 
@@ -79,8 +96,8 @@ trait Engine extends Priors.HasBatch {
       )(
           implicit
           assuming: XX
-      ): Graph.Unchecked[XX, V] =
-        makeWithAxioms[XX, V](nodes*)(assuming)
+      ): Graph.K[XX, V] =
+        buildTightest.apply[XX, V](parallelize(nodes))(assuming)
     }
   }
 

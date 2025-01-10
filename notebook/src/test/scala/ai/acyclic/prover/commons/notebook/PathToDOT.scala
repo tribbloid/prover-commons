@@ -88,7 +88,7 @@ class PathToDOT extends BaseSpec {
 
   it("lambda cube") {
 
-    val g: Local.Graph.Unchecked[UpperSemilattice._Axiom, Forward] = Local(LambdaCube.f)
+    val g: Local.Graph[UpperSemilattice._Axiom, Forward] = Local(LambdaCube.f)
 
     print_@(g.text_flow().toString)
 
