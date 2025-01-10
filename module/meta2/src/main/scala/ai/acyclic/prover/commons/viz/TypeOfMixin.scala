@@ -152,7 +152,7 @@ trait TypeOfMixin extends HasReflection {
 
         override lazy val scanArgsOnce: Unit = {
           dependentArgs.foreach { args =>
-            args.visual.scanReferencesOnce
+            args.visual.scanLinks
           }
         }
 

@@ -197,7 +197,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
         }
       }
 
-      lazy val scanReferencesOnce: Unit = {
+      lazy val scanLinks: Unit = {
 
         refBindingBatch.collect.foreach { g =>
           LinkedHierarchy.this.scanLinks(g)
@@ -205,7 +205,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
       }
 
       override lazy val text: String = {
-        scanReferencesOnce
+        scanLinks
 
         refBindingBatch.collect
           .map { v =>
