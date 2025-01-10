@@ -13,7 +13,7 @@ object FormatOvrd {
   trait SingletonName[T] extends FormatOvrd
   case object SingletonName extends TypeFormat {
 
-    def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { ff =>
+    def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { ff =>
       try {
         ff.singletonName
       } catch {
@@ -29,7 +29,7 @@ object FormatOvrd {
     object Format extends (TypeFormat => Format)
     case class Format(base: TypeFormat) extends TypeFormat {
 
-      override def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+      override def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
         val byBase = tt.formattedBy(base)
         val result: TypeIROutput = byBase.text <:^ Seq(byBase)
         result

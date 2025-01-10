@@ -46,7 +46,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
   ) extends ApiView[Type] {
 
     private lazy val _deAlias = unbox.dealias
-    final def dealias: TypeView = typeView(_deAlias)
+    final def dealias: TypeView = typeViewOf(_deAlias)
 
     lazy val id: TypeID = {
       TypeID(unbox)
@@ -78,13 +78,13 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
     def map(fn: TypeView => TypeView): TypeView = TypeView {
       val result = unbox.map { v =>
-        fn(typeView(v)).unbox
+        fn(typeViewOf(v)).unbox
       }
 
       result
     }
 
-    lazy val constructor: TypeView = typeView(unbox.typeConstructor)
+    lazy val constructor: TypeView = typeViewOf(unbox.typeConstructor)
 
     lazy val allSymbols: Seq[SymbolView] = id.allSymbols.map(v => symbolView(v))
 
@@ -112,7 +112,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
         case v: universe.ConstantType @unchecked =>
           "" + v.value.value
         case v @ _ =>
-          val onlySym = typeView(v).singletonSymbol
+          val onlySym = typeViewOf(v).singletonSymbol
 
           onlySym.fullName
       }
@@ -125,7 +125,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
         case v: universe.ConstantType @unchecked =>
           Success(v.value.value)
         case v @ _ =>
-          val onlySym = typeView(v).singletonSymbol
+          val onlySym = typeViewOf(v).singletonSymbol
 
           val mirror = ScalaReflection.mirror
 
@@ -162,7 +162,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     lazy val _aliasOpt: Option[Type] = Option(unbox).filterNot(v => v == _deAlias)
 
     lazy val args: List[TypeView] = unbox.typeArgs.map { arg =>
-      typeView(arg)
+      typeViewOf(arg)
     }
 
     lazy val prefixOpt: Option[TypeView] = {
@@ -172,7 +172,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       constructor.unbox match {
 
         case v: (Type { def pre: Type }) @unchecked =>
-          val pre = Try(typeView(v.pre)).filter { v =>
+          val pre = Try(typeViewOf(v.pre)).filter { v =>
             val self = v.unbox
             val notNone = self != universe.NoPrefix
             //            val notSingle = !self.isInstanceOf[universe.SingleType]
@@ -193,7 +193,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
       override def getCanonicalName(v: Type): String = {
 
-        val vv = typeView(v)
+        val vv = typeViewOf(v)
         val result = if (vv.singletonSymbolOpt.isDefined) {
           v.toString.stripSuffix(".type")
         } else {
@@ -230,7 +230,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       lazy val static: BreadcrumbView = {
 
         val list = all.list.reverse.takeWhile { tt =>
-          typeView(tt).singletonSymbolOpt.exists { ss =>
+          typeViewOf(tt).singletonSymbolOpt.exists { ss =>
             ss.isStatic
           }
         }.reverse
@@ -241,7 +241,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
       lazy val packages: BreadcrumbView = {
 
         val list = all.list.reverse.takeWhile { tt =>
-          typeView(tt).singletonSymbolOpt.exists { ss =>
+          typeViewOf(tt).singletonSymbolOpt.exists { ss =>
             ss.isPackage
           }
         }.reverse
@@ -282,13 +282,13 @@ private[meta] trait TypeViewMixin extends HasUniverse {
           val reAligned = withIndices.sortBy(_._2).map(_._1)
 
           reAligned.map { tt =>
-            typeView(tt)
+            typeViewOf(tt)
           }
         case _ =>
           baseClzSyms.map { clz =>
             val tt = unbox.baseType(clz)
-            if (tt == universe.NoType) typeView(tt)
-            else typeView(tt)
+            if (tt == universe.NoType) typeViewOf(tt)
+            else typeViewOf(tt)
           }
 
       }
@@ -338,7 +338,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     override def _copy(self: Type): TypeViewMixin.this.TypeView = copy(self)
   }
 
-  lazy val typeView: Hom.Circuit.CachedLazy[Type, TypeView] = {
+  lazy val typeViewOf: Hom.Circuit.CachedLazy[Type, TypeView] = {
     :=>(TypeView.apply _).cached(CanEqual.Native.Lookup())
   }
 

@@ -9,7 +9,7 @@ case class EnableOvrd(
     base: TypeFormat
 ) extends Formats1.HasBase {
 
-  final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+  final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
     val u = refl.getUniverse
 
     val companions_args = {
@@ -45,7 +45,7 @@ case class EnableOvrd(
             val cache = EnableOvrd.cache.get(cName)
             val orCompute = cache.orElse {
 
-              val computed = refl.typeView(companionType).onlyInstanceAtCompileTime.toOption
+              val computed = refl.typeViewOf(companionType).onlyInstanceAtCompileTime.toOption
               computed.map { v =>
                 EnableOvrd.cache.put(cName, v)
               }
@@ -69,7 +69,7 @@ case class EnableOvrd(
 
             try {
               val outputs = argTypes.map { arg =>
-                companion.resolve(refl).apply(refl.TypeOps(arg))
+                companion.resolve(refl).apply(arg)
               }
 
               val textParts = outputs

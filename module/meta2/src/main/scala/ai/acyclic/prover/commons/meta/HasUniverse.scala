@@ -25,6 +25,8 @@ private[meta] trait HasUniverse {
 
   trait ApiView[T] extends Delegating[T] {
 
+    val outer: HasUniverse.this.type = HasUniverse.this
+
     //      comment: Option[String] = None // TODO: useless?
 
     def _copy(self: T): ApiView[T]

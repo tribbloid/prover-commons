@@ -25,7 +25,7 @@ trait TypeIRMixin {
   }
 
   case class TypeIR(
-      typeOps: TypeOps,
+      typeView: TypeView,
       format: TypeFormat
   ) extends IRLike {
 
@@ -53,7 +53,7 @@ trait TypeIRMixin {
 //        (annotations ++ derivedFrom)
         derivedFrom
           .filter { v =>
-            v.typeOps.as =:= TypeIR.this.typeOps.as
+            v.typeView.as =:= TypeIR.this.typeView.as
           }
 
       lazy val recursively: Seq[TypeIR] = {
@@ -102,7 +102,7 @@ trait TypeIRMixin {
       s"""
            |$text
            |$formatBlock
-           |${typeOps.toString}
+           |${typeView.toString}
            |""".stripMargin.trim
     }
 
@@ -125,7 +125,7 @@ trait TypeIRMixin {
 
   object TypeIR {
 
-    implicit def asTypeView(v: TypeIR): TypeOps = v.typeOps
+    implicit def asTypeView(v: TypeIR): TypeView = v.typeView
   }
 
   case class GroupTag(

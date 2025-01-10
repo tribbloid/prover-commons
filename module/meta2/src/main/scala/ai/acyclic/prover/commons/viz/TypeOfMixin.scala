@@ -34,13 +34,13 @@ trait TypeOfMixin extends HasReflection {
       val tt: universe.Type
   ) {
 
-    lazy val typeOps: TypeOps = TypeOps(reflection.typeView(tt))
+    lazy val typeView: TypeView = reflection.typeViewOf(tt)
 
     case class TypeRefBatch(
         override val vizGroup: treeFormat._LinkedHierarchyFormat.Group = treeFormat._LinkedHierarchyFormat.Group()
     ) extends TypeRefBindings {
 
-      lazy val ir: TypeIRView = TypeIRView(typeOps.formattedBy(treeFormat.typeFormat))
+      lazy val ir: TypeIRView = TypeIRView(typeView.formattedBy(treeFormat.typeFormat))
 
       lazy val typeStr: String = ir.typeText
 
@@ -124,7 +124,7 @@ trait TypeOfMixin extends HasReflection {
         ir: TypeIR
     ) {
 
-      val node: TypeOps = ir.typeOps
+      val node: TypeView = ir.typeView
       lazy val typeText: String = ir.text
 
       case object SuperTypeNode extends node {
@@ -143,7 +143,7 @@ trait TypeOfMixin extends HasReflection {
                 tv.toString != "Any" // skipped for being too trivial
               }
               .map { tv =>
-                TypeIRView(TypeOps(tv).formattedBy(treeFormat.typeFormat)).SuperTypeNode
+                TypeIRView(tv.formattedBy(treeFormat.typeFormat)).SuperTypeNode
               }
           }
         }
@@ -177,7 +177,7 @@ trait TypeOfMixin extends HasReflection {
 
         override lazy val inductions: List[(Arrow.`~>`, node)] = {
           node.args.map { tt =>
-            TypeIRView(TypeOps(tt).formattedBy(treeFormat.typeFormat)).SuperTypeNode
+            TypeIRView(tt.formattedBy(treeFormat.typeFormat)).SuperTypeNode
           }
         }
 
@@ -201,7 +201,7 @@ trait TypeOfMixin extends HasReflection {
           val equivalentIRs = ir.EquivalentTypes.recursively
 
           val argNodes = equivalentIRs
-            .groupBy(_.typeOps)
+            .groupBy(_.typeView)
             .flatMap {
               case (_, vs) =>
                 val argNode = TypeIRView.this.copy(ir = vs.head).ArgNode

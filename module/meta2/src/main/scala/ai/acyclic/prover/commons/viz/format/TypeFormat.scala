@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 
 trait TypeFormat {
 
-  def resolve(refl: Reflection): refl.TypeOps => TypeIROutput
+  def resolve(refl: Reflection): refl.TypeView => TypeIROutput
 
   def joinText(v: Seq[String]): String = v.mkString(" ")
 

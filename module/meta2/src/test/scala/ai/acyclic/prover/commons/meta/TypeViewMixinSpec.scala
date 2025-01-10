@@ -12,19 +12,19 @@ class TypeViewMixinSpec extends BaseSpec {
 
     it("object") {
 
-      val v = TypeViz.apply[TypeViewMixinSpec.type].typeOps
+      val v = TypeViz.apply[TypeViewMixinSpec.type].typeView
       assert(v.onlyInstanceAtCompileTime.get == TypeViewMixinSpec)
     }
 
     it("constant") {
 
-      val v = TypeViz[3].typeOps
+      val v = TypeViz[3].typeView
       assert(v.onlyInstanceAtCompileTime.get == 3)
     }
 
     it("unique value") {
 
-      val v = TypeViz[TypeViewMixinSpec.singleton.type].typeOps
+      val v = TypeViz[TypeViewMixinSpec.singleton.type].typeView
       assert(v.onlyInstanceAtCompileTime.get == 3)
     }
 
@@ -38,7 +38,7 @@ class TypeViewMixinSpec extends BaseSpec {
 
       val a = 3
 
-      val v = TypeViz[a.type].typeOps
+      val v = TypeViz[a.type].typeView
       intercept[UnsupportedOperationException] {
 
         assert(v.onlyInstanceAtCompileTime.get == 3)
@@ -50,7 +50,7 @@ class TypeViewMixinSpec extends BaseSpec {
 
     it("scala built-in type") {
 
-      val v = TypeViz[Product].typeOps
+      val v = TypeViz[Product].typeView
       assert(v.isBuiltIn)
     }
 
@@ -58,26 +58,26 @@ class TypeViewMixinSpec extends BaseSpec {
 
       it("1") {
 
-        val v = TypeViz[String].typeOps
+        val v = TypeViz[String].typeView
         assert(v.isBuiltIn)
       }
 
       it("2") {
 
-        val v = TypeViz[Object].typeOps
+        val v = TypeViz[Object].typeView
         assert(v.isBuiltIn)
       }
     }
 
     it("mixin of built-in types") {
 
-      val v = TypeViz[Serializable & Product].typeOps
+      val v = TypeViz[Serializable & Product].typeView
       assert(!v.isBuiltIn)
     }
 
     it("singleton") {
 
-      val v = TypeViz[singleton.type].typeOps
+      val v = TypeViz[singleton.type].typeView
       assert(!v.isBuiltIn)
     }
 
@@ -85,13 +85,13 @@ class TypeViewMixinSpec extends BaseSpec {
 
       val w = 3
 
-      val v = TypeViz[w.type].typeOps
+      val v = TypeViz[w.type].typeView
       assert(!v.isBuiltIn)
     }
 
     it("witness") {
 
-      val v = TypeViz[singletonW.T].typeOps
+      val v = TypeViz[singletonW.T].typeView
       assert(!v.isBuiltIn)
     }
   }
