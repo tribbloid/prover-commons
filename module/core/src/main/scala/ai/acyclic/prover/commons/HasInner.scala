@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons
 
-import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
+import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 
 trait HasInner {
 
@@ -14,7 +14,7 @@ trait HasInner {
 
 object HasInner {
 
-  trait Inner extends View.Equals {
+  trait Inner extends Projection.Equals {
 
     val outer: AnyRef
 

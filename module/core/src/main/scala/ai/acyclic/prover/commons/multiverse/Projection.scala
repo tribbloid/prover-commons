@@ -2,16 +2,16 @@ package ai.acyclic.prover.commons.multiverse
 
 import scala.collection.mutable.ArrayBuffer
 
-trait View {}
+trait Projection {}
 
-object View {
+object Projection {
 
   type Equals = Equals.Base
 
   object Equals {
 
     // what works needs to be done here?
-    trait Base extends View with scala.Equals {
+    trait Base extends Projection with scala.Equals {
 
       final val canEqualProjections: ArrayBuffer[CanEqual.Projection[?]] = ArrayBuffer.empty
 

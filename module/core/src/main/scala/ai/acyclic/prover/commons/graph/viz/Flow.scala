@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.graph.viz
 import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
+import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
@@ -40,7 +40,7 @@ abstract class Flow extends Visualisation.Local(Local.AnyGraph) {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(node: Node[?]) extends View.Equals {
+    case class NodeWrapper(node: Node[?]) extends Projection.Equals {
 
       {
         canEqualProjections += CanEqual.Native.on(node.identity)

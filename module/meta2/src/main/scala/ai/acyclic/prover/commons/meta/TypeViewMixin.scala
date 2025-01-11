@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.meta
 
 import ai.acyclic.prover.commons.function.hom.Hom
-import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
+import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 
 import scala.tools.reflect.ToolBox
 import scala.util.{Success, Try}
@@ -13,7 +13,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
   case class TypeID(
       self: Type
-  ) extends View.Equals {
+  ) extends Projection.Equals {
 
     {
       canEqualProjections += CanEqual.Native.on(allSymbols -> showStr)

@@ -1,12 +1,12 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.debug.CallStackRef
-import ai.acyclic.prover.commons.multiverse.{CanEqual, View}
+import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 
 import java.io.File
 import java.util.UUID
 
-sealed trait SrcDefinition extends Serializable with View.Equals {
+sealed trait SrcDefinition extends Serializable with Projection.Equals {
   // TODO: can use Lihaoyi's sourcecode library
 
   def fileName: String

@@ -37,7 +37,7 @@ object CanEqual {
     }
   }
 
-  sealed trait Projection[T] extends View.Equals {
+  sealed trait Projection[T] extends Projection.Equals {
 
     def canEqual: CanEqual[T]
     def value: T
