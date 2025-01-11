@@ -44,10 +44,10 @@ object LinkedHierarchy {
       val backbone: Hierarchy
   ) extends LinkedHierarchy {
 
-    override def scanLinks(tree: Local.Diverging.Tree[RefBindingLike]): Unit = {
+    override def scanLinks(v: Local.Diverging.Poset[RefBindingLike]): Unit = {
 
-      val _tree = tree.ops_anyGraph
-      _tree
+      val _v = v.ops_anyGraph
+      _v
         .Traverse(
           down = { n =>
             n.inductions
@@ -82,7 +82,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
   override def maxRecursionDepth: Int = backbone.maxRecursionDepth
 
-  def scanLinks(tree: Local.Diverging.Tree[RefBindingLike]): Unit
+  def scanLinks(tree: Local.Diverging.Poset[RefBindingLike]): Unit
 
   final override def show[V](data: MaxGraph[V]): Visual = Group().Viz(data)
 
@@ -100,7 +100,7 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
     lazy val refCountings: mutable.LinkedHashMap[Any, RefCounting] = mutable.LinkedHashMap.empty
 
-    object RefBindings extends Local.Diverging.Tree.Codomain {
+    object RefBindings extends Local.Diverging.Poset.Codomain {
 
       case class node(
           override val original: Local.Diverging.Graph.Node[?],
@@ -189,29 +189,24 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
 
     case class Viz(override val unbox: MaxGraph[?]) extends Visual {
 
-      lazy val refBindingBatch: Local.Batch[Local.Diverging.Tree[RefBindings.node]] = {
-        unbox.entries.map { node =>
+      private lazy val refPoset: Local.Diverging.Poset.Graph[RefBindings.node] = {
+        val bindings = unbox.entries.map { node =>
           val refBinding: RefBindings.node = RefBindings.node(node)
-
-          Local.Diverging.Tree.makeExact(refBinding)
+          refBinding
         }
+
+        Local.Diverging.Poset.buildExact(bindings)
       }
 
       lazy val scanLinks: Unit = {
 
-        refBindingBatch.collect.foreach { g =>
-          LinkedHierarchy.this.scanLinks(g)
-        }
+        LinkedHierarchy.this.scanLinks(refPoset)
       }
 
       override lazy val text: String = {
         scanLinks
 
-        refBindingBatch.collect
-          .map { v =>
-            backbone.Viz(v).toString
-          }
-          .mkString("\n")
+        backbone.Viz(refPoset).text
       }
     }
   }

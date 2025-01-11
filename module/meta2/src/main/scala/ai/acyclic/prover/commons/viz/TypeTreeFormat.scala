@@ -22,15 +22,15 @@ case class TypeTreeFormat(
   // TODO : this has to be removed! otherwise TypeVisualization can only use 1 format!
   object _LinkedHierarchyFormat extends LinkedHierarchy.Default(backbone) {
 
-    override def scanLinks(tree: Local.Diverging.Tree[RefBindingLike]): Unit = {
+    override def scanLinks(poset: Local.Diverging.Poset[RefBindingLike]): Unit = {
 
       lazy val scanArgs: Unit = {
 
-        val _tree = tree.ops_anyGraph
+        val _poset = poset.ops_anyGraph
 
-        _tree
+        _poset
           .Traverse(
-            down = { (v: Local.Diverging.Tree.Node[RefBindingLike]) =>
+            down = { (v: Local.Diverging.Poset.Node[RefBindingLike]) =>
               v.value.original match {
                 case vNode: TypeOfMixin.VNodeLike =>
                   vNode.scanArgsOnce
@@ -44,10 +44,10 @@ case class TypeTreeFormat(
       if (_expandArgsBeforeSubtypes) {
 
         scanArgs
-        super.scanLinks(tree)
+        super.scanLinks(poset)
       } else {
 
-        super.scanLinks(tree)
+        super.scanLinks(poset)
         scanArgs
       }
     }

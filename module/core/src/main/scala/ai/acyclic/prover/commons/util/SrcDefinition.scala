@@ -17,7 +17,7 @@ sealed trait SrcDefinition extends Serializable with View.Equals {
 
   def methodName: String
 
-  object AtLine {
+  object AtLine extends Serializable {
 
     lazy val short: String = { s"${shortFileName}:${lineNumber}" }
     lazy val long: String = { s"${fileName}:${lineNumber}" }
