@@ -213,6 +213,23 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       )
     }
 
+    it("abstract") {
+
+      trait R {
+        type K <: S1
+      }
+      object R extends R
+
+      TypeViz[R.K].toString.shouldBe(
+        """
+          |+ R.K
+          |!-+ ai.acyclic.prover.commons.viz.TypeVizSpec.S1
+          |  !-- Object
+          |""".stripMargin
+      )
+
+    }
+
     describe("Witness.T") {
 
       it("global") {

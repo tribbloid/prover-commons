@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.meta
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
+import ai.acyclic.prover.commons.viz.TypeVizSpec.S1
 import shapeless.Witness
 
 class TypeViewMixinSpec extends BaseSpec {
@@ -86,6 +87,17 @@ class TypeViewMixinSpec extends BaseSpec {
       val w = 3
 
       val v = TypeViz[w.type].typeView
+      assert(!v.isBuiltIn)
+    }
+
+    it("abstract") {
+
+      trait R {
+        type K <: S1
+      }
+      object R extends R
+
+      val v = TypeViz[R.K].typeView
       assert(!v.isBuiltIn)
     }
 
