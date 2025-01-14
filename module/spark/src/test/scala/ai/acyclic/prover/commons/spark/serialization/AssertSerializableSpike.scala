@@ -27,7 +27,7 @@ class AssertSerializableSpike extends BaseSpec {
 
       //    TestHelper.TestSC.parallelize(Seq(ee))
       //      .collect() //TODO: this failed, why?
-      v
+
     }
 
     describe("by ClosureCleaner - ") {

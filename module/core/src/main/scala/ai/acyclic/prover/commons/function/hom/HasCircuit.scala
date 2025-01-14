@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
+import ai.acyclic.prover.commons.Delegating
 import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.function.Traceable
@@ -14,7 +15,7 @@ trait HasCircuit extends Capability.Universe {
 
   trait CanNormalise_Impl0 {
 
-    implicit def normaliseToFn1[I, O](v: CanNormalise[I, O])(
+    implicit def _normaliseToFn1[I, O](v: CanNormalise[Fn[I, O]])(
         implicit
         _definedAt: SrcDefinition
     ): Function1View[I, O] = {
@@ -58,7 +59,7 @@ trait HasCircuit extends Capability.Universe {
       //      override def normalise: Circuit[I, O] = self.normalise
     }
 
-    implicit def normalisedToFn0[O](v: CanNormalise[Unit, O])(
+    implicit def _normalisedToFn0[O](v: CanNormalise[Thunk[O]])(
         implicit
         _definedAt: SrcDefinition
     ): Function0View[O] = {
@@ -88,14 +89,12 @@ trait HasCircuit extends Capability.Universe {
       def asEager: Thunk.CachedEager[Thunk[O]] = Thunk.CachedEager(self)
     }
   }
-  object CanNormalise extends CanNormalise_Impl0 {
+  object CanNormalise extends CanNormalise_Impl0 {}
 
-    implicit def _normalise[I, O](v: CanNormalise[I, O]): Fn[I, O] = v.normalise
-  }
+  sealed trait CanNormalise[+N <: Circuit] extends Delegating[N] {
 
-  sealed trait CanNormalise[-I, +O] {
-
-    def normalise: Fn[I, O]
+    def normalise: N
+    final def unbox: N = normalise
   }
 
   trait Circuit extends Domains with Traceable with Product with Serializable
@@ -115,7 +114,7 @@ trait HasCircuit extends Capability.Universe {
     }
   }
 
-  type DepFn[-I] = DepFn.K1[I]
+  type DepFn[-I] = DepFn.K1_[I]
   case object DepFn {
 
     type K1[-I] = Circuit { type _I >: I }
@@ -132,19 +131,19 @@ trait HasCircuit extends Capability.Universe {
       * function with computation graph, like a lifted JAXpr
       */
     type K2[-I, +O] = DepFn.K1[I] { type _O[T] <: O }
-    trait K2_[-I, +O] extends CanNormalise[I, O] with DepFn.K1_[I] {
+    trait K2_[-I, +O] extends CanNormalise[K2_[I, O]] with DepFn.K1_[I] {
 
       type _O[T] <: O
 
       def apply(arg: I): O & _O[arg.type]
 
-      def normalise: Fn[I, O] = this // bypassing EqSat, always leads to better representation
+      def normalise = this // bypassing EqSat, always leads to better representation
     }
     { // sanity
       implicitly[K2_[Int, String] <:< K2[Int, String]]
     }
 
-    case class Tracing[I, O](self: Fn[I, O]) extends CanNormalise[I, O] {
+    case class Tracing[I, O](self: Fn[I, O]) extends CanNormalise[K2_[I, O]] {
 
       lazy val asHigherOrder: Fn.Tracing[Unit, Fn[I, O]] =
         Fn.Tracing(Thunk.CachedEager(self))
@@ -197,7 +196,7 @@ trait HasCircuit extends Capability.Universe {
 
       // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
 
-      override def normalise: Fn[I, O] = self.normalise
+      override def normalise = self.normalise
     }
 //    implicit def tracing2Circuit[I, O](tracing: Tracing[I, O]): Circuit[I, O] = tracing.self
 
@@ -435,10 +434,11 @@ trait HasCircuit extends Capability.Universe {
     }
   }
 
-  type Thunk[+O] = Fn[Unit, O]
+  type Thunk[+O] = Thunk.K[O]
 
   object Thunk {
 
+    type K[+O] = Fn[Unit, O]
     type Impl[O] = Fn.Impl[Unit, O]
 
     private def __sanity[O]() = {
