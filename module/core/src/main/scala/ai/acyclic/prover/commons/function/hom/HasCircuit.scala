@@ -17,87 +17,12 @@ trait HasCircuit extends Capability.Universe {
     implicit def normaliseToFn1[I, O](v: CanNormalise[I, O])(
         implicit
         _definedAt: SrcDefinition
-    ): Fn.Function1View[I, O] = {
+    ): Function1View[I, O] = {
       v match {
 
-        case vv: Fn.Function1View[_, _] => vv.asInstanceOf[Fn.Function1View[I, O]]
+        case vv: Function1View[_, _] => vv.asInstanceOf[Function1View[I, O]]
         case _ =>
-          Fn.Function1View(v.normalise, _definedAt)
-      }
-    }
-
-    implicit def normalisedToFn0[O](v: CanNormalise[Unit, O])(
-        implicit
-        _definedAt: SrcDefinition
-    ): Thunk.Function0View[O] = {
-      v match {
-
-        case vv: Thunk.Function0View[_] => vv.asInstanceOf[Thunk.Function0View[O]]
-        case _ =>
-          Thunk.Function0View(v.normalise, _definedAt)
-      }
-    }
-  }
-  object CanNormalise extends CanNormalise_Impl0 {
-
-    implicit def _normalise[I, O](v: CanNormalise[I, O]): Fn[I, O] = v.normalise
-  }
-
-  sealed trait CanNormalise[-I, +O] {
-
-    def normalise: Fn[I, O]
-  }
-
-  trait Circuit extends Domains with Traceable with Product with Serializable
-  object Circuit {}
-
-  type DepFn[-I] = DepFn.K1[I]
-  case object DepFn {
-
-    type K1[-I] = Circuit { type _I >: I }
-    trait K1_[-I] extends Circuit { type _I >: I }
-    { // sanity
-      implicitly[K1_[Int] <:< K1[Int]]
-    }
-  }
-
-  type Fn[-I, +R] = Fn.K2_[I, R]
-  case object Fn {
-
-    /**
-      * function with computation graph, like a lifted JAXpr
-      */
-    type K2[-I, +O] = DepFn.K1[I] { type _O[T] <: O }
-    trait K2_[-I, +O] extends CanNormalise[I, O] with DepFn.K1_[I] {
-
-      type _O[T] <: O
-
-      def apply(arg: I): O & _O[arg.type]
-
-      def normalise: Fn[I, O] = this // bypassing EqSat, always leads to better representation
-    }
-    { // sanity
-      implicitly[K2_[Int, String] <:< K2[Int, String]]
-    }
-
-//    sealed trait Lemma[-I, +O] extends Fn[I, O] {
-//
-//      //    type In >: I
-//      type Out <: O
-//
-//      def apply(arg: I): Out
-//    }
-
-    implicit class _extension[I, O](
-        self: Fn[I, O]
-    ) extends Serializable {
-
-      def cached(byLookup: => LookupMagnet[I, O]): CachedLazy[I, O] = {
-        CachedLazy[I, O](self)(() => byLookup)
-      }
-
-      def cached(): CachedLazy[I, O] = {
-        CachedLazy[I, O](self)()
+          Function1View(v.normalise, _definedAt)
       }
     }
 
@@ -130,13 +55,98 @@ trait HasCircuit extends Capability.Universe {
 
       def trace: Fn.Tracing[I, O] = Fn.Tracing(self.normalise)
 
-//      override def normalise: Circuit[I, O] = self.normalise
+      //      override def normalise: Circuit[I, O] = self.normalise
+    }
+
+    implicit def normalisedToFn0[O](v: CanNormalise[Unit, O])(
+        implicit
+        _definedAt: SrcDefinition
+    ): Function0View[O] = {
+      v match {
+
+        case vv: Function0View[_] => vv.asInstanceOf[Function0View[O]]
+        case _ =>
+          Function0View(v.normalise, _definedAt)
+      }
+    }
+
+    private[HasCircuit] case class Function0View[O](
+        self: Thunk[O],
+        _definedAt: SrcDefinition
+    ) extends Function0[O] {
+
+      def function0: Function0View[O] = this
+
+      final override def apply(): O = self(())
+
+      def trace: Fn.Tracing[Unit, O] = Fn.Tracing(self.normalise)
+
+      //      override def normalise: Circuit[I, O] = self.normalise
+
+      def asLazy: Thunk.CachedLazy[O] = Thunk.CachedLazy(self)
+
+      def asEager: Thunk.CachedEager[Thunk[O]] = Thunk.CachedEager(self)
+    }
+  }
+  object CanNormalise extends CanNormalise_Impl0 {
+
+    implicit def _normalise[I, O](v: CanNormalise[I, O]): Fn[I, O] = v.normalise
+  }
+
+  sealed trait CanNormalise[-I, +O] {
+
+    def normalise: Fn[I, O]
+  }
+
+  trait Circuit extends Domains with Traceable with Product with Serializable
+  object Circuit {
+
+    implicit class _extFn[I, O](
+        self: Fn[I, O]
+    ) extends Serializable {
+
+      def cached(byLookup: => LookupMagnet[I, O]): Fn.CachedLazy[I, O] = {
+        Fn.CachedLazy[I, O](self)(() => byLookup)
+      }
+
+      def cached(): Fn.CachedLazy[I, O] = {
+        Fn.CachedLazy[I, O](self)()
+      }
+    }
+  }
+
+  type DepFn[-I] = DepFn.K1[I]
+  case object DepFn {
+
+    type K1[-I] = Circuit { type _I >: I }
+    trait K1_[-I] extends Circuit { type _I >: I }
+    { // sanity
+      implicitly[K1_[Int] <:< K1[Int]]
+    }
+  }
+
+  type Fn[-I, +R] = Fn.K2_[I, R]
+  case object Fn {
+
+    /**
+      * function with computation graph, like a lifted JAXpr
+      */
+    type K2[-I, +O] = DepFn.K1[I] { type _O[T] <: O }
+    trait K2_[-I, +O] extends CanNormalise[I, O] with DepFn.K1_[I] {
+
+      type _O[T] <: O
+
+      def apply(arg: I): O & _O[arg.type]
+
+      def normalise: Fn[I, O] = this // bypassing EqSat, always leads to better representation
+    }
+    { // sanity
+      implicitly[K2_[Int, String] <:< K2[Int, String]]
     }
 
     case class Tracing[I, O](self: Fn[I, O]) extends CanNormalise[I, O] {
-      // TODO: this can be fold into Circuit?
 
-      lazy val higher: Fn.Tracing[Unit, Fn[I, O]] =
+      lazy val asHigherOrder: Fn.Tracing[Unit, Fn[I, O]] =
         Fn.Tracing(Thunk.CachedEager(self))
 
       def map[O2](right: O => O2)(
@@ -364,7 +374,7 @@ trait HasCircuit extends Capability.Universe {
         _definedAt: SrcDefinition
     ): Fn[I, R] = {
       fn match {
-        case Function1View(c, _) => c
+        case CanNormalise.Function1View(c, _) => c
         case _ =>
           Blackbox[I, R](_definedAt)(fn)
       }
@@ -376,8 +386,8 @@ trait HasCircuit extends Capability.Universe {
     ): Fn[Unit, R] = {
 
       fn match {
-        case Thunk.Function0View(c, _) => c
-        case _                         => fromFunction1[Unit, R]((_: Unit) => fn())
+        case CanNormalise.Function0View(c, _) => c
+        case _                                => fromFunction1[Unit, R]((_: Unit) => fn())
       }
     }
 
@@ -419,8 +429,8 @@ trait HasCircuit extends Capability.Universe {
     ): I Target O = {
 
       vanilla match {
-        case fnView: self.Function1View[_, _] => fnView.self.asInstanceOf[Fn.Impl[I, O]]
-        case _                                => self.Blackbox(_definedAt)(vanilla)
+        case fnView: CanNormalise.Function1View[_, _] => fnView.self.asInstanceOf[Fn.Impl[I, O]]
+        case _                                        => self.Blackbox(_definedAt)(vanilla)
       }
     }
   }
@@ -455,22 +465,5 @@ trait HasCircuit extends Capability.Universe {
 
     final case class CachedEager[O](value: O) extends Cached_[O] {}
 
-    private[HasCircuit] case class Function0View[O](
-        self: Thunk[O],
-        _definedAt: SrcDefinition
-    ) extends Function0[O] {
-
-      def function0: Function0View[O] = this
-
-      final override def apply(): O = self(())
-
-      def trace: Fn.Tracing[Unit, O] = Fn.Tracing(self.normalise)
-
-      //      override def normalise: Circuit[I, O] = self.normalise
-
-      def asLazy: CachedLazy[O] = CachedLazy(self)
-
-      def asEager: CachedEager[Thunk[O]] = CachedEager(self)
-    }
   }
 }
