@@ -2,8 +2,8 @@ package ai.acyclic.prover.commons.function.hom
 
 object Hom extends Hom_Imp0 {
 
-  type :=>[-I, +R] = Circuit[I, R]
-  val :=> : Circuit.type = Circuit
+  type :=>[-I, +R] = Fn[I, R]
+  val :=> : Fn.type = Fn
 
   type Poly1[-I[_], +R[_]] = TypeDomain.top.Poly1[I, R]
 
@@ -17,7 +17,7 @@ object Hom extends Hom_Imp0 {
 
   object Impl {
 
-    type Circuit[I, R] = Circuit.Impl[I, R]
+    type Circuit[I, R] = Fn.Impl[I, R]
 
     type Poly = Hom.Poly
 

@@ -338,7 +338,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     override def _copy(self: Type): TypeViewMixin.this.TypeView = copy(self)
   }
 
-  lazy val typeViewOf: Hom.Circuit.CachedLazy[Type, TypeView] = {
+  lazy val typeViewOf: Hom.Fn.CachedLazy[Type, TypeView] = {
     :=>(TypeView.apply _).cached(CanEqual.Native.Lookup())
   }
 

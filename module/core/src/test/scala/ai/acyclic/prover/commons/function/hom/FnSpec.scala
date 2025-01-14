@@ -1,12 +1,12 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.function.fixture.*
-import ai.acyclic.prover.commons.function.hom.Hom.Circuit
+import ai.acyclic.prover.commons.function.hom.Hom.Fn
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-object CircuitSpec {}
+object FnSpec {}
 
-class CircuitSpec extends BaseSpec {
+class FnSpec extends BaseSpec {
 
   import Circuits.*
 
@@ -14,7 +14,7 @@ class CircuitSpec extends BaseSpec {
 
     it("subtype") { // disabled, current compiler is janky
 
-      case object cc extends Circuit.Impl[Int, String] {
+      case object cc extends Fn.Impl[Int, String] {
 
         def apply(v: Int): String = "" + v
       }
@@ -23,13 +23,13 @@ class CircuitSpec extends BaseSpec {
 
     it("implicit cast") {
 
-      val cc: Circuit[Int, String] = { v =>
+      val cc: Fn[Int, String] = { v =>
         "" + v
       }
-      assert(cc.getClass == classOf[Circuit.Blackbox[?, ?]])
+      assert(cc.getClass == classOf[Fn.Blackbox[?, ?]])
       assert((cc.apply(1): String) == "1")
 
-      def useCircuit(c: Circuit[Int, String]): String = {
+      def useCircuit(c: Fn[Int, String]): String = {
         c.apply(1)
       }
 
@@ -42,11 +42,11 @@ class CircuitSpec extends BaseSpec {
   describe("copy without SrcPosition change") {
     it("should preserve equality") {
 
-      val cc: Circuit[Int, String] = { v =>
+      val cc: Fn[Int, String] = { v =>
         "" + v
       }
 
-      val cc1 = cc.asInstanceOf[Circuit.Blackbox[Int, String]]
+      val cc1 = cc.asInstanceOf[Fn.Blackbox[Int, String]]
 
       val cc2 = cc1.copy()(fn = { _: Int => "" })
 

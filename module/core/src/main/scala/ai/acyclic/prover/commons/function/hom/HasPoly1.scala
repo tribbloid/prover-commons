@@ -30,7 +30,7 @@ trait HasPoly1 extends HasPoly {
 
         type Bound <: domain.Less
 
-        def refine[Sub <: Bound](sub: Sub): Circuit[?, ?]
+        def refine[Sub <: Bound](sub: Sub): Fn[?, ?]
       }
 
       object BoundLambda {
@@ -70,7 +70,7 @@ trait HasPoly1 extends HasPoly {
 
           @transient lazy val lookup: LookupMagnet[Any, Any] = getLookup()
 
-          override def refine[T >: domain.Min <: domain.Max]: Circuit[In[T], Out[T]] = {
+          override def refine[T >: domain.Min <: domain.Max]: Fn[In[T], Out[T]] = {
 
             val result: Lemma[In[T], Out[T]] = at[In[T]] { i =>
               lookup
@@ -91,7 +91,7 @@ trait HasPoly1 extends HasPoly {
 
           object CachedOnly extends Impl[In, _OutOpt] with ByRefine {
 
-            override def refine[T >: domain.Min <: domain.Max]: Circuit[In[T], Option[_Out[T]]] = {
+            override def refine[T >: domain.Min <: domain.Max]: Fn[In[T], Option[_Out[T]]] = {
 
               val result: Lemma[In[T], Option[_Out[T]]] = at[In[T]] { i =>
                 lookup
@@ -109,7 +109,7 @@ trait HasPoly1 extends HasPoly {
 
       trait ByRefine extends TypeLambda {
 
-        def refine[T >: domain.Min <: domain.Max]: Circuit[In[T], Out[T]]
+        def refine[T >: domain.Min <: domain.Max]: Fn[In[T], Out[T]]
 
         final def apply[T >: domain.Min <: domain.Max](arg: In[T]): Out[T] = refine[T].apply(arg)
       }
@@ -135,14 +135,14 @@ trait HasPoly1 extends HasPoly {
         override type Out[T >: domain.Min <: domain.Max] = O[T]
       }
 
-      implicit class Is[I, O](backbone: Circuit[I, O])
+      implicit class Is[I, O](backbone: Fn[I, O])
           extends Impl[K.Drop1[_, I], K.Drop1[_, O]]()(backbone._definedAt)
           with ByRefine {
 
         override type In[T >: domain.Min <: domain.Max] = I
         override type Out[T >: domain.Min <: domain.Max] = O
 
-        override def refine[T >: domain.Min <: domain.Max]: Circuit[I, O] = backbone
+        override def refine[T >: domain.Min <: domain.Max]: Fn[I, O] = backbone
       }
       //    implicit def _fnIsPoly1[I, O](fn: Circuit[I, O]): Is[I, O] = Is(fn)
 

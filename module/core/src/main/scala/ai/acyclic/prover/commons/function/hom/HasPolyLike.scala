@@ -10,15 +10,15 @@ trait HasPolyLike extends HasCircuit {
 
     object IsCase extends Capability
 
-    type Case[+FF <: Circuit.K2_[?, ?]] = FF <> IsCase.type
+    type Case[+FF <: Fn.K2_[?, ?]] = FF <> IsCase.type
 
-    type At[I] = Case[Circuit.K2_[I, ?]]
-    type Compat[-I, +O] = Case[Circuit.K2_[I, O]]
+    type At[I] = Case[Fn.K2_[I, ?]]
+    type Compat[-I, +O] = Case[Fn.K2_[I, O]]
 
-    type Lemma[I, O] = Case[Circuit.Impl[I, O]]
+    type Lemma[I, O] = Case[Fn.Impl[I, O]]
     object Lemma {
 
-      type At[I] = Case[Circuit.Impl[I, ?]]
+      type At[I] = Case[Fn.Impl[I, ?]]
     }
 
     type |-[I, O] = Lemma[I, O]
@@ -31,7 +31,7 @@ trait HasPolyLike extends HasCircuit {
         _definedAt: SrcDefinition
     ): I Target R = {
 
-      val _case = Circuit(fn) <>: IsCase
+      val _case = Fn(fn) <>: IsCase
       _case
     }
 

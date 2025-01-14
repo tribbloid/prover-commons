@@ -6,7 +6,7 @@ object PointwiseAndChain {
 
   import Circuits.*
 
-  private val pointwise: Hom.Circuit.Tracing[(Int, Long), (Seq[Long], Seq[Double])] = fn1.trace >< fn2.trace
+  private val pointwise: Hom.Fn.Tracing[(Int, Long), (Seq[Long], Seq[Double])] = fn1.trace >< fn2.trace
 
   val s1 = pointwise.map {
     case (o1, o2) =>

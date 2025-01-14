@@ -127,7 +127,7 @@ abstract class Flow extends Visualisation.Local(Local.AnyGraph) {
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
       val nodeID2Wrapper = Hom
-        .Circuit { v =>
+        .Fn { v =>
           NodeWrapper(v)
         }
         .cached()

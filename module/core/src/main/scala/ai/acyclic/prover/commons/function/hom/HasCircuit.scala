@@ -17,12 +17,12 @@ trait HasCircuit extends Capability.Universe {
     implicit def normaliseToFn1[I, O](v: CanNormalise[I, O])(
         implicit
         _definedAt: SrcDefinition
-    ): Circuit.Function1View[I, O] = {
+    ): Fn.Function1View[I, O] = {
       v match {
 
-        case vv: Circuit.Function1View[_, _] => vv.asInstanceOf[Circuit.Function1View[I, O]]
+        case vv: Fn.Function1View[_, _] => vv.asInstanceOf[Fn.Function1View[I, O]]
         case _ =>
-          Circuit.Function1View(v.normalise, _definedAt)
+          Fn.Function1View(v.normalise, _definedAt)
       }
     }
 
@@ -40,29 +40,44 @@ trait HasCircuit extends Capability.Universe {
   }
   object CanNormalise extends CanNormalise_Impl0 {
 
-    implicit def _normalise[I, O](v: CanNormalise[I, O]): Circuit[I, O] = v.normalise
+    implicit def _normalise[I, O](v: CanNormalise[I, O]): Fn[I, O] = v.normalise
   }
 
   sealed trait CanNormalise[-I, +O] {
 
-    def normalise: Circuit[I, O]
+    def normalise: Fn[I, O]
   }
 
-  type Circuit[-I, +R] = Circuit.K2_[I, R]
+  trait Circuit extends Domains with Traceable with Product with Serializable
+  object Circuit {}
 
-  object Circuit extends Serializable {
+  type DepFn[-I] = DepFn.K1[I]
+  case object DepFn {
+
+    type K1[-I] = Circuit { type _I >: I }
+    trait K1_[-I] extends Circuit { type _I >: I }
+    { // sanity
+      implicitly[K1_[Int] <:< K1[Int]]
+    }
+  }
+
+  type Fn[-I, +R] = Fn.K2_[I, R]
+  case object Fn {
 
     /**
       * function with computation graph, like a lifted JAXpr
       */
-    trait K2_[-I, +O] extends CanNormalise[I, O] with Domains with Traceable with Product with Serializable {
+    type K2[-I, +O] = DepFn.K1[I] { type _O[T] <: O }
+    trait K2_[-I, +O] extends CanNormalise[I, O] with DepFn.K1_[I] {
 
-      type _I >: I
       type _O[T] <: O
 
       def apply(arg: I): O & _O[arg.type]
 
-      def normalise: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
+      def normalise: Fn[I, O] = this // bypassing EqSat, always leads to better representation
+    }
+    { // sanity
+      implicitly[K2_[Int, String] <:< K2[Int, String]]
     }
 
 //    sealed trait Lemma[-I, +O] extends Fn[I, O] {
@@ -74,7 +89,7 @@ trait HasCircuit extends Capability.Universe {
 //    }
 
     implicit class _extension[I, O](
-        self: Circuit[I, O]
+        self: Fn[I, O]
     ) extends Serializable {
 
       def cached(byLookup: => LookupMagnet[I, O]): CachedLazy[I, O] = {
@@ -87,7 +102,7 @@ trait HasCircuit extends Capability.Universe {
     }
 
     private[HasCircuit] case class Function1View[I, O](
-        self: Circuit[I, O],
+        self: Fn[I, O],
         _definedAt: SrcDefinition
     ) extends Function[I, O] {
 
@@ -98,31 +113,31 @@ trait HasCircuit extends Capability.Universe {
       // TODO: both of these are not narrow enough
       final override def andThen[O2](next: O => O2): Function1View[I, O2] = {
 
-        val _next = Circuit.define(next)(_definedAt)
+        val _next = Fn.define(next)(_definedAt)
 
         val result =
-          Circuit.Mapped[I, O, O2](self, _next)
+          Fn.Mapped[I, O, O2](self, _next)
 
         result
       }
 
       final override def compose[I1](prev: I1 => I): Function1View[I1, O] = {
 
-        val _prev = Circuit.define(prev)(_definedAt)
+        val _prev = Fn.define(prev)(_definedAt)
 
         _prev.andThen(self)
       }
 
-      def trace: Circuit.Tracing[I, O] = Circuit.Tracing(self.normalise)
+      def trace: Fn.Tracing[I, O] = Fn.Tracing(self.normalise)
 
 //      override def normalise: Circuit[I, O] = self.normalise
     }
 
-    case class Tracing[I, O](self: Circuit[I, O]) extends CanNormalise[I, O] {
+    case class Tracing[I, O](self: Fn[I, O]) extends CanNormalise[I, O] {
       // TODO: this can be fold into Circuit?
 
-      lazy val higher: Circuit.Tracing[Unit, Circuit[I, O]] =
-        Circuit.Tracing(Thunk.CachedEager(self))
+      lazy val higher: Fn.Tracing[Unit, Fn[I, O]] =
+        Fn.Tracing(Thunk.CachedEager(self))
 
       def map[O2](right: O => O2)(
           implicit
@@ -150,7 +165,7 @@ trait HasCircuit extends Capability.Universe {
         val _right = Blackbox(_definedAt)(right)
 
         val result =
-          Circuit.Filtered[I, O](self, _right)
+          Fn.Filtered[I, O](self, _right)
 
         Tracing(result)
       }
@@ -172,7 +187,7 @@ trait HasCircuit extends Capability.Universe {
 
       // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
 
-      override def normalise: Circuit[I, O] = self.normalise
+      override def normalise: Fn[I, O] = self.normalise
     }
 //    implicit def tracing2Circuit[I, O](tracing: Tracing[I, O]): Circuit[I, O] = tracing.self
 
@@ -190,7 +205,7 @@ trait HasCircuit extends Capability.Universe {
 
     object Pure {
 
-      case class Is[I, R](delegate: Circuit[I, R]) extends Impl[I, R] with Pure {
+      case class Is[I, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
 
         override def apply(v: I): R & delegate._O[v.type] = delegate.apply(v)
       }
@@ -233,25 +248,25 @@ trait HasCircuit extends Capability.Universe {
     def id[I]: Identity[I] = Identity[I]()
 
     case class Mapped[I, M, O](
-        left: Circuit[I, M],
-        right: Circuit[M, O]
+        left: Fn[I, M],
+        right: Fn[M, O]
     ) extends Impl[I, O]
         with Combinator.Linear {
 
       override def apply(arg: I): O = right(left(arg))
 
-      override def normalise: Circuit[I, O] = {
+      override def normalise: Fn[I, O] = {
         (left, right) match {
-          case (_: Identity[_], rr) => rr.normalise.asInstanceOf[Circuit[I, O]]
-          case (ll, _: Identity[_]) => ll.normalise.asInstanceOf[Circuit[I, O]]
+          case (_: Identity[_], rr) => rr.normalise.asInstanceOf[Fn[I, O]]
+          case (ll, _: Identity[_]) => ll.normalise.asInstanceOf[Fn[I, O]]
           case (ll, rr)             => Mapped(ll.normalise, rr.normalise)
         }
       }
     }
 
     case class Filtered[I, O](
-        base: Circuit[I, O],
-        condition: Circuit[O, Boolean]
+        base: Fn[I, O],
+        condition: Fn[O, Boolean]
     ) extends Impl[I, O]
         with Combinator.Linear {
 
@@ -263,7 +278,7 @@ trait HasCircuit extends Capability.Universe {
     }
 
     case class Flipped[I1, I2, O](
-        base: Circuit[(I1, I2), O]
+        base: Fn[(I1, I2), O]
     ) extends Impl[(I2, I1), O]
         with Combinator.Linear {
 
@@ -274,8 +289,8 @@ trait HasCircuit extends Capability.Universe {
     }
 
     case class Pointwise[I1, O1, I2, O2](
-        left: Circuit[I1, O1],
-        right: Circuit[I2, O2]
+        left: Fn[I1, O1],
+        right: Fn[I2, O2]
     ) extends Impl[(I1, I2), (O1, O2)]
         with Combinator.Linear {
 
@@ -347,7 +362,7 @@ trait HasCircuit extends Capability.Universe {
     implicit def fromFunction1[I, R](fn: I => R)(
         implicit
         _definedAt: SrcDefinition
-    ): Circuit[I, R] = {
+    ): Fn[I, R] = {
       fn match {
         case Function1View(c, _) => c
         case _ =>
@@ -358,7 +373,7 @@ trait HasCircuit extends Capability.Universe {
     implicit def fromFunction0[R](fn: () => R)(
         implicit
         _definedAt: SrcDefinition
-    ): Circuit[Unit, R] = {
+    ): Fn[Unit, R] = {
 
       fn match {
         case Thunk.Function0View(c, _) => c
@@ -369,7 +384,7 @@ trait HasCircuit extends Capability.Universe {
     trait Cached extends Pure
 
     // TODO: make a dependent class, also in Thunk
-    final case class CachedLazy[I, R](backbone: Circuit[I, R])(
+    final case class CachedLazy[I, R](backbone: Fn[I, R])(
         getLookup: () => LookupMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
     ) extends Impl[I, R]
         with Cached {
@@ -392,11 +407,11 @@ trait HasCircuit extends Capability.Universe {
 
   }
 
-  implicit class _CircuitBuilder(self: Circuit.type) extends FromFunctionBuilder {
+  implicit class _CircuitBuilder(self: Fn.type) extends FromFunctionBuilder {
 
     def build: this.type = this
 
-    override type Target[i, o] = Circuit.Impl[i, o]
+    override type Target[i, o] = Fn.Impl[i, o]
 
     override def define[I, O](vanilla: I => O)(
         implicit
@@ -404,28 +419,28 @@ trait HasCircuit extends Capability.Universe {
     ): I Target O = {
 
       vanilla match {
-        case fnView: self.Function1View[_, _] => fnView.self.asInstanceOf[Circuit.Impl[I, O]]
+        case fnView: self.Function1View[_, _] => fnView.self.asInstanceOf[Fn.Impl[I, O]]
         case _                                => self.Blackbox(_definedAt)(vanilla)
       }
     }
   }
 
-  type Thunk[+O] = Circuit[Unit, O]
+  type Thunk[+O] = Fn[Unit, O]
 
   object Thunk {
 
-    type Impl[O] = Circuit.Impl[Unit, O]
+    type Impl[O] = Fn.Impl[Unit, O]
 
     private def __sanity[O]() = {
 
       implicitly[Impl[O] <:< Thunk[O]]
     }
 
-    type Const[O] = Impl[O] & Circuit.Pure
-    sealed trait Const_[O] extends Impl[O] with Circuit.Pure
+    type Const[O] = Impl[O] & Fn.Pure
+    sealed trait Const_[O] extends Impl[O] with Fn.Pure
 
-    type Cached[O] = Impl[O] & Circuit.Cached
-    sealed trait Cached_[O] extends Const_[O] with Circuit.Cached {
+    type Cached[O] = Impl[O] & Fn.Cached
+    sealed trait Cached_[O] extends Const_[O] with Fn.Cached {
 
       protected def value: O
 
@@ -449,7 +464,7 @@ trait HasCircuit extends Capability.Universe {
 
       final override def apply(): O = self(())
 
-      def trace: Circuit.Tracing[Unit, O] = Circuit.Tracing(self.normalise)
+      def trace: Fn.Tracing[Unit, O] = Fn.Tracing(self.normalise)
 
       //      override def normalise: Circuit[I, O] = self.normalise
 

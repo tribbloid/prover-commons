@@ -10,7 +10,7 @@ object HigherOrder2 {
 
   val s1 = {
 
-    val proto = Hom.Circuit
+    val proto = Hom.Fn
       .id[Int]
       .CrossUnit
       .andThen(
