@@ -10,10 +10,10 @@ trait HasPolyLike extends HasCircuit {
 
     object IsCase extends Capability
 
-    type Case[+FF <: Circuit.Fn[?, ?]] = FF <> IsCase.type
+    type Case[+FF <: Circuit.K2_[?, ?]] = FF <> IsCase.type
 
-    type At[I] = Case[Circuit.Fn[I, ?]]
-    type Compat[-I, +O] = Case[Circuit.Fn[I, O]]
+    type At[I] = Case[Circuit.K2_[I, ?]]
+    type Compat[-I, +O] = Case[Circuit.K2_[I, O]]
 
     type Lemma[I, O] = Case[Circuit.Impl[I, O]]
     object Lemma {

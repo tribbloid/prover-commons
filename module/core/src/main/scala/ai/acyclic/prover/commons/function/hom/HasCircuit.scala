@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.collection.LookupMagnet
 import ai.acyclic.prover.commons.function.Traceable
 import ai.acyclic.prover.commons.multiverse.CanEqual
-import ai.acyclic.prover.commons.util.{Erased, SrcDefinition}
+import ai.acyclic.prover.commons.util.SrcDefinition
 
 import scala.language.implicitConversions
 
@@ -14,7 +14,7 @@ trait HasCircuit extends Capability.Universe {
 
   trait CanNormalise_Impl0 {
 
-    implicit def asFunction1[I, O](v: CanNormalise[I, O])(
+    implicit def normaliseToFn1[I, O](v: CanNormalise[I, O])(
         implicit
         _definedAt: SrcDefinition
     ): Circuit.Function1View[I, O] = {
@@ -26,7 +26,7 @@ trait HasCircuit extends Capability.Universe {
       }
     }
 
-    implicit def asFunction0[O](v: CanNormalise[Unit, O])(
+    implicit def normalisedToFn0[O](v: CanNormalise[Unit, O])(
         implicit
         _definedAt: SrcDefinition
     ): Thunk.Function0View[O] = {
@@ -48,44 +48,19 @@ trait HasCircuit extends Capability.Universe {
     def normalise: Circuit[I, O]
   }
 
-  trait Domains extends Erased {
-
-    type In // Domain, Min
-    type Out // Codomain, Max
-  }
-
-  object Domains {
-
-    type Aux[I, O] = Domains {
-      type In = I
-      type Out = O
-    }
-
-    type Lt[-I, +O] = Domains {
-      type In >: I
-      type Out <: O
-    }
-  }
-
-  type Circuit[-I, +R] = Circuit.Fn[I, R]
+  type Circuit[-I, +R] = Circuit.K2_[I, R]
 
   object Circuit extends Serializable {
-
-    trait TProj {
-
-      val projection: Circuit[?, ?]
-    }
 
     /**
       * function with computation graph, like a lifted JAXpr
       */
-    trait Fn[-I, +O] extends CanNormalise[I, O] with TProj with Traceable with Serializable {
+    trait K2_[-I, +O] extends CanNormalise[I, O] with Domains with Traceable with Product with Serializable {
 
-      final override val projection: this.type = this
+      type _I >: I
+      type _O[T] <: O
 
-      val domains: Domains.Lt[I, O]
-
-      def apply(arg: I): O & domains.Out
+      def apply(arg: I): O & _O[arg.type]
 
       def normalise: Circuit[I, O] = this // bypassing EqSat, always leads to better representation
     }
@@ -204,12 +179,10 @@ trait HasCircuit extends Capability.Universe {
     abstract class Impl[I, O](
         implicit
         override val _definedAt: SrcDefinition
-    ) extends Fn[I, O] { // most specific
+    ) extends K2_[I, O] { // most specific
 
-      final object domains extends Domains {
-        type In = I
-        type Out = O
-      }
+      type _I = I
+      type _O[T] = O
     }
 
     trait Mixin
@@ -218,9 +191,8 @@ trait HasCircuit extends Capability.Universe {
     object Pure {
 
       case class Is[I, R](delegate: Circuit[I, R]) extends Impl[I, R] with Pure {
-        implicitly[delegate.domains.Out <:< this.domains.Out]
 
-        override def apply(arg: I): R & domains.Out = delegate.apply(arg)
+        override def apply(v: I): R & delegate._O[v.type] = delegate.apply(v)
       }
     }
 
@@ -251,7 +223,7 @@ trait HasCircuit extends Capability.Universe {
 
     case class Identity[I]() extends Impl[I, I] with Combinator.Linear {
 
-      override def apply(arg: I): I & domains.Out = arg
+      override def apply(arg: I): I & _O[arg.type] = arg
 
       case object CrossUnit extends Impl[I, (I, Unit)] with Combinator.TrivialConversion {
 
