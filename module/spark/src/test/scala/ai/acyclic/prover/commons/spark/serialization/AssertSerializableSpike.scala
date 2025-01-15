@@ -81,7 +81,7 @@ class AssertSerializableSpike extends BaseSpec {
 
         val singleAbstractMethod: Fn[String, Int] = (_: String) => 3 // TODO: cannot handle this
 
-        val circuit: Hom.Fn[String, Int] = Hom.Fn { _ =>
+        val circuit: Hom.Fn[String, Int] = Hom.Fn.at { _ =>
           3
         }
 
@@ -92,10 +92,10 @@ class AssertSerializableSpike extends BaseSpec {
           override def apply[T <: Any](arg: Seq[T]): Vector[T] = arg.toVector
         }
 
-        val dependent: Hom.Dependent[Vector] = new Hom.Impl.Dependent[Vector] {
-
-          override def apply[T <: Any](arg: T): Vector[T] = Vector(arg)
-        }
+//        val dependent: Hom.Dependent[Vector] = new Hom.Impl.Dependent[Vector] {
+//
+//          override def apply[T <: Any](arg: T): Vector[T] = Vector(arg)
+//        }
       }
 
       import Outer.*
@@ -104,8 +104,8 @@ class AssertSerializableSpike extends BaseSpec {
         //      singleAbstractMethod,
         Seq(circuit, circuit.cached()),
         poly,
-        Seq(poly1, poly1.cached()),
-        Seq(dependent, dependent.cached())
+        Seq(poly1, poly1.cached())
+//        Seq(dependent, dependent.cached())
         //      poly.cached()
       ).zipWithIndex.foreach {
         case (vs: Seq[_], i) =>

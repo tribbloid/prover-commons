@@ -1,8 +1,7 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.collection.LookupMagnet
-import ai.acyclic.prover.commons.function.TypeBound
-import ai.acyclic.prover.commons.function.TypeBound.Top
+import ai.acyclic.prover.commons.function.bound.TypeBound
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.util.{K, SrcDefinition}
 
@@ -11,11 +10,11 @@ object HasPoly1 {}
 trait HasPoly1 extends HasPoly {
 
   // keep it final to use Scala 3 type project to refer to inner classes without initialising it
-  final case class TypeDomain[D <: TypeBound](domain: D) {
+  final case class BoundView[D <: TypeBound](bound: D) {
 
     type Poly1[
-        -I[T >: domain.Min <: domain.Max],
-        +O[T >: domain.Min <: domain.Max]
+        -I[T >: bound.Min <: bound.Max],
+        +O[T >: bound.Min <: bound.Max]
     ] = Poly1.Compat[I, O]
 
     case object Poly1 {
@@ -28,7 +27,7 @@ trait HasPoly1 extends HasPoly {
         // TODO: need an implicit conversion from TyepLambda
         //  Scala 2 cannot figure out the correct bound for sub, cannot be a superclass
 
-        type Bound <: domain.Less
+        type Bound <: bound.Less
 
         def refine[Sub <: Bound](sub: Sub): Fn[?, ?]
       }
@@ -47,10 +46,10 @@ trait HasPoly1 extends HasPoly {
         */
       trait TypeLambda extends PolyLike {
 
-        type In[T >: domain.Min <: domain.Max]
-        type Out[T >: domain.Min <: domain.Max]
+        type In[T >: bound.Min <: bound.Max]
+        type Out[T >: bound.Min <: bound.Max]
 
-        def apply[T >: domain.Min <: domain.Max](arg: In[T]): Out[T]
+        def apply[T >: bound.Min <: bound.Max](arg: In[T]): Out[T]
 
         def cached(byLookup: => LookupMagnet[Any, Any]): CachedLazy = {
 
@@ -70,9 +69,9 @@ trait HasPoly1 extends HasPoly {
 
           @transient lazy val lookup: LookupMagnet[Any, Any] = getLookup()
 
-          override def refine[T >: domain.Min <: domain.Max]: Fn[In[T], Out[T]] = {
+          override def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Out[T]] = {
 
-            val result: Lemma[In[T], Out[T]] = at[In[T]] { i =>
+            val result = Fn.at[In[T]] { i =>
               lookup
                 .getOrElseUpdateOnce(i) {
 
@@ -85,15 +84,15 @@ trait HasPoly1 extends HasPoly {
             result
           }
 
-          type _Out[T >: domain.Min <: domain.Max] = TypeLambda.this.Out[T]
+          type _Out[T >: bound.Min <: bound.Max] = TypeLambda.this.Out[T]
 
-          type _OutOpt[T >: domain.Min <: domain.Max] = Option[_Out[T]]
+          type _OutOpt[T >: bound.Min <: bound.Max] = Option[_Out[T]]
 
           object CachedOnly extends Impl[In, _OutOpt] with ByRefine {
 
-            override def refine[T >: domain.Min <: domain.Max]: Fn[In[T], Option[_Out[T]]] = {
+            override def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Option[_Out[T]]] = {
 
-              val result: Lemma[In[T], Option[_Out[T]]] = at[In[T]] { i =>
+              val result = Fn.at[In[T]] { i =>
                 lookup
                   .get(i)
                   .map { v =>
@@ -109,56 +108,56 @@ trait HasPoly1 extends HasPoly {
 
       trait ByRefine extends TypeLambda {
 
-        def refine[T >: domain.Min <: domain.Max]: Fn[In[T], Out[T]]
+        def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Out[T]]
 
-        final def apply[T >: domain.Min <: domain.Max](arg: In[T]): Out[T] = refine[T].apply(arg)
+        final def apply[T >: bound.Min <: bound.Max](arg: In[T]): Out[T] = refine[T].apply(arg)
       }
 
       type Compat[
-          -I[T >: domain.Min <: domain.Max],
-          +O[T >: domain.Min <: domain.Max]
+          -I[T >: bound.Min <: bound.Max],
+          +O[T >: bound.Min <: bound.Max]
       ] = TypeLambda {
 
-        type In[T >: domain.Min <: domain.Max] >: I[T]
-        type Out[T >: domain.Min <: domain.Max] <: O[T]
+        type In[T >: bound.Min <: bound.Max] >: I[T]
+        type Out[T >: bound.Min <: bound.Max] <: O[T]
       }
 
       abstract class Impl[
-          I[T >: domain.Min <: domain.Max],
-          O[T >: domain.Min <: domain.Max]
+          I[T >: bound.Min <: bound.Max],
+          O[T >: bound.Min <: bound.Max]
       ](
           implicit
           override val _definedAt: SrcDefinition
       ) extends TypeLambda {
 
-        override type In[T >: domain.Min <: domain.Max] = I[T]
-        override type Out[T >: domain.Min <: domain.Max] = O[T]
+        override type In[T >: bound.Min <: bound.Max] = I[T]
+        override type Out[T >: bound.Min <: bound.Max] = O[T]
       }
 
       implicit class Is[I, O](backbone: Fn[I, O])
           extends Impl[K.Drop1[_, I], K.Drop1[_, O]]()(backbone._definedAt)
           with ByRefine {
 
-        override type In[T >: domain.Min <: domain.Max] = I
-        override type Out[T >: domain.Min <: domain.Max] = O
+        override type In[T >: bound.Min <: bound.Max] = I
+        override type Out[T >: bound.Min <: bound.Max] = O
 
-        override def refine[T >: domain.Min <: domain.Max]: Fn[I, O] = backbone
+        override def refine[T >: bound.Min <: bound.Max]: Fn[I, O] = backbone
       }
       //    implicit def _fnIsPoly1[I, O](fn: Circuit[I, O]): Is[I, O] = Is(fn)
 
     }
 
-    type Dependent[+O[_ >: domain.Min <: domain.Max]] = Poly1[K.Invar, O]
-
+    type Dependent[+O[_ >: bound.Min <: bound.Max]] = Poly1[K.Invar, O]
+    // TODO: remove, superseded by DepFn
     case object Dependent {
 
-      trait Impl[O[_ >: domain.Min <: domain.Max]] extends Poly1.Impl[K.Invar, O]
+      trait Impl[O[_ >: bound.Min <: bound.Max]] extends Poly1.Impl[K.Invar, O]
     }
   }
 
-  object TypeDomain {
+  object BoundView {
 
-    val top: TypeDomain[Top] = TypeDomain[TypeBound.Top](TypeBound.Top)
+    val top: BoundView[TypeBound.Top] = BoundView[TypeBound.Top](TypeBound.Top)
   }
 
   /**

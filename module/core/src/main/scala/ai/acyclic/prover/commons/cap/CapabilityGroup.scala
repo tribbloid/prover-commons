@@ -18,7 +18,7 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
   trait revokeAll_Imp0 extends Hom.Poly {
     self: Singleton =>
 
-    implicit def last[T, C <: Capability]: (T <> C) Target T = at[T <> C].apply { v =>
+    implicit def last[T, C <: Capability]: (T <> C) |- T = at[T <> C].apply { v =>
       v.asInstanceOf[T]
     }
   }
@@ -28,13 +28,13 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
 
     implicit def chain[T, R, C <: Capability](
         implicit
-        lemma: Compat[T, R]
-    ): (T <> C) Target R = at[T <> C] { v =>
-      lemma(v.asInstanceOf[T])
+        lemma: T :=> R
+    ): (T <> C) |- R = at[T <> C] { v =>
+      lemma.asInstanceOf[Hom.Fn.Impl[T, R]].apply(v.asInstanceOf[T]) // fuck scala
     }
   }
 
-  object revokeAll extends revokeAll
+  object revokeAll extends revokeAll {}
 
   case class Annotator[C <: Capability]() {
 

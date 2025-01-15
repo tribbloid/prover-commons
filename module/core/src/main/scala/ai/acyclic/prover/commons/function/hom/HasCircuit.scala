@@ -3,7 +3,8 @@ package ai.acyclic.prover.commons.function.hom
 import ai.acyclic.prover.commons.Delegating
 import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.collection.LookupMagnet
-import ai.acyclic.prover.commons.function.Traceable
+import ai.acyclic.prover.commons.function.{BuildTemplate, Traceable}
+import ai.acyclic.prover.commons.function.bound.{DepDomains, Domains}
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.util.SrcDefinition
 
@@ -39,7 +40,7 @@ trait HasCircuit extends Capability.Universe {
       // TODO: both of these are not narrow enough
       final override def andThen[O2](next: O => O2): Function1View[I, O2] = {
 
-        val _next = Fn.define(next)(_definedAt)
+        val _next: Fn[O, O2] = Fn.at[O](next)(_definedAt)
 
         val result =
           Fn.Mapped[I, O, O2](self, _next)
@@ -49,7 +50,7 @@ trait HasCircuit extends Capability.Universe {
 
       final override def compose[I1](prev: I1 => I): Function1View[I1, O] = {
 
-        val _prev = Fn.define(prev)(_definedAt)
+        val _prev = Fn.at[I1](prev)(_definedAt)
 
         _prev.andThen(self)
       }
@@ -97,7 +98,10 @@ trait HasCircuit extends Capability.Universe {
     final def unbox: N = normalise
   }
 
-  trait Circuit extends Domains with Traceable with Product with Serializable
+  trait Circuit extends DepDomains with Traceable with Product with Serializable {
+
+    def apply(arg: _I): _OK[arg.type]
+  }
   object Circuit {
 
     implicit class _extFn[I, O](
@@ -114,7 +118,8 @@ trait HasCircuit extends Capability.Universe {
     }
   }
 
-  type DepFn[-I] = DepFn.K1_[I]
+  type DepFn[-I] =
+    DepFn.K1_[I] // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
   case object DepFn {
 
     type K1[-I] = Circuit { type _I >: I }
@@ -125,17 +130,16 @@ trait HasCircuit extends Capability.Universe {
   }
 
   type Fn[-I, +R] = Fn.K2_[I, R]
-  case object Fn {
+  // TODO: should be K2[I, R] (as refined type), but scala 2 implicit search is too weak fo this
+  case object Fn extends BuildTemplate {
 
     /**
       * function with computation graph, like a lifted JAXpr
       */
-    type K2[-I, +O] = DepFn.K1[I] { type _O[T] <: O }
-    trait K2_[-I, +O] extends CanNormalise[K2_[I, O]] with DepFn.K1_[I] {
+    type K2[-I, +O] = DepFn.K1[I] { type _OK[T] <: O }
+    trait K2_[-I, +O] extends CanNormalise[K2_[I, O]] with DepFn.K1_[I] with Domains {
 
-      type _O[T] <: O
-
-      def apply(arg: I): O & _O[arg.type]
+      type _O <: O
 
       def normalise = this // bypassing EqSat, always leads to better representation
     }
@@ -206,19 +210,10 @@ trait HasCircuit extends Capability.Universe {
     ) extends K2_[I, O] { // most specific
 
       type _I = I
-      type _O[T] = O
+      type _O = O
     }
 
     trait Mixin
-    trait Pure extends Mixin {}
-
-    object Pure {
-
-      case class Is[I, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
-
-        override def apply(v: I): R & delegate._O[v.type] = delegate.apply(v)
-      }
-    }
 
     sealed trait Combinator extends Mixin
     object Combinator {
@@ -245,9 +240,19 @@ trait HasCircuit extends Capability.Universe {
       val Gamma: Duplicate.type = Duplicate
     }
 
-    case class Identity[I]() extends Impl[I, I] with Combinator.Linear {
+    trait Pure extends Mixin {}
 
-      override def apply(arg: I): I & _O[arg.type] = arg
+    object Pure {
+
+      case class Is[I, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
+
+        override def apply(v: I): R & delegate._OK[v.type] = delegate.apply(v)
+      }
+    }
+
+    case class Identity[I]() extends Impl[I, I] with Combinator.Linear { // TOOD: this should be contravariant under DepFn
+
+      override def apply(arg: I): I & _OK[arg.type] = arg
 
       case object CrossUnit extends Impl[I, (I, Unit)] with Combinator.TrivialConversion {
 
@@ -371,9 +376,9 @@ trait HasCircuit extends Capability.Universe {
     implicit def fromFunction1[I, R](fn: I => R)(
         implicit
         _definedAt: SrcDefinition
-    ): Fn[I, R] = {
+    ): Fn.Impl[I, R] = {
       fn match {
-        case CanNormalise.Function1View(c, _) => c
+        case CanNormalise.Function1View(c, _) => c.asInstanceOf[Fn.Impl[I, R]]
         case _ =>
           Blackbox[I, R](_definedAt)(fn)
       }
@@ -382,10 +387,10 @@ trait HasCircuit extends Capability.Universe {
     implicit def fromFunction0[R](fn: () => R)(
         implicit
         _definedAt: SrcDefinition
-    ): Fn[Unit, R] = {
+    ): Thunk.Impl[R] = {
 
       fn match {
-        case CanNormalise.Function0View(c, _) => c
+        case CanNormalise.Function0View(c, _) => c.asInstanceOf[Thunk.Impl[R]]
         case _                                => fromFunction1[Unit, R]((_: Unit) => fn())
       }
     }
@@ -414,24 +419,23 @@ trait HasCircuit extends Capability.Universe {
       }
     }
 
-  }
+    override protected type BuildTarget[I, O] = Fn.Impl[I, O]
 
-  implicit class _CircuitBuilder(self: Fn.type) extends FromFunctionBuilder {
-
-    def build: this.type = this
-
-    override type Target[i, o] = Fn.Impl[i, o]
-
-    override def define[I, O](vanilla: I => O)(
+    protected def build[I, O](fn: I => O)(
         implicit
         _definedAt: SrcDefinition
-    ): I Target O = {
+    ): BuildTarget[I, O] = {
 
-      vanilla match {
-        case fnView: CanNormalise.Function1View[_, _] => fnView.self.asInstanceOf[Fn.Impl[I, O]]
-        case _                                        => self.Blackbox(_definedAt)(vanilla)
-      }
+      Fn.fromFunction1(fn)(_definedAt)
     }
+
+    case class BuildDomains[I, O]() extends IBuildDomains[I, O] {
+
+      type _Lemma = Fn[I, O]
+      type _Impl = Fn.Impl[I, O]
+      type _Native = (I => O)
+    }
+    def refine[i, o]: BuildDomains[i, o] = BuildDomains()
   }
 
   type Thunk[+O] = Thunk.K[O]

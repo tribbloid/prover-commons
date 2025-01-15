@@ -9,8 +9,6 @@ import scala.util.{Success, Try}
 private[meta] trait TypeViewMixin extends HasUniverse {
   self: ITyper =>
 
-  import Hom.:=>
-
   case class TypeID(
       self: Type
   ) extends Projection.Equals {
@@ -339,7 +337,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
   }
 
   lazy val typeViewOf: Hom.Fn.CachedLazy[Type, TypeView] = {
-    :=>(TypeView.apply _).cached(CanEqual.Native.Lookup())
+    Hom.Fn.at[Type](TypeView.apply _).cached(CanEqual.Native.Lookup())
   }
 
 //  val typeCache = mutable.Map.empty[Type, TypeView]

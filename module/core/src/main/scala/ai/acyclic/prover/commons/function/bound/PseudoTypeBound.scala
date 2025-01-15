@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.function
+package ai.acyclic.prover.commons.function.bound
 
 import ai.acyclic.prover.commons.util.Erased
 
