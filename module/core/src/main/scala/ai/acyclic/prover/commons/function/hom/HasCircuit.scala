@@ -149,7 +149,7 @@ trait HasCircuit extends Capability.Universe {
 
     case class Tracing[I, O](self: Fn[I, O]) extends CanNormalise[K2_[I, O]] {
 
-      lazy val asHigherOrder: Fn.Tracing[Unit, Fn[I, O]] =
+      lazy val higherOrder: Fn.Tracing[Unit, Fn[I, O]] =
         Fn.Tracing(Thunk.CachedEager(self))
 
       def map[O2](right: O => O2)(

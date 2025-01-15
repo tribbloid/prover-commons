@@ -14,7 +14,7 @@ object HigherOrder2 {
       .id[Int]
       .CrossUnit
       .andThen(
-        fn1.trace >< fn2.trace.asHigherOrder
+        fn1.trace >< fn2.trace.higherOrder
       )
 
     val result =
