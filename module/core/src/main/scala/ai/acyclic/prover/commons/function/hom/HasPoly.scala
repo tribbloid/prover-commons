@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
+import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.function.BuildTemplate
 import ai.acyclic.prover.commons.util.SrcDefinition
 
@@ -10,13 +11,11 @@ trait HasPoly extends HasPolyLike {
   /**
     * Ad-hoc polymorphic function, the most flexible polymorphism
     *
-    * contains several cases, each take a type argument and generate a specific [[FnCompat]]
+    * contains several cases, each take a type argument and generate a specific [[Case]]
     *
     * the exact case being selected for function application should be determined in compile-time (by the implicit
     * evidence), doing it in runtime is shunned in type theories (it is fine in set theories tho), but we may still
     * allow it (if not obstructed by type erasure)
-    *
-    * obviously, both [[HasPoly1.Poly1]] and [[FnCompat]] are its trivial examples that only has 1 case
     */
   abstract class Poly(
       implicit
@@ -24,7 +23,33 @@ trait HasPoly extends HasPolyLike {
   ) extends PolyLike
       with BuildTemplate {
 
-    type BuildTarget[I, O] = Case[I, O]
+    object CaseTag extends Capability
+
+    type Case[+FF <: Fn[?, ?]] = FF <> CaseTag.type
+
+    type Lemma[-I, +O] = Case[Fn[I, O]] // antecedent, compatibility type at logical consuming site, hence the name
+    object Lemma {
+      type At[I] = Case[Fn[I, ?]]
+    }
+    type :=>[-I, +O] = Lemma[I, O]
+
+    type Impl[I, O] = Case[Fn.Impl[I, O]] // consequent, most specific type at logical producing site
+    object Impl {
+      type At[I] = Case[Fn.Impl[I, ?]]
+    }
+    type |-[I, O] = Impl[I, O]
+
+    object asHListPoly1 extends formless.hlist.Poly1 {
+
+      implicit def rewrite[I, R](
+          implicit
+          _case: I :=> R
+      ): asHListPoly1.this.Case.Aux[I, R] = at[I] { v =>
+        _case.apply(v)
+      }
+    }
+
+    type BuildTarget[I, O] = Impl[I, O]
 
     protected def build[I, O](fn: I => O)(
         implicit
@@ -49,7 +74,7 @@ trait HasPoly extends HasPolyLike {
     case class BuildDomains[I, O]() extends IBuildDomains[I, O] {
 
       type _Lemma = Lemma[I, O]
-      type _Impl = Case[I, O]
+      type _Impl = Impl[I, O]
       type _Native = (I => O)
 
       def summon(
@@ -61,8 +86,6 @@ trait HasPoly extends HasPolyLike {
   }
 
   object Poly {}
-
-  implicit def asShapelessPoly1(v: Poly): v.asShapelessPoly1.type = v.asShapelessPoly1
 
   implicit class PolyOps[P <: Poly](self: P) extends Serializable {}
 }
