@@ -4,7 +4,6 @@ import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.function.BuildTemplate
 import ai.acyclic.prover.commons.util.SrcDefinition
 
-
 trait HasPoly extends HasPolyLike {
 
   /**
