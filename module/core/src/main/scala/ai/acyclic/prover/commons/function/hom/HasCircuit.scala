@@ -250,7 +250,9 @@ trait HasCircuit extends Capability.Universe {
       }
     }
 
-    case class Identity[I]() extends Impl[I, I] with Combinator.Linear { // TOOD: this should be contravariant under DepFn
+    case class Identity[I]()
+        extends Impl[I, I]
+        with Combinator.Linear { // TOOD: this should be contravariant under DepFn
 
       override def apply(arg: I): I & _OK[arg.type] = arg
 

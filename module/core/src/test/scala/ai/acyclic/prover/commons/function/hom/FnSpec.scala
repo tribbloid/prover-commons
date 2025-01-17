@@ -29,10 +29,6 @@ class FnSpec extends BaseSpec {
       assert(cc.getClass == classOf[Fn.Blackbox[?, ?]])
       assert((cc.apply(1): String) == "1")
 
-      def useCircuit(c: Fn[Int, String]): String = {
-        c.apply(1)
-      }
-
 //      assert(useCircuit { _ =>
 //        "1"
 //      } == "1") // TODO: only works in Scala 3

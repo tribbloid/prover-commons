@@ -1,8 +1,34 @@
 package ai.acyclic.prover.commons.function.hom
 
+import ai.acyclic.prover.commons.function.fixture.Polys._poly
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-object PolySpec {}
+object PolySpec {
+
+  case class __sanity[I, O]() {
+    object s1 {
+      def useIO(l: _poly.Impl[Int, String]) = {
+        l.apply(1)
+      }
+
+      def useI(l: _poly.Impl.At[Int]) = {
+        l.apply(1)
+      }
+    }
+
+    object s2 {
+      def useIO(l: _poly.Impl[I, O]) = {
+        val v: I = ???
+        l.apply(v)
+      }
+
+      def useI(l: _poly.Impl.At[I]) = {
+        val v: I = ???
+        l.apply(v)
+      }
+    }
+  }
+}
 
 class PolySpec extends BaseSpec {
 
@@ -36,33 +62,6 @@ class PolySpec extends BaseSpec {
       }
     }
 
-    describe("lemma") {
-
-      def __sanity[I, O](): Unit = {
-        {
-          def useIO(l: _poly.Impl[Int, String]) = {
-            l.apply(1)
-          }
-
-          def useI(l: _poly.Impl.At[Int]) = {
-            l.apply(1)
-          }
-        }
-
-        {
-          def useIO(l: _poly.Impl[I, O]) = {
-            val v: I = ???
-            l.apply(v)
-          }
-
-          def useI(l: _poly.Impl.At[I]) = {
-            val v: I = ???
-            l.apply(v)
-          }
-        }
-      }
-
-    }
   }
 
 }

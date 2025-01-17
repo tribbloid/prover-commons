@@ -84,7 +84,6 @@ object __FunctionDesignDoc {
     *
     *   - define-by-run (preferred by all Python-based DL libraries & egglog-python):
     *     - impl in rise compiler that uses G-EqSat
-    *
     *   - define-by-rewrite (a.k.a. staged compile) (preferred by catgrad):
     *     - compile-time debugging is hard!
     *     - therefore, development will start with an API (called "indirect/comprehension-style") that defines the
