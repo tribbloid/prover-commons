@@ -1,6 +1,6 @@
 val vs = versions()
 
-val splainVRelease: String = "1.1.0-RC1"
+val splainVRelease: String = "1.1.0"
 
 val splainVFallback: String = run {
 
@@ -19,7 +19,7 @@ dependencies {
 
     api("com.chuusai:shapeless_${vs.scala.binaryV}:2.3.10")
 
-    api("com.github.ben-manes.caffeine:caffeine:3.1.8")
+    api("com.github.ben-manes.caffeine:caffeine:3.2.0")
 
     testFixturesApi(splainD)
 
