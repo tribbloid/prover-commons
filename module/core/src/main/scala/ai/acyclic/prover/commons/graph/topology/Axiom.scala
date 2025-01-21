@@ -46,5 +46,4 @@ object Axiom {
     implicitly[bounds._Arrow =:= Arrow.Outbound]
   }
 
-  
 }

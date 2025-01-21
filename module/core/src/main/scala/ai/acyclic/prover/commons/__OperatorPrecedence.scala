@@ -21,8 +21,6 @@ object __OperatorPrecedence {
     CAUTION: this rule doesn't apply to infix HKTs (higher kind types), e.g.
    */
 
-  
-
   /*
   right association rule:
 
@@ -33,5 +31,4 @@ object __OperatorPrecedence {
   CAUTION: this rule affects infix HKTs differently, it will change precedence but not swap positions of 2 args, e.g.
    */
 
-  
 }

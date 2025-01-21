@@ -27,11 +27,7 @@ class NOTSerializableSpec extends BaseSpec {
 
   import NOTSerializableSpec.*
 
-  it("base class is serializable")
-
-  /** EndMarker */
-  /** EndMarker */
-  {
+  it("base class is serializable") {
     val thing = Thing("abc")
 
     AssertSerializable(thing).strongly()
@@ -49,8 +45,8 @@ class NOTSerializableSpec extends BaseSpec {
   }
 
   SerializerEnv.Default.allSerializers.foreach { ser =>
-    describe(s"when using ${ser.getClass.getSimpleName}") {
-      it(s"mixin will trigger a runtime error") {
+    describe(s"runtime error if using ${ser.getClass.getSimpleName} on") {
+      it(s"mixin") {
         val thing = Thing2("abc")
 
         intercept[Exception] {
@@ -58,7 +54,7 @@ class NOTSerializableSpec extends BaseSpec {
         }
       }
 
-      it(s"subclass of a class that inherits mixin will trigger a runtime error") {
+      it(s"subclass of a class that inherits mixin") {
         val thing = Thing3("abc")
 
         intercept[Exception] {
@@ -66,7 +62,7 @@ class NOTSerializableSpec extends BaseSpec {
         }
       }
 
-      it(s"subclass of a trait that inherits mixin will trigger a runtime error") {
+      it(s"subclass of a trait that inherits mixin") {
         val thing = Thing3("abc")
 
         intercept[Exception] {

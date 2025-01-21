@@ -447,8 +447,6 @@ trait HasCircuit extends Capability.Universe {
     type K[+O] = Fn[Unit, O]
     type Impl[O] = Fn.Impl[Unit, O]
 
-    
-
     type Const[O] = Impl[O] & Fn.Pure
     sealed trait Const_[O] extends Impl[O] with Fn.Pure
 

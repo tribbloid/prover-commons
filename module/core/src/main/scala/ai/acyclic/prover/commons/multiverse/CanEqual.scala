@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.multiverse
 
 import ai.acyclic.prover.commons.collection.CacheMagnet.{MapRepr, SetRepr}
-import ai.acyclic.prover.commons.collection.{KeyEncodedMap, CacheMagnet, MapBackedSet, ValueEncodedMap}
+import ai.acyclic.prover.commons.collection.{CacheMagnet, KeyEncodedMap, MapBackedSet, ValueEncodedMap}
 import ai.acyclic.prover.commons.function.Bijection
 import ai.acyclic.prover.commons.util.Caching
 

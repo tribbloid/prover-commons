@@ -41,5 +41,4 @@ object Delegating {
 
   implicit def unboxImplicitly[T](v: Delegating[T]): T = v.as
 
-  
 }
