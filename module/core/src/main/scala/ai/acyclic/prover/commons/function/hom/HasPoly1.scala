@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.collection.LookupMagnet
+import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.function.bound.TypeBound
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.util.{K, SrcDefinition}
@@ -51,7 +51,7 @@ trait HasPoly1 extends HasPoly {
 
         def apply[T >: bound.Min <: bound.Max](arg: In[T]): Out[T]
 
-        def cached(byLookup: => LookupMagnet[Any, Any]): CachedLazy = {
+        def cached(byLookup: => CacheMagnet[Any, Any]): CachedLazy = {
 
           CachedLazy()(() => byLookup)
         }
@@ -61,13 +61,13 @@ trait HasPoly1 extends HasPoly {
         }
 
         final case class CachedLazy()(
-            getLookup: () => LookupMagnet[Any, Any] = () => CanEqual.Native.Lookup[Any, Any]()
+            getLookup: () => CacheMagnet[Any, Any] = () => CanEqual.Native.Lookup[Any, Any]()
         ) extends Impl[In, Out]
             with ByRefine {
 
           def backbone: TypeLambda.this.type = TypeLambda.this
 
-          @transient lazy val lookup: LookupMagnet[Any, Any] = getLookup()
+          lazy val lookup: CacheMagnet[Any, Any] = getLookup()
 
           override def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Out[T]] = {
 

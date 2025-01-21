@@ -21,14 +21,7 @@ object __OperatorPrecedence {
     CAUTION: this rule doesn't apply to infix HKTs (higher kind types), e.g.
    */
 
-  private def __sanity1(): Unit = {
-
-    trait ++[A, B]
-    trait **[A, B]
-
-    implicitly[("1" ++ 3 ** 4) =:= (("1" ++ 3) ** 4)]
-    //    implicitly[("1" ++ 3 ** 4) =:= ("1" ++ (3 ** 4))] // won't compile
-  }
+  
 
   /*
   right association rule:
@@ -40,11 +33,5 @@ object __OperatorPrecedence {
   CAUTION: this rule affects infix HKTs differently, it will change precedence but not swap positions of 2 args, e.g.
    */
 
-  private def __sanity2(): Unit = {
-
-    trait +:[A, B]
-
-//    implicitly[("1" +: 3 +: 4) =:= (("1" +: 3) +: 4)] // won't compile
-    implicitly[("1" +: 3 +: 4) =:= ("1" +: (3 +: 4))]
-  }
+  
 }

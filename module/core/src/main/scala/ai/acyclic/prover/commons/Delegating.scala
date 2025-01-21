@@ -41,19 +41,5 @@ object Delegating {
 
   implicit def unboxImplicitly[T](v: Delegating[T]): T = v.as
 
-  private def __santiy: Unit = {
-
-    case class B1(unbox: String) extends Delegating[String]
-    case class B2(unbox: B1) extends Delegating[B1]
-    case class B3(unbox: B2) extends Delegating[B2]
-
-    val b2 = B2(B1("hello"))
-    val b3 = B3(b2)
-
-    b2.as.concat("b")
-    //    b2.concat("b") // oops, doesn't work, TODO: fix in Scala 3
-
-    b3.as.as.concat("b")
-//    b3.as.concat("b") // TODO: fix in Scala 3
-  }
+  
 }

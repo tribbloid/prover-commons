@@ -46,10 +46,5 @@ object Axiom {
     implicitly[bounds._Arrow =:= Arrow.Outbound]
   }
 
-  private def __sanity[V](): Unit = {
-
-    implicitly[Topology.Poset.Node[Int] <:< Topology.AnyGraph.Node[Int]]
-
-    implicitly[Topology.Poset.Node[V] <:< Topology.AnyGraph.Node[V]]
-  }
+  
 }

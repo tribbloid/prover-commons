@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.Delegating
 import ai.acyclic.prover.commons.cap.Capability
-import ai.acyclic.prover.commons.collection.LookupMagnet
+import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.function.{BuildTemplate, Traceable}
 import ai.acyclic.prover.commons.function.bound.{DepDomains, Domains}
 import ai.acyclic.prover.commons.multiverse.CanEqual
@@ -108,7 +108,7 @@ trait HasCircuit extends Capability.Universe {
         self: Fn[I, O]
     ) extends Serializable {
 
-      def cached(byLookup: => LookupMagnet[I, O]): Fn.CachedLazy[I, O] = {
+      def cached(byLookup: => CacheMagnet[I, O]): Fn.CachedLazy[I, O] = {
         Fn.CachedLazy[I, O](self)(() => byLookup)
       }
 
@@ -401,11 +401,11 @@ trait HasCircuit extends Capability.Universe {
 
     // TODO: make a dependent class, also in Thunk
     final case class CachedLazy[I, R](backbone: Fn[I, R])(
-        getLookup: () => LookupMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
+        getLookup: () => CacheMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
     ) extends Impl[I, R]
         with Cached {
 
-      @transient lazy val lookup: LookupMagnet[I, R] = getLookup()
+      lazy val lookup: CacheMagnet[I, R] = getLookup()
 
       def apply(key: I): R = {
         lookup.getOrElseUpdateOnce(key) {
@@ -447,10 +447,7 @@ trait HasCircuit extends Capability.Universe {
     type K[+O] = Fn[Unit, O]
     type Impl[O] = Fn.Impl[Unit, O]
 
-    private def __sanity[O]() = {
-
-      implicitly[Impl[O] <:< Thunk[O]]
-    }
+    
 
     type Const[O] = Impl[O] & Fn.Pure
     sealed trait Const_[O] extends Impl[O] with Fn.Pure

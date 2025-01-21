@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.multiverse
 
-import ai.acyclic.prover.commons.collection.LookupMagnet.{MapRepr, SetRepr}
-import ai.acyclic.prover.commons.collection.{KeyEncodedMap, LookupMagnet, MapBackedSet, ValueEncodedMap}
+import ai.acyclic.prover.commons.collection.CacheMagnet.{MapRepr, SetRepr}
+import ai.acyclic.prover.commons.collection.{KeyEncodedMap, CacheMagnet, MapBackedSet, ValueEncodedMap}
 import ai.acyclic.prover.commons.function.Bijection
 import ai.acyclic.prover.commons.util.Caching
 
@@ -379,8 +379,8 @@ trait CanEqual[-LR] extends Plane {
 
   // a cache wrapper with a serialID, such that `values` will return the values in insertion order
   case class Lookup[K <: LR, V](
-      underlying: LookupMagnet[Wrapper[K], (V, Long)] = Caching.Soft.build[Wrapper[K], (V, Long)]()
-  ) extends LookupMagnet[K, V] {
+      underlying: CacheMagnet[Wrapper[K], (V, Long)] = Caching.Soft.build[Wrapper[K], (V, Long)]()
+  ) extends CacheMagnet[K, V] {
 
     private val serialID: AtomicInteger = new AtomicInteger(0)
     @volatile var locked: Boolean = false

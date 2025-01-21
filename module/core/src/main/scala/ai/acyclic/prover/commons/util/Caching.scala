@@ -1,16 +1,14 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.collection.LookupMagnet
-import ai.acyclic.prover.commons.collection.LookupMagnet.{MapRepr, SetRepr}
+import ai.acyclic.prover.commons.collection.CacheMagnet
+import ai.acyclic.prover.commons.collection.CacheMagnet.{MapRepr, SetRepr}
 import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 
 import java.util.concurrent.ConcurrentHashMap
 
 trait Caching extends Serializable {
 
-  trait CacheTag
-
-  def build[K, V](): LookupMagnet[K, V] & CacheTag
+  def build[K, V](): CacheMagnet[K, V]
 }
 
 object Caching {
@@ -21,7 +19,7 @@ object Caching {
 
     private def javaConcurrentMap[K, V]() = new java.util.concurrent.ConcurrentHashMap[K, V]()
 
-    case class Impl[K, V]() extends LookupMagnet[K, V] with CacheTag {
+    case class _Cache[K, V]() extends CacheMagnet[K, V] {
 
       val underlying: ConcurrentHashMap[K, V] = {
         javaConcurrentMap[K, V]()
@@ -35,7 +33,7 @@ object Caching {
       ): SetRepr[K] = underlying.keySet((): V).asScala
     }
 
-    override def build[K, V](): Impl[K, V] = Impl()
+    override def build[K, V](): _Cache[K, V] = _Cache()
 
   }
 
@@ -48,7 +46,7 @@ object Caching {
       toBuilder(proto)
     }
 
-    case class Impl[K, V]() extends LookupMagnet[K, V] with CacheTag {
+    case class _Cache[K, V]() extends CacheMagnet[K, V] {
 
       val underlying: Cache[K, V] = underlyingBuilder.build[K, V]()
 
@@ -63,7 +61,7 @@ object Caching {
       }
     }
 
-    override def build[K, V](): Impl[K, V] = Impl[K, V]()
+    override def build[K, V](): _Cache[K, V] = _Cache[K, V]()
   }
 
   object Strong extends CaffeineCaching {
@@ -81,10 +79,10 @@ object Caching {
     override def toBuilder(proto: Caffeine[Any, Any]): Caffeine[Any, Any] = proto.softValues()
   }
 
-  type ConcurrentCache[K, V] = Soft.Impl[K, V]
+  type ConcurrentCache[K, V] = Soft._Cache[K, V]
   def ConcurrentCache[K, V](): ConcurrentCache[K, V] = Soft.build[K, V]()
 
-  type ConcurrentMap[K, V] = Maps.Impl[K, V]
+  type ConcurrentMap[K, V] = Maps._Cache[K, V]
   def ConcurrentMap[K, V](): ConcurrentMap[K, V] = Maps.build[K, V]()
 
   type ConcurrentSet[K] = SetRepr[K]
