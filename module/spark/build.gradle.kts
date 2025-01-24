@@ -9,5 +9,5 @@ dependencies {
 
     bothImpl("org.apache.spark:spark-core_${vs.scala.binaryV}:${sparkV}")
     bothImpl("org.apache.spark:spark-sql_${vs.scala.binaryV}:${sparkV}")
-    bothImpl("org.apache.spark:spark-mllib_${vs.scala.binaryV}:${sparkV}")
+//    bothImpl("org.apache.spark:spark-mllib_${vs.scala.binaryV}:${sparkV}")
 }
