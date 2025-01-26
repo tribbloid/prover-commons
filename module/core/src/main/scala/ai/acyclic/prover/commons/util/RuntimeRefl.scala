@@ -2,9 +2,9 @@ package ai.acyclic.prover.commons.util
 
 import scala.reflect.runtime.universe
 
-object RuntimeClass {
+object RuntimeRefl {
 
-  trait GetName {
+  trait GetClassName {
 
     def simpleNameOf(v: Any): String = {
       v match {
@@ -34,7 +34,7 @@ object RuntimeClass {
     def normalise(enc: String): String
   }
 
-  object Decoded extends GetName {
+  object Decoded extends GetClassName {
 
     override def normalise(enc: String): String = {
       val dec = universe.TypeName(enc).decodedName.toString
@@ -52,7 +52,7 @@ object RuntimeClass {
     }
   }
 
-  object Encoded extends GetName {
+  object Encoded extends GetClassName {
 
     override def normalise(enc: String): String = {
       enc
