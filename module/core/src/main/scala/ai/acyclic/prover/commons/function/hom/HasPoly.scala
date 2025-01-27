@@ -23,7 +23,7 @@ trait HasPoly extends HasPolyLike {
 
     object CaseTag extends Capability
 
-    type Case[+FF <: Fn[?, ?]] = FF <> CaseTag.type
+    type Case[+FF <: Fn[?, ?]] = FF <>: CaseTag.type
 
     type Lemma[-I, +O] = Case[Fn[I, O]] // antecedent, compatibility type at logical consuming site, hence the name
     object Lemma {

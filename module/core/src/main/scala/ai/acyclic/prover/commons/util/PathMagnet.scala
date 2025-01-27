@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.Delegating
+import ai.acyclic.prover.commons.cap.Capability
+import ai.acyclic.prover.commons.cap.Capability.<>:
 
 import java.io.File
 import scala.language.implicitConversions
@@ -9,42 +10,41 @@ object PathMagnet {
 
   trait Template {
 
-    trait IK extends Delegating[String] {
-      self: K =>
+    def separator: String
+
+    object Cap extends Capability
+    type Cap = Cap.type
+
+    type K = String <>: Cap
+
+    implicit final def build(v: String): K = v <>: Cap
+    final def apply(vs: String*): K = build(vs.mkString(separator))
+
+    implicit class _ext0(self: K) {
 
       def append(splitter: String)(part: String): K = { // TODO: should accept OptionMagnet[String]
-        if (part == null || part.isEmpty) return this
+        if (part == null || part.isEmpty) return self
 
         require(!part.startsWith(splitter), "cannot append a part that starts with the splitter")
 
         val str =
-          if (unbox.endsWith(splitter)) unbox + part
-          else unbox + splitter + part
+          if (self.endsWith(splitter)) self + part
+          else self + splitter + part
 
         build(str)
       }
 
       def :/(part: String) = append("/")(part)
       def dot(part: String) = append(".")(part)
-
-      override def toString: String = unbox
     }
-
-    def separator: String
-
-    def build(v: String): K
-    def apply(vs: String*) = build(vs.mkString(separator))
-
-    type K
-
-    implicit def fromString(v: String): K = build(v)
   }
 
   // file system-agnostic, compatible with all common file systems, e.g. HDFS, NTFS and ext4
-  object Universal extends Template {
+  object URI extends Template {
 
-    override def build(v: String): K = K(v) // fuck scala
-    case class K(unbox: String) extends IK {
+    override def separator: String = "/"
+
+    implicit class _ext(unbox: K) {
 
       def normaliseToLocal: LocalFS.K = {
         // always normalise / to local FS dependent FileSpeparator
@@ -56,27 +56,25 @@ object PathMagnet {
       }
     }
 
-    override def separator: String = "/"
   }
 
   object LocalFS extends Template {
 
-    override def build(v: String): K = K(v) // fuck scala
-    case class K(unbox: String) extends IK {
-
-      def :\(part: String): K = append(File.separator)(part)
-
-      lazy val glob_children: String = :\("*")
-      lazy val glob_offspring: String = :\("**")
-
-      def universal: Universal.K = Universal.build(unbox)
-    }
-
     override def separator: String = File.separator
+
+    implicit class _ext(unbox: K) {
+
+      def \\(part: String): K = unbox.append(File.separator)(part) // named such as :\ is already taken
+
+      lazy val glob_children: K = \\("*")
+      lazy val glob_offspring: K = \\("**")
+
+      def universal: URI.K = URI.build(unbox)
+    }
   }
 
-  type UniversalPath = PathMagnet.Universal.K
-  def UniversalPath = PathMagnet.Universal
+  type URIPath = PathMagnet.URI.K
+  def URIPath = PathMagnet.URI
 
   type LocalFSPath = PathMagnet.LocalFS.K
   def LocalFSPath = PathMagnet.LocalFS

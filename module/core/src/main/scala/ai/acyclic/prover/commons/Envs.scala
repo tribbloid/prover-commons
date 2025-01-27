@@ -9,6 +9,6 @@ object Envs {
 
   val TEMP: String = "temp"
 
-  val USER_TEMP_DIR: LocalFSPath = USER_DIR :\ TEMP
+  val USER_TEMP_DIR: LocalFSPath = USER_DIR \\ TEMP
   val ROOT_TEMP_DIR: LocalFSPath = LocalFSPath(System.getProperty("java.io.tmpdir"))
 }

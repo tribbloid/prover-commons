@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
 import ai.acyclic.prover.commons.graph.topology.Axiom.ExtractArrow
-import ai.acyclic.prover.commons.util.Erased
+import ai.acyclic.prover.commons.util.Phantom
 
 import scala.language.implicitConversions
 
@@ -14,7 +14,7 @@ abstract class Topology extends Foundation.Lawful {
   implicit def reifyAxiom(
       implicit
       extractArrow: ExtractArrow.Gt[_Axiom] // TODO: how to remove this crap?
-  ): Axiom.Reify[extractArrow._Arrow] & _Axiom = Erased.apply[Axiom.Reify[extractArrow._Arrow] & _Axiom]()
+  ): Axiom.Reify[extractArrow._Arrow] & _Axiom = Phantom.apply[Axiom.Reify[extractArrow._Arrow] & _Axiom]()
 
   def reify(
       implicit

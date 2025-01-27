@@ -16,13 +16,13 @@ class CapabilitySpec extends BaseSpec {
 
       val _: Ex = ex1
       val _: Ex = ex12
-      val _: Ex <> Cap1 = ex12
-      val _: Ex <> Cap2 = ex12
+      val _: Ex <>: Cap1 = ex12
+      val _: Ex <>: Cap2 = ex12
 
       // TODO: how do the following even work?
-      val _: (Ex <> Cap2) <> Cap1 = ex12
-      val _: ((Ex <> Cap3) <> Cap2) <> Cap1 = ex123
-      val _: ((Ex <> Cap2) <> Cap3) <> Cap1 = ex123
+      val _: (Ex <>: Cap2) <>: Cap1 = ex12
+      val _: ((Ex <>: Cap3) <>: Cap2) <>: Cap1 = ex123
+      val _: ((Ex <>: Cap2) <>: Cap3) <>: Cap1 = ex123
     }
 
     it("by function") {
@@ -47,7 +47,7 @@ class CapabilitySpec extends BaseSpec {
 
     it("by upcasting") {
 
-      val revoked: Ex <> Cap1 = ex12
+      val revoked: Ex <>: Cap1 = ex12
       assert(revoked == ex12)
       shouldNotCompile("revoked: Ex ^: Subject.Cap2")
     }
@@ -56,7 +56,7 @@ class CapabilitySpec extends BaseSpec {
 
       val revoked = (new Cap1 {}).revoke(ex12)
       assert(revoked == ex12)
-      val _: Ex <> Cap2 = revoked
+      val _: Ex <>: Cap2 = revoked
       shouldNotCompile("revoked: Ex ^: Subject.Cap1")
     }
   }
@@ -80,9 +80,9 @@ object CapabilitySpec extends Capability.Universe {
 
   val ex0: Ex = { v => v + 1 }
 
-  val ex1: Ex <> Cap1 = ex0 <>: new Cap1 {}
+  val ex1: Ex <>: Cap1 = ex0 <>: new Cap1 {}
 
-  val ex12: (Ex <> Cap1) <> Cap2 = ex1 <>: new Cap2 {}
+  val ex12: (Ex <>: Cap1) <>: Cap2 = ex1 <>: new Cap2 {}
 
-  val ex123: ((Ex <> Cap1) <> Cap2) <> Cap3 = ex12 <>: new Cap3 {}
+  val ex123: ((Ex <>: Cap1) <>: Cap2) <>: Cap3 = ex12 <>: new Cap3 {}
 }

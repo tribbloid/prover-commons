@@ -1,12 +1,12 @@
 package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
-import ai.acyclic.prover.commons.util.{Erased, Summoner}
+import ai.acyclic.prover.commons.util.{Phantom, Summoner}
 
 /**
   * a container of graph constraints
   */
-trait Axiom extends Erased {
+trait Axiom extends Phantom {
 
   type _Arrow <: Arrow
 

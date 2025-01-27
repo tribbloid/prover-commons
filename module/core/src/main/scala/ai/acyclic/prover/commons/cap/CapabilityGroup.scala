@@ -6,19 +6,19 @@ import scala.language.implicitConversions
 
 private[cap] trait CapabilityGroup extends CanRevokeAll {
 
-  trait _Can[+C]
+  trait WithCap[+C]
 
-  type <>[+T, +C] <: T & _Can[C]
+  type <>:[+T, +C] <: T & WithCap[C]
 
-  implicit class _ext[T, C](self: T <> C) {
+  implicit class _ext[T, C](self: T <>: C) {
 
-    def revoke: T = self
+    def revoke: T = self // TODO: cannot decide which cap to revoke, need to be a static function
   }
 
   trait revokeAll_Imp0 extends Hom.Poly {
     self: Singleton =>
 
-    implicit def last[T, C <: Capability]: (T <> C) |- T = at[T <> C].apply { v =>
+    implicit def last[T, C <: Capability]: (T <>: C) |- T = at[T <>: C].apply { v =>
       v.asInstanceOf[T]
     }
   }
@@ -29,7 +29,7 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
     implicit def chain[T, R, C <: Capability](
         implicit
         lemma: T :=> R
-    ): (T <> C) |- R = at[T <> C] { v =>
+    ): (T <>: C) |- R = at[T <>: C] { v =>
       lemma.asInstanceOf[Hom.Fn.Impl[T, R]].apply(v.asInstanceOf[T]) // fuck scala
     }
   }
@@ -40,7 +40,7 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
 
     object add {
 
-      def apply[V](v: V): V <> C = v.asInstanceOf[V <> C]
+      def apply[V](v: V): V <>: C = v.asInstanceOf[V <>: C]
     }
 
     // TODO: sometimes left associated function won't work (generic collapse to Nothing), need to file a bug report for it
@@ -48,7 +48,7 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
 
     object revoke {
 
-      def apply[V](v: V <> C): V = v.asInstanceOf[V]
+      def apply[V](v: V <>: C): V = v.asInstanceOf[V]
     }
   }
 

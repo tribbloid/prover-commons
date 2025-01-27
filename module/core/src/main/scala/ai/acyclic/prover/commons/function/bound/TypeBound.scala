@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.function.bound
 
-import ai.acyclic.prover.commons.util.Erased
+import ai.acyclic.prover.commons.util.Phantom
 
 trait TypeBound extends PseudoTypeBound {
 
@@ -63,7 +63,7 @@ object TypeBound {
     type Min = Nothing
     type Max = Any
   }
-  val Top: Top = Erased()
+  val Top: Top = Phantom()
 
   trait Point extends TypeBound {
     type Point

@@ -1,14 +1,14 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.cap.Capability
-import ai.acyclic.prover.commons.cap.Capability.<>
+import ai.acyclic.prover.commons.cap.Capability.<>:
 
 import scala.language.implicitConversions
 
 object Magnet {
 
   // this is cap-based, has Option overhead, should be replaced with `XX | Null` in the future
-  type OptionMagnet[+T] = Option[T] <> OptionMagnetCap.type
+  type OptionMagnet[+T] = Option[T] <>: OptionMagnetCap.type
 
   case object OptionMagnetCap extends Capability {
 
@@ -36,11 +36,11 @@ object Magnet {
 
   // ---
 
-  type PreferRightMagnet[+L, +R] = Either[L, R] <> PreferRightCap.type
+  type PreferRightMagnet[+L, +R] = Either[L, R] <>: PreferRightCap.type
 
   trait PreferRightCap_Imp0 extends Capability {
 
-    implicit def boxLeft[L](v: L): Left[L, Nothing] <> PreferRightCap.type = {
+    implicit def boxLeft[L](v: L): Left[L, Nothing] <>: PreferRightCap.type = {
 
       val left: Left[L, Nothing] = Left[L, Nothing](v)
 
@@ -51,7 +51,7 @@ object Magnet {
 
   case object PreferRightCap extends PreferRightCap_Imp0 {
 
-    implicit def boxRight[R](v: R): Right[Nothing, R] <> this.type = {
+    implicit def boxRight[R](v: R): Right[Nothing, R] <>: this.type = {
 
       Right(v) <>: PreferRightCap
     }

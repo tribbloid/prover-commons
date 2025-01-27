@@ -1,8 +1,8 @@
 package ai.acyclic.prover.commons.function.bound
 
-import ai.acyclic.prover.commons.util.Erased
+import ai.acyclic.prover.commons.util.Phantom
 
-trait PseudoTypeBound extends Erased with Serializable {
+trait PseudoTypeBound extends Phantom with Serializable {
 
   type Min
   type Max
