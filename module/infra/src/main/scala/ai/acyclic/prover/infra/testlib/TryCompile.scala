@@ -162,7 +162,7 @@ object TryCompile {
     }
   }
 
-  case class Static[N <: String with Singleton](sourceName: N) {
+  case class Static[N <: String & Singleton](sourceName: N) {
 
     type NN = N
 

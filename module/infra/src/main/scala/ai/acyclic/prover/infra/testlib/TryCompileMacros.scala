@@ -3,7 +3,7 @@ package ai.acyclic.prover.infra.testlib
 import ai.acyclic.prover.infra.testlib.AutoLift.SerializingLift
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.macros.{whitebox, ParseException, TypecheckException}
+import scala.reflect.macros.{ParseException, TypecheckException, whitebox}
 import scala.tools.nsc.Global
 import scala.tools.nsc.reporters.FilteringReporter
 
@@ -49,7 +49,7 @@ class TryCompileMacros(val c: whitebox.Context) extends SerializingLift.Mixin {
     }
   }
 
-  def compileCodeTree[N <: String with Singleton: c.WeakTypeTag](code: CodeTree): Tree = {
+  def compileCodeTree[N <: String & Singleton: c.WeakTypeTag](code: CodeTree): Tree = {
 
     val _code = tree2Str(code).trim
 

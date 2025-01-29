@@ -25,7 +25,7 @@ object RDDImplicitsGlobal {
 
 trait RDDImplicits {
 
-  import RDDImplicitsGlobal._
+  import RDDImplicitsGlobal.*
 
   implicit class _rddExtensions[T](@transient self: RDD[T]) {
 
