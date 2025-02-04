@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.debug
 
-import ai.acyclic.prover.commons.util.SrcDefinition
+import ai.acyclic.prover.commons.debug.SrcDefinition
 
 class print_@()(
     implicit

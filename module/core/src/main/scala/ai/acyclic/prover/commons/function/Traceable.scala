@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.function
 import ai.acyclic.prover.commons.graph.UnapplyInspection
 import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
 import ai.acyclic.prover.commons.multiverse.{CanUnapply, Projection, UnappliedForm}
-import ai.acyclic.prover.commons.util.SrcDefinition
+import ai.acyclic.prover.commons.debug.SrcDefinition
 
 trait Traceable extends Projection.Equals.ByConstruction {
   import Traceable.*

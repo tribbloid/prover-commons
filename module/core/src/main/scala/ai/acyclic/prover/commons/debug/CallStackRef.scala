@@ -54,7 +54,7 @@ object CallStackRef {
 
   def here: CallStackRef = {
 
-    val stackInfo_raw: Array[StackTraceElement] = Debug.getBreakpointInfo
+    val stackInfo_raw: Array[StackTraceElement] = BreakpointInfo.getBreakpointInfo
     CallStackRef(stackInfo_raw.toVector)
       .below { v =>
         v.isUnderClasses(CallStackRef.getClass)

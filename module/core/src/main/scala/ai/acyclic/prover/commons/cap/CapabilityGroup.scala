@@ -12,7 +12,8 @@ private[cap] trait CapabilityGroup extends CanRevokeAll {
 
   implicit class _ext[T, C](self: T <>: C) {
 
-    def revoke: T = self // TODO: cannot decide which cap to revoke, need to be a static function
+    def original: T = self
+    // TODO: need an API to revoke one specific capability when many are enabled, should be a static function
   }
 
   trait revokeAll_Imp0 extends Hom.Poly {

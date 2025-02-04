@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.function.BuildTemplate
-import ai.acyclic.prover.commons.util.SrcDefinition
+import ai.acyclic.prover.commons.debug.SrcDefinition
 
 trait HasPoly extends HasPolyLike {
 

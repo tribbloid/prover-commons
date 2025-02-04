@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.function.{BuildTemplate, Traceable}
 import ai.acyclic.prover.commons.function.bound.{DepDomains, Domains}
 import ai.acyclic.prover.commons.multiverse.CanEqual
-import ai.acyclic.prover.commons.util.SrcDefinition
+import ai.acyclic.prover.commons.debug.SrcDefinition
 
 import scala.language.implicitConversions
 

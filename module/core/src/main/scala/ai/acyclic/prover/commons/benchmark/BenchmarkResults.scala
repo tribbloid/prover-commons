@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.benchmark
 
 import ai.acyclic.prover.commons.debug.print_@
-import ai.acyclic.prover.commons.util.SrcDefinition
+import ai.acyclic.prover.commons.debug.SrcDefinition
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration

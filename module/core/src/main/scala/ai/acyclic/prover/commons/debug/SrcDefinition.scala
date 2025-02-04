@@ -1,6 +1,5 @@
-package ai.acyclic.prover.commons.util
+package ai.acyclic.prover.commons.debug
 
-import ai.acyclic.prover.commons.debug.CallStackRef
 import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 
 import java.io.File

@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.debug
 
-object Debug {
+object BreakpointInfo {
 
   final private val breakpointInfoBlacklist = {
     Seq(

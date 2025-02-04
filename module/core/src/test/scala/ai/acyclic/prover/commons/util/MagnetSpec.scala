@@ -25,7 +25,7 @@ class MagnetSpec extends BaseSpec {
 
       assert(Seq(v, v1, v2).distinct.size == 1)
 
-      v1.revoke match {
+      v1.original match {
         case Some("a") =>
       }
     }
@@ -39,7 +39,7 @@ class MagnetSpec extends BaseSpec {
 
       assert(Seq(v, v1, v2).distinct.size == 1)
 
-      v1.revoke match {
+      v1.original match {
         case None =>
       }
     }
@@ -55,7 +55,7 @@ class MagnetSpec extends BaseSpec {
 
       assert(Seq(v, v1, v2).distinct.size == 1)
 
-      v1.revoke match {
+      v1.original match {
         case Left(v) => v
       }
     }
@@ -68,7 +68,7 @@ class MagnetSpec extends BaseSpec {
 
       assert(Seq(v, v1, v2).distinct.size == 1)
 
-      v1.revoke match {
+      v1.original match {
         case Right(v) => v
       }
     }

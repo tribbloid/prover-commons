@@ -1,9 +1,10 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.collection.CacheMagnet
+import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.bound.TypeBound
 import ai.acyclic.prover.commons.multiverse.CanEqual
-import ai.acyclic.prover.commons.util.{K, SrcDefinition}
+import ai.acyclic.prover.commons.util.K
 
 object HasPoly1 {}
 

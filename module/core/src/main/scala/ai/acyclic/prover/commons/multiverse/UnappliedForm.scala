@@ -9,6 +9,7 @@ trait UnappliedForm extends Like {
 object UnappliedForm {
 
   trait Like {
+    self: UnappliedForm =>
 //    import UnappliedForm.*
 
     type T // defaults to Any

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.function
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.util.SrcDefinition
+import ai.acyclic.prover.commons.debug.SrcDefinition
 
 object TraceableSpec {
 
