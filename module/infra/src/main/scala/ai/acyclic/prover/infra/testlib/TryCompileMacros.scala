@@ -3,7 +3,7 @@ package ai.acyclic.prover.infra.testlib
 import ai.acyclic.prover.infra.testlib.AutoLift.SerializingLift
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.macros.{ParseException, TypecheckException, whitebox}
+import scala.reflect.macros.{whitebox, ParseException, TypecheckException}
 import scala.tools.nsc.Global
 import scala.tools.nsc.reporters.FilteringReporter
 
