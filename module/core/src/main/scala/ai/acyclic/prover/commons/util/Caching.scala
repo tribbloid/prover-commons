@@ -15,7 +15,7 @@ object Caching {
 
   import scala.jdk.CollectionConverters.*
 
-  object Maps extends Caching {
+  object SerializableMap extends Caching {
 
     private def javaConcurrentMap[K, V]() = new java.util.concurrent.ConcurrentHashMap[K, V]()
 
@@ -82,9 +82,10 @@ object Caching {
   type ConcurrentCache[K, V] = Soft._Cache[K, V]
   def ConcurrentCache[K, V](): ConcurrentCache[K, V] = Soft.build[K, V]()
 
-  type ConcurrentMap[K, V] = Maps._Cache[K, V]
-  def ConcurrentMap[K, V](): ConcurrentMap[K, V] = Maps.build[K, V]()
+  type ConcurrentMap[K, V] = SerializableMap._Cache[K, V] // unlike cache, map never drop cold data
+  // TODO: switch to Hard._Cache, unless explicitly asked to be Serializable
+  def ConcurrentMap[K, V](): ConcurrentMap[K, V] = SerializableMap.build[K, V]()
 
   type ConcurrentSet[K] = SetRepr[K]
-  def ConcurrentSet[K](): SetRepr[K] = Maps.build[K, Unit]().asSet
+  def ConcurrentSet[K](): SetRepr[K] = SerializableMap.build[K, Unit]().asSet
 }
