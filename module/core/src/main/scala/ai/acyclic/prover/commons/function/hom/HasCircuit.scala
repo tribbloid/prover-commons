@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.Delegating
-import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.function.{BuildTemplate, Traceable}
 import ai.acyclic.prover.commons.function.bound.{DepDomains, Domains}
@@ -12,7 +11,7 @@ import scala.language.implicitConversions
 
 object HasCircuit {}
 
-trait HasCircuit extends Capability.Universe {
+trait HasCircuit {
 
   trait CanNormalise_Impl0 {
 
@@ -100,7 +99,7 @@ trait HasCircuit extends Capability.Universe {
 
   trait Circuit extends DepDomains with Traceable with Product with Serializable {
 
-    def apply(arg: _I): _OK[arg.type]
+    def apply(arg: In): OutK[arg.type]
   }
   object Circuit {
 
@@ -122,8 +121,8 @@ trait HasCircuit extends Capability.Universe {
     DepFn.K1_[I] // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
   case object DepFn {
 
-    type K1[-I] = Circuit { type _I >: I }
-    trait K1_[-I] extends Circuit { type _I >: I }
+    type K1[-I] = Circuit { type In >: I }
+    trait K1_[-I] extends Circuit { type In >: I }
     { // sanity
       implicitly[K1_[Int] <:< K1[Int]]
     }
@@ -136,10 +135,10 @@ trait HasCircuit extends Capability.Universe {
     /**
       * function with computation graph, like a lifted JAXpr
       */
-    type K2[-I, +O] = DepFn.K1[I] { type _OK[T] <: O }
+    type K2[-I, +O] = DepFn.K1[I] { type OutK[T] <: O }
     trait K2_[-I, +O] extends CanNormalise[K2_[I, O]] with DepFn.K1_[I] with Domains {
 
-      type _O <: O
+      type Out <: O
 
       def normalise = this // bypassing EqSat, always leads to better representation
     }
@@ -209,8 +208,8 @@ trait HasCircuit extends Capability.Universe {
         override val _definedAt: SrcDefinition
     ) extends K2_[I, O] { // most specific
 
-      type _I = I
-      type _O = O
+      type In = I
+      type Out = O
     }
 
     trait Mixin
@@ -246,7 +245,7 @@ trait HasCircuit extends Capability.Universe {
 
       case class Is[I, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
 
-        override def apply(v: I): R & delegate._OK[v.type] = delegate.apply(v)
+        override def apply(v: I): R & delegate.OutK[v.type] = delegate.apply(v)
       }
     }
 
@@ -254,7 +253,7 @@ trait HasCircuit extends Capability.Universe {
         extends Impl[I, I]
         with Combinator.Linear { // TOOD: this should be contravariant under DepFn
 
-      override def apply(arg: I): I & _OK[arg.type] = arg
+      override def apply(arg: I): I & OutK[arg.type] = arg
 
       case object CrossUnit extends Impl[I, (I, Unit)] with Combinator.TrivialConversion {
 

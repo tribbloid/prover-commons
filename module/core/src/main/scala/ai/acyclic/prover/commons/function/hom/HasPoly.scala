@@ -1,6 +1,8 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.cap.Capability
+import ai.acyclic.prover.commons.cap.Capability.<>
+import ai.acyclic.prover.commons.compat.TupleX
 import ai.acyclic.prover.commons.function.BuildTemplate
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
@@ -23,7 +25,7 @@ trait HasPoly extends HasPolyLike {
 
     object CaseTag extends Capability
 
-    type Case[+FF <: Fn[?, ?]] = FF <>: CaseTag.type
+    type Case[+FF <: Fn[?, ?]] = FF <> CaseTag.type
 
     type Lemma[-I, +O] = Case[Fn[I, O]] // antecedent, compatibility type at logical consuming site, hence the name
     object Lemma {
@@ -37,12 +39,12 @@ trait HasPoly extends HasPolyLike {
     }
     type |-[I, O] = Impl[I, O]
 
-    object asHListPoly1 extends formless.hlist.Poly1 {
+    object asTupleMapper extends TupleX.Mapper {
 
       implicit def rewrite[I, R](
           implicit
-          _case: I :=> R
-      ): asHListPoly1.this.Case.Aux[I, R] = at[I] { v =>
+          _case: I |- R // TODO: should be a lemma, but spoiled by Scala's widen to Any problem
+      ): asTupleMapper.this.Case.Aux[I, R] = at[I] { v =>
         _case.apply(v)
       }
     }
@@ -54,7 +56,7 @@ trait HasPoly extends HasPolyLike {
         _definedAt: SrcDefinition
     ): BuildTarget[I, O] = {
 
-      val _case = Fn.at[I](fn) <>: CaseTag
+      val _case = Capability(Fn.at[I](fn)) <> CaseTag
       _case
     }
 
@@ -63,7 +65,7 @@ trait HasPoly extends HasPolyLike {
     def apply[I](v: I)(
         implicit
         _case: Lemma.At[I]
-    ): _case._O = {
+    ): _case.Out = {
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll[FnCompat[v.type, R], IsCase.type](_case)
 //      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll(_case)
       _case.apply(v)

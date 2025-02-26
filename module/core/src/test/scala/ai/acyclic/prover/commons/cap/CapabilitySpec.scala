@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.cap
 
+import ai.acyclic.prover.commons.cap.Capability.<>
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class CapabilitySpec extends BaseSpec {
@@ -14,27 +15,26 @@ class CapabilitySpec extends BaseSpec {
 
     it("by upcasting") {
 
-      val _: Ex = ex1
-      val _: Ex = ex12
-      val _: Ex <>: Cap1 = ex12
-      val _: Ex <>: Cap2 = ex12
+      ex1: Ex
+      ex12: Ex
+      ex12: Ex <> Cap1
+      ex12: Ex <> Cap2
 
-      // TODO: how do the following even work?
-      val _: (Ex <>: Cap2) <>: Cap1 = ex12
-      val _: ((Ex <>: Cap3) <>: Cap2) <>: Cap1 = ex123
-      val _: ((Ex <>: Cap2) <>: Cap3) <>: Cap1 = ex123
+      ex12: (Ex <> Cap2) <> Cap1
+      ex123: ((Ex <> Cap3) <> Cap2) <> Cap1
+      ex123: ((Ex <> Cap2) <> Cap3) <> Cap1
     }
 
     it("by function") {
 
       {
-        val revoked = revokeAll(ex1)
+        val revoked = Capability.revokeAll(ex1)
         assert(revoked == ex1)
         shouldNotCompile("revoked: Ex ^: Subject.Cap1")
       }
 
       {
-        val revoked = revokeAll(ex12)(revokeAll.chain)
+        val revoked = Capability.revokeAll(ex12) // (Capability.revoke.chain)
         // buggy compiler! circumventing
 
         assert(revoked == ex12)
@@ -43,27 +43,62 @@ class CapabilitySpec extends BaseSpec {
     }
   }
 
+  it("equivalence of type regardless of being left/right associative") {
+
+    implicitly[((Ex <> Cap1) <> Cap2) =:= ((Ex <> Cap1) <> Cap2)]
+
+    ex12
+//    val d2: (Ex <> Cap1) <> Cap2 = d1
+  }
+
+  it("can swap capabilities") {
+
+    val ex21: (Ex <> Cap2) <> Cap1 = ex12
+
+    assert(ex21 == ex12)
+  }
+
   describe("can revoke some capability") {
 
     it("by upcasting") {
 
-      val revoked: Ex <>: Cap1 = ex12
-      assert(revoked == ex12)
-      shouldNotCompile("revoked: Ex ^: Subject.Cap2")
+      {
+        val revoked: Ex <> Cap1 = ex12
+        assert(revoked == ex12)
+        shouldNotCompile("revoked: Ex ^: Subject.Cap2")
+      }
+
+      {
+        val revoked: Ex <> Cap2 = ex12
+        assert(revoked == ex12)
+        shouldNotCompile("revoked: Ex ^: Subject.Cap1")
+      }
     }
 
     it("by function") {
 
-      val revoked = (new Cap1 {}).revoke(ex12)
-      assert(revoked == ex12)
-      val _: Ex <>: Cap2 = revoked
-      shouldNotCompile("revoked: Ex ^: Subject.Cap1")
+      {
+        object revoke extends Capability.revoke[Cap1]
+
+        val revoked = revoke(ex12)(revoke.last[Ex <> Cap2, Cap1]) // fuck scala
+        assert(revoked == ex12)
+        val _: Ex <> Cap2 = revoked
+        shouldNotCompile("revoked: Ex <> Subject.Cap1")
+      }
+
+      {
+        val revoke = Capability.revoke[Cap2]
+        val revoked = revoke(ex12)(revoke.last) // fuck scala
+        assert(revoked == ex12)
+        val _: Ex <> Cap1 = revoked
+        shouldNotCompile("revoked: Ex <> Subject.Cap2")
+      }
     }
   }
 
 }
 
-object CapabilitySpec extends Capability.Universe {
+object CapabilitySpec {
 
   trait Cap1 extends Capability {}
 
@@ -80,9 +115,9 @@ object CapabilitySpec extends Capability.Universe {
 
   val ex0: Ex = { v => v + 1 }
 
-  val ex1: Ex <>: Cap1 = ex0 <>: new Cap1 {}
+  val ex1: Ex <> Cap1 = Capability(ex0).<>[Cap1]
 
-  val ex12: (Ex <>: Cap1) <>: Cap2 = ex1 <>: new Cap2 {}
+  val ex12: (Ex <> Cap1) <> Cap2 = Capability(ex1).<>[Cap2]
 
-  val ex123: ((Ex <>: Cap1) <>: Cap2) <>: Cap3 = ex12 <>: new Cap3 {}
+  val ex123: ((Ex <> Cap1) <> Cap2) <> Cap3 = Capability(ex12).<>[Cap3]
 }

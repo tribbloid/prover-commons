@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.cap.Capability
-import ai.acyclic.prover.commons.cap.Capability.<>:
+import ai.acyclic.prover.commons.cap.Capability.<>
 
 import java.io.File
 import scala.language.implicitConversions
@@ -15,9 +15,9 @@ object PathMagnet {
     object Cap extends Capability
     type Cap = Cap.type
 
-    type K = String <>: Cap
+    type K = String <> Cap
 
-    implicit final def build(v: String): K = v <>: Cap
+    implicit final def build(v: String): K = Capability(v) <> Cap
     final def apply(vs: String*): K = build(vs.mkString(separator))
 
     implicit class _ext0(self: K) {

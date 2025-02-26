@@ -5,7 +5,6 @@ import ai.acyclic.prover.commons.viz.TypeViz
 import ai.acyclic.prover.commons.viz.format.Formats0.TypeInfo
 import ai.acyclic.prover.commons.viz.format.Formats1.{RecursiveForm, Trials}
 import ai.acyclic.prover.commons.viz.format.beans.Beans
-import formless.hlist.{::, HNil}
 
 class Formats1Spec extends BaseSpec {
 
@@ -28,20 +27,21 @@ class Formats1Spec extends BaseSpec {
       it("Infix") {
 
         viz[
-          XX[YY.type] :: XX[YY.type] :: XX[YY.type] :: HNil
+          XX[YY.type] >< XX[YY.type] >< XX[YY.type] >< T0
         ].typeStr.shouldBe(
-          "Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: HNil"
+          "Beans.XX[Beans.YY.type] >< Beans.XX[Beans.YY.type] >< Beans.XX[Beans.YY.type] >< Beans.T0"
         )
 
         viz[
-          XX[YY.type] :: XX[YY.type] :: (T1 :: T2 :: HNil) :: HNil
+          XX[YY.type] >< XX[YY.type] >< (T1 >< T2 >< T0) >< T0
         ].typeStr.shouldBe(
-          "Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: (Beans.T1 :: Beans.T2 :: HNil) :: HNil"
+          "Beans.XX[Beans.YY.type] >< Beans.XX[Beans.YY.type] >< (Beans.T1 >< Beans.T2 >< Beans.T0) >< Beans.T0"
         )
       }
     }
 
-    describe(" ... with DeAlias") {
+    ignore(" ... with DeAlias") {
+      // TupleX backend not determined, disabled until Scala 3
 
       val format = Formats0.TypeInfo.HidePackage.recursively.DeAlias
       val viz = TypeViz.withFormat(format)
@@ -56,7 +56,7 @@ class Formats1Spec extends BaseSpec {
       it("Infix") {
 
         viz[T2].typeStr.shouldBe(
-          "Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: Beans.XX[Beans.YY.type] :: HNil"
+          "Beans.XX[Beans.YY.type] >< Beans.XX[Beans.YY.type] >< Beans.XX[Beans.YY.type] >< Beans.T0"
         )
       }
 
@@ -134,19 +134,19 @@ class Formats1Spec extends BaseSpec {
 
       it(" ... mixed 1") {
         viz[Ovrd.T2].typeStr.shouldBe(
-          "Beans.XX[3] :: Beans.XX[Int(3)] :: HNil"
+          "Beans.XX[3] >< Beans.XX[Int(3)] >< Beans.T0"
         )
       }
 
       it(" ... mixed 2") {
         viz[Ovrd.T3].typeStr.shouldBe(
-          "Beans.XX[3] :: Beans.XX[3] :: Beans.XX[Int(3)] :: HNil"
+          "Beans.XX[3] >< Beans.XX[3] >< Beans.XX[Int(3)] >< Beans.T0"
         )
       }
 
       it(" ... mixed 3") {
         viz[Ovrd.T4].typeStr.shouldBe(
-          "Beans.XX[3] :: Beans.XX[3] :: Beans.XX[3] :: Beans.XX[Int(3)] :: HNil"
+          "Beans.XX[3] >< Beans.XX[3] >< Beans.XX[3] >< Beans.XX[Int(3)] >< Beans.T0"
         )
       }
     }
@@ -168,7 +168,7 @@ class Formats1Spec extends BaseSpec {
         viz[
           T2
         ].typeStr.shouldBe(
-          "XX[YY.type] :: XX[YY.type] :: XX[YY.type] :: HNil"
+          "XX[YY.type] >< XX[YY.type] >< XX[YY.type] >< T0"
         )
       }
 
@@ -197,4 +197,5 @@ object Formats1Spec {
 
     trait TT
   }
+
 }

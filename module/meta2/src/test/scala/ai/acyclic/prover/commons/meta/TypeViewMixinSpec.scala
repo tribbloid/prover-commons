@@ -3,7 +3,6 @@ package ai.acyclic.prover.commons.meta
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
 import ai.acyclic.prover.commons.viz.TypeVizSpec.S1
-import shapeless.Witness
 
 class TypeViewMixinSpec extends BaseSpec {
 
@@ -100,20 +99,12 @@ class TypeViewMixinSpec extends BaseSpec {
       val v = TypeViz[R.K].typeView
       assert(!v.isBuiltIn)
     }
-
-    it("witness") {
-
-      val v = TypeViz[singletonW.T].typeView
-      assert(!v.isBuiltIn)
-    }
   }
 }
 
 object TypeViewMixinSpec {
 
   val singleton = 3
-
-  val singletonW = Witness(3)
 //  val b = new Object {
 //
 //    val c = 3

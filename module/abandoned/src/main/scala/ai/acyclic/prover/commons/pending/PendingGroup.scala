@@ -1,12 +1,11 @@
 package ai.acyclic.prover.commons.pending
 
-import ai.acyclic.prover.commons.cap.CanRevokeAll
 import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.pending.PendingEffect.<<
 
 import scala.language.implicitConversions
 
-private[pending] trait PendingGroup extends CanRevokeAll {
+private[pending] trait PendingGroup {
 
   trait revokeAll_Lvl0 extends Hom.Poly {
     self: Singleton =>

@@ -1,9 +1,9 @@
 package ai.acyclic.prover.commons.viz
 
+import ai.acyclic.prover.commons.compat.Key
+import ai.acyclic.prover.commons.compat.TupleX.T0
 import ai.acyclic.prover.commons.meta.ScalaReflection.WeakTypeTag
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import shapeless.Witness
-import formless.hlist.HNil
 
 class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
@@ -119,59 +119,61 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       )
   }
 
-  it("HList") {
+  ignore("compat") { // formless / named tuple has new design, re-enable after Scala 3
 
-    val book =
-      "author" ::
-        "title" ::
-        HNil
+    it("HList") {
 
-    infer(book)
-      .shouldBe(
-        """
-        |+ String :: String :: shapeless.HNil
-        |:       ┏ + shapeless.:: [ 2 ARGS ] :
-        |:       ┃ !-- String .......................................................................... [1]
-        |:       ┃ !-+ String :: shapeless.HNil
-        |:       ┃   :       ┏ + shapeless.:: [ 2 ARGS ] :
-        |:       ┃   :       ┃ !-- String ... (see [1])
-        |:       ┃   :       ┃ !-+ shapeless.HNil
-        |:       ┃   :       ┃   !-- shapeless.HList ... (see [0])
-        |:       ┃   !-- shapeless.HList ... (see [0])
-        |!-+ shapeless.HList ................................................................. [0]
-        |  !-- java.io.Serializable
-        |  !-- Product
-        |  !-- Object
-        |""".stripMargin
-      )
-  }
+      val book =
+        "author" *:
+          "title" *:
+          T0
 
-  ignore("record") { // TODO: formless has a new design, re-enable after Scala 3
-    import formless.record.*
+      infer(book)
+        .shouldBe(
+          """
+            |+ String :: String :: shapeless.HNil
+            |:       ┏ + shapeless.:: [ 2 ARGS ] :
+            |:       ┃ !-- String .......................................................................... [1]
+            |:       ┃ !-+ String :: shapeless.HNil
+            |:       ┃   :       ┏ + shapeless.:: [ 2 ARGS ] :
+            |:       ┃   :       ┃ !-- String ... (see [1])
+            |:       ┃   :       ┃ !-+ shapeless.HNil
+            |:       ┃   :       ┃   !-- shapeless.HList ... (see [0])
+            |:       ┃   !-- shapeless.HList ... (see [0])
+            |!-+ shapeless.HList ................................................................. [0]
+            |  !-- java.io.Serializable
+            |  !-- Product
+            |  !-- Object
+            |""".stripMargin
+        )
+    }
 
-    val book =
-      ("author" ->> "Benjamin Pierce") ::
-        HNil
+    it("record") {
 
-    infer(book)
-      .shouldBe(
-        """
-          |+ String with shapeless.labelled.KeyTag[String("author"),String] :: shapeless.HNil
-          |:       ┏ + shapeless.:: [ 2 ARGS ] :
-          |:       ┃ !-+ String with shapeless.labelled.KeyTag[String("author"),String]
-          |:       ┃ : !-- shapeless.labelled.KeyTag[String("author"),String]
-          |:       ┃ : :         ┏ + shapeless.labelled.KeyTag [ 2 ARGS ] :
-          |:       ┃ : :         ┃ !-- String("author")
-          |:       ┃ : :         ┃ !-- String ... (see [1])
-          |:       ┃ : !-- String .......................................................................... [1]
-          |:       ┃ !-+ shapeless.HNil
-          |:       ┃   !-- shapeless.HList ... (see [0])
-          |!-+ shapeless.HList ................................................................. [0]
-          |  !-- java.io.Serializable
-          |  !-- Product
-          |  !-- Object
-          |""".stripMargin
-      )
+      val book =
+        (Key["author"] ->> "Benjamin Pierce") *:
+          T0
+
+      infer(book)
+        .shouldBe(
+          """
+            |+ String with shapeless.labelled.KeyTag[String("author"),String] :: shapeless.HNil
+            |:       ┏ + shapeless.:: [ 2 ARGS ] :
+            |:       ┃ !-+ String with shapeless.labelled.KeyTag[String("author"),String]
+            |:       ┃ : !-- shapeless.labelled.KeyTag[String("author"),String]
+            |:       ┃ : :         ┏ + shapeless.labelled.KeyTag [ 2 ARGS ] :
+            |:       ┃ : :         ┃ !-- String("author")
+            |:       ┃ : :         ┃ !-- String ... (see [1])
+            |:       ┃ : !-- String .......................................................................... [1]
+            |:       ┃ !-+ shapeless.HNil
+            |:       ┃   !-- shapeless.HList ... (see [0])
+            |!-+ shapeless.HList ................................................................. [0]
+            |  !-- java.io.Serializable
+            |  !-- Product
+            |  !-- Object
+            |""".stripMargin
+        )
+    }
   }
 
   describe("Singleton") {
@@ -230,49 +232,6 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
     }
 
-    describe("Witness.T") {
-
-      it("global") {
-
-        infer(singletonW.value)
-          .shouldBe(
-            """
-              |+ ai.acyclic.prover.commons.viz.TypeVizSpec.singletonW.T
-              |!-- Int
-              |""".stripMargin
-          )
-
-        infer[3](adhocW.value)
-          .shouldBe(
-            """
-              |- Int(3)
-              |""".stripMargin
-          )
-      }
-
-      it("local") {
-
-        {
-          val vv = adhocW.value
-
-          infer(vv)
-            .shouldBe(
-              infer(adhocW.value)
-            )
-        }
-
-        {
-          val vv = singletonW.value
-
-          infer(vv)
-            .shouldBe(
-              infer(singletonW.value)
-            )
-        }
-      }
-
-    }
-
     it("case class constructor") {
 
       infer(W)
@@ -301,68 +260,16 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
   }
 
-  describe("Witness") {
-
-    it("global") {
-
-      val adhocTree = infer(adhocW)
-      adhocTree
-        .shouldBe(
-          """
-            |+ shapeless.Witness{type T = Int(3)} ≅ shapeless.Witness.Aux[Int(3)]
-            |:       ┏ + shapeless.Witness.Aux [ 1 ARG ] :
-            |:       ┃ !-- Int(3)
-            |!-+ shapeless.Witness{type T = T0}
-            |  !-+ shapeless.Witness
-            |    !-- java.io.Serializable
-            |    !-- Object
-            |""".stripMargin
-        )
-
-      infer(singletonW).shouldBe(adhocTree)
-    }
-
-    it("local") {
-
-      val ww = adhocW
-
-      // CAUTION: copying witness into a new variable will lose its type information
-      infer(ww.value)
-        .shouldBe(
-          """
-            |+ ww.T
-            |!-- Int
-            |""".stripMargin
-        )
-
-      val wwErased: Witness.Lt[Int] = adhocW
-
-      infer(wwErased)
-        .shouldBe(
-          """
-            |+ shapeless.Witness{type T <: Int} ≅ shapeless.Witness.Lt[Int]
-            |:       ┏ + shapeless.Witness.Lt [ 1 ARG ] :
-            |:       ┃ !-- Int
-            |!-+ shapeless.Witness{type T <: Lub}
-            |  !-+ shapeless.Witness
-            |    !-- java.io.Serializable
-            |    !-- Object
-            |""".stripMargin
-        )
-    }
-  }
-
   it("refined") {
 
-    val v = TypeViz[Witness.Aux[Int]]
+    val v = TypeViz[Refined]
     v.toString.shouldBe(
       """
-        |+ shapeless.Witness{type T = Int} ≅ shapeless.Witness.Aux[Int]
-        |:       ┏ + shapeless.Witness.Aux [ 1 ARG ] :
-        |:       ┃ !-- Int
-        |!-+ shapeless.Witness{type T = T0}
-        |  !-+ shapeless.Witness
+        |+ ai.acyclic.prover.commons.viz.TypeVizSpec.W{val v: Int(3)} ≅ ai.acyclic.prover.commons.viz.TypeVizSpec.Refined
+        |!-+ ai.acyclic.prover.commons.viz.TypeVizSpec.W{val v: Int(3)}
+        |  !-+ ai.acyclic.prover.commons.viz.TypeVizSpec.W
         |    !-- java.io.Serializable
+        |    !-- Product
         |    !-- Object
         |""".stripMargin
     )
@@ -566,10 +473,6 @@ object TypeVizSpec {
 
   val singleton = 3
 
-  def adhocW = Witness(3) // TODO: merge inot singletonW
-
-  val singletonW = Witness(3)
-
   val singletonWArg = WArg(2)
 
   val singletonWArg2 = WArg(WArg(2))
@@ -579,6 +482,8 @@ object TypeVizSpec {
   type AliasWArg = WArg[Double]
 
   type AliasWArg2 = WArg[WArg[Double]]
+
+  type Refined = W { val v: 3 }
 
   class E { type D }
 
