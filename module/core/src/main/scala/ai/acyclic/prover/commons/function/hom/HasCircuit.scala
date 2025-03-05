@@ -13,7 +13,7 @@ object HasCircuit {}
 
 trait HasCircuit {
 
-  trait CanNormalise_Impl0 {
+  trait CanNormaliseToFn1_Impl0 extends Serializable {
 
     implicit def _normaliseToFn1[I, O](v: CanNormalise[Fn[I, O]])(
         implicit
@@ -89,7 +89,7 @@ trait HasCircuit {
       def asEager: Thunk.CachedEager[Thunk[O]] = Thunk.CachedEager(self)
     }
   }
-  object CanNormalise extends CanNormalise_Impl0 {}
+  object CanNormalise extends CanNormaliseToFn1_Impl0 {}
 
   sealed trait CanNormalise[+N <: Circuit] extends Delegating[N] {
 

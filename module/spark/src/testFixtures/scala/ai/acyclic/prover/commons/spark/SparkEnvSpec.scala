@@ -11,9 +11,9 @@ object SparkEnvSpec {
 
   trait NoUISupport extends BaseSpec with BeforeAndAfterAll {
 
-    final def sc: SparkContext = TestHelper.TestSC
+    final val sc: SparkContext = TestHelper.TestSC
 
-    final def sql: SQLContext = TestHelper.TestSQL
+    final val sql: SQLContext = TestHelper.TestSQL
 
     final def parallelism: Int = sc.defaultParallelism
 
