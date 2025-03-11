@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.spark
 
 import ai.acyclic.prover.commons.spark.locality.PartitionIdPassthrough
-import ai.acyclic.prover.commons.util.Caching.ConcurrentMap
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._SQLHelper
 import org.apache.spark.storage.{RDDInfo, StorageLevel}
@@ -12,22 +11,11 @@ import scala.util.Random
 
 object RDDImplicits extends RDDImplicits
 
-object RDDImplicitsGlobal {
-
-  // TODO: stageID is strictly incremental, this cost more memory than necessary
-  //  a counter is good enough
-  // (stageID -> threadID) -> isExecuted
-  val perCoreMark: ConcurrentMap[(Int, Long), Boolean] = ConcurrentMap()
-  // stageID -> isExecuted
-  val perWorkerMark: ConcurrentMap[Int, Boolean] = ConcurrentMap()
-
-}
-
 trait RDDImplicits {
 
-  import RDDImplicitsGlobal.*
+  import RDDImplicitsStatic.*
 
-  implicit class _rddExtensions[T](@transient self: RDD[T]) {
+  implicit class _rddView[T](@transient self: RDD[T]) {
 
     implicit val rddClassTag: ClassTag[T] = _SQLHelper.rddClassTag(self)
 
@@ -105,7 +93,7 @@ trait RDDImplicits {
       shuffled.values
     }
 
-    def foreachExecute(): RDD[T] = {
+    def compute(): RDD[T] = {
 
       self.foreach(_ => ())
       self
