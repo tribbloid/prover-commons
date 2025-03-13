@@ -64,13 +64,13 @@ trait HasPoly1 extends HasPoly {
         final case class CachedLazy()(
             getLookup: () => CacheMagnet[Any, Any] = () => CanEqual.Native.Lookup[Any, Any]()
         ) extends Impl[In, Out]
-            with ByRefine {
+            with BySpecialise {
 
           def backbone: TypeLambda.this.type = TypeLambda.this
 
           lazy val lookup: CacheMagnet[Any, Any] = getLookup()
 
-          override def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Out[T]] = {
+          override def specialise[T >: bound.Min <: bound.Max]: Fn[In[T], Out[T]] = {
 
             val result = Fn.at[In[T]] { i =>
               lookup
@@ -89,9 +89,9 @@ trait HasPoly1 extends HasPoly {
 
           type _OutOpt[T >: bound.Min <: bound.Max] = Option[_Out[T]]
 
-          object CachedOnly extends Impl[In, _OutOpt] with ByRefine {
+          object CachedOnly extends Impl[In, _OutOpt] with BySpecialise {
 
-            override def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Option[_Out[T]]] = {
+            override def specialise[T >: bound.Min <: bound.Max]: Fn[In[T], Option[_Out[T]]] = {
 
               val result = Fn.at[In[T]] { i =>
                 lookup
@@ -107,11 +107,11 @@ trait HasPoly1 extends HasPoly {
         }
       }
 
-      trait ByRefine extends TypeLambda {
+      trait BySpecialise extends TypeLambda {
 
-        def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Out[T]]
+        def specialise[T >: bound.Min <: bound.Max]: Fn[In[T], Out[T]]
 
-        final def apply[T >: bound.Min <: bound.Max](arg: In[T]): Out[T] = refine[T].apply(arg)
+        final def apply[T >: bound.Min <: bound.Max](arg: In[T]): Out[T] = specialise[T].apply(arg)
       }
 
       type Compat[
@@ -137,12 +137,12 @@ trait HasPoly1 extends HasPoly {
 
       implicit class Is[I, O](backbone: Fn[I, O])
           extends Impl[K.Drop1[_, I], K.Drop1[_, O]]()(backbone._definedAt)
-          with ByRefine {
+          with BySpecialise {
 
         override type In[T >: bound.Min <: bound.Max] = I
         override type Out[T >: bound.Min <: bound.Max] = O
 
-        override def refine[T >: bound.Min <: bound.Max]: Fn[I, O] = backbone
+        override def specialise[T >: bound.Min <: bound.Max]: Fn[I, O] = backbone
       }
       //    implicit def _fnIsPoly1[I, O](fn: Circuit[I, O]): Is[I, O] = Is(fn)
 
