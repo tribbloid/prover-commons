@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.multiverse
 import scala.reflect.ClassTag
 
 object CanNormalise {
+  // TODO: should be a subtype of "CanRewrite" as not all rewriting laws are normalising
 
   def rectifyArray(v: Any): Any = {
     val result = v match {

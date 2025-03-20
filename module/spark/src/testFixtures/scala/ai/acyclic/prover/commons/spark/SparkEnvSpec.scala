@@ -5,11 +5,11 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.scalatest.BeforeAndAfterAll
 
-trait SparkEnvSpec extends SparkEnvSpec.NoUISupport with SparkUISupport {}
+trait SparkEnvSpec extends SparkEnvSpec.Scaffold with SparkUITracking {}
 
 object SparkEnvSpec {
 
-  trait NoUISupport extends BaseSpec with BeforeAndAfterAll {
+  sealed trait Scaffold extends BaseSpec with BeforeAndAfterAll {
 
     final val sc: SparkContext = TestHelper.TestSC
 

@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.spark
 import org.apache.hadoop.security.UserGroupInformation
 import org.scalatest.BeforeAndAfterAll
 
-class SparkContextViewSuite extends SparkEnvSpec.NoUISupport with BeforeAndAfterAll {
+class SparkContextViewSuite extends SparkEnvSpec with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {}
 
