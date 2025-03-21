@@ -9,8 +9,9 @@ case class Causes[T <: Throwable](
 ) extends HasCauses[T]
     with NoStackTrace {
 
-  override def getMessage(): String = s"[CAUSED BY ${causes.size} EXCEPTION(S)]"
+  override def getCause(): T = causes.headOption.getOrElse(null.asInstanceOf[T])
 
+  override def getMessage(): String = s"[CAUSED BY ${causes.size} EXCEPTION(S)]"
 }
 
 object Causes {
@@ -18,8 +19,6 @@ object Causes {
   trait HasCauses[+T <: Throwable] extends Exception {
 
     def causes: Seq[T]
-
-    override def getCause(): T = causes.headOption.getOrElse(null.asInstanceOf[T])
 
     def throwIfNonEmpty(): Unit = {
 
