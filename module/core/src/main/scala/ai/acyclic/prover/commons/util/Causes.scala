@@ -1,24 +1,31 @@
 package ai.acyclic.prover.commons.util
 
+import ai.acyclic.prover.commons.util.Causes.HasCauses
+
 import scala.util.control.NoStackTrace
 
 case class Causes[T <: Throwable](
     causes: Seq[T]
-) extends Exception
+) extends HasCauses[T]
     with NoStackTrace {
 
-  override def getCause: T = causes.headOption.getOrElse(null.asInstanceOf[T])
-
-  val simpleMsg: String = s"[CAUSED BY ${causes.size} EXCEPTION(S)]"
-
-  def error(): Unit = {
-
-    if (causes.nonEmpty) throw this
-  }
+  override def getMessage(): String = s"[CAUSED BY ${causes.size} EXCEPTION(S)]"
 
 }
 
 object Causes {
+
+  trait HasCauses[+T <: Throwable] extends Exception {
+
+    def causes: Seq[T]
+
+    override def getCause(): T = causes.headOption.getOrElse(null.asInstanceOf[T])
+
+    def throwIfNonEmpty(): Unit = {
+
+      if (causes.nonEmpty) throw this
+    }
+  }
 
   /**
     * Not a real throwable, just a placeholder indicating lack of trials
