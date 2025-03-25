@@ -25,7 +25,11 @@ object PathMagnet {
       def append(splitter: String)(part: String): K = { // TODO: should accept OptionMagnet[String]
         if (part == null || part.isEmpty) return self
 
-        require(!part.startsWith(splitter), "cannot append a part that starts with the splitter")
+        require(
+          !part.startsWith(splitter), {
+            s"cannot append a part `${part}` that starts with the splitter"
+          }
+        )
 
         val str =
           if (self.endsWith(splitter)) self + part

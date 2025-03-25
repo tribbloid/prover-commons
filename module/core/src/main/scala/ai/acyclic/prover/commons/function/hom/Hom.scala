@@ -15,7 +15,7 @@ object Hom extends Hom_Imp0 {
 
   object Impl {
 
-    type Circuit[I, R] = Fn.Impl[I, R]
+    type Fn[I, R] = Fn.Impl[I, R]
 
     type Poly = Hom.Poly
 
