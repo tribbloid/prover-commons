@@ -38,8 +38,17 @@ object PathMagnet {
         build(str)
       }
 
-      def :/(part: String) = append("/")(part)
-      def dot(part: String) = append(".")(part)
+      def :/(part: String): K = append("/")(part)
+      def dot(part: String): K = append(".")(part)
+
+      def dotIfNoExistingExtension(part: String): K = {
+
+        if (self.lastIndexOf(".") < self.lastIndexOf(File.separator)) {
+          dot(part)
+        } else {
+          self
+        }
+      }
     }
   }
 
@@ -78,8 +87,8 @@ object PathMagnet {
   }
 
   type URIPath = PathMagnet.URI.K
-  def URIPath = PathMagnet.URI
+  def URIPath: URI.type = PathMagnet.URI
 
   type LocalFSPath = PathMagnet.LocalFS.K
-  def LocalFSPath = PathMagnet.LocalFS
+  def LocalFSPath: LocalFS.type = PathMagnet.LocalFS
 }
