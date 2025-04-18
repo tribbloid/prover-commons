@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.function.hom
 import ai.acyclic.prover.commons.cap.Capability
 import ai.acyclic.prover.commons.cap.Capability.<>
 import ai.acyclic.prover.commons.compat.TupleX
-import ai.acyclic.prover.commons.function.BuildTemplate
+import ai.acyclic.prover.commons.function.FnBuilder
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
 trait HasPoly extends HasPolyLike {
@@ -21,7 +21,7 @@ trait HasPoly extends HasPolyLike {
       implicit
       override val _definedAt: SrcDefinition
   ) extends PolyLike
-      with BuildTemplate {
+      with FnBuilder.Root {
 
     object CaseTag extends Capability
 
@@ -71,7 +71,7 @@ trait HasPoly extends HasPolyLike {
       _case.apply(v)
     }
 
-    case class BuildDomains[I, O]() extends IBuildDomains[I, O] {
+    case class DomainBuilder[I, O]() extends IDomainBuilder[I, O] {
 
       type _Lemma = Lemma[I, O]
       type _Impl = Impl[I, O]
@@ -82,7 +82,7 @@ trait HasPoly extends HasPolyLike {
           _case: Lemma[I, O]
       ): _case.type = _case
     }
-    def refine[i, o]: BuildDomains[i, o] = BuildDomains()
+    def domainBuilder[i, o]: DomainBuilder[i, o] = DomainBuilder()
   }
 
   object Poly {}

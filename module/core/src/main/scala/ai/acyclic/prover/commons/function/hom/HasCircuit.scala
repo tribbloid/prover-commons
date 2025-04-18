@@ -2,14 +2,17 @@ package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.Delegating
 import ai.acyclic.prover.commons.collection.CacheMagnet
-import ai.acyclic.prover.commons.function.{BuildTemplate, Traceable}
+import ai.acyclic.prover.commons.function.{FnBuilder, Traceable}
 import ai.acyclic.prover.commons.function.bound.{DepDomains, Domains}
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
 import scala.language.implicitConversions
 
-object HasCircuit {}
+object HasCircuit {
+
+  implicit def asFn(v: HasCircuit): v.Fn.type = v.Fn
+}
 
 trait HasCircuit {
 
@@ -130,7 +133,7 @@ trait HasCircuit {
 
   type Fn[-I, +R] = Fn.K2_[I, R]
   // TODO: should be K2[I, R] (as refined type), but scala 2 implicit search is too weak fo this
-  case object Fn extends BuildTemplate {
+  case object Fn extends FnBuilder.Root {
 
     /**
       * function with computation graph, like a lifted JAXpr
@@ -430,13 +433,22 @@ trait HasCircuit {
       Fn.fromFunction1(fn)(_definedAt)
     }
 
-    case class BuildDomains[I, O]() extends IBuildDomains[I, O] {
+    case class DomainBuilder[I, O]() extends IDomainBuilder[I, O] {
 
       type _Lemma = Fn[I, O]
       type _Impl = Fn.Impl[I, O]
       type _Native = (I => O)
+
+      def fn[o <: O](fn: I => o)(
+          implicit
+          _definedAt: SrcDefinition
+      ): BuildTarget[I, o] = {
+        apply(fn)(_definedAt)
+      }
+
+      def raw[o <: O](fn: I => o): I => o = fn
     }
-    def refine[i, o]: BuildDomains[i, o] = BuildDomains()
+    def domainBuilder[i, o]: DomainBuilder[i, o] = DomainBuilder()
   }
 
   type Thunk[+O] = Thunk.K[O]
