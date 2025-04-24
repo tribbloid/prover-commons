@@ -47,6 +47,7 @@ project/plugins/project/
 
 # Compiler
 output
+**/out
 */target/
 
 #Misc
