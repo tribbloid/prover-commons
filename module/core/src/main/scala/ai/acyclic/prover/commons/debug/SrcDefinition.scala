@@ -94,7 +94,7 @@ object SrcDefinition {
 
   private type _FileName = sourcecode.File
 
-  case class CompileTime()(
+  case class Inlined()(
       implicit
       _fileName: _FileName,
       _line: sourcecode.Line,
@@ -113,6 +113,6 @@ object SrcDefinition {
       _fileName: _FileName,
       _line: sourcecode.Line,
       _name: sourcecode.Name
-  ): CompileTime = CompileTime()
+  ): Inlined = Inlined()
 
 }

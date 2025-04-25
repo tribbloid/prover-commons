@@ -31,5 +31,5 @@ object Reflection {
   trait Runtime extends Reflection with HasUniverse.Runtime {}
   object Runtime extends Runtime
 
-  trait CompileTime extends Reflection
+  trait CompileTime extends Reflection // TODO: name should be "Inlined"
 }
