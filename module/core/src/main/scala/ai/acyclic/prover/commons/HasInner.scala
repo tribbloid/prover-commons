@@ -21,6 +21,11 @@ object HasInner {
     {
       canEqualProjections += CanEqual.Native.on(outer)
     }
+
+    override def toString: String = {
+
+      outer.toString + "-" +super.toString
+    }
   }
 
   object Inner {}

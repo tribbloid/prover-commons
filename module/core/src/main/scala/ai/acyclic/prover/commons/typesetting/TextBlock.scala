@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.typesetting
 
 case class TextBlock(lines: Seq[String]) {
 
-  lazy val build: String = lines.mkString("\n")
+  lazy val build: String = lines.mkString(System.lineSeparator())
 
   def indent(ss: String): TextBlock = {
 
@@ -162,6 +162,14 @@ case class TextBlock(lines: Seq[String]) {
 
 object TextBlock {
 
-  def apply(tt: String) = new TextBlock(tt.split('\n').toIndexedSeq)
+  def apply(tt: String): TextBlock = {
+
+    val normalised = tt
+      .replaceAll("\r\n|\r", "\n")
+    val parts = normalised
+      .split("\n")
+
+    new TextBlock(parts.toIndexedSeq)
+  }
 
 }

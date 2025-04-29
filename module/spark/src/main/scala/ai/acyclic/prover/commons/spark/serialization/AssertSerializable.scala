@@ -8,7 +8,7 @@ import java.nio.ByteBuffer
 import scala.reflect.ClassTag
 import scala.util.{Failure, Try}
 
-case class AssertSerializable[T <: Any](
+case class AssertSerializable[T](
     element: T,
     serializers: Seq[Serializer] = SerializerEnv.Default.allSerializers
 ) {
@@ -41,7 +41,11 @@ case class AssertSerializable[T <: Any](
       case Failure(ee) => ee
     }
 
-    if (errors.nonEmpty) throw new Causes(errors)
+    if (errors.nonEmpty)
+      throw new AssertionError(
+        s"$element: ${element.getClass} is not serializable",
+        new Causes(errors)
+      )
   }
 
   def weakly(): Unit = {

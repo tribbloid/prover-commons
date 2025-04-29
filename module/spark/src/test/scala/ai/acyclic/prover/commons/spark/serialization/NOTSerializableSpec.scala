@@ -49,7 +49,7 @@ class NOTSerializableSpec extends BaseSpec {
       it(s"mixin") {
         val thing = Thing2("abc")
 
-        intercept[Exception] {
+        intercept[AssertionError] {
           AssertSerializable(thing, Seq(ser)).weakly()
         }
       }
@@ -57,7 +57,7 @@ class NOTSerializableSpec extends BaseSpec {
       it(s"subclass of a class that inherits mixin") {
         val thing = Thing3("abc")
 
-        intercept[Exception] {
+        intercept[AssertionError] {
           AssertSerializable(thing, Seq(ser)).weakly()
         }
       }
@@ -65,7 +65,7 @@ class NOTSerializableSpec extends BaseSpec {
       it(s"subclass of a trait that inherits mixin") {
         val thing = Thing3("abc")
 
-        intercept[Exception] {
+        intercept[AssertionError] {
           AssertSerializable(thing, Seq(ser)).weakly()
         }
       }
