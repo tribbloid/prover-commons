@@ -22,7 +22,7 @@ object Hierarchy {
 
     override lazy val FORK: Padding = Padding.ofHead("", "")
     override lazy val LEAF: Padding = Padding.ofHead("", "")
-    override lazy val SUB: Padding = Padding.ofHead("! ", ": ")
+    override lazy val SUB: Padding = Padding.ofHead("+ ", ": ")
 
     override lazy val SPACE = ""
   }

@@ -144,9 +144,9 @@ class HierarchySpec extends BaseSpec {
         tn1.tree.text_hierarchy(Hierarchy.Indent2Minimal).toString shouldBe
           """
             |aaa
-            | ‣ bbb
-            | :  ‣ ddd
-            | ‣ ccc
+            |+ bbb
+            |: + ddd
+            |+ ccc
             |""".stripMargin
 
       }
@@ -157,12 +157,12 @@ class HierarchySpec extends BaseSpec {
           """
             |aaa
             |%%%%%
-            | ‣ bbb
-            | : %%%%%
-            | :  ‣ ddd
-            | :    %%%%%
-            | ‣ ccc
-            |   %%%%%
+            |+ bbb
+            |: %%%%%
+            |: + ddd
+            |:   %%%%%
+            |+ ccc
+            |  %%%%%
             |""".stripMargin
       }
     }
