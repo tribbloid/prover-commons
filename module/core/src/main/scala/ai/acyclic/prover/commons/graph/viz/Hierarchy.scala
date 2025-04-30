@@ -6,7 +6,15 @@ import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
 object Hierarchy {
 
-  trait Indent2 extends Hierarchy
+  trait Indent2 extends Hierarchy {
+
+    override lazy val FORK: Padding = Padding.ofHead("+", ":")
+    override lazy val LEAF: Padding = Padding.ofHead("-", " ")
+
+    override lazy val SUB: Padding = Padding.ofHead("!", ":")
+
+    override lazy val SPACE = " "
+  }
   case object Indent2 extends Indent2
   implicit def Default: Indent2.type = Indent2
 
@@ -14,7 +22,7 @@ object Hierarchy {
 
     override lazy val FORK: Padding = Padding.ofHead("", "")
     override lazy val LEAF: Padding = Padding.ofHead("", "")
-    override lazy val SUB: Padding = Padding.ofHead(" ‣ ", " : ")
+    override lazy val SUB: Padding = Padding.ofHead("! ", ": ")
 
     override lazy val SPACE = ""
   }
@@ -26,17 +34,21 @@ abstract class Hierarchy extends Visualisation.Local(Local.Diverging.Poset) {
 
   override lazy val maxRecursionDepth: Int = 10
 
-  lazy val FORK: Padding = Padding.ofHead("+", ":")
-  lazy val LEAF: Padding = Padding.ofHead("-", " ")
+  def FORK: Padding
+  def LEAF: Padding
 
-  lazy val SUB: Padding = Padding.ofHead("!", ":")
+  def SUB: Padding
+
+  def SPACE: String
+
   lazy val SUB_LAST: Padding = SUB.keepHead(
     SUB.body.map(_ => ' ')
   )
 
+
+
   lazy val ARROW: Padding = Padding.ofHead(": ", ": ")
 
-  lazy val SPACE = " "
 
   final override def show[V](data: Local.Diverging.Poset[V]): Viz = {
 

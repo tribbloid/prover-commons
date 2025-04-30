@@ -39,7 +39,7 @@ object Topology {
 
     trait Node_[V] extends Foundation.Node[X, V] with _Structure[V] {}
 
-    trait Setter_[V] extends Foundation.Setter[X, V] with _Structure[V] {}
+    trait Setter_[V] extends Foundation.Updater[X, V] with _Structure[V] {}
 
     /**
       * 2nd API, all [[node]] under the same group can be connected to other [[node]]

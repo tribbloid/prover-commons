@@ -11,7 +11,7 @@ object Foundation {
 
     type Node[+v] = Foundation.Node.K[_Axiom, v]
 
-    type Setter[v] = Foundation.Setter[_Axiom, v]
+    type Setter[v] = Foundation.Updater[_Axiom, v]
   }
 
   trait Structure[
@@ -89,36 +89,35 @@ object Foundation {
     type Lt[+X <: Axiom.Top, +V] = K[X, V]
   }
 
-  type Setter[X <: Axiom.Top, V] = Setter.K[X, V]
-  object Setter {
+  type Updater[X <: Axiom.Top, V] = Updater.K[X, V]
+  object Updater {
 
     trait K[X <: Axiom.Top, V] extends Foundation.Structure[X, V] {
 
       private type _Node = Node[X, V]
 
-      // TODO: this interface is problematic, should
-      def rewrite(src: _Node)(
-          discoverNodes: Seq[_Node]
+      def update(src: _Node)(
+        newInduction: Seq[_Node] // TODO: should be Seq of pair tuples
       ): _Node
 
       object Verified extends K[X, V] {
 
         val axiom: K.this.axiom.type = K.this.axiom
 
-        override def rewrite(src: _Node)(discoverNodes: Seq[_Node]): _Node = {
+        override def update(src: _Node)(newInduction: Seq[_Node]): _Node = {
 
           val oldDiscoverNodes = src.inductionNodes
-          if (oldDiscoverNodes == discoverNodes) {
+          if (oldDiscoverNodes == newInduction) {
             // no need to rewrite, just return node as-is
             return src
           }
 
-          val result = K.this.rewrite(src)(discoverNodes)
+          val result = K.this.update(src)(newInduction)
 
           require(
-            result.inductionNodes == discoverNodes,
+            result.inductionNodes == newInduction,
             s"""Incompatible rewriter?
-               |Rewrite result should be [${discoverNodes.mkString(", ")}]
+               |Rewrite result should be [${newInduction.mkString(", ")}]
                |but it is actually [${oldDiscoverNodes.mkString(", ")}]""".stripMargin
           )
 
@@ -131,8 +130,8 @@ object Foundation {
         override val axiom: X
     ) extends K[X, V] {
 
-      override def rewrite(src: Node[X, V])(
-          discoverNodes: Seq[Node[X, V]]
+      override def update(src: Node[X, V])(
+        newInduction: Seq[Node[X, V]]
       ): Node[X, V] = src
 
     }

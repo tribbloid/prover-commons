@@ -67,13 +67,13 @@ object GraphFixture {
 
   case class GVSetter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.Setter_[GV] {
 
-    override def rewrite(src: AnyGraph.Node[GV])(
-        inductions: Seq[AnyGraph.Node[GV]]
+    override def update(src: AnyGraph.Node[GV])(
+      newInduction: Seq[AnyGraph.Node[GV]]
     ): Local.AnyGraph.Node[GV] = {
 
       val result = src.value.copy()
       result.children.clear()
-      result.children.addAll(inductions.map(_.value))
+      result.children.addAll(newInduction.map(_.value))
       builder(result)
     }
   }

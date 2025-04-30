@@ -10,7 +10,7 @@ trait Engine extends Priors.HasBatch {
   import Engine.*
 
   type Node[+X <: Axiom.Top, +V] = Foundation.Node[X, V]
-  type Setter[X <: Axiom.Top, V] = Foundation.Setter[X, V]
+  type Setter[X <: Axiom.Top, V] = Foundation.Updater[X, V]
 
   type Graph[+X <: Axiom.Top, +V] = Graph.K[X, V]
   object Graph {
@@ -146,7 +146,7 @@ trait Engine extends Priors.HasBatch {
     val prev: Prev
 
     type ArgNode = Foundation.Node[X, V]
-    type ArgSetter = Foundation.Setter[X, V]
+    type ArgSetter = Foundation.Updater[X, V]
   }
 
   object Ops {

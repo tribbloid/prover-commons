@@ -72,7 +72,7 @@ trait AnyGraphMixin {
                   val successorsTransformed = successors.flatMap { nn =>
                     transformInternal(nn, depth - 1)
                   }
-                  val rewritten = _setter.rewrite(n)(successorsTransformed)
+                  val rewritten = _setter.update(n)(successorsTransformed)
                   rewritten
                 }
 
@@ -196,7 +196,7 @@ trait AnyGraphMixin {
     ) {
 
       private val delegate = Transform(
-        setter = Foundation.Setter.DoNotRewrite(arg.axiom),
+        setter = Foundation.Updater.DoNotRewrite(arg.axiom),
         down = { v =>
           down(v); Seq(v)
         },
