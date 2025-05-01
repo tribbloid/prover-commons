@@ -97,7 +97,7 @@ object Foundation {
       private type _Node = Node[X, V]
 
       def update(src: _Node)(
-        newInduction: Seq[_Node] // TODO: should be Seq of pair tuples
+          newInduction: Seq[_Node] // TODO: should be Seq of pair tuples
       ): _Node
 
       object Verified extends K[X, V] {
@@ -131,7 +131,7 @@ object Foundation {
     ) extends K[X, V] {
 
       override def update(src: Node[X, V])(
-        newInduction: Seq[Node[X, V]]
+          newInduction: Seq[Node[X, V]]
       ): Node[X, V] = src
 
     }

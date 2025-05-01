@@ -45,10 +45,7 @@ abstract class Hierarchy extends Visualisation.Local(Local.Diverging.Poset) {
     SUB.body.map(_ => ' ')
   )
 
-
-
   lazy val ARROW: Padding = Padding.ofHead(": ", ": ")
-
 
   final override def show[V](data: Local.Diverging.Poset[V]): Viz = {
 

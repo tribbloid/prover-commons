@@ -10,19 +10,5 @@ object PendingEffect extends PendingGroup {
   type <<[T, -S <: PendingEffect] >: T // | Must[S]
   // S is contravariant because Pending can be added implicitly
 
-  private def __sanity(): Unit = {
-
-    trait Ex
-
-    trait IO1 extends PendingEffect {}
-
-    trait IO2 extends PendingEffect {}
-
-//      implicitly[(Ex << IO1) <:< (Ex << IO1 << IO2)] only works in Scala 3
-//    implicitly[(Ex << IO1) <:< (Ex << IO2 << IO1)] should fail
-
-    implicitly[(Ex << IO1) <:< (Ex << (IO1 & IO2))]
-  }
-
   trait Universe extends PendingGroup {}
 }

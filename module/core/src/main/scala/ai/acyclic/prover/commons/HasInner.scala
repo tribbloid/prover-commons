@@ -24,7 +24,7 @@ object HasInner {
 
     override def toString: String = {
 
-      outer.toString + "-" +super.toString
+      outer.toString + "-" + super.toString
     }
   }
 

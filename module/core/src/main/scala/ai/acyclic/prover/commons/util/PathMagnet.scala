@@ -77,8 +77,6 @@ object PathMagnet {
 
     implicit class _ext(unbox: K) {
 
-
-
       def \\(part: String): K = unbox.append(File.separator)(part) // named such as :\ is already taken
 
       lazy val glob_children: K = \\("*")

@@ -1,5 +1,3 @@
 package ai.acyclic.prover
 
-package object commons {
-
-}
+package object commons {}

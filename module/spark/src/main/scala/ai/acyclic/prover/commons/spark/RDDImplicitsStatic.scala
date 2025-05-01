@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.spark
 
 import ai.acyclic.prover.commons.util.Caching.ConcurrentMap
 
-
 object RDDImplicitsStatic {
 
   // TODO: stageID is strictly incremental, this cost more memory than necessary
