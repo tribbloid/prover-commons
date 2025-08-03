@@ -12,5 +12,5 @@ dependencies {
 
 //    api("com.bondlink:formless_${vs.scala.binaryV}:0.5.1")
 
-    api("com.github.ben-manes.caffeine:caffeine:3.1.8")
+    api("com.github.ben-manes.caffeine:caffeine:3.2.2")
 }
