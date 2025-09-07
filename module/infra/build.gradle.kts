@@ -5,7 +5,7 @@ dependencies {
     api("org.scala-lang:scala-compiler:${vs.scala.v}")
 
     // https://mvnrepository.com/artifact/com.lihaoyi/sourcecode
-    api("com.lihaoyi:sourcecode_${vs.scala.artifactSuffix}:0.4.2")
+    api("com.lihaoyi:sourcecode_${vs.scala.artifactSuffix}:0.4.4")
 
     // https://mvnrepository.com/artifact/com.lihaoyi/pprint
     api("com.lihaoyi:pprint_${vs.scala.artifactSuffix}:0.9.3")
