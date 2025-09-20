@@ -9,13 +9,13 @@ object Formats0 {
   trait TypeInfo[T] extends FormatOvrd
   case object TypeInfo extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
-      val self = tt.unbox.toString
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
+      val self = tt.as.toString
 
       val genArgs = tt.genArgs
 
       self <:% genArgs.map { part =>
-        refl.TypeOps(part).formattedBy(this)
+        part.formattedBy(this)
       }
     }
   }
@@ -23,8 +23,8 @@ object Formats0 {
   trait TypeImpl[T] extends FormatOvrd
   case object TypeImpl extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
-      val t: ITyper#Type = tt.unbox
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
+      val t: ITyper#Type = tt.as
       t.toString + ": " + t.getClass.getSimpleName
     }
   }
@@ -32,16 +32,16 @@ object Formats0 {
   trait KindName[T] extends FormatOvrd
   case object KindName extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
-      tt.unbox.typeConstructor.toString
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
+      tt.as.typeConstructor.toString
     }
   }
 
   trait ClassName[T]
   case object ClassName extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
-      tt.unbox.typeSymbol.asClass.fullName
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
+      tt.as.typeSymbol.asClass.fullName
     }
   }
 }

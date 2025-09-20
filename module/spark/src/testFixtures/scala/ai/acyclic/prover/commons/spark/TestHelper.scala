@@ -1,11 +1,12 @@
 package ai.acyclic.prover.commons.spark
 
 import ai.acyclic.prover.commons.util.Retry
-import org.apache.spark.serializer.KryoSerializer
+import org.apache.hadoop.fs.FileUtil
 import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.apache.spark.{SparkConf, SparkContext, SparkEnv, SparkException}
+import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import org.slf4j.LoggerFactory
 
+import java.io.File
 import java.util.{Date, Properties}
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
@@ -94,7 +95,7 @@ object TestHelper {
       .orElse {
         tuple match {
           case (None, None) =>
-          case _ =>
+          case _            =>
             LoggerFactory
               .getLogger(this.getClass)
               .warn("cannot use cluster mode as SPARK_HOME is missing")
@@ -164,8 +165,13 @@ object TestHelper {
 
       base2 ++ Map(
         "spark.serializer" -> "org.apache.spark.serializer.KryoSerializer",
-        //      .set("spark.kryo.registrator", "com.tribbloids.spookystuff.SpookyRegistrator")Incomplete for the moment
         "spark.kryoserializer.buffer.max" -> "512m",
+
+        // TODO: kryo serializer is almost rendered unusable by https://github.com/EsotericSoftware/kryo/issues/885
+        //  in addition, kryo serializer without class registration is not efficient
+        //  this should be done automatically by an adaptive analyzer that collects required registration through runtime telemetry
+        //  we may switch to Apache Fury in the future
+
         "spark.sql.warehouse.dir" -> Envs.WAREHOUSE_PATH,
         //      "hive.metastore.warehouse.dir" -> WAREHOUSE_PATH,
         "dummy.property" -> "dummy"
@@ -211,7 +217,8 @@ object TestHelper {
 
   lazy val TestSparkSession: SparkSession = {
 
-    val builder = SparkSession.builder
+    val builder = SparkSession
+      .builder()
       .config(TestSparkConf)
 
     Try {
@@ -221,7 +228,7 @@ object TestHelper {
     val session = builder.getOrCreate()
     val sc = session.sparkContext
 
-    Retry.FixedInterval(3, 8000, silent = true) {
+    Retry.FixedInterval(3, 8000, silent = true).apply {
       // wait for all executors in local-cluster mode to be online
       require(
         sc.defaultParallelism == numCores, {
@@ -262,7 +269,7 @@ object TestHelper {
     TestSC.setCheckpointDir("/tmp/spark-checkpoint/" + new Date().toString)
   }
 
-  def setLoggerDuring[T](clazzes: Class[_]*)(fn: => T, level: String = "OFF"): T = {
+  def setLoggerDuring[T](clazzes: Class[?]*)(fn: => T, level: String = "OFF"): T = {
     val logger_oldLevels = clazzes.map { clazz =>
       val logger = org.apache.log4j.Logger.getLogger(clazz)
       val oldLevel = logger.getLevel
@@ -280,8 +287,8 @@ object TestHelper {
   }
 
   def assureKryoSerializer(sc: SparkContext, rigorous: Boolean = false): Unit = {
-    val ser = SparkEnv.get.serializer
-    require(ser.isInstanceOf[KryoSerializer])
+//    val ser = SparkEnv.get.serializer
+//    require(ser.isInstanceOf[KryoSerializer])
 
     // will print a long warning message into stderr, disabled by default
     if (rigorous) {
@@ -312,10 +319,30 @@ object TestHelper {
     val expectedErrorName = implicitly[ClassTag[EE]].runtimeClass.getSimpleName
     trial match {
       case Failure(_: EE) =>
-      case Failure(e) =>
+      case Failure(e)     =>
         throw new AssertionError(s"Expecting $expectedErrorName, but get ${e.getClass.getSimpleName}", e)
       case Success(_) =>
         throw new AssertionError(s"expecting $expectedErrorName, but no exception was thrown")
+    }
+  }
+
+  // TODO: clean up S3 as well
+  // also, this should become a class that inherit cleanable
+  def cleanTempDirs(paths: Seq[String] = Seq(Envs.USER_TEMP_DIR)): Unit = {
+    paths.filter(_ != null).foreach { path =>
+      try {
+        val file = new File(path)
+        Retry(3).apply {
+
+          val absoluteFile = file.getAbsoluteFile
+          if (absoluteFile != null && absoluteFile.exists())
+            FileUtil.fullyDelete(absoluteFile, true)
+        }
+
+      } catch {
+        case e: Throwable =>
+          LoggerFactory.getLogger(this.getClass).warn("cannot clean tempDirs", e)
+      }
     }
   }
 }

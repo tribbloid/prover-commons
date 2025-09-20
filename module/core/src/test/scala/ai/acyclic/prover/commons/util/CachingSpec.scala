@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-
 import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.duration.Duration
@@ -9,7 +8,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
 class CachingSpec extends BaseSpec with BeforeAndAfterEach {
 
-  import CachingSpec._
+  import CachingSpec.*
   implicit def global: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
   override def beforeEach(): Unit = {
@@ -57,7 +56,7 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
     describe("should remove value on garbage collection") {
 
       it("if the value is de-referenced") {
-        val cache = Caching.Weak.View[String, CacheTestData]()
+        val cache = Caching.Weak._Cache[String, CacheTestData]()
 
         var myVal = CacheTestData("myString")
 
@@ -72,7 +71,7 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
 
       it("if the value is not in scope") {
 
-        val cache = Caching.Weak.View[String, CacheTestData]()
+        val cache = Caching.Weak._Cache[String, CacheTestData]()
 
         val f: Future[Unit] = Future {
 

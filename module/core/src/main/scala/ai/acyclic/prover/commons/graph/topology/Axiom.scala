@@ -1,73 +1,49 @@
 package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.util.Summoner
+import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
+import ai.acyclic.prover.commons.util.{Phantom, Summoner}
 
 /**
   * a container of graph constraints
   */
-trait Axiom {
+trait Axiom extends Phantom {
 
   type _Arrow <: Arrow
+
+  def verify[X >: this.type <: Axiom.Top, V](graph: Foundation.Graph[X, V]): Unit = {
+    // by default, do nothing
+    // TODO: may have diamond subtyping problem
+  }
 }
 
 object Axiom {
 
+  type Top = Topology.AnyGraph._Axiom
+
+  class Reify[X <: Arrow]() extends Axiom {
+    type _Arrow = X
+  }
+
   def assume[X <: Axiom]: X = null.asInstanceOf[X]
 
-  trait Impl[+A <: Arrow] extends Axiom { type _Arrow <: A }
+  trait Lt_[+A <: Arrow] extends Axiom { type _Arrow <: A }
 
-  trait ImplUnpack[X <: Axiom] extends Lawful { type _Arrow <: Arrow }
+  trait ExtractArrow[X <: Axiom] { type _Arrow <: Arrow }
 
-  object ImplUnpack {
+  object ExtractArrow {
 
-    type Gt[L <: Axiom] = ImplUnpack[_ >: L]
+    type Gt[L <: Axiom] = ExtractArrow[? >: L]
 
-    implicit def onlyCase[A <: Arrow]: ImplUnpack[Impl[A]] { type _Arrow = A } =
-      new ImplUnpack[Impl[A]] {
+    implicit def onlyCase[A <: Arrow]: ExtractArrow[Lt_[A]] { type _Arrow = A } =
+      new ExtractArrow[Lt_[A]] {
         override type _Arrow = A
       }
   }
 
   { // sanity
-    val bounds = Summoner.summon[ImplUnpack.Gt[Impl[Arrow.`~>`.^]]]
+    val bounds = Summoner.summon[ExtractArrow.Gt[Lt_[Arrow.Outbound]]]
 
-    implicitly[bounds._Arrow =:= Arrow.`~>`.^]
+    implicitly[bounds._Arrow =:= Arrow.Outbound]
   }
 
-  trait AnyGraphT extends Axiom.Impl[Arrow]
-
-  object AnyGraphT extends Topology[AnyGraphT] {
-
-    trait OutboundT extends AnyGraphT with Axiom.Impl[Arrow.`~>`.^]
-
-    object OutboundT extends Topology[OutboundT] {}
-
-  }
-
-  trait PosetT extends AnyGraphT
-  object PosetT extends Topology[PosetT] {}
-
-  trait SemilatticeT extends PosetT
-  object SemilatticeT extends Topology[SemilatticeT] {
-
-    trait UpperT extends SemilatticeT with AnyGraphT.OutboundT
-    object UpperT extends Topology[UpperT] {
-
-      implicit class NodeOps[V](n: Node[V]) {
-
-        def isLeaf: Boolean = n.induction.isEmpty
-      }
-    }
-  }
-
-  trait TreeT extends SemilatticeT.UpperT
-  object TreeT extends Topology[TreeT] {}
-
-  private def __sanity[V](): Unit = {
-
-    implicitly[PosetT.Node[Int] <:< AnyGraphT.Node[Int]]
-
-    implicitly[PosetT.Node[V] <:< AnyGraphT.Node[V]]
-  }
 }

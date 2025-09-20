@@ -1,29 +1,32 @@
 package ai.acyclic.prover.commons.spark
 
-import ai.acyclic.prover.commons.testlib.BaseSpec
 import org.apache.hadoop.security.UserGroupInformation
 import org.scalatest.BeforeAndAfterAll
 
-class SparkContextViewSuite extends BaseSpec with BeforeAndAfterAll {
+class SparkContextViewSuite extends SparkEnvSpec with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {}
 
+  override def afterAll(): Unit = {}
+
   TestHelper.TestSC
 
-  describe("withJob") {
+  val caseName = "job description"
 
-    it("can stack description") {
+  it(caseName) {
 
-      SparkContextView.withJob("aaa") {
+    SparkContextView.withJob("aaa") {
 
-        SparkContextView.withJob("bbb") {
+      SparkContextView.withJob("bbb") {
 
-          TestHelper.TestSC.parallelize(1 to 100).map(v => v * v).collect()
+        TestHelper.TestSC.parallelize(1 to 100).map(v => v * v).collect()
 
-          assert(SparkContextView.localJob.description == "aaa \u2023 bbb")
-        }
+        assert(SparkContextView.localJob.description == "[SparkContextViewSuite] job description \u2023 aaa \u2023 bbb")
       }
     }
+  }
+
+  describe("withJob") {
 
     it("will not override existing groupID if not specified") {
 
@@ -53,6 +56,4 @@ class SparkContextViewSuite extends BaseSpec with BeforeAndAfterAll {
       }
     }
   }
-
-  override def afterAll(): Unit = {}
 }

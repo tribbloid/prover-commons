@@ -17,14 +17,13 @@ object Formats1 { // higher-order format constructors
 
     def before(refl: Reflection): refl.TypeView => refl.TypeView
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
-
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val beforeFn = before(refl)
 
       val transformRoot = beforeFn(tt)
       val transformBranches = transformRoot.map(beforeFn)
 
-      val mapped = tt.copy(delegate = transformBranches)
+      val mapped = tt.copy(unbox = transformBranches)
 
       val mapped_formatted = mapped.formattedBy(base)
 
@@ -49,7 +48,7 @@ object Formats1 { // higher-order format constructors
       bases: TypeFormat*
   ) extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val byBases = bases.map { base =>
         tt.formattedBy(base)
       }
@@ -64,10 +63,10 @@ object Formats1 { // higher-order format constructors
       bases: TypeFormat*
   ) extends TypeFormat {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val trials = bases
         .to(LazyList)
-        .flatMap { base: TypeFormat =>
+        .flatMap { (base: TypeFormat) =>
           try {
             val result = tt.formattedBy(base)
             Some(result)
@@ -94,14 +93,14 @@ object Formats1 { // higher-order format constructors
         base: TypeFormat
     ) extends RecursiveForm.HasRecursiveForm {
 
-      override def constructor: TypeFormat => TypeFormat = Hide.HidePackage
+      override def constructor: TypeFormat => TypeFormat = v => Hide.HidePackage(v)
 
-      final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+      final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
         val byBase = tt.formattedBy(base)
 
         val full = byBase.text
 
-        val constructor = byBase.typeOps.constructor
+        val constructor = byBase.typeView.constructor
 
         val shorten = if (full.startsWith(constructor.canonicalName)) {
 
@@ -123,16 +122,16 @@ object Formats1 { // higher-order format constructors
         base: TypeFormat
     ) extends RecursiveForm.HasRecursiveForm {
 
-      override def constructor: TypeFormat => TypeFormat = Hide.HideStatic
+      override def constructor: TypeFormat => TypeFormat = v => Hide.HideStatic(v)
 
-      final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+      final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
         type Formatting = refl.TypeIR
 
         val byBase = tt.formattedBy(base)
 
         val full = byBase.text
 
-        val constructor = byBase.typeOps.constructor
+        val constructor = byBase.typeView.constructor
 
         val shorten = if (full.startsWith(constructor.canonicalName)) {
           constructor.Prefixes.static.simpleName + full.stripPrefix(constructor.canonicalName)
@@ -155,7 +154,7 @@ object Formats1 { // higher-order format constructors
       transformer: TypeFormat => TypeFormat
   ) extends TransformDown {
 
-    final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+    final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
       val transformedBase = transformer(base)
 
       val byBase = tt.formattedBy(transformedBase)
@@ -182,7 +181,7 @@ object Formats1 { // higher-order format constructors
 
         val subFormat = RecursiveForm(part.format, transformer)
 
-        val result = part.formattedBy(subFormat)
+        val result = part.typeView.formattedBy(subFormat)
 
         val from = part.text
         val to = result.text

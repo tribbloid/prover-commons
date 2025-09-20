@@ -14,25 +14,35 @@ object GraphFixture {
       id: UUID = UUID.randomUUID()
   ) {
 
-    val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren: _*)
+    val children: ArrayBuffer[GV] = ArrayBuffer(initialChildren*)
   }
 
-  object GV extends Local.AnyGraph.Outbound.Wiring[GV] {
+  object GV extends Local.Diverging.Graph.Inspection[GV] {
 
-    case class Node(override val value: GV) extends OGraphNode {
+    implicitly[OGraphNode <:< Local.Diverging.Graph.Node_[GV]]
 
-      override protected def getInduction =
-        value.children.toSeq.map(v => Node(v))
+//    override val node = { (value: GV) => new node(value) }
+
+    object inspect extends (GV => inspect)
+    case class inspect(
+        override val value: GV
+    ) extends OGraphNode {
+
+      override lazy val inductions: Seq[(Arrow.`~>`, inspect)] =
+        value.children.toSeq.map(v => inspect(v))
     }
 
-    object WithArrows extends Local.AnyGraph.Outbound.Wiring[GV] {
+    object InspectGV extends Local.Diverging.Graph.Inspection[GV] {
 
-      case class Node(override val value: GV) extends OGraphNode {
+      object inspect extends (GV => inspect)
+      case class inspect(override val value: GV) extends OGraphNode {
 
-        override protected def getInduction = {
+        override lazy val inductions: Seq[
+          (Arrow.`~>`, inspect)
+        ] = {
           val children = value.children.toSeq
           val result = children.map { child =>
-            Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> Node(child)
+            Arrow.Outbound.OfText(Some(s"${value.text} |> ${child.text}")) -> inspect(child)
           }
           result
         }
@@ -41,29 +51,29 @@ object GraphFixture {
 
     implicit class GVOps(vs: Seq[GV]) {
 
-      def withArrows: WithArrows.ValuesOps = WithArrows.ValuesOps(vs: Seq[GV])
+      def withArrows = vs.map(InspectGV.inspect)
 
     }
   }
 
-  trait OGraphNode extends Local.AnyGraph.Outbound.NodeImpl[GV] {
+  trait OGraphNode extends Local.Diverging.Graph.Node_[GV] {
 
-    override protected def getNodeText = value.text
+    override lazy val nodeText = value.text
 
     override def evalCacheKeyC: Option[GV] = Some(value)
 
-    override def identityKeyC: Option[Any] = Some(value.text)
+    override def identityC: Option[Any] = Some(value.text)
   }
 
-  case class GVRewriter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.RewriterImpl[GV] {
+  case class GVSetter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.Setter_[GV] {
 
-    override def rewrite(src: AnyGraph.Node[GV])(
-        inductions: Seq[AnyGraph.Node[GV]]
+    override def update(src: AnyGraph.Node[GV])(
+        newInduction: Seq[AnyGraph.Node[GV]]
     ): Local.AnyGraph.Node[GV] = {
 
       val result = src.value.copy()
       result.children.clear()
-      result.children.addAll(inductions.map(_.value))
+      result.children.addAll(newInduction.map(_.value))
       builder(result)
     }
   }

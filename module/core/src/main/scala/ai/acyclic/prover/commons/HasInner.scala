@@ -1,15 +1,47 @@
 package ai.acyclic.prover.commons
 
+import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
+
 trait HasInner {
 
-  trait Inner extends HasOuter {
+  import HasInner.*
 
-    final val outer: HasInner.this.type = HasInner.this
+  trait _Inner extends Inner {
 
-    type This <: outer.Inner
-
-    final val inner: This = this.asInstanceOf[This]
+    final override val outer: HasInner.this.type = HasInner.this
   }
 }
 
-object HasInner {}
+object HasInner {
+
+  trait Inner extends Projection.Equals {
+
+    val outer: AnyRef
+
+    {
+      canEqualProjections += CanEqual.Native.on(outer)
+    }
+
+    override def toString: String = {
+
+      outer.toString + "-" + super.toString
+    }
+  }
+
+  object Inner {}
+
+  def outerListOf(v: Any): List[Any] = {
+
+    val self = List(v)
+
+    val outers = v match {
+      case vv: Inner =>
+        val outer = vv.outer
+        outerListOf(outer)
+      case _ =>
+        Nil
+    }
+
+    self ++ outers
+  }
+}

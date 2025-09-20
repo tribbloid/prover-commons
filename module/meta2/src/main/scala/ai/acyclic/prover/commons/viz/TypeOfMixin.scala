@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.viz
 
 import ai.acyclic.prover.commons.diff.StringDiff
+import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.Flow
 import ai.acyclic.prover.commons.refl.HasReflection
@@ -12,15 +13,20 @@ object TypeOfMixin {
 
   trait VNodeLike {
 
-    def argDryRun(): Unit
+    lazy val scanArgsOnce: Unit = {}
   }
 }
 
 trait TypeOfMixin extends HasReflection {
 
-  import reflection._
+  import reflection.*
 
-  val format: TypeHierarchy
+  val treeFormat: TypeTreeFormat
+
+  object TypeOf {
+
+    implicit def asNodes(v: TypeOf[?]): v.TypeRefBatch#TypeIRView = v.TypeRefBatch().ir
+  }
 
   class TypeOf[T](
       //  TODO: this API won't work for multiple types (e.g. showing common join & meet in heyting algebra)
@@ -28,33 +34,59 @@ trait TypeOfMixin extends HasReflection {
       val tt: universe.Type
   ) {
 
-    type TT = T
+    lazy val typeView: TypeView = reflection.typeViewOf(tt)
 
-    lazy val typeOps: TypeOps = TypeOps(reflection.typeView(tt))
+    case class TypeRefBatch(
+        override val vizGroup: treeFormat._LinkedHierarchyFormat.Group = treeFormat._LinkedHierarchyFormat.Group()
+    ) extends TypeRefBindings {
 
-    lazy val vizGroup: VisualisationGroup = VisualisationGroup()
-    lazy val nodes: vizGroup.Nodes = vizGroup.Nodes(typeOps.formattedBy(format.typeFormat))
+      lazy val ir: TypeIRView = TypeIRView(typeView.formattedBy(treeFormat.typeFormat))
 
-    lazy val typeStr: String = nodes.typeText
+      lazy val typeStr: String = ir.typeText
 
-    lazy val graph = Local.AnyGraph
-      .Outbound(nodes.SuperTypeNode)
+      lazy val node: ir.SuperTypeNode.type = ir.SuperTypeNode
 
-    lazy val diagram_hierarchy: format.DelegateFormat.Group#Viz[VisualisationGroup.Node] =
-      graph.diagram_linkedHierarchy(vizGroup.delegateGroup)
+      lazy val graph: Local.Diverging.Graph[TypeRefBindings.node] = {
 
-    lazy val diagram_flow =
-      graph.diagram_flow(Flow.Default)
+        /**
+          * CAUTION: [[irView.SuperTypeNode]] is a semilattice node in Heyting algebra.
+          *
+          * BUT if counting reference it becomes a diverging graph, potentially with cycle.
+          *
+          * which is why it returned a [[Local.Diverging.Graph]] constructed from
+          * [[Local.Diverging.UpperSemilattice.Node]]
+          */
+        Local.Diverging.Graph.makeExact(node)
+      }
+    }
+
+    lazy val typeStr: String = {
+      TypeRefBatch().typeStr
+    }
+
+    def text_linkedHierarchy(
+        vizGroup: treeFormat._LinkedHierarchyFormat.Group = treeFormat._LinkedHierarchyFormat.Group()
+    ): treeFormat._LinkedHierarchyFormat.Visual = {
+      vizGroup.Viz(TypeRefBatch(vizGroup).graph)
+    }
+
+    def text_flow(
+        vizGroup: treeFormat._LinkedHierarchyFormat.Group = treeFormat._LinkedHierarchyFormat.Group()
+    ): Flow.Default.Visual = {
+      TypeRefBatch(vizGroup).node.text_flow(
+        treeFormat._FlowFormat
+      )
+    }
 
     override def toString: String = {
 
-      diagram_hierarchy.toString
+      this.text_linkedHierarchy().toString
     }
 
-    def should_=:=(that: TypeOf[_] = null): Unit = {
+    def should_=:=(that: TypeOf[?] = null): Unit = {
 
       val Seq(s1, s2) = Seq(this, that).map { v =>
-        Option(v).map(_.diagram_hierarchy.toString)
+        Option(v).map(_.text_linkedHierarchy().toString)
       }
 
       val diff = StringDiff(s1, s2, Seq(this.getClass))
@@ -72,111 +104,85 @@ trait TypeOfMixin extends HasReflection {
       }
     }
 
-    def =!=(that: TypeOf[_] = null): Unit = should_=:=(that)
+    def =!=(that: TypeOf[?] = null): Unit = should_=:=(that)
   }
 
-  object TypeOf {
-
-    implicit def asNodes(v: TypeOf[_]): v.vizGroup.Nodes = v.nodes
-  }
-
-  object VisualisationGroup extends Local.AnyGraph.Outbound.Group {
+  object TypeRefBindings extends Local.Diverging.UpperSemilattice.Codomain {
 
     // technically this layer could be collapsed into GraphRepr
-    trait Node extends INode with TypeOfMixin.VNodeLike {}
+    trait node extends Node_ with TypeOfMixin.VNodeLike {}
   }
 
   // visualisations in the same group should not display redundant information
-  case class VisualisationGroup() {
+  trait TypeRefBindings { // TODO: only 1 subclass, no need to be a layer of abstraction
 
-    import VisualisationGroup._
+    import TypeRefBindings.*
 
-    lazy val delegateGroup: format.DelegateFormat.Group = format.DelegateFormat.Group()
+    val vizGroup: treeFormat._LinkedHierarchyFormat.Group
 
-    case class Nodes(
+    case class TypeIRView(
         ir: TypeIR
     ) {
 
-      val node: TypeOps = ir.typeOps
-
-      lazy val argGraph: Local.AnyGraph.Outbound[VisualisationGroup.Node] = {
-
-        val equivalentIRs = ir.EquivalentTypes.recursively
-
-        val argNodes = equivalentIRs
-          .groupBy(_.typeOps)
-          .flatMap {
-            case (_, vs) =>
-              val argNode = this.copy(ir = vs.head).ArgNode
-              if (argNode.induction.isEmpty) None
-              else Some(argNode)
-          }
-          .toSeq
-
-        Local.AnyGraph.Outbound(argNodes: _*)
-      }
-
+      val node: TypeView = ir.typeView
       lazy val typeText: String = ir.text
 
-      lazy val argViz: delegateGroup.Viz[VisualisationGroup.Node] = delegateGroup.Viz(argGraph)
+      case object SuperTypeNode extends node {
 
-      lazy val argText: String = {
+        final override lazy val identityC: Some[TypeOfMixin.this.reflection.TypeID] = Some(node.id_deAlias)
 
-        argViz.toString
-      }
+        override val inductions: List[(Arrow.`~>`, node)] = {
 
-      lazy val fullText: String = {
+          if (node.isBuiltIn) {
+            Nil
+          } // do not expand built-in types
+          else {
 
-        if (!format._showArgs || argGraph.isEmpty) {
-          typeText
-        } else {
-
-          val indentedArgText =
-            TextBlock(argText).pad
-              .left(Padding.argLeftBracket)
-              .indent("      ")
-              .build
-
-          typeText + "\n" + indentedArgText
-        }
-      }
-
-      case object SuperTypeNode extends Node {
-
-        final override lazy val identityKeyC = Some(node.reference)
-
-        override protected val getInduction = {
-
-          node.superTypes_nonTransitive
-            .filter { tv =>
-              tv.toString != "Any" // skipped for being too trivial
-            }
-            .map { tv =>
-              Nodes(TypeOps(tv).formattedBy(format.typeFormat)).SuperTypeNode
-            }
-        }
-
-        override lazy val toString: String = fullText
-
-        override def argDryRun(): Unit = {
-
-          argViz.dryRun()
-        }
-      }
-
-      case object ArgNode extends Node {
-
-        final override lazy val identityKeyC = None
-
-        override protected lazy val getInduction = {
-          node.args.map { tt =>
-            Nodes(TypeOps(tt).formattedBy(format.typeFormat)).SuperTypeNode
+            node.superTypes_nonTransitive
+              .filter { tv =>
+                tv.toString != "Any" // skipped for being too trivial
+              }
+              .map { tv =>
+                TypeIRView(tv.formattedBy(treeFormat.typeFormat)).SuperTypeNode
+              }
           }
         }
 
-        override lazy val toString: String = {
+        override lazy val scanArgsOnce: Unit = {
+          Args.visualOpt.foreach { v =>
+            v.scanLinks
+          }
+        }
 
-          val ttStr = node.unbox.typeConstructor.toString
+        override lazy val nodeText: String = {
+
+          Args.visualOpt
+            .map { v =>
+              val indentedArgText =
+                TextBlock(v.toString).pad
+                  .left(Padding.argLeftBracket)
+                  .indent("      ")
+                  .build
+
+              typeText + "\n" + indentedArgText
+            }
+            .getOrElse(typeText)
+        }
+      }
+
+      case object ArgNode extends node {
+
+        final override lazy val identityC: None.type = None
+
+        override lazy val inductions: List[(Arrow.`~>`, node)] = {
+          node.args.map { tt =>
+            TypeIRView(tt.formattedBy(treeFormat.typeFormat)).SuperTypeNode
+          }
+        }
+
+        override lazy val nodeText: String = {
+
+          val ttStr = node.as.typeConstructor.toString
 
           val size = node.args.size
 
@@ -185,7 +191,42 @@ trait TypeOfMixin extends HasReflection {
           else s"$ttStr [ $size ARGS ] :"
         }
 
-        override def argDryRun(): Unit = {}
+      }
+
+      object Args {
+
+        private lazy val allNode: Seq[node] = {
+          val equivalentIRs = ir.EquivalentTypes.recursively
+
+          val argNodes = equivalentIRs
+            .groupBy(_.typeView)
+            .flatMap {
+              case (_, vs) =>
+                val argNode = TypeIRView.this.copy(ir = vs.head).ArgNode
+                if (argNode.inductions.isEmpty) None
+                else Some(argNode)
+            }
+            .toSeq
+          argNodes
+        }
+
+        lazy val visualOpt: Option[vizGroup.Viz] = {
+          if (!treeFormat._showArgs || allNode.isEmpty) None
+          else {
+
+            val graph: Local.Diverging.Graph[TypeRefBindings.node] = {
+
+              val argNodes = allNode
+
+              Local.Diverging.Graph.makeExact(argNodes*)
+            }
+
+            val result: vizGroup.Viz = {
+              vizGroup.Viz(graph)
+            }
+            Some(result)
+          }
+        }
       }
     }
   }

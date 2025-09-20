@@ -1,20 +1,25 @@
 package ai.acyclic.prover.commons.graph.local
 
-import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.graph.Engine
 
-object Local extends LocalEngine.Module {
+import ai.acyclic.prover.commons.graph.ops.{AnyGraphMixin, PosetMixin, UpperSemilatticeMixin}
 
-  private def compileTimeCheck[V](): Unit = {
+object Local extends Engine with AnyGraphMixin with PosetMixin with UpperSemilatticeMixin {
 
-    implicitly[Tree[Int] <:< Semilattice.Upper[Int]]
+  implicit class Batch[+V](
+      val collect: Seq[V]
+  ) extends IBatch[V] {
+    override def isEmpty: Boolean = collect.isEmpty
 
-    implicitly[Tree[V] <:< Semilattice.Upper[V]]
+    override def distinct: Batch[V] = collect.distinct
 
-    implicitly[Local.Tree._Arrow <:< Arrow.`~>`.^]
+    override def flatMap[U](f: V => IterableOnce[U]): Batch[U] = collect.flatMap(f)
 
-    implicitly[Local.AnyGraph.Outbound._Arrow <:< Local.Tree._Arrow]
-
-    val example = Local.AnyGraph.Outbound.empty[Int]
-    implicitly[example._Arrow <:< Local.Tree._Arrow]
+    override def union[V2 >: V](that: Batch[V2]): Batch[V2] = {
+      collect ++ that.collect
+    }
   }
+
+  def parallelize[T](seq: Seq[T]): Batch[T] = Batch(seq)
+
 }

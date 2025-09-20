@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 
-FWDIR="$(cd "`dirname "$0"`"/..; pwd)"
+FWDIR="$(
+  cd "$(dirname "$0")"/.. || exit
+  pwd
+)"
+CRDIR="$(
+  cd "$(dirname "$0")" || exit
+  pwd
+)"
 
 cd "${FWDIR}" || exit
+
+"${CRDIR}"/make-all.sh
 
 "${FWDIR}"/gradlew scalafix -Dorg.gradle.parallel=false
  # consumes too much memory to run in parallel

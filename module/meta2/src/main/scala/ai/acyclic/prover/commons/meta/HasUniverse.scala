@@ -6,9 +6,9 @@ import scala.reflect.api.Universe
 
 private[meta] trait HasUniverse {
 
-  lazy val universe: Universe with Singleton = ???
+  lazy val universe: Universe & Singleton = ???
 
-  final type UU = Universe with Singleton with universe.type
+  final type UU = Universe & Singleton & universe.type
   final def getUniverse: UU = universe
 
   type Mirror = universe.Mirror
@@ -24,6 +24,8 @@ private[meta] trait HasUniverse {
   def mirror: universe.Mirror = rootMirror
 
   trait ApiView[T] extends Delegating[T] {
+
+    val outer: HasUniverse.this.type = HasUniverse.this
 
     //      comment: Option[String] = None // TODO: useless?
 
@@ -97,7 +99,7 @@ object HasUniverse {
         mirror: Mirror
     ) {
 
-      import CreateTypeTag._
+      import CreateTypeTag.*
 
       // TODO: TypeCreator is not in Developer's API and usage is not recommended
       def fast: TypeTag[T] = {
@@ -125,7 +127,7 @@ object HasUniverse {
 
       case class NaiveTypeCreator(tpe: Type) extends reflect.api.TypeCreator {
 
-        def apply[U <: reflect.api.Universe with Singleton](m: reflect.api.Mirror[U]): U#Type = {
+        def apply[U <: reflect.api.Universe & Singleton](m: reflect.api.Mirror[U]): U#Type = {
           //          assert(m eq mirror, s"TypeTag[$tpe] defined in $mirror cannot be migrated to $m.")
           tpe.asInstanceOf[U#Type]
         }

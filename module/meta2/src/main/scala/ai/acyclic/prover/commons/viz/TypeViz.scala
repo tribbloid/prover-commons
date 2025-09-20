@@ -34,9 +34,9 @@ trait TypeViz[R <: Reflection] extends TermAndTypeOfMixin {
 object TypeViz {
 
   def default[R <: Reflection](reflection: R) =
-    new TypeVizBuilder[R](reflection, TypeHierarchy.Default).Weak
+    new TypeVizBuilder[R](reflection, TypeTreeFormat.Default).WeakType
 
-  trait TestFixtures {
+  trait TestFixtures { // TODO: move to test
 
     val TypeViz = TypeViz.this
 
@@ -53,6 +53,6 @@ object TypeViz {
     }
   }
 
-  implicit def asRuntimeDefault(self: TypeViz.type): TypeVizBuilder.RuntimeDefault.Weak.type =
-    TypeVizBuilder.RuntimeDefault.Weak
+  implicit def asRuntimeDefault(self: TypeViz.type): TypeVizBuilder.RuntimeDefault.WeakType.type =
+    TypeVizBuilder.RuntimeDefault.WeakType
 }

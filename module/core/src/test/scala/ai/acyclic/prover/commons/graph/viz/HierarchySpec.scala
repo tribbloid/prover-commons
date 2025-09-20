@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class HierarchySpec extends BaseSpec {
 
-  import TreeFixture._
+  import TreeFixture.*
 
   describe(Hierarchy.Indent2.productPrefix) {
     Hierarchy.Indent2
@@ -15,7 +15,7 @@ class HierarchySpec extends BaseSpec {
       describe("finite tree") {
         it("each node has 1 line of text") {
 
-          tn1.tree.diagram_hierarchy.toString shouldBe
+          tn1.tree.text_hierarchy().toString shouldBe
             """
               |+ aaa
               |!-+ bbb
@@ -23,21 +23,18 @@ class HierarchySpec extends BaseSpec {
               |!-- ccc
               |""".stripMargin
 
-          tn1.treeWithArrowTexts.diagram_hierarchy.toString shouldBe
+          tn1.treeWithArrowTexts.text_hierarchy().toString shouldBe
             """
               |+ aaa
-              |!-: ( aaa |> bbb )
-              |: + bbb
-              |: !-: ( bbb |> ddd )
-              |:   - ddd
-              |!-: ( aaa |> ccc )
-              |  - ccc
+              |!-⟦ aaa |> bbb ⟧+ bbb
+              |:               !-⟦ bbb |> ddd ⟧- ddd
+              |!-⟦ aaa |> ccc ⟧- ccc
               |""".stripMargin
         }
 
         it("each node has multiple lines of text") {
 
-          tn2.tree.diagram_hierarchy.toString shouldBe
+          tn2.tree.text_hierarchy().toString shouldBe
             """
               |+ aaa
               |: %%%%%
@@ -49,31 +46,27 @@ class HierarchySpec extends BaseSpec {
               |    %%%%%
               |""".stripMargin
 
-          tn2.treeWithArrowTexts.diagram_hierarchy.toString shouldBe
+          tn2.treeWithArrowTexts.text_hierarchy().toString shouldBe
             """
               |+ aaa
               |: %%%%%
-              |!-: ⎛ aaa          ⎞
-              |: : ⎢ %%%%% |> bbb ⎟
-              |: : ⎝ %%%%%        ⎠
-              |: + bbb
-              |: : %%%%%
-              |: !-: ⎛ bbb          ⎞
-              |:   : ⎢ %%%%% |> ddd ⎟
-              |:   : ⎝ %%%%%        ⎠
-              |:   - ddd
-              |:     %%%%%
-              |!-: ⎛ aaa          ⎞
-              |  : ⎢ %%%%% |> ccc ⎟
-              |  : ⎝ %%%%%        ⎠
-              |  - ccc
-              |    %%%%%
+              |!-┏ aaa          ┓+ bbb
+              |: ┃ %%%%% |> bbb ┃: %%%%%
+              |: ┗ %%%%%        ┛!-┏ bbb          ┓- ddd
+              |:                   ┃ %%%%% |> ddd ┃  %%%%%
+              |:                   ┗ %%%%%        ┛
+              |!-┏ aaa          ┓- ccc
+              |  ┃ %%%%% |> ccc ┃  %%%%%
+              |  ┗ %%%%%        ┛
               |""".stripMargin
         }
       }
 
       it("infinite tree") {
-        treeInf.tree.diagram_hierarchy.toString shouldBe
+        treeInf.tree
+          .withMaxRecursionDepth(5)
+          .text_hierarchy()
+          .toString shouldBe
           """
             |+ abcdefgh
             |!-+ abcdefg
@@ -144,33 +137,32 @@ class HierarchySpec extends BaseSpec {
   }
 
   describe(Hierarchy.Indent2Minimal.productPrefix) {
-    implicit lazy val format = Hierarchy.Indent2Minimal
 
     describe("treeString") {
       it("supports nodes each with 1 line str") {
 
-        tn1.tree.diagram_hierarchy.toString shouldBe
+        tn1.tree.text_hierarchy(Hierarchy.Indent2Minimal).toString shouldBe
           """
             |aaa
-            | ‣ bbb
-            | :  ‣ ddd
-            | ‣ ccc
+            |+ bbb
+            |: + ddd
+            |+ ccc
             |""".stripMargin
 
       }
 
       it("... or not") {
 
-        tn2.tree.diagram_hierarchy.toString shouldBe
+        tn2.tree.text_hierarchy(Hierarchy.Indent2Minimal).toString shouldBe
           """
             |aaa
             |%%%%%
-            | ‣ bbb
-            | : %%%%%
-            | :  ‣ ddd
-            | :    %%%%%
-            | ‣ ccc
-            |   %%%%%
+            |+ bbb
+            |: %%%%%
+            |: + ddd
+            |:   %%%%%
+            |+ ccc
+            |  %%%%%
             |""".stripMargin
       }
     }

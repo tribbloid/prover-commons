@@ -1,11 +1,12 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.GraphFixture
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class LinkedHierarchySpec extends BaseSpec {
 
-  import GraphFixture._
+  import GraphFixture.*
 
   describe(Hierarchy.Indent2.productPrefix) {
 //    lazy val format = Hierarchy.Indent2
@@ -13,7 +14,7 @@ class LinkedHierarchySpec extends BaseSpec {
     describe("treeString") {
       it("cyclic graph") {
 
-        cyclic.make.diagram_linkedHierarchy.toString shouldBe
+        Local(cyclic*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |!-+ bbb
@@ -22,23 +23,19 @@ class LinkedHierarchySpec extends BaseSpec {
             |  !-- ddd
             |""".stripMargin
 
-        cyclic.withArrows.make.diagram_linkedHierarchy.toString shouldBe
+        Local(cyclic.withArrows*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
-            |!-: ( aaa |> bbb )
-            |  + bbb
-            |  !-: ( bbb |> ccc )
-            |  : + ccc
-            |  : !-: ( ccc |> aaa )
-            |  :   - aaa ... (see [0])
-            |  !-: ( bbb |> ddd )
-            |    - ddd
+            |!-⟦ aaa |> bbb ⟧+ bbb
+            |                !-⟦ bbb |> ccc ⟧+ ccc
+            |                :               !-⟦ ccc |> aaa ⟧- aaa ... (see [0])
+            |                !-⟦ bbb |> ddd ⟧- ddd
             |""".stripMargin
       }
 
       it(" ... with multiple lines") {
 
-        cyclic2.make.diagram_linkedHierarchy.toString shouldBe
+        Local(cyclic2*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
@@ -52,36 +49,26 @@ class LinkedHierarchySpec extends BaseSpec {
             |      %%%%
             |""".stripMargin
 
-        cyclic2.withArrows.make.diagram_linkedHierarchy.toString shouldBe
+        Local(cyclic2.withArrows*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa ............................................................................. [0]
             |: %%%%
-            |!-: ⎛ aaa         ⎞
-            |  : ⎢ %%%% |> bbb ⎟
-            |  : ⎝ %%%%        ⎠
-            |  + bbb
-            |  : %%%%
-            |  !-: ⎛ bbb         ⎞
-            |  : : ⎢ %%%% |> ccc ⎟
-            |  : : ⎝ %%%%        ⎠
-            |  : + ccc
-            |  : : %%%%
-            |  : !-: ⎛ ccc         ⎞
-            |  :   : ⎢ %%%% |> aaa ⎟
-            |  :   : ⎝ %%%%        ⎠
-            |  :   - aaa ... (see [0])
-            |  :     %%%%
-            |  !-: ⎛ bbb         ⎞
-            |    : ⎢ %%%% |> ddd ⎟
-            |    : ⎝ %%%%        ⎠
-            |    - ddd
-            |      %%%%
+            |!-┏ aaa         ┓+ bbb
+            |  ┃ %%%% |> bbb ┃: %%%%
+            |  ┗ %%%%        ┛!-┏ bbb         ┓+ ccc
+            |                 : ┃ %%%% |> ccc ┃: %%%%
+            |                 : ┗ %%%%        ┛!-┏ ccc         ┓- aaa ... (see [0])
+            |                 :                  ┃ %%%% |> aaa ┃  %%%%
+            |                 :                  ┗ %%%%        ┛
+            |                 !-┏ bbb         ┓- ddd
+            |                   ┃ %%%% |> ddd ┃  %%%%
+            |                   ┗ %%%%        ┛
             |""".stripMargin
       }
 
       it("diamond semilattice") {
 
-        diamond.make.diagram_linkedHierarchy.toString shouldBe
+        Local(diamond*).text_linkedHierarchy().toString shouldBe
           """
             |+ aaa
             |!-+ bbb

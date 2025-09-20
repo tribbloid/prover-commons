@@ -1,26 +1,25 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.util.CacheView.{MapRepr, SetRepr}
+import ai.acyclic.prover.commons.collection.CacheMagnet
+import ai.acyclic.prover.commons.collection.CacheMagnet.{MapRepr, SetRepr}
 import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 
 import java.util.concurrent.ConcurrentHashMap
 
 trait Caching extends Serializable {
 
-  trait CacheTag
-
-  def build[K, V](): CacheView[K, V] with CacheTag
+  def build[K, V](): CacheMagnet[K, V]
 }
 
 object Caching {
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
 
-  object Maps extends Caching {
+  object SerializableMap extends Caching {
 
     private def javaConcurrentMap[K, V]() = new java.util.concurrent.ConcurrentHashMap[K, V]()
 
-    case class View[K, V]() extends CacheView[K, V] with CacheTag {
+    case class _Cache[K, V]() extends CacheMagnet[K, V] {
 
       val underlying: ConcurrentHashMap[K, V] = {
         javaConcurrentMap[K, V]()
@@ -28,10 +27,14 @@ object Caching {
 
       @transient lazy val asMap: MapRepr[K, V] = underlying.asScala
 
-      override def asSet(default: V): SetRepr[K] = underlying.keySet(default).asScala
+      override def asSet(
+          implicit
+          ev: Unit <:< V
+      ): SetRepr[K] = underlying.keySet((): V).asScala
     }
 
-    override def build[K, V](): View[K, V] = View()
+    override def build[K, V](): _Cache[K, V] = _Cache()
+
   }
 
   trait CaffeineCaching extends Caching {
@@ -43,20 +46,22 @@ object Caching {
       toBuilder(proto)
     }
 
-    case class View[K, V]() extends CacheView[K, V] with CacheTag {
+    case class _Cache[K, V]() extends CacheMagnet[K, V] {
 
       val underlying: Cache[K, V] = underlyingBuilder.build[K, V]()
 
       @transient lazy val asMap: MapRepr[K, V] =
         underlying.asMap().asScala
 
-      override def asSet(default: V): SetRepr[K] = {
-        // TODO: default not used, not cool!
+      def asSet(
+          implicit
+          ev: Unit <:< V
+      ): SetRepr[K] = {
         underlying.asMap().keySet().asScala
       }
     }
 
-    override def build[K, V](): View[K, V] = View[K, V]()
+    override def build[K, V](): _Cache[K, V] = _Cache[K, V]()
   }
 
   object Strong extends CaffeineCaching {
@@ -74,12 +79,13 @@ object Caching {
     override def toBuilder(proto: Caffeine[Any, Any]): Caffeine[Any, Any] = proto.softValues()
   }
 
-  type ConcurrentCache[K, V] = Soft.View[K, V]
+  type ConcurrentCache[K, V] = Soft._Cache[K, V]
   def ConcurrentCache[K, V](): ConcurrentCache[K, V] = Soft.build[K, V]()
 
-  type ConcurrentMap[K, V] = Maps.View[K, V]
-  def ConcurrentMap[K, V](): ConcurrentMap[K, V] = Maps.build[K, V]()
+  type ConcurrentMap[K, V] = SerializableMap._Cache[K, V] // unlike cache, map never drop cold data
+  // TODO: switch to Hard._Cache, unless explicitly asked to be Serializable
+  def ConcurrentMap[K, V](): ConcurrentMap[K, V] = SerializableMap.build[K, V]()
 
   type ConcurrentSet[K] = SetRepr[K]
-  def ConcurrentSet[K](): SetRepr[K] = Maps.build[K, Unit]().asSet()
+  def ConcurrentSet[K](): SetRepr[K] = SerializableMap.build[K, Unit]().asSet
 }

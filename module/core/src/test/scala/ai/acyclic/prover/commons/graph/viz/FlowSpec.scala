@@ -1,17 +1,18 @@
 package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.GraphFixture
+import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class FlowSpec extends BaseSpec {
 
-  import GraphFixture._
+  import GraphFixture.*
 
   describe("string") {
 
     it("cyclic graph") {
 
-      cyclic.make.diagram_flow.toString shouldBe
+      Local.apply(cyclic*).text_flow().toString shouldBe
         """
           |  ┌───────┐
           |  │  bbb  │
@@ -30,7 +31,7 @@ class FlowSpec extends BaseSpec {
           | └─────┘ └───┘
           |""".stripMargin
 
-      cyclic.withArrows.make.diagram_flow.toString shouldBe
+      Local(cyclic.withArrows*).text_flow().toString shouldBe
         """
           |         ┌──────────────┐
           |         │( aaa |> bbb )│
@@ -57,7 +58,7 @@ class FlowSpec extends BaseSpec {
 
     it("diamond graph") {
 
-      diamond.make.diagram_flow.toString shouldBe
+      Local(diamond*).text_flow().toString shouldBe
         """
           |  ┌─────┐
           |  │ aaa │
@@ -83,7 +84,7 @@ class FlowSpec extends BaseSpec {
           |   └───┘
           |""".stripMargin
 
-      diamond.withArrows.make.diagram_flow.toString shouldBe
+      Local(diamond.withArrows*).text_flow().toString shouldBe
         """
           |             ┌─────┐
           |             │ aaa │

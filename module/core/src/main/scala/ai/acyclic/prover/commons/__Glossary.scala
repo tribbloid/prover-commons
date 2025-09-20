@@ -13,19 +13,30 @@ object __Glossary {
     *
     * type or class names in/of a companion object:
     *
-    *   - `Aux` for auxiliary type condition: introduced in shapeless as a shorthand definition for duck type
-    *   - `AuxImpl` / `Impl` for extendable trait that satisfies `Aux`, Scala won't allow inheriting duck type,
-    *     expecting heavy boilerplate
+    *   - `K` (short of "Kind", also a suffix) for a type constructor of another associated type, it can a concrete type
+    *     (trait/class) or a type alias
+    *     - if it is a concrete type (`trait SomeK[T]`), the associated type will be an alias (`type Some = SomeK[?]`)
+    *     - if it is a duck type alias (`type K[T] = Some{type TT = T}`), the associated type will be a concrete type
+    *       `trait Some {...}`, in this case `type K[T]` is also known as an "auxiliary constructor" with name `Aux[T]`,
+    *       as introduced in shapeless (`Aux` is not favoured as 3 letter is too long)
+    *   - `KImpl` / `AuxImpl` / `Impl` for extendable trait that satisfies `Aux`, Scala won't allow inheriting duck
+    *     type, expecting heavy boilerplate
     *   - `Lt` for "less than" type condition: same as above, but for type refinement that is a subtype of `Aux`
     *   - `LtImpl` for extendable trait that satisfies `Lt`, similar to `AuxImpl`
     *   - `Gt` for "greater than" type condition, enough said
     *   - `GtImpl` for extendable trait that satisfies `Gt`, similar to `AuxImpl`
-    *   - `Compat` for compatible type condition, instances that satisfy such condition can be implicitly converted to
-    *     `Aux`, it could be an alias of `Lt`, `Gt` or `Aux` depending on situations
+    *   - `Compat` for compatible type condition, it could be an alias of `Lt`, `Gt` or `Aux` depending on situations,
+    *     sometimes acompanied by an implicit conversion to `K`
     *   - `Top` for supertype of all reifications of a generic type
-    *   - `^` for the one and only implementation
+    *   - ` ^ ` for the one and only implementation
+    *   - `Is` for Yoda's axiom: A wrapper of an object of a supertype that downcast it without verification. Eg.
+    *     Pure.Is(theFunction) downcast `theFunction` into a pure one
+    *   - `TProj` for type projector, an intermediate trait with a dependent output type. In Scala 3 type project is
+    *     disabled, so this is a workaround
+    *     - it may become useless later when inlined term can be used in type definition (e.g. `type K(val x: Some) =
+    *       x.TT`)
     *
-    * dependent type or class name suffixes:
+    * type or class name suffixes:
     *
     *   - Should contains at least 2 characters to differentiate from higher-kind-arguments
     *   - `Like` (also `I` prefix, as in Java & C#) for closest interface that defines all members/methods of a class,
@@ -43,7 +54,7 @@ object __Glossary {
     *     variable `val ccWithCap = cc.asInstanceOf[CC with Has[XXCap]]`, or vice versa.
     *     - A typical example is `shapeless.labelled.KeyTag`
     *     - Several examples are also features in asynchronous computing library Kyo
-    *     - see [[ai.acyclic.prover.commons.util.Capabilities]] for more explanation
+    *     - see [[Capabilities]] for more explanation
     *   - `Axiom` for axiom type that can be constructed arbitrarily (assumed to have a constructive proof), but only
     *     for compile-time verification and carry no runtime data. Consequently, they can be safely cast into each other
     *     (IF permitted at runtime, w/o triggering ClassCastException) or mixed into other classes, many of they have no
@@ -72,6 +83,8 @@ object __Glossary {
     *   - `Case`/`TypeCase` for type class (as in Haskell terminology, this name should be avoided in code, as it is not
     *     a JVM class in OOP), and object/term that can bind (be summoned from) type(s) and nothing else, required by
     *     any type system that contains system F
+    *   - `Factory` for a class that can be used to construct instances of another class, usually defined in a companion
+    *   - `Giver` for an implicit `Factory` of which cases can be summoned for a type, usually defined as a companion
     *
     * type or class name prefixes:
     *

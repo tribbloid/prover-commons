@@ -5,9 +5,12 @@ include("prover-commons")
 project(":prover-commons").projectDir = file("module")
 
 include(
+    ":prover-commons:infra",
     ":prover-commons:core",
     ":prover-commons:meta2", // should only be working for Scala 2
+//    ":prover-commons:record",
     ":prover-commons:spark",
+    ":prover-commons:abandoned",
     ":notebook"
 )
 

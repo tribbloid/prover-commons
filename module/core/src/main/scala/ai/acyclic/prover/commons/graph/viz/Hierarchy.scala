@@ -1,52 +1,60 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.Engine
+import ai.acyclic.prover.commons.graph.Arrow.Outbound
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
-object Hierarchy extends Visualisations {
+object Hierarchy {
 
-  type Graph_/\[V] = Local.Semilattice.Upper[V]
+  trait Indent2 extends Hierarchy {
 
-  implicit lazy val default: Hierarchy.Indent2.type = Hierarchy.Indent2
+    override lazy val FORK: Padding = Padding.ofHead("+", ":")
+    override lazy val LEAF: Padding = Padding.ofHead("-", " ")
 
-  trait Indent2 extends Hierarchy
+    override lazy val SUB: Padding = Padding.ofHead("!", ":")
+
+    override lazy val SPACE = " "
+  }
   case object Indent2 extends Indent2
+  implicit def Default: Indent2.type = Indent2
 
   trait Indent2Minimal extends Hierarchy {
 
     override lazy val FORK: Padding = Padding.ofHead("", "")
     override lazy val LEAF: Padding = Padding.ofHead("", "")
-    override lazy val SUB: Padding = Padding.ofHead(" ‣ ", " : ")
+    override lazy val SUB: Padding = Padding.ofHead("+ ", ": ")
 
     override lazy val SPACE = ""
   }
-  case object Indent2Minimal extends Indent2Minimal
+  case object Indent2Minimal extends Indent2Minimal {}
 }
 
-trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
+// TODO: should extend to Poset
+abstract class Hierarchy extends Visualisation.Local(Local.Diverging.Poset) {
 
-  import Hierarchy._
+  override lazy val maxRecursionDepth: Int = 10
 
-  override lazy val maxDepth: Int = 20
+  def FORK: Padding
+  def LEAF: Padding
 
-  lazy val FORK: Padding = Padding.ofHead("+", ":")
-  lazy val LEAF: Padding = Padding.ofHead("-", " ")
+  def SUB: Padding
 
-  lazy val SUB: Padding = Padding.ofHead("!", ":")
+  def SPACE: String
+
   lazy val SUB_LAST: Padding = SUB.keepHead(
     SUB.body.map(_ => ' ')
   )
 
   lazy val ARROW: Padding = Padding.ofHead(": ", ": ")
 
-  lazy val SPACE = " "
+  final override def show[V](data: Local.Diverging.Poset[V]): Viz = {
 
-  def apply[V](s: Graph_/\[V]): Viz[V] = Viz(s)
+    Viz(data)
+  }
 
-  case class Viz[V](override val semilattice: Graph_/\[V]) extends TextViz[V] {
+  case class Viz(override val unbox: MaxGraph[?]) extends Visual {
 
-    case class SubViz(head: Local.Semilattice.Upper.Node[V], depth: Int = maxDepth) {
+    case class SubViz(head: Local.Diverging.Poset.Node[?], depth: Int = Viz.this.maxRecursionDepth) {
 
       lazy val treeString: String = {
 
@@ -60,29 +68,39 @@ trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
 
           val selfT = wText.pad.left(FORK)
 
-          val arrows_targets = head.induction
-          val groupedByTarget = arrows_targets
-            .groupBy { v =>
-              v._2
-            }
+          val arrows_targets: Seq[(Outbound, Local.Diverging.Poset.Node[?])] = head.inductions
 
-          val children = arrows_targets.map(_._2).distinct
+          // TODO: if mutliple arrows in a induction are all pointing to the same target
+          //  they will be displayed separately which is verbose
+          //  they can be aggregated but it can cause uncessary reference binding for LinkedHierarchy
+          //  as a result, no aggregation is done for now
 
-          val childrenTProtos: Seq[TextBlock] = children.toList.map { child =>
-            val arrowBlocksOpt = groupedByTarget(child)
-              .flatMap {
-                case (arrow, _) =>
-                  arrow.arrowText.map { text =>
-                    TextBlock(text).encloseIn.parenthesis.pad.left(ARROW)
+          val childrenTProtos: Seq[TextBlock] = arrows_targets.toList.map {
+            case (arrow, target) =>
+              val arrows = Seq(arrow)
+
+              val arrowBlocksOpt = if (arrows.size == 1 && arrows.forall(_.arrowText.isEmpty)) {
+
+                None
+              } else {
+
+                arrows
+                  .map { arrow =>
+                    val text = arrow.arrowText.getOrElse("")
+
+                    TextBlock(text) // .encloseIn.squareBracket
+                  }
+                  .reduceOption((x, y) => x.zipBottom(y))
+                  .map { block =>
+                    block.encloseIn.squareBracket
                   }
               }
-              .reduceOption((x, y) => x.zipBottom(y))
 
-            val childViz: SubViz = SubViz(child, depth - 1)
-            val childBlock = TextBlock(childViz.treeString)
+              val childViz: SubViz = SubViz(target, depth - 1)
+              val childBlock = TextBlock(childViz.treeString)
 
-            val all: TextBlock = arrowBlocksOpt.map(v => v.zipBottom(childBlock)).getOrElse(childBlock)
-            all.pad.left(LEAF)
+              val all: TextBlock = arrowBlocksOpt.map(v => v.zipRight(childBlock)).getOrElse(childBlock)
+              all.pad.left(LEAF)
           }
 
           val childrenTMid = childrenTProtos.dropRight(1).map { tt =>
@@ -104,14 +122,12 @@ trait Hierarchy extends Hierarchy.Format with Engine.HasMaxRecursionDepth {
       }
     }
 
-    lazy val treeText: String = {
-      semilattice.maxNodeOpt
+    lazy val text: String = {
+      unbox.maxNodes
         .map { nn =>
           SubViz(nn).treeString
         }
         .mkString("\n")
     }
-
-    override def toString: String = treeText
   }
 }

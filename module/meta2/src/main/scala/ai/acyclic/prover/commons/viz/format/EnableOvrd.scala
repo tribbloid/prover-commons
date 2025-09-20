@@ -9,7 +9,7 @@ case class EnableOvrd(
     base: TypeFormat
 ) extends Formats1.HasBase {
 
-  final def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { tt =>
+  final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
     val u = refl.getUniverse
 
     val companions_args = {
@@ -38,45 +38,54 @@ case class EnableOvrd(
 
     qualified
       .flatMap {
-
         case (companionType, argTypes) =>
-          val cached = {
+          val instanceOpt = {
             val cName = companionType.typeSymbol.fullName
 
-            EnableOvrd.cache.getOrElseUpdate(
-              cName,
-              refl.typeView(companionType).onlyInstance
-            )
-          }
+            val cache = EnableOvrd.cache.get(cName)
+            val orCompute = cache.orElse {
 
-          val companion: TypeFormat = {
-            cached match {
-              case v: TypeFormat             => v
-              case v: TypeFormat.Constructor => v.apply(this)
-              case _ =>
-                throw new UnsupportedOperationException(
-                  s"expecting TypeFormat or TypeFormat.Constructor, get ${cached.getClass.getCanonicalName}"
-                )
-            }
-          }
-
-          try {
-            val outputs = argTypes.map { arg =>
-              companion.resolve(refl).apply(refl.TypeOps(arg))
+              val computed = refl.typeViewOf(companionType).onlyInstanceAtCompileTime.toOption
+              computed.map { v =>
+                EnableOvrd.cache.put(cName, v)
+              }
+              computed
             }
 
-            val textParts = outputs
-              .map { v =>
-                v.text
+            orCompute
+          }
+
+          instanceOpt.flatMap { instance =>
+            val companion: TypeFormat = {
+              instance match {
+                case v: TypeFormat             => v
+                case v: TypeFormat.Constructor => v.apply(this)
+                case _ =>
+                  throw new UnsupportedOperationException(
+                    s"expecting TypeFormat or TypeFormat.Constructor, get ${instanceOpt.getClass.getCanonicalName}"
+                  )
+              }
+            }
+
+            try {
+              val outputs = argTypes.map { arg =>
+                companion.resolve(refl).apply(arg)
               }
 
-            val text = companion.joinText(textParts)
+              val textParts = outputs
+                .map { v =>
+                  v.text
+                }
 
-            Some(text: TypeIROutput)
-          } catch {
-            case _: Backtracking =>
-              None
+              val text = companion.joinText(textParts)
+
+              Some(text: TypeIROutput)
+            } catch {
+              case _: Backtracking =>
+                None
+            }
           }
+
       }
       .headOption
       .getOrElse {

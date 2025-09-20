@@ -1,16 +1,15 @@
 package ai.acyclic.prover.commons.viz.format
 
+import ai.acyclic.prover.commons.compat.XInt
 import ai.acyclic.prover.commons.meta.ScalaReflection
-import ai.acyclic.prover.commons.viz.format.FormatOvrd.{SingletonName, ~~}
-import ai.acyclic.prover.commons.viz.format.Formats0.{ClassName, TypeImpl}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
-import ai.acyclic.prover.commons.viz.format.TypeFormat
-import shapeless.Witness
+import ai.acyclic.prover.commons.viz.format.FormatOvrd.{~~, SingletonName}
+import ai.acyclic.prover.commons.viz.format.Formats0.{ClassName, TypeImpl}
 
 class FormatOvrdSpec extends BaseSpec {
 
-  import FormatOvrdSpec._
+  import FormatOvrdSpec.*
 
   val format: TypeFormat = EnableOvrd(TypeImpl.DeAlias)
 
@@ -71,14 +70,14 @@ class FormatOvrdSpec extends BaseSpec {
 
       viz[o2._Info].typeStr
         .shouldBe(
-          s"${classOf[SingletonName[_]].getCanonicalName}[local.type]: ClassArgsTypeRef"
+          s"${classOf[SingletonName[?]].getCanonicalName}[local.type]: ClassArgsTypeRef"
         )
 
-      viz[W_Singleton[Int]#_Info].typeStr.shouldBe(
-        s"${classOf[SingletonName[_]].getCanonicalName}[Int]: ClassArgsTypeRef"
+      viz[W_Singleton[XInt]#_Info].typeStr.shouldBe(
+        s"${classOf[SingletonName[?]].getCanonicalName}[Int with Singleton]: ClassArgsTypeRef"
       )
 
-      viz[W_Singleton[Int]#_InfoWFallback].typeStr.shouldBe(
+      viz[W_Singleton[XInt]#_InfoWFallback].typeStr.shouldBe(
         s"${FormatOvrdSpec.getClass.getCanonicalName.stripSuffix("$")}.W_Singleton"
       )
     }
@@ -104,23 +103,23 @@ object FormatOvrdSpec {
 
   class Undefined[T]
 
-  class W_Singleton[T <: Int](w: Witness.Aux[T]) {
+  class W_Singleton[T <: XInt](w: T) {
 
     type _Info = SingletonName[T]
 
-    type _InfoWFallback = _Info with ClassName[this.type]
+    type _InfoWFallback = _Info & ClassName[this.type]
   }
   object W_Singleton {
 
-    def apply(w: Witness.Lt[Int]) = new W_Singleton[w.T](w)
+    def apply(w: XInt) = new W_Singleton[w.type](w)
   }
 
-  class W_~~[T <: Int](w: Witness.Aux[T]) {
+  class W_~~[T <: XInt](w: T) {
 
     type _Info = SingletonName[T] ~~ W_Singleton[T]#_Info ~~ T
   }
   object W_~~ {
 
-    def apply(w: Witness.Lt[Int]) = new W_~~[w.T](w)
+    def apply(w: XInt) = new W_~~[w.type](w)
   }
 }

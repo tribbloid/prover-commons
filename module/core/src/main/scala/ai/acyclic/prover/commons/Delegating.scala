@@ -1,48 +1,44 @@
 package ai.acyclic.prover.commons
 
+import ai.acyclic.prover.commons.Delegating.Unboxing.Conversion
+
 import scala.language.implicitConversions
 
-trait Delegating[T] {
+trait Delegating[+T] {
 
-  import Delegating._
+  import Delegating.*
 
-  protected def delegate: T
+  def unbox: T
 
-  def unbox[R](
+  def as[R](
       implicit
-      unbox: Unboxing.=>>[Delegating[T], R]
-  ): R = unbox(this)
+      lemma: Unboxing.Conversion[Delegating[T], R]
+  ): R = lemma(this)
 }
 
 object Delegating {
 
-  object Unboxing {
-    // not using Poly to avoid overhead
-
-    trait =>>[T, R] extends (T => R) {}
-
-    implicit def unbox1[T]: =>>[Delegating[T], T] = { v =>
-      v.delegate
-    }
+  trait Unboxing_Imp0 {
 
     implicit def unboxMore[T, R](
         implicit
-        continuation: =>>[T, R]
-    ): =>>[Delegating[T], R] = { v =>
-      continuation(v.delegate)
+        continuation: Conversion[T, R]
+    ): Conversion[Delegating[T], R] = { v =>
+      continuation(v.unbox)
     }
   }
 
-  implicit def unboxImplicitly[T](v: Delegating[T]): T = v.unbox
+  object Unboxing extends Unboxing_Imp0 {
+    // not using Poly to avoid overhead
 
-  private def __santiy: Unit = {
+    trait Conversion[-T, +R] extends (T => R) {} // TODO: has a canonical impl in Scala 3
 
-    case class B1(delegate: String) extends Delegating[String]
-    case class B2(delegate: B1) extends Delegating[B1]
+    implicit def unbox1[T]: Conversion[Delegating[T], T] = { v =>
+      v.unbox
+    }
 
-    val b2 = B2(B1("hello"))
-
-    b2.unbox.concat("b")
-//    b2.concat("b") // oops, doesn't work
   }
+
+  implicit def unboxImplicitly[T](v: Delegating[T]): T = v.as
+
 }

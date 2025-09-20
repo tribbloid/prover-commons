@@ -6,12 +6,12 @@ private[meta] trait SymbolViewMixin extends HasUniverse {
   self: ITyper =>
 
   case class SymbolView(
-      protected val delegate: universe.Symbol
+      unbox: universe.Symbol
   ) extends ApiView[universe.Symbol] {
 
     lazy val ownerOpt: Option[universe.Symbol] = {
 
-      val owner = delegate.owner
+      val owner = unbox.owner
 
       if (owner == universe.NoSymbol) None
       else Some(owner)
@@ -19,11 +19,11 @@ private[meta] trait SymbolViewMixin extends HasUniverse {
 
     object Owners extends Breadcrumbs {
 
-      lazy val internal: BreadcrumbView = {
+      lazy val allInternal: BreadcrumbView = {
 
         val chain = ownerOpt.toList.flatMap { owner =>
           val v1: List[universe.Symbol] = List(owner)
-          val v2: List[universe.Symbol] = copy(owner).Owners.internal.list
+          val v2: List[universe.Symbol] = copy(owner).Owners.allInternal.list
 
           v1 ++ v2
         }
@@ -32,8 +32,8 @@ private[meta] trait SymbolViewMixin extends HasUniverse {
       }
 
       lazy val all: BreadcrumbView = {
-        val chain: List[universe.Symbol] = internal.list.filterNot { owner =>
-          owner.fullName == "<root>"
+        val chain: List[universe.Symbol] = allInternal.list.filterNot { owner =>
+          owner.fullName == ROOT
         }
         val result = BreadcrumbView(chain)
 //        result.validate()
@@ -59,9 +59,9 @@ private[meta] trait SymbolViewMixin extends HasUniverse {
       }
     }
 
-    override lazy val canonicalName: String = delegate.fullName
+    override lazy val canonicalName: String = unbox.fullName
 
-    override def _copy(self: universe.Symbol) = copy(self)
+    override def _copy(self: universe.Symbol): SymbolViewMixin.this.SymbolView = copy(self)
   }
 
   val symbolCache = mutable.Map.empty[Symbol, SymbolView]

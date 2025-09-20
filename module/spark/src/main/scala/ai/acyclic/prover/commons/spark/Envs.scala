@@ -15,6 +15,6 @@ object Envs {
   val RDD_SCOPE_KEY: String = "spark.rdd.scope"
   val RDD_SCOPE_NO_OVERRIDE_KEY: String = "spark.rdd.scope.noOverride"
 
-  val METASTORE_PATH: String = this.USER_DIR :\ "metastore_db"
-  val WAREHOUSE_PATH: String = this.USER_DIR :\ "warehouse"
+  val METASTORE_PATH: String = this.USER_DIR \\ "metastore_db"
+  val WAREHOUSE_PATH: String = this.USER_DIR \\ "warehouse"
 }

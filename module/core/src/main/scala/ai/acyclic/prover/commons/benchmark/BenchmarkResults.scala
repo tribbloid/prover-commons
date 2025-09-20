@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.benchmark
 
-import ai.acyclic.prover.commons.debug.Debug.CallStackRef
 import ai.acyclic.prover.commons.debug.print_@
+import ai.acyclic.prover.commons.debug.SrcDefinition
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
@@ -21,16 +21,17 @@ case class BenchmarkResults[T](
 
   lazy val avg: Double = total.toDouble / valid.size
 
-  def log(): Unit = {
-
-    val ref: CallStackRef = CallStackRef.below(condition = v => v.isDefinedAtClasses(this.getClass))
+  def log()(
+      implicit
+      definedAt: SrcDefinition
+  ): Unit = {
 
     val info =
-      s"${ref.className} - avg: ${Duration.fromNanos(avg).toUnit(TimeUnit.MILLISECONDS)}ms"
+      s"${definedAt.toString} - avg: ${Duration.fromNanos(avg).toUnit(TimeUnit.MILLISECONDS)}ms"
 
 //    LoggerFactory.getLogger(this.getClass).info(info)
 
-    print_@(info)
+    print_@.apply(info)
   }
 }
 

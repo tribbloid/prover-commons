@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.graph
 
+import ai.acyclic.prover.commons
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.viz.Hierarchy
 
@@ -32,23 +33,24 @@ object TreeFixture {
     }
   }
 
-  trait TreeNode extends Local.Tree.NodeImpl[TV] {
+  trait TreeNode extends Local.Diverging.Tree.Node_[TV] {
 
-    final override protected def getNodeText = value.text
+    final override lazy val nodeText: String = value.text
   }
 
-  case class Node(value: TV) extends TreeNode {
+  case class node(value: TV) extends TreeNode {
 
-    override protected def getInduction = value.children.map(v => Node(v)).toSeq
+    override lazy val inductions: Seq[(Arrow.`~>`, node)] =
+      value.children.map(v => node(v)).toSeq
   }
 
   case class NodeWithArrowText(value: TV) extends TreeNode {
 
-    override protected def getInduction = {
+    override lazy val inductions: Seq[(commons.graph.Arrow.Outbound, NodeWithArrowText)] = {
 
       val children = value.children
       val result = children.map { child =>
-        Arrow.`~>`.NoInfo(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
+        Arrow.Outbound.OfText(Some(s"${value.text} |> ${child.text}")) -> NodeWithArrowText(child)
       }
       result.toSeq
     }
@@ -59,12 +61,12 @@ object TreeFixture {
   implicit lazy val treeFormat: Hierarchy = {
 
     object Top5 extends Hierarchy.Indent2 {
-      override lazy val maxDepth: Int = 5
+      override lazy val maxRecursionDepth: Int = 5
     }
     Top5
   }
 
-  val tn1 = TVF(
+  val tn1: TVF = TVF(
     "aaa",
     Seq(
       TVF(
@@ -79,7 +81,7 @@ object TreeFixture {
     )
   )
 
-  val tn2 = TVF( // TODO: simplify this with graph Transform
+  val tn2: TVF = TVF( // TODO: simplify this with graph Transform
     "aaa\n%%%%%",
     Seq(
       TVF(
@@ -94,14 +96,14 @@ object TreeFixture {
     )
   )
 
-  val treeInf = TVInf("abcdefgh")
+  val treeInf: TVInf = TVInf("abcdefgh")
 
   implicit class TVView(self: TV) {
 
     def tree =
-      Local.Tree(Node(self))
+      Local.Diverging.Tree.makeExact(node(self))
 
-    def treeWithArrowTexts =
-      Local.Tree(NodeWithArrowText(self))
+    def treeWithArrowTexts: Local.Diverging.Tree.Graph[TV] =
+      Local(NodeWithArrowText(self))
   }
 }

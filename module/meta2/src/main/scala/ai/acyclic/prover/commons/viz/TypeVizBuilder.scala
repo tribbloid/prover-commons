@@ -1,45 +1,43 @@
 package ai.acyclic.prover.commons.viz
 
-import ai.acyclic.prover.commons.HasOuter
+import ai.acyclic.prover.commons.HasInner
 import ai.acyclic.prover.commons.meta.ScalaReflection
 import ai.acyclic.prover.commons.refl.Reflection
 
 class TypeVizBuilder[R <: Reflection](
     val reflection: R,
-    val format: TypeHierarchy
-) {
+    val format: TypeTreeFormat
+) extends HasInner {
 
   sealed abstract class _TypeViz(
       val reflection: R = TypeVizBuilder.this.reflection
   ) extends TypeViz[R]
-      with HasOuter {
+      with _Inner {
 
-    def outer = TypeVizBuilder.this
-
-    override val format: TypeHierarchy = TypeVizBuilder.this.format
+    override val treeFormat: TypeTreeFormat = TypeVizBuilder.this.format
   }
 
-  abstract class Weak extends _TypeViz() {
+  abstract class WeakType extends _TypeViz() {
 
     override type TTag[T] = WeakTypeTag[T]
 
-    def withFormat(format: TypeHierarchy = TypeHierarchy.Default) =
-      new TypeVizBuilder(reflection, format).Weak
+    def withFormat(format: TypeTreeFormat = TypeTreeFormat.Default) =
+      new TypeVizBuilder(this.reflection, format).WeakType
   }
-  object Weak extends Weak
+  object WeakType extends WeakType
 
-  abstract class Strong extends _TypeViz() {
+  abstract class ConcreteType extends _TypeViz() {
 
     override type TTag[T] = TypeTag[T]
 
-    def withFormat(format: TypeHierarchy = TypeHierarchy.Default) =
-      new TypeVizBuilder(reflection, format).Strong
+    def withFormat(format: TypeTreeFormat = TypeTreeFormat.Default) =
+      new TypeVizBuilder(this.reflection, format).ConcreteType
   }
-  object Strong extends Strong
+  object ConcreteType extends ConcreteType
 
 }
 
 object TypeVizBuilder {
 
-  object RuntimeDefault extends TypeVizBuilder(ScalaReflection, TypeHierarchy.Default) {}
+  object RuntimeDefault extends TypeVizBuilder(ScalaReflection, TypeTreeFormat.Default) {}
 }

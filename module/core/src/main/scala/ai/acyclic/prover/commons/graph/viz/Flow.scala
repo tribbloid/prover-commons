@@ -1,10 +1,9 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.function.Impl
-import ai.acyclic.prover.commons.graph.{Arrow, Engine}
+import ai.acyclic.prover.commons.function.hom.Hom
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.local.ops.AnyGraphUnary
-import ai.acyclic.prover.commons.same.Same
+import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
 import org.scalameta.ascii.layout.GraphLayout
@@ -14,26 +13,20 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListSet
 import scala.collection.mutable
 
-object Flow extends Visualisations {
+object Flow {
 
-  type Graph_/\[V] = Local.AnyGraph[V]
-
-  trait Default extends Flow {
+  implicit object Default extends Flow {
 
     override def layoutPreferences: LayoutPrefs = LayoutPrefsImpl.DEFAULT
+
   }
-  object Default extends Default {}
-
-  implicit lazy val default: Default.type = Default
-
 }
 
-trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
+abstract class Flow extends Visualisation.Local(Local.AnyGraph) {
 
-  import Flow._
-  import Local.AnyGraph._
+  import Local.AnyGraph.*
 
-  override lazy val maxDepth: Int = 20
+  override lazy val maxRecursionDepth: Int = 20
 
   def layoutPreferences: ascii.layout.prefs.LayoutPrefs
 
@@ -41,15 +34,17 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
   lazy val bindings: LazyList[String] = (0 until Int.MaxValue).to(LazyList).map(v => "" + v)
 
-  def apply[V](s: Graph_/\[V]): Viz[V] = Viz(s)
+  final override def show[V](data: Local.AnyGraph[V]): Viz = Viz(data)
 
-  val sameness = Same.ByEquality.Of[Node[_]](v => v.identityKey)
-
-  case class Viz[V](override val semilattice: Graph_/\[V]) extends TextViz[V] {
+  case class Viz(unbox: MaxGraph[?]) extends Visual {
 
     lazy val bindingIndices = new AtomicInteger(0)
 
-    case class NodeWrapper(override val samenessDelegatedTo: Node[V]) extends sameness.IWrapper {
+    case class NodeWrapper(node: Node[?]) extends Projection.Equals {
+
+      {
+        canEqualProjections += CanEqual.Native.on(node.identity)
+      }
 
       @transient var binding: String = _
       def bindingOpt: Option[String] = Option(binding)
@@ -109,7 +104,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
           .map(_.rectangular)
 
         val nodeText = {
-          lazy val nodeText = samenessDelegatedTo.nodeText
+          lazy val nodeText = node.nodeText
 
           val ss = bindingOpt
             .map { binding =>
@@ -131,27 +126,27 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeID2Wrapper = Impl { v =>
-        NodeWrapper(v)
-      }
-        .cachedBy()
+      val nodeID2Wrapper = Hom.Fn
+        .at[Node[?]] { v =>
+          NodeWrapper(v)
+        }
+        .cached()
 
       val relationBuffer = mutable.Buffer.empty[(NodeWrapper, NodeWrapper)]
 
-      val unary = AnyGraphUnary.^(semilattice, maxDepth)
-
-      val buildBuffers = unary
+      val _unbox = unbox.ops_anyGraph
+      val buildBuffers = _unbox
         .Traverse(
           down = { node =>
             val wrapper = nodeID2Wrapper(node)
 
-            val newRelations: Seq[(NodeWrapper, NodeWrapper)] = node.induction.flatMap { v =>
+            val newRelations: Seq[(NodeWrapper, NodeWrapper)] = node.inductions.flatMap { v =>
               v._1.arrowType match {
-                case Arrow.`~>` =>
+                case Arrow.OutboundT =>
                   val to = nodeID2Wrapper.apply(v._2)
                   to.arrowsFrom += wrapper -> v._1.arrowText
                   Some(wrapper -> to)
-                case Arrow.`<~` =>
+                case Arrow.InboundT =>
                   val from = nodeID2Wrapper.apply(v._2)
                   wrapper.arrowsFrom += from -> v._1.arrowText
                   Some(from -> wrapper)
@@ -165,7 +160,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
         )
         .DepthFirst_Once
 
-      buildBuffers.resolve
+      buildBuffers
 
       val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.lookup.values
         .map { nodeWrapper =>
@@ -178,7 +173,7 @@ trait Flow extends Flow.Format with Engine.HasMaxRecursionDepth {
       ascii.graph.Graph(nodeSet, relationBuffer.toList)
     }
 
-    override lazy val toString: String = {
+    override lazy val text: String = {
 
       GraphLayout.renderGraph(asciiDiagram, layoutPrefs = _layoutPreferences)
     }

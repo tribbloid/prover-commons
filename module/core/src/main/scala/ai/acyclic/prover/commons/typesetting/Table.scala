@@ -19,7 +19,7 @@ case class Table(
 ) {
   // stolen from Apache Spark SQL
 
-  import Table._
+  import Table.*
 
   def formattedText: String = {
 

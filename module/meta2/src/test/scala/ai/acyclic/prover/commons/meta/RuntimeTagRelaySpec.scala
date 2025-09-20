@@ -4,7 +4,8 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class RuntimeTagRelaySpec extends BaseSpec {
 
-  import RuntimeTagRelaySpec._
+  import RuntimeTagRelaySpec.*
+
   import scala.reflect.runtime.universe
 
   val subject = RuntimeTagRelay.Canonical

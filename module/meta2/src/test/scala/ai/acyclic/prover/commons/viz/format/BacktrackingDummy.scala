@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.viz.format.TypeFormat
 
 case object BacktrackingDummy extends TypeFormat {
 
-  override def resolve(refl: Reflection): refl.TypeOps => TypeIROutput = { _ =>
+  override def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { _ =>
     throw new Backtracking("backtracking dummy!")
   }
 }

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.debug.Debug.CallStackRef
-import org.slf4j.{Logger, LoggerFactory}
+import ai.acyclic.prover.commons.debug.CallStackRef
+import org.slf4j.LoggerFactory
 
 import scala.util.control.ControlThrowable
 import scala.util.{Failure, Success, Try}
@@ -82,7 +82,7 @@ object Retry {
       retry: Retry = DefaultRetry
   ) {
 
-    lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
+    lazy val logger = LoggerFactory.getLogger(this.getClass)
 
     def get: T = _get(retry)
 
@@ -91,14 +91,14 @@ object Retry {
         retryOvrd: Retry
     ): T = {
 
-      import retryOvrd._
+      import retryOvrd.*
 
       // TODO: merge with CommonUtils
       lazy val _callerShowStr = {
         Option(showStr).getOrElse {
           CallStackRef
             .below(
-              condition = _.isDefinedAtClasses(classOf[Retry], classOf[RetryImpl[_]])
+              condition = _.isUnderClasses(classOf[Retry], classOf[RetryImpl[?]])
             )
             .showStr
         }
@@ -168,7 +168,7 @@ case class Retry(
     showStr: String = null
 ) {
 
-  import Retry._
+  import Retry.*
 
   def apply[T](fn: => T): T = {
 

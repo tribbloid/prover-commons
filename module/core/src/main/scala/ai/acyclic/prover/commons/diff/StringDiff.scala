@@ -1,23 +1,16 @@
 package ai.acyclic.prover.commons.diff
 
-import ai.acyclic.prover.commons.debug.print_@
+import ai.acyclic.prover.commons.debug.{print_@, SrcDefinition}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 
 case class StringDiff(
     left: Option[String],
     right: Option[String],
-    classes: Seq[Class[_]] = Nil,
+    classes: Seq[Class[?]] = Nil,
     sort: Boolean = false,
     ignoreCase: Boolean = false,
     trim: TextBlock => TextBlock = StringDiff.defaultTrim
 ) {
-
-  import StringDiff._
-
-  private val _printFn = new print_@(
-    classes :+
-      this.getClass
-  )
 
   case class Rows(
       raw: Option[String],
@@ -141,59 +134,6 @@ case class StringDiff(
     }
   }
 
-  def show(): Unit = {
-    _printFn(info)
-  }
-
-  def assert[T](
-      mode: StringDiff.ComparisonMode = StringDiff.Equal,
-      fuzzyRight: Boolean = false,
-      usingFn: (Boolean, Any) => Any = Predef.assert(_, _)
-  ): Unit = {
-
-    def assertEqual(left: Seq[String], right: Seq[String]): Unit = {
-
-      if (fuzzyRight) {
-        // TODO: need improvement using some simple parser
-
-        left.zipAll(right, null, null).foreach { tuple =>
-          val fixes = tuple._2.split("[.]{6,}", 2)
-          usingFn(
-            tuple._1.startsWith(fixes.head),
-            ErrorDiffClue
-          )
-          usingFn(
-            tuple._1.endsWith(fixes.last),
-            ErrorDiffClue
-          )
-        }
-      } else {
-
-        usingFn(
-          left == right,
-          ErrorDiffClue
-        )
-      }
-    }
-
-    (left.isDefined, right.isDefined) match {
-
-      case (true, true) =>
-        mode match {
-          case SuperSet =>
-            assertEqual(Left.effective.intersect(Right.effective), Right.effective)
-
-          case SubSet =>
-            assertEqual(Left.effective, Left.effective.intersect(Right.effective))
-
-          case Equal =>
-            assertEqual(Left.effective, Right.effective)
-        }
-
-      case _ =>
-        show()
-    }
-  }
 }
 
 object StringDiff {
@@ -203,7 +143,72 @@ object StringDiff {
   object SuperSet extends ComparisonMode
   object SubSet extends ComparisonMode
 
-  lazy val defaultTrim: TextBlock => TextBlock = { v: TextBlock =>
-    v.trim.top_bottom
+  lazy val defaultTrim: TextBlock => TextBlock = { (v: TextBlock) =>
+    v.trim.top_bottom.trim.carriageReturn
+  }
+
+  implicit class DebugExt(self: StringDiff)(
+      implicit
+      _src: SrcDefinition
+  ) {
+    import self.*
+
+    private val _printFn = new print_@()(
+      _src
+    )
+
+    def show(): Unit = {
+      _printFn(info)
+    }
+
+    def assert[T](
+        mode: StringDiff.ComparisonMode = StringDiff.Equal,
+        fuzzyRight: Boolean = false,
+        usingFn: (Boolean, Any) => Any = Predef.assert(_, _)
+    ): Unit = {
+
+      def assertEqual(left: Seq[String], right: Seq[String]): Unit = {
+
+        if (fuzzyRight) {
+          // TODO: need improvement using some simple parser
+
+          left.zipAll(right, null, null).foreach { tuple =>
+            val fixes = tuple._2.split("[.]{6,}", 2)
+            usingFn(
+              tuple._1.startsWith(fixes.head),
+              ErrorDiffClue
+            )
+            usingFn(
+              tuple._1.endsWith(fixes.last),
+              ErrorDiffClue
+            )
+          }
+        } else {
+
+          usingFn(
+            left == right,
+            ErrorDiffClue
+          )
+        }
+      }
+
+      (left.isDefined, right.isDefined) match {
+
+        case (true, true) =>
+          mode match {
+            case SuperSet =>
+              assertEqual(Left.effective.intersect(Right.effective), Right.effective)
+
+            case SubSet =>
+              assertEqual(Left.effective, Left.effective.intersect(Right.effective))
+
+            case Equal =>
+              assertEqual(Left.effective, Right.effective)
+          }
+
+        case _ =>
+          show()
+      }
+    }
   }
 }
