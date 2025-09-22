@@ -5,6 +5,10 @@ object Envs {
   // TODO: most instances here should be compile-time
 
   val USER_HOME: LocalFSPath = LocalFSPath(System.getProperty("user.home"))
+
+  // CAUTION: process working directory, not quite relevant to the user
+  // - on Apache Spark worker (cluster or local-cluster mode), this directory is:
+  //   "$SPARK_HOME/work/app-$TIME-$ID/$WORKER_ID"
   val USER_DIR: LocalFSPath = LocalFSPath(System.getProperty("user.dir"))
 
   val TEMP: String = "temp"

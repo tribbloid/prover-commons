@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 
 import java.io.File
 import java.util.{Date, Properties}
+import scala.io.Source
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
@@ -49,7 +50,75 @@ object TestHelper {
   val AWSAccessKeyId: Option[String] = getProperty("AWSAccessKeyId")
   val AWSSecretKey: Option[String] = getProperty("AWSSecretKey")
 
-  def SPARK_HOME: String = System.getenv("SPARK_HOME")
+  @transient lazy val SPARK_HOME: String = {
+
+    System.getenv("SPARK_HOME")
+  }
+
+  @transient lazy val SPARK_SCALA_VERSION: String = {
+
+    System.getenv("SPARK_SCALA_VERSION")
+  }
+
+  private case class SparkHomeEnv(home: String) {
+
+    lazy val detectedScalaBinaryFromRelease: Option[String] = {
+      val f = new File(home, "RELEASE")
+      if (f.isFile) {
+        val content = Try {
+          val src = Source.fromFile(f, "UTF-8")
+          try src.mkString
+          finally src.close()
+        }.toOption
+        content.flatMap { s =>
+          val r = "(?i)scala\\s+(2\\.\\d+)".r
+          r.findFirstMatchIn(s).map(_.group(1))
+        }
+      } else None
+    }
+
+    lazy val detectedScalaBinaryFromJars: Option[String] = {
+      val jarsDir = new File(home, "jars")
+      if (jarsDir.isDirectory) {
+        val files = Option(jarsDir.listFiles()).map(_.toSeq).getOrElse(Seq.empty)
+        val patterns = Seq(
+          "scala-library-(2\\.\\d+)\\..*\\.jar".r,
+          "spark-core_(2\\.\\d+)-.*\\.jar".r,
+          "spark-sql_(2\\.\\d+)-.*\\.jar".r,
+          "spark-catalyst_(2\\.\\d+)-.*\\.jar".r,
+          ".*_(2\\.\\d+)-.*\\.jar".r
+        )
+        files.view
+          .map(_.getName)
+          .flatMap(name => patterns.view.flatMap(p => p.findFirstMatchIn(name).map(_.group(1))))
+          .headOption
+      } else None
+    }
+
+    def detectScalaBinary: Option[String] = {
+      detectedScalaBinaryFromRelease.orElse(detectedScalaBinaryFromJars)
+    }
+  }
+
+  def validateSparkScalaBinaryConsistency(): Unit = {
+    val homeOpt = Option(SPARK_HOME).filter(_.nonEmpty)
+    homeOpt.foreach { home =>
+      val detected = SparkHomeEnv(home).detectScalaBinary
+      val envOpt = Option(SPARK_SCALA_VERSION).filter(_.nonEmpty)
+      require(
+        envOpt.nonEmpty,
+        s"SPARK_SCALA_VERSION must be defined when SPARK_HOME is set (found SPARK_HOME='$home')." +
+          detected.map(v => s" Expected binary Scala $v.").getOrElse("")
+      )
+      detected.foreach { bin =>
+        val actual = envOpt.get
+        require(
+          actual == bin,
+          s"SPARK_SCALA_VERSION='$actual' does not match Spark distribution at SPARK_HOME='$home' (binary Scala '$bin')."
+        )
+      }
+    }
+  }
 
   final val MAX_TOTAL_MEMORY = 8 * 1024
   final val MEMORY_PER_CORE = 1024
@@ -79,8 +148,14 @@ object TestHelper {
       getProperty("NumCoresPerWorker").map(_.toInt)
     )
 
-    Option(SPARK_HOME)
-      .flatMap { _ =>
+    Option(SPARK_HOME) match {
+
+      case Some(_) =>
+
+        {
+          validateSparkScalaBinaryConsistency()
+        }
+
         tuple match {
           case (None, None) =>
             None
@@ -91,8 +166,7 @@ object TestHelper {
           case (None, Some(v2)) =>
             Some(Math.max(numCores / v2, 1) -> v2)
         }
-      }
-      .orElse {
+      case None =>
         tuple match {
           case (None, None) =>
           case _            =>
@@ -101,7 +175,8 @@ object TestHelper {
               .warn("cannot use cluster mode as SPARK_HOME is missing")
         }
         None
-      }
+
+    }
   }
 
   def clusterSizeOpt: Option[Int] = clusterSize_numCoresPerWorker_Opt.map(_._1)

@@ -123,7 +123,7 @@ case class SparkContextView(ctx: SparkContext) {
   }
 
   // TODO: this should be superseded by https://github.com/apache/spark/pull/22192
-  def runEverywhere[T: ClassTag](alsoOnDriver: Boolean = true)(f: ((Int, UUID)) => T): Seq[T] = {
+  def executeEverywhere[T: ClassTag](alsoOnDriver: Boolean = true)(f: ((Int, UUID)) => T): Seq[T] = {
     val localFuture: Option[Future[T]] =
       if (alsoOnDriver) Some(Future[T] {
         f(-1 -> UUID.randomUUID())
@@ -143,8 +143,11 @@ case class SparkContextView(ctx: SparkContext) {
     }.toSeq ++ onExecutors
   }
 
+  def executeOnEveryExecutor[T: ClassTag](f: ((Int, UUID)) => T): Seq[T] =
+    executeEverywhere(alsoOnDriver = false)(f)
+
   def allTaskLocationStrs: Seq[String] = {
-    runEverywhere(alsoOnDriver = false) { _ =>
+    executeEverywhere(alsoOnDriver = false) { _ =>
       _SQLHelper.taskLocationStrOpt.get
     }
   }

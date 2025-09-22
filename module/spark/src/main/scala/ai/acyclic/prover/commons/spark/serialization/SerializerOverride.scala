@@ -32,7 +32,7 @@ case class SerializerOverride[T: ClassTag](
     canEqualProjections += CanEqual.Native.on(value)
   }
 
-  @transient lazy val serOpt: Option[SerializerInstance] = overrideImpl.apply
+  @transient lazy val serOpt: Option[SerializerInstance] = overrideImpl.apply()
 
   @transient lazy val serObj: io.Serializable = _original match {
     case ss: Serializable =>
