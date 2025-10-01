@@ -5,7 +5,7 @@ allprojects {
 
     dependencies {
 
-        scalaCompilerPlugins("org.typelevel:kind-projector_${vs.scala.v}:0.13.3")
+        scalaCompilerPlugins("org.typelevel:kind-projector_${vs.scala.v}:0.13.4")
     }
 
     tasks {

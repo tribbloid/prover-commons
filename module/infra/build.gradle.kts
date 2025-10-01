@@ -8,7 +8,7 @@ dependencies {
     api("com.lihaoyi:sourcecode_${vs.scala.artifactSuffix}:0.4.4")
 
     // https://mvnrepository.com/artifact/com.lihaoyi/pprint
-    api("com.lihaoyi:pprint_${vs.scala.artifactSuffix}:0.9.3")
+    api("com.lihaoyi:pprint_${vs.scala.artifactSuffix}:0.9.4")
 }
 
 dependencies {
