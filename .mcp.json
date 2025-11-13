@@ -1,0 +1,52 @@
+{
+  "mcpServers": {
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": ""
+      },
+      "disabled": false
+    },
+    "deepwiki": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.deepwiki.com/mcp"
+      ],
+      "type": "stdio"
+    },
+    "lean4ij-metals": {
+      "url": "http://localhost:35853/sse",
+      "type": "sse"
+    },
+    "jetbrains": {
+      "type": "stdio",
+      "env": {
+        "IJ_MCP_SERVER_PORT": "64342"
+      },
+      "command": "/home/peng/.local/share/JetBrains/Toolbox/apps/intellij-idea-ultimate/jbr/bin/java",
+      "args": [
+        "-classpath",
+        "/home/peng/.local/share/JetBrains/IntelliJIdea2025.2/mcpserver/lib/mcpserver-frontend.jar:/home/peng/.local/share/JetBrains/Toolbox/apps/intellij-idea-ultimate/lib/util-8.jar:/home/peng/.local/share/JetBrains/Toolbox/apps/intellij-idea-ultimate/lib/modules/intellij.libraries.ktor.client.cio.jar:/home/peng/.local/share/JetBrains/Toolbox/apps/intellij-idea-ultimate/lib/lib-client.jar:/home/peng/.local/share/JetBrains/Toolbox/apps/intellij-idea-ultimate/lib/modules/intellij.libraries.ktor.client.jar",
+        "com.intellij.mcpserver.stdio.McpStdioRunnerKt"
+      ]
+    }
+  }
+}

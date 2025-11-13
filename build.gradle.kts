@@ -11,5 +11,6 @@ buildscript {
 
 plugins {
     id("ai.acyclic.scala2-conventions")
-    id("ai.acyclic.publish-conventions")
+    id("ai.acyclic.scalatest-mixin")
+//    id("ai.acyclic.publish-conventions")
 }
