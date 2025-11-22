@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew:*)",
+      "Bash(../../gradlew:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "enabledMcpjsonServers": [
+    "fetch",
+    "playwright",
+    "memory",
+    "deepwiki",
+    "lean4ij-metals",
+    "jetbrains"
+  ]
+}
