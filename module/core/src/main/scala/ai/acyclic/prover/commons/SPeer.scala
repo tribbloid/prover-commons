@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.core.mix
+package ai.acyclic.prover.commons
 
 object SPeer {
   def hello(): String = "hi from Scala"
