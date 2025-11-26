@@ -5,6 +5,9 @@ import org.scalatest.funspec.AnyFunSpec
 class TextBlockSpec extends AnyFunSpec {
   // keep using AnyFunSpec, may be migrated to another library
 
+  // Helper method to normalize line endings for cross-platform compatibility
+  private def normalizeLineEndings(s: String): String = s.replace("\r\n", "\n").replace("\r", "\n")
+
   val untrimmed = TextBlock(
     s"""
        |
@@ -24,7 +27,7 @@ class TextBlockSpec extends AnyFunSpec {
     it("horizontally") {
 
       assert {
-        untrimmed.trim.left_right.toString.===(
+        normalizeLineEndings(untrimmed.trim.left_right.toString).===(
           """
             |
             |
@@ -36,7 +39,7 @@ class TextBlockSpec extends AnyFunSpec {
       }
 
       assert {
-        untrimmed.trim.left_right.toString.===(
+        normalizeLineEndings(untrimmed.trim.left_right.toString).===(
           """
             |
             |
@@ -53,7 +56,7 @@ class TextBlockSpec extends AnyFunSpec {
 
       assert {
 
-        untrimmed.trim.top_bottom.toString.===(
+        normalizeLineEndings(untrimmed.trim.top_bottom.toString).===(
           """       /---\
             |      /  |  \
             |     /   |   \
@@ -66,7 +69,7 @@ class TextBlockSpec extends AnyFunSpec {
 
       assert {
 
-        untrimmed.trim.block.toString.===(
+        normalizeLineEndings(untrimmed.trim.block.toString).===(
           """   /---\
             |  /  |  \
             | /   |   \
@@ -80,9 +83,9 @@ class TextBlockSpec extends AnyFunSpec {
     it("right") {
 
       assert {
-        untrimmed
+        normalizeLineEndings(untrimmed
           .zipRight(untrimmed.trim.block)
-          .toString
+          .toString)
           .===(
             """                  /---\
               |                 /  |  \
@@ -98,9 +101,9 @@ class TextBlockSpec extends AnyFunSpec {
     it("bottom") {
 
       assert {
-        untrimmed
+        normalizeLineEndings(untrimmed
           .zipBottom(untrimmed.trim.block)
-          .toString
+          .toString)
           .===(
             """
               |

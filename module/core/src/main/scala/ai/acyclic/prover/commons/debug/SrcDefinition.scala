@@ -10,7 +10,11 @@ sealed trait SrcDefinition extends Serializable with Projection.Equals {
 
   def fileName: String
 
-  lazy val shortFileName: String = fileName.split(File.separator).last
+  lazy val shortFileName: String = {
+    // Need to escape File.separator for regex use, especially on Windows where it's '\'
+    val separatorRegex = java.util.regex.Pattern.quote(File.separator)
+    fileName.split(separatorRegex).last
+  }
 
   def lineNumber: Int
 

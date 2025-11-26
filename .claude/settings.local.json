@@ -12,7 +12,8 @@
     "playwright",
     "memory",
     "deepwiki",
-    "lean4ij-metals",
-    "jetbrains"
-  ]
+    "jetbrains",
+    "lean4ij-metals"
+  ],
+  "enableAllProjectMcpServers": true
 }
