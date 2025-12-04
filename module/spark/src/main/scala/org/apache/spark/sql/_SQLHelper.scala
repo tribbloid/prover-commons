@@ -18,15 +18,6 @@ import scala.reflect.ClassTag
   */
 object _SQLHelper {
 
-  def internalCreateDF(
-      sql: SQLContext,
-      rdd: RDD[InternalRow],
-      schema: StructType
-  ): DataFrame = {
-
-    sql.internalCreateDataFrame(rdd, schema)
-  }
-
   def rddClassTag[T](rdd: RDD[T]): ClassTag[T] = rdd.elementClassTag
 
   def _CollectionsUtils: CollectionsUtils.type = CollectionsUtils
@@ -60,22 +51,4 @@ object _SQLHelper {
       _.toString
     }
   }
-
-  def fromQueryExecution[T: Encoder](exe: QueryExecution): Dataset[T] = {
-
-    new Dataset[T](exe, implicitly[Encoder[T]])
-  }
-
-  def ofRows(
-      sparkSession: SparkSession,
-      logicalPlan: LogicalPlan
-  ): DataFrame = {
-
-    Dataset.ofRows(sparkSession, logicalPlan)
-  }
-
-  def getEncoder[T](ds: Dataset[T]): ExpressionEncoder[T] = ds.exprEnc
-
-  def showString[T](ds: Dataset[T], numRows: Int, truncate: Int = 20): String =
-    ds.showString(numRows, truncate)
 }

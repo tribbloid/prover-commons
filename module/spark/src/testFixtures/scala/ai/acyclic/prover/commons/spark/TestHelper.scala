@@ -296,7 +296,11 @@ object TestHelper {
       .builder()
       .config(TestSparkConf)
 
-    Try {
+    val hiveAvailable = Try {
+      Class.forName("org.apache.spark.sql.hive.HiveSessionStateBuilder")
+    }.isSuccess
+
+    if (hiveAvailable) {
       builder.enableHiveSupport()
     }
 
