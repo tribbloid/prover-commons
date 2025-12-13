@@ -2,11 +2,6 @@ package org.apache.spark.sql
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.scheduler.TaskLocation
-import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.QueryExecution
-import org.apache.spark.sql.types.StructType
 import org.apache.spark.storage.BlockManagerId
 import org.apache.spark.util.CollectionsUtils
 import org.apache.spark.{RangePartitioner, SparkContext, SparkEnv}

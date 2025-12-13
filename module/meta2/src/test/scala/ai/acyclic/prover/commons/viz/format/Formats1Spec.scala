@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.viz.format
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.viz.TypeViz
 import ai.acyclic.prover.commons.viz.format.Formats0.TypeInfo
-import ai.acyclic.prover.commons.viz.format.Formats1.{RecursiveForm, Trials}
+import ai.acyclic.prover.commons.viz.format.Formats1.{Backups, RecursiveForm}
 import ai.acyclic.prover.commons.viz.format.beans.Beans
 
 class Formats1Spec extends BaseSpec {
@@ -67,16 +67,16 @@ class Formats1Spec extends BaseSpec {
       }
     }
 
-    describe(" ... with Trials") {
+    describe(" ... with Backups") {
 
       val base = Formats0.TypeInfo
 
       val transformer = { (v: TypeFormat) =>
-        val firstTrial = BacktrackingDummy
-        val secondTrial = v.HidePackage.DeAlias
-        Trials(
-          firstTrial,
-          secondTrial
+        val first = BacktrackingDummy
+        val second = v.HidePackage.DeAlias
+        Backups(
+          first,
+          second
         )
       }
 
@@ -96,11 +96,11 @@ class Formats1Spec extends BaseSpec {
       val base = Formats0.TypeInfo
 
       val transformer = { (v: TypeFormat) =>
-        val firstTrial = BacktrackingDummy
-        val secondTrial = EnableOvrd(v.HidePackage.DeAlias)
-        Trials(
-          firstTrial,
-          secondTrial
+        val first = BacktrackingDummy
+        val second = EnableOvrd(v.HidePackage.DeAlias)
+        Backups(
+          first,
+          second
         )
       }
 

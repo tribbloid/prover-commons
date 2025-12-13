@@ -59,12 +59,13 @@ object Formats1 { // higher-order format constructors
     }
   }
 
-  case class Trials(
+  case class Backups(
       bases: TypeFormat*
   ) extends TypeFormat {
 
     final def resolve(refl: Reflection): refl.TypeView => TypeIROutput = { tt =>
-      val trials = bases
+      // TODO: this should use TreeException once it fixed tree display
+      val attempts = bases
         .to(LazyList)
         .flatMap { (base: TypeFormat) =>
           try {
@@ -76,7 +77,7 @@ object Formats1 { // higher-order format constructors
           }
         }
 
-      val chosen = trials.head
+      val chosen = attempts.head
 
       chosen.text <:^ Seq(chosen)
     }

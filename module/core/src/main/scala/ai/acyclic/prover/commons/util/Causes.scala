@@ -27,15 +27,13 @@ object Causes {
   }
 
   /**
-    * Not a real throwable, just a placeholder indicating lack of trials
+    * Not a real throwable, just a placeholder indicating skipped execution
     */
   sealed trait Undefined extends Exception
   object Undefined extends Undefined
 
   /**
-    * @param foldUnary
-    *   not recommended to set to false, should use Wrapper() directly for type safety
-    * @return
+    * Wrap multiple causes as a single [[Causes]] exception, [[Undefined]] will be ignored
     */
   def combine[T <: Throwable](causes: Seq[T], foldUnary: Boolean = true): Throwable = {
     val _causes = causes.distinct.filterNot(_.isInstanceOf[Undefined])
@@ -46,5 +44,15 @@ object Causes {
     } else {
       Causes(causes = _causes)
     }
+  }
+
+  /**
+    * same as [[combine]], except that any [[Undefined]] in the input will cause the output to be also [[Undefined]]
+    */
+  def combineOrUndefined(causes: Seq[Throwable], foldUnary: Boolean = true): Throwable = {
+    val undefined = causes.find(_.isInstanceOf[Undefined])
+    undefined.getOrElse(
+      Causes.combine(causes, foldUnary)
+    )
   }
 }

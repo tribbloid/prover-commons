@@ -392,11 +392,11 @@ object TestHelper {
   }
 
   def intercept[EE <: Exception: ClassTag](fn: => Any): Unit = {
-    val trial = Try {
+    val attempt = Try {
       fn
     }
     val expectedErrorName = implicitly[ClassTag[EE]].runtimeClass.getSimpleName
-    trial match {
+    attempt match {
       case Failure(_: EE) =>
       case Failure(e)     =>
         throw new AssertionError(s"Expecting $expectedErrorName, but get ${e.getClass.getSimpleName}", e)
