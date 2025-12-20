@@ -9,9 +9,11 @@ case class Causes[T <: Throwable](
 ) extends HasCauses[T]
     with NoStackTrace {
 
-  override def getCause(): T = causes.headOption.getOrElse(null.asInstanceOf[T])
+  causes.drop(1).filter(_ != null).foreach(addSuppressed)
 
-  override def getMessage(): String = s"[CAUSED BY ${causes.size} EXCEPTION(S)]"
+  override def getCause: T = causes.headOption.getOrElse(null.asInstanceOf[T])
+
+  override def getMessage: String = s"[CAUSED BY ${causes.size} EXCEPTION(S)]"
 }
 
 object Causes {
