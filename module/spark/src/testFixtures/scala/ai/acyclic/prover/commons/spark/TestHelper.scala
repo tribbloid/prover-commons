@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 
 import java.io.File
 import java.util.{Date, Properties}
+import scala.concurrent.duration.DurationInt
 import scala.io.Source
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
@@ -307,7 +308,7 @@ object TestHelper {
     val session = builder.getOrCreate()
     val sc = session.sparkContext
 
-    Retry.FixedInterval(3, 8000, silent = true).apply {
+    Retry.FixedInterval(3, 8.seconds, silent = true).apply {
       // wait for all executors in local-cluster mode to be online
       require(
         sc.defaultParallelism == numCores, {

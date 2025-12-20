@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.util
 import ai.acyclic.prover.commons.debug.CallStackRef
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.util.control.ControlThrowable
 import scala.util.{Failure, Success, Try}
 
@@ -13,37 +14,63 @@ object Retry {
 
   object DefaultRetry extends Retry
 
+  val DEFAULT_RETRY: Int = 10
+  val DEFAULT_DELAY: FiniteDuration = 0.millis
+
   object FixedInterval {
 
     def apply(
-        n: Int,
-        interval: Long = 0L,
+        maxRetries: Int = DEFAULT_RETRY,
+        delay: FiniteDuration = DEFAULT_DELAY,
         silent: Boolean = false,
         callerStr: String = null
     ): Retry =
       Retry(
-        n,
+        maxRetries,
         { _ =>
-          interval
+          delay.toMillis
         },
         silent,
         callerStr
       )
   }
 
+  object LinearBackoff {
+
+    val MAX_RETRY_DELAY: FiniteDuration = DEFAULT_DELAY + 2.seconds
+
+    def apply(
+        maxRetries: Int = DEFAULT_RETRY,
+        initialDelay: FiniteDuration = DEFAULT_DELAY,
+        maxDelay: FiniteDuration = MAX_RETRY_DELAY
+    ): Retry = {
+
+      val retry = Retry(
+        n = maxRetries,
+        intervals = { nRemaining =>
+          val attemptNum = maxRetries - nRemaining + 1
+          val delayMs = (initialDelay.toMillis.toDouble * math.pow(2.0, attemptNum - 1)).toLong
+          math.min(delayMs, maxDelay.toMillis)
+        },
+        silent = true
+      )
+      retry
+    }
+  }
+
   object ExponentialBackoff {
 
     def apply(
-        n: Int,
-        longestInterval: Long = 0L,
+        maxRetries: Int = DEFAULT_RETRY,
+        longestDelay: FiniteDuration = DEFAULT_DELAY,
         expBase: Double = 2.0,
         silent: Boolean = false,
         callerStr: String = null
     ): Retry = {
       Retry(
-        n,
+        maxRetries,
         { n =>
-          (longestInterval.doubleValue() / Math.pow(expBase, n - 2)).asInstanceOf[Long]
+          (longestDelay.toMillis.toDouble.doubleValue() / Math.pow(expBase, n - 2)).asInstanceOf[Long]
         },
         silent,
         callerStr
@@ -104,7 +131,7 @@ object Retry {
         }
       }
 
-      lazy val interval = intervalFactory(n)
+      lazy val interval = intervals(n)
       Try(fn()) match {
         case Success(x) =>
           x
@@ -161,7 +188,7 @@ object Retry {
 
 case class Retry(
     n: Int = 3,
-    intervalFactory: Int => Long = { _ =>
+    intervals: Int => Long = { _ =>
       0L
     },
     silent: Boolean = false,
