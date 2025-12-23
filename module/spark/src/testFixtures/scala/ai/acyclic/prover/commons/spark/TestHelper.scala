@@ -129,6 +129,8 @@ object TestHelper {
 
   @transient var sparkSessionInitialised: Boolean = false
 
+  @transient @volatile private var _testSparkSession: SparkSession = null
+
   lazy val numCores: Int = {
     val cap = getProperty("MaxCores")
       .map(_.toInt)
@@ -291,7 +293,13 @@ object TestHelper {
     conf
   }
 
-  lazy val TestSparkSession: SparkSession = {
+  private def _isUsable(session: SparkSession): Boolean = {
+    Try {
+      !session.sparkContext.isStopped
+    }.getOrElse(false)
+  }
+
+  private def _createTestSparkSession(): SparkSession = {
 
     val builder = SparkSession
       .builder()
@@ -326,6 +334,18 @@ object TestHelper {
     session
   }
 
+  def TestSparkSession: SparkSession = synchronized {
+    Option(_testSparkSession)
+      .filter(_isUsable)
+      .getOrElse {
+        SparkSession.clearActiveSession()
+        SparkSession.clearDefaultSession()
+        val session = _createTestSparkSession()
+        _testSparkSession = session
+        session
+      }
+  }
+
   def getExecutorSummaryText(sc: SparkContext): String = {
     val executors = sc.getExecutorMemoryStatus
     val executorReport = executors
@@ -341,8 +361,8 @@ object TestHelper {
        |""".trim.stripMargin
   }
 
-  lazy val TestSC: SparkContext = TestSparkSession.sparkContext
-  lazy val TestSQL: SQLContext = TestSparkSession.sqlContext
+  def TestSC: SparkContext = TestSparkSession.sparkContext
+  def TestSQL: SQLContext = TestSparkSession.sqlContext
 
   lazy val enableCheckpoint: Unit = {
 
