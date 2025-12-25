@@ -72,9 +72,9 @@ object Foundation {
         }
       }
 
-      override def identityC: Option[Any] = original.identity
+      override lazy val identity: Option[Any] = original.identity
 
-      override def evalCacheKeyC: Option[Any] = original.evalCacheKey
+      override lazy val evalCacheKey: Option[Any] = original.evalCacheKey
     }
   }
 

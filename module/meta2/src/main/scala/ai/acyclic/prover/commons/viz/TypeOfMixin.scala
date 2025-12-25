@@ -129,7 +129,7 @@ trait TypeOfMixin extends HasReflection {
 
       case object SuperTypeNode extends node {
 
-        final override lazy val identityC: Some[TypeOfMixin.this.reflection.TypeID] = Some(node.id_deAlias)
+        final override lazy val identity: Some[TypeOfMixin.this.reflection.TypeID] = Some(node.id_deAlias)
 
         override val inductions: List[(Arrow.`~>`, node)] = {
 
@@ -172,7 +172,7 @@ trait TypeOfMixin extends HasReflection {
 
       case object ArgNode extends node {
 
-        final override lazy val identityC: None.type = None
+        final override lazy val identity: None.type = None
 
         override lazy val inductions: List[(Arrow.`~>`, node)] = {
           node.args.map { tt =>

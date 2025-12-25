@@ -23,7 +23,7 @@ trait UnapplyInspection extends Local.Diverging.UpperSemilattice.topologyImpls.I
 
     trait Minimal extends Node_ with _Inner {
 
-      override lazy val evalCacheKeyC: Option[Any] = Some(value)
+      override lazy val evalCacheKey: Option[Any] = Some(value)
 
       @transient lazy val primaryFormOpt = primaryEffective.unapply(value)
 

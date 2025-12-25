@@ -97,11 +97,6 @@ object __Glossary {
     *   - `sanity` for simple sanity proof that can be conducted on Scala type system level, rely solely on Scala
     *     compiler to verify conjectures
     *
-    * function name suffixes:
-    *
-    *   - `C` for computational effect, should only be called once and cached for the lifespan of the embedded object,
-    *     definition should be `protected`
-    *
     * comments:
     *   - `TODO` for future work
     *   - `FIXME` for part that may have room for further optimisations

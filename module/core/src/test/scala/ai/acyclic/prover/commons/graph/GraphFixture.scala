@@ -51,18 +51,18 @@ object GraphFixture {
 
     implicit class GVOps(vs: Seq[GV]) {
 
-      def withArrows = vs.map(InspectGV.inspect)
+      def withArrows: Seq[InspectGV.inspect] = vs.map(InspectGV.inspect)
 
     }
   }
 
   trait OGraphNode extends Local.Diverging.Graph.Node_[GV] {
 
-    override lazy val nodeText = value.text
+    override lazy val nodeText: String = value.text
 
-    override def evalCacheKeyC: Option[GV] = Some(value)
+    override lazy val evalCacheKey: Option[GV] = Some(value)
 
-    override def identityC: Option[Any] = Some(value.text)
+    override lazy val identity: Option[Any] = Some(value.text)
   }
 
   case class GVSetter(builder: GV => Local.AnyGraph.Node[GV]) extends Local.AnyGraph.Setter_[GV] {
