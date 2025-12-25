@@ -2,11 +2,13 @@ package ai.acyclic.prover.commons.graph
 
 import ai.acyclic.prover.commons.HasInner
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.multiverse.CanUnapply
+import ai.acyclic.prover.commons.multiverse.{CanUnapply, UnappliedForm}
 
 object UnapplyInspection {}
 
 trait UnapplyInspection extends Local.Diverging.UpperSemilattice.topologyImpls.Inspection[Any] with HasInner {
+
+  type Node_[V] = Local.Diverging.UpperSemilattice.topologyImpls.Node_[V]
 
   def primary: CanUnapply[Any] // for induction
   def inlined: CanUnapply[Any] // for content
@@ -21,19 +23,19 @@ trait UnapplyInspection extends Local.Diverging.UpperSemilattice.topologyImpls.I
 
   object Node {
 
-    trait Minimal extends Node_ with _Inner {
+    trait Minimal extends Node_[Any] with _Inner {
 
-      override lazy val evalCacheKey: Option[Any] = Some(value)
+      override lazy val evalCacheKey: Option[Any] = Some(this.value)
 
-      @transient lazy val primaryFormOpt = primaryEffective.unapply(value)
+      @transient lazy val primaryFormOpt: Option[UnappliedForm] = primaryEffective.unapply(this.value)
 
-      def prefix: String = primaryFormOpt.map(_.prefix).getOrElse(value.toString)
+      def prefix: String = primaryFormOpt.map(_.prefix).getOrElse(this.value.toString)
 
-      override lazy val inductions: Seq[(_Arrow, Node_)] = {
+      override lazy val inductions: Seq[(_Arrow, Node_[Any])] = {
 
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
-        val result: Seq[(_Arrow, Node_)] = inductions.map { kv =>
+        val result: Seq[(_Arrow, Node_[Any])] = inductions.map { kv =>
           Arrow.`~>` -> inspect(kv._2)
         }
 
@@ -43,11 +45,11 @@ trait UnapplyInspection extends Local.Diverging.UpperSemilattice.topologyImpls.I
 
     trait Named extends Minimal {
 
-      override lazy val inductions: Seq[(_Arrow, Node_)] = {
+      override lazy val inductions: Seq[(_Arrow, Node_[Any])] = {
 
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
-        val result: Seq[(_Arrow, Node_)] = inductions.map { kv =>
+        val result: Seq[(_Arrow, Node_[Any])] = inductions.map { kv =>
           Arrow.`~>`.OfText(kv._1) -> inspect(kv._2)
         }
 
@@ -93,7 +95,7 @@ trait UnapplyInspection extends Local.Diverging.UpperSemilattice.topologyImpls.I
 
   case class Node(value: Any) extends Node.Minimal {
 
-    lazy val inlinedFormOpt = inlined.unapply(value)
+    lazy val inlinedFormOpt: Option[UnappliedForm] = inlined.unapply(value)
 
     @transient final override lazy val nodeText: String = {
 
@@ -113,7 +115,7 @@ trait UnapplyInspection extends Local.Diverging.UpperSemilattice.topologyImpls.I
     }
   }
 
-  override lazy val inspect: Any => ProductInspection.Node_ = { v =>
+  override lazy val inspect: Any => Node_[Any] = { v =>
     new Node(v)
   }
 }

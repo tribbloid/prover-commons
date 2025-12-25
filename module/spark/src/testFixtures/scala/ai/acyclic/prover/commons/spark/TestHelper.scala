@@ -172,7 +172,7 @@ object TestHelper {
       case None =>
         tuple match {
           case (None, None) =>
-          case _            =>
+          case _ =>
             LoggerFactory
               .getLogger(this.getClass)
               .warn("cannot use cluster mode as SPARK_HOME is missing")
@@ -419,7 +419,7 @@ object TestHelper {
     val expectedErrorName = implicitly[ClassTag[EE]].runtimeClass.getSimpleName
     attempt match {
       case Failure(_: EE) =>
-      case Failure(e)     =>
+      case Failure(e) =>
         throw new AssertionError(s"Expecting $expectedErrorName, but get ${e.getClass.getSimpleName}", e)
       case Success(_) =>
         throw new AssertionError(s"expecting $expectedErrorName, but no exception was thrown")

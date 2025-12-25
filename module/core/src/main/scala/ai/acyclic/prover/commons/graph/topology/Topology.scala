@@ -4,8 +4,6 @@ import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
 import ai.acyclic.prover.commons.graph.topology.Axiom.ExtractArrow
 import ai.acyclic.prover.commons.util.Phantom
 
-import scala.language.implicitConversions
-
 abstract class Topology extends Foundation.Lawful {
   self: Singleton =>
 
@@ -55,25 +53,7 @@ object Topology {
       type node <: Node_ // TODO: should be "FixedPoint"
     }
 
-    /**
-      * 3rd API, define a [[inspect]] constructor that works on every [[V]]
-      *
-      * implicit function allows [[inspect]] to act as an extension of [[V]]
-      *
-      * @tparam V
-      *   value type
-      */
-    trait Inspection[V] {
-
-      type Node_ = Impls.this.Node_[V]
-
-      //        type node <: _Node
-      val inspect: V => Node_
-
-      implicit def asNode(v: V): Node_ = inspect(v)
-      implicit def asNodes(vs: Seq[V]): Seq[Node_] = vs.map(inspect)
-    }
-
+    trait Inspection[V] extends ai.acyclic.prover.commons.multiverse.CanInspect[V, Node_[V]] {}
   }
 
   object AnyGraph extends Topology {

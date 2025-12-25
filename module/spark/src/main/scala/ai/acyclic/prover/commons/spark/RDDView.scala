@@ -41,7 +41,7 @@ case class RDDView[T](@transient self: RDD[T]) {
         case Left(src) =>
           f(src) match {
             case Some(res) => Right(res)
-            case None      =>
+            case None =>
               counter add 1L
               Left(src)
           }
