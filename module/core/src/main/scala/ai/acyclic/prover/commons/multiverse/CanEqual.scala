@@ -336,7 +336,7 @@ object CanEqual {
   }
 }
 
-trait CanEqual[-LR] extends Plane {
+trait CanEqual[-LR] extends Verse {
 
   import CanEqual.*
 

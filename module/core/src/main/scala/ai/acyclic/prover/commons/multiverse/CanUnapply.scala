@@ -75,7 +75,7 @@ object CanUnapply {
   }
 }
 
-trait CanUnapply[-T] extends Plane {
+trait CanUnapply[-T] extends Verse {
 
   def unapply(v: T): Option[UnappliedForm]
 

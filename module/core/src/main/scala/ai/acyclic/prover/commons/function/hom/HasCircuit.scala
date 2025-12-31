@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.Delegating
 import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.function.{FnBuilder, Traceable}
 import ai.acyclic.prover.commons.function.bound.{DepDomains, Domains}
@@ -16,9 +15,9 @@ object HasCircuit {
 
 trait HasCircuit {
 
-  trait CanNormaliseToFn1_Impl0 extends Serializable {
+  trait HasNormalForm_Impl0 extends Serializable {
 
-    implicit def _normaliseToFn1[I, O](v: CanNormalise[Fn[I, O]])(
+    implicit def _normaliseToFn1[I, O](v: HasNormalForm[Fn[I, O]])(
         implicit
         _definedAt: SrcDefinition
     ): Function1View[I, O] = {
@@ -26,7 +25,7 @@ trait HasCircuit {
 
         case vv: Function1View[_, _] => vv.asInstanceOf[Function1View[I, O]]
         case _ =>
-          Function1View(v.normalise, _definedAt)
+          Function1View(v.normalForm, _definedAt)
       }
     }
 
@@ -57,12 +56,10 @@ trait HasCircuit {
         _prev.andThen(self)
       }
 
-      def trace: Fn.Tracing[I, O] = Fn.Tracing(self.normalise)
-
       //      override def normalise: Circuit[I, O] = self.normalise
     }
 
-    implicit def _normalisedToFn0[O](v: CanNormalise[Thunk[O]])(
+    implicit def _normalisedToFn0[O](v: HasNormalForm[Thunk[O]])(
         implicit
         _definedAt: SrcDefinition
     ): Function0View[O] = {
@@ -70,7 +67,7 @@ trait HasCircuit {
 
         case vv: Function0View[_] => vv.asInstanceOf[Function0View[O]]
         case _ =>
-          Function0View(v.normalise, _definedAt)
+          Function0View(v.normalForm, _definedAt)
       }
     }
 
@@ -83,8 +80,6 @@ trait HasCircuit {
 
       final override def apply(): O = self(())
 
-      def trace: Fn.Tracing[Unit, O] = Fn.Tracing(self.normalise)
-
       //      override def normalise: Circuit[I, O] = self.normalise
 
       def asLazy: Thunk.CachedLazy[O] = Thunk.CachedLazy(self)
@@ -92,12 +87,11 @@ trait HasCircuit {
       def asEager: Thunk.CachedEager[Thunk[O]] = Thunk.CachedEager(self)
     }
   }
-  object CanNormalise extends CanNormaliseToFn1_Impl0 {}
+  object HasNormalForm extends HasNormalForm_Impl0 {}
 
-  sealed trait CanNormalise[+N <: Circuit] extends Delegating[N] {
+  sealed trait HasNormalForm[+N <: Circuit] {
 
-    def normalise: N
-    final def unbox: N = normalise
+    def normalForm: N
   }
 
   trait Circuit extends DepDomains with Traceable with Product with Serializable {
@@ -126,6 +120,7 @@ trait HasCircuit {
 
     type K1[-I] = Circuit { type In >: I }
     trait K1_[-I] extends Circuit { type In >: I }
+
     { // sanity
       implicitly[K1_[Int] <:< K1[Int]]
     }
@@ -139,72 +134,19 @@ trait HasCircuit {
       * function with computation graph, like a lifted JAXpr
       */
     type K2[-I, +O] = DepFn.K1[I] { type OutK[T] <: O }
-    trait K2_[-I, +O] extends CanNormalise[K2_[I, O]] with DepFn.K1_[I] with Domains {
+    trait K2_[-I, +O] extends HasNormalForm[K2_[I, O]] with DepFn.K1_[I] with Domains {
 
       type Out <: O
 
-      def normalise = this // bypassing EqSat, always leads to better representation
+      def normalForm = this // bypassing EqSat, always leads to better representation
     }
     { // sanity
       implicitly[K2_[Int, String] <:< K2[Int, String]]
     }
 
-    case class Tracing[I, O](self: Fn[I, O]) extends CanNormalise[K2_[I, O]] {
-
-      lazy val higherOrder: Fn.Tracing[Unit, Fn[I, O]] =
-        Fn.Tracing(Thunk.CachedEager(self))
-
-      def map[O2](right: O => O2)(
-          implicit
-          _definedAt: SrcDefinition
-      ): Tracing[I, O2] = {
-
-        val result = self.andThen(right)
-
-        Tracing(result)
-      }
-
-      def foreach(right: O => Unit)(
-          implicit
-          _definedAt: SrcDefinition
-      ): Tracing[I, Unit] = {
-
-        map(right)
-      }
-
-      def withFilter(right: O => Boolean)(
-          implicit
-          _definedAt: SrcDefinition
-      ): Tracing[I, O] = {
-
-        val _right = Blackbox(_definedAt)(right)
-
-        val result =
-          Fn.Filtered[I, O](self, _right)
-
-        Tracing(result)
-      }
-
-      def ><[I2, O2](right: Tracing[I2, O2]): Tracing[(I, I2), (O, O2)] = {
-
-        val result = Pointwise(self, right.self)
-
-        result.trace
-      }
-
-      def -<[O2](right: Tracing[I, O2]): Tracing[I, (O, O2)] = {
-
-        val first = Duplicate[I]()
-        val second = Pointwise(self, right.self)
-
-        first.andThen(second).self.trace
-      }
-
-      // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
-
-      override def normalise = self.normalise
-    }
-//    implicit def tracing2Circuit[I, O](tracing: Tracing[I, O]): Circuit[I, O] = tracing.self
+    type Tracing[I, O] = ai.acyclic.prover.commons.function.tracing.Tracing[I, O]
+    val Tracing: ai.acyclic.prover.commons.function.tracing.Tracing.type =
+      ai.acyclic.prover.commons.function.tracing.Tracing
 
     abstract class Impl[I, O](
         implicit
@@ -273,11 +215,27 @@ trait HasCircuit {
 
       override def apply(arg: I): O = right(left(arg))
 
-      override def normalise: Fn[I, O] = {
+      override def normalForm: Fn[I, O] = {
         (left, right) match {
-          case (_: Identity[_], rr) => rr.normalise.asInstanceOf[Fn[I, O]]
-          case (ll, _: Identity[_]) => ll.normalise.asInstanceOf[Fn[I, O]]
-          case (ll, rr)             => Mapped(ll.normalise, rr.normalise)
+          case (_: Identity[_], rr) => rr.normalForm.asInstanceOf[Fn[I, O]]
+          case (ll, _: Identity[_]) => ll.normalForm.asInstanceOf[Fn[I, O]]
+          case (ll, rr)             => Mapped(ll.normalForm, rr.normalForm)
+        }
+      }
+    }
+
+    case class FlatMapped[I, M, O](
+        left: Fn[I, M],
+        right: Fn[I, Fn[M, O]]
+    ) extends Impl[I, O]
+        with Combinator.Linear {
+
+      override def apply(arg: I): O = right(arg)(left(arg))
+
+      override def normalForm: Fn[I, O] = {
+        (left, right) match {
+          case (_: Identity[_], rr) => rr.normalForm.asInstanceOf[Fn[I, O]]
+          case (ll, rr)             => FlatMapped(ll.normalForm, rr.normalForm)
         }
       }
     }
@@ -382,7 +340,7 @@ trait HasCircuit {
         _definedAt: SrcDefinition
     ): Fn.Impl[I, R] = {
       fn match {
-        case CanNormalise.Function1View(c, _) => c.asInstanceOf[Fn.Impl[I, R]]
+        case HasNormalForm.Function1View(c, _) => c.asInstanceOf[Fn.Impl[I, R]]
         case _ =>
           Blackbox[I, R](_definedAt)(fn)
       }
@@ -394,8 +352,8 @@ trait HasCircuit {
     ): Thunk.Impl[R] = {
 
       fn match {
-        case CanNormalise.Function0View(c, _) => c.asInstanceOf[Thunk.Impl[R]]
-        case _                                => fromFunction1[Unit, R]((_: Unit) => fn())
+        case HasNormalForm.Function0View(c, _) => c.asInstanceOf[Thunk.Impl[R]]
+        case _                                 => fromFunction1[Unit, R]((_: Unit) => fn())
       }
     }
 

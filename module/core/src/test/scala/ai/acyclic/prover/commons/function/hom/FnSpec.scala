@@ -78,7 +78,7 @@ class FnSpec extends BaseSpec {
         case ((fn, s), i) =>
           it(i.toString) {
 
-            val normal = fn.normalise
+            val normal = fn.normalForm
             normal.explain
               .text_hierarchy()
               .shouldBe(
@@ -99,7 +99,7 @@ class FnSpec extends BaseSpec {
         case ((fn, s), i) =>
           it(i.toString) {
 
-            val normal = fn.normalise
+            val normal = fn.normalForm
             normal.explain
               .text_hierarchy()
               .shouldBe(
@@ -109,8 +109,17 @@ class FnSpec extends BaseSpec {
             val r1 = fn.apply(1)
             assert(r1 == "2b")
           }
-
       }
+    }
+
+    it("other-tracing-structure") {
+
+      val h3 = ChainOther.s3.explain.text_hierarchy()
+      val h4 = ChainOther.s4.explain.text_hierarchy()
+
+      println(h3)
+      println("===")
+      println(h4)
     }
 
     describe("twice") {
@@ -120,7 +129,7 @@ class FnSpec extends BaseSpec {
         case ((fn, s), i) =>
           it(i.toString) {
 
-            val normal = fn.normalise
+            val normal = fn.normalForm
             normal.explain
               .text_hierarchy()
               .shouldBe(
@@ -142,7 +151,7 @@ class FnSpec extends BaseSpec {
       case ((fn, s), i) =>
         it(i.toString) {
 
-          val normal = fn.normalise
+          val normal = fn.normalForm
           normal.explain
             .text_hierarchy()
             .shouldBe(
@@ -164,7 +173,7 @@ class FnSpec extends BaseSpec {
       case ((fn, s), i) =>
         it("1-" + i.toString) {
 
-          val normal = fn.normalise
+          val normal = fn.normalForm
           normal.explain
             .text_hierarchy()
             .shouldBe(
@@ -178,7 +187,7 @@ class FnSpec extends BaseSpec {
       case ((fn, s), i) =>
         it("2-" + i.toString) {
 
-          val normal = fn.normalise
+          val normal = fn.normalForm
           normal.explain
             .text_hierarchy()
             .shouldBe(

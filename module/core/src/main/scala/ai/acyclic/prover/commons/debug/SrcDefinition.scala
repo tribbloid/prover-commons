@@ -1,12 +1,13 @@
 package ai.acyclic.prover.commons.debug
 
+import ai.acyclic.prover.commons.debug.SrcDefinition.WithCode
 import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 
 import java.io.File
 import java.util.UUID
 
 sealed trait SrcDefinition extends Serializable with Projection.Equals {
-  // TODO: can use Lihaoyi's sourcecode library
+  // TODO: should it be "SrcPosition"?
 
   def fileName: String
 
@@ -27,16 +28,20 @@ sealed trait SrcDefinition extends Serializable with Projection.Equals {
   }
 
   lazy val shortText = s"${methodName} <at ${AtLine.short}>"
-  lazy val longText = s"${methodName} <at ${AtLine.long}>"
+  lazy val longText: String = shortText
 
   override def toString: String = { shortText }
+
+  def withCode(codeText: String): WithCode = {
+    WithCode(this, codeText = codeText)
+  }
 
   {
     canEqualProjections += CanEqual.Native.on((fileName, lineNumber, methodName))
   }
 }
 
-object SrcDefinition {
+object SrcDefinition extends SrcDefinition_Imp0 {
 
   case class Unknown(uuid: UUID) extends SrcDefinition {
 
@@ -48,7 +53,7 @@ object SrcDefinition {
   }
 
   // only here as a backup, should use CompileTime in most cases for speed
-  case class Runtime(
+  case class RuntimeCallStack(
       belowClasses: Seq[Class[?]] = Nil
   )(
       implicit
@@ -96,10 +101,7 @@ object SrcDefinition {
 
   }
 
-  private type _FileName = sourcecode.File
-
-  case class Inlined()(
-      implicit
+  class Inlined(
       _fileName: _FileName,
       _line: sourcecode.Line,
       _name: sourcecode.Name
@@ -112,11 +114,20 @@ object SrcDefinition {
     override val methodName: String = _name.value
   }
 
-  implicit def get(
-      implicit
-      _fileName: _FileName,
-      _line: sourcecode.Line,
-      _name: sourcecode.Name
-  ): Inlined = Inlined()
+  case class WithCode(
+      raw: SrcDefinition,
+      codeText: String
+  ) extends SrcDefinition {
+
+    override def fileName: String = raw.fileName
+
+    override def lineNumber: Int = raw.lineNumber
+
+    override def methodName: String = raw.methodName
+
+    override lazy val longText: String = {
+      Seq(shortText, codeText).mkString("\n")
+    }
+  }
 
 }
