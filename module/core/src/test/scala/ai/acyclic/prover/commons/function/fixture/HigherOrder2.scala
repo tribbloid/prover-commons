@@ -20,7 +20,7 @@ object HigherOrder2 {
     val result =
       for (
         case (x, fn) <- {
-          proto.trace
+          proto.self.trace
         }
       )
         yield {

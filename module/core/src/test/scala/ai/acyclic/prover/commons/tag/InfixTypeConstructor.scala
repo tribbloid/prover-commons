@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.cap
+package ai.acyclic.prover.commons.tag
 
 object InfixTypeConstructor {
 

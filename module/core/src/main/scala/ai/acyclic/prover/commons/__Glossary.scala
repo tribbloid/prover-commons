@@ -48,13 +48,7 @@ object __Glossary {
     *     examples
     *   - `Lt`, same as `Lt` as a type name but can appear anywhere
     *   - `Compat` for compatible type, same as `Compat` as a type name but can appear anywhere
-    *   - `Cap`/`Tag` for capability tracking tag (see Scala 3 project Caprese for a definition of capability tracking),
-    *     they are Mixin type of which the main type can be cast into to emulate reasoning of a substructural type
-    *     system. E.g. definition `trait XXCap {self: CC =>}` allows any variable `val cc: CC` to be assigned to another
-    *     variable `val ccWithCap = cc.asInstanceOf[CC with Has[XXCap]]`, or vice versa.
-    *     - A typical example is `shapeless.labelled.KeyTag`
-    *     - Several examples are also features in asynchronous computing library Kyo
-    *     - see [[Capabilities]] for more explanation
+    *   - Tag for runtime tag, see [[ai.acyclic.prover.commons.tag.Tagged]] for explanation
     *   - `Axiom` for axiom type that can be constructed arbitrarily (assumed to have a constructive proof), but only
     *     for compile-time verification and carry no runtime data. Consequently, they can be safely cast into each other
     *     (IF permitted at runtime, w/o triggering ClassCastException) or mixed into other classes, many of they have no

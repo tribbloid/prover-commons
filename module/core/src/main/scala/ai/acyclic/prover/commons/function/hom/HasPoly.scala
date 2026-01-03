@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.function.hom
 
-import ai.acyclic.prover.commons.cap.Capability
-import ai.acyclic.prover.commons.cap.Capability.<>
+import ai.acyclic.prover.commons.tag.Tag
+import ai.acyclic.prover.commons.tag.<>
 import ai.acyclic.prover.commons.compat.TupleX
 import ai.acyclic.prover.commons.function.FnBuilder
 import ai.acyclic.prover.commons.debug.SrcDefinition
@@ -23,7 +23,7 @@ trait HasPoly extends HasPolyLike {
   ) extends PolyLike
       with FnBuilder.Root {
 
-    object CaseTag extends Capability
+    object CaseTag extends Tag
 
     type Case[+FF <: Fn[?, ?]] = FF <> CaseTag.type
 
@@ -56,7 +56,7 @@ trait HasPoly extends HasPolyLike {
         _definedAt: SrcDefinition
     ): BuildTarget[I, O] = {
 
-      val _case = Capability(Fn.at[I](fn)) <> CaseTag
+      val _case = Tag(Fn.at[I](fn)) <> CaseTag
       _case
     }
 
@@ -66,8 +66,6 @@ trait HasPoly extends HasPolyLike {
         implicit
         _case: Lemma.At[I]
     ): _case.Out = {
-//      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll[FnCompat[v.type, R], IsCase.type](_case)
-//      val revoked: FnCompat[v.type, R] = Capabilities.revokeAll(_case)
       _case.apply(v)
     }
 

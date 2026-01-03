@@ -1,12 +1,12 @@
-package ai.acyclic.prover.commons.cap
+package ai.acyclic.prover.commons.tag
 
 object __CapAndPendingDesign {
 
   /**
     * minimally viable features:
     *
-    *   - Capability ([[ai.acyclic.prover.commons.cap.Capability.>>]]) and Pending Effect (Pending,
-    *     [[ai.acyclic.prover.commons.cap.PendingEffect.<<]]) are compile-time only mixin that are erased at runtime
+    *   - Tag ([[ai.acyclic.prover.commons.tag.Tagged]]) and Pending Effect (Pending,
+    *     [[ai.acyclic.prover.commons.tag.Pending]]) are compile-time only mixin that are erased at runtime
     *   - variables with types constructed from these mixins are tracked in their scope
     *   - Cap/Pending can always be added (mixin) or revoked (demixin) explicitly in program
     *     - TODO: is it possible to demixin without knowing the full type? either as function return type or flatMap arg
@@ -28,7 +28,5 @@ object __CapAndPendingDesign {
     *   - OrNull, can be revoked by checking null pointer, can be coerced into [[Option[T]`]], can use map or flatMap
     *   - Aborts[-E], can be revoked using an abort handler (`CanThrow` in Scala 3.4) in scope, can be coerced into
     *     [[Either[E, T]]] or [[scala.util.Try[T]]], can use map or flatMap
-    *   - Capture (as in Scala 3.4 capture checking / Caprese, should not be confused with Capability) is a special kind
-    *     of Pending Effect that only takes variable type(s), new variable can be added by upcasting with no effect
     */
 }

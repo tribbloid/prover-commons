@@ -100,7 +100,7 @@ private[meta] trait TypeViewMixin extends HasUniverse {
 
     def singletonSymbol: Symbol = singletonSymbolOpt.getOrElse {
       throw new UnsupportedOperationException(
-        s"$unbox : ${unbox.getClass} is not a Singleton"
+        s"$$delegate : ${unbox.getClass} is not a Singleton"
       )
     }
 

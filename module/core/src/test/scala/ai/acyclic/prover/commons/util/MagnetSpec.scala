@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class MagnetSpec extends BaseSpec {
 
-  describe(Magnet.OptionMagnetCap.toString) {
+  describe(Magnet.OptionMagnet.toString) {
 
 //    it("mixin & pattern match ") {
 //TODO: doesn't work unless scala 3

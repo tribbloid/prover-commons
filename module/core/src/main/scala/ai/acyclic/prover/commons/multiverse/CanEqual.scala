@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.multiverse
 import ai.acyclic.prover.commons.collection.CacheMagnet.{MapRepr, SetRepr}
 import ai.acyclic.prover.commons.collection.{CacheMagnet, KeyEncodedMap, MapBackedSet, ValueEncodedMap}
 import ai.acyclic.prover.commons.function.Bijection
+import ai.acyclic.prover.commons.multiverse.rewrite.CanNormalise
 import ai.acyclic.prover.commons.util.Caching
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -200,37 +201,26 @@ object CanEqual {
   }
 
   case class ByNormalise[LR: ClassTag](
-      normalise: CanNormalise[LR] = CanNormalise.Native,
+      normalise: CanNormalise.From[LR],
       fallback: CanEqual[Any] = CanEqual.Native
   ) extends CanEqual.Impl[LR] {
 
     override def hashOfNonTrivial(v: LR): Option[Int] = {
-      val normalisedOpt = normalise.normalise(v).map(_.value)
+      val normalised = normalise.normalise(v)
 
-      normalisedOpt
-        .flatMap { n =>
-          fallback.hashOfNonTrivial(n)
-        }
+      fallback.hashOfNonTrivial(normalised)
     }
 
     override def areEqualNonTrivial(v1: LR, v2: LR): Option[Boolean] = {
 
-      val opts: Seq[Option[Any]] = Seq(v1, v2).map { v =>
-        normalise.normalise(v).map(_.value)
+      val opts: Seq[Any] = Seq(v1, v2).map { v =>
+        normalise.normalise(v)
       }
 
-      val Seq(lOpt, rOpt) = opts
+      val Seq(ln, rn) = opts
 
-      (lOpt, rOpt) match {
-        case (Some(ln), Some(rn)) =>
-          fallback
-            .areEqualNonTrivial(ln, rn)
-            .orElse(
-              fallback.areEqualNonTrivial(v1, v2)
-            )
-
-        case _ =>
-          fallback.areEqualNonTrivial(v1, v2)
+      fallback.areEqualNonTrivial(ln, rn).orElse {
+        fallback.areEqualNonTrivial(v1, v2)
       }
     }
   }

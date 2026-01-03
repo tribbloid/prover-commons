@@ -1,25 +1,25 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.cap.Capability
-import ai.acyclic.prover.commons.cap.Capability.<>
+import ai.acyclic.prover.commons.tag.Tag
+import ai.acyclic.prover.commons.tag.<>
 
 import scala.language.implicitConversions
 
 object Magnet {
 
   // this is cap-based, has Option overhead, should be replaced with `XX | Null` in the future
-  type OptionMagnet[+T] = Option[T] <> OptionMagnetCap.type
+  type OptionMagnet[+T] = Option[T] <> OptionMagnet.type
 
-  case object OptionMagnetCap extends Capability {
+  case object OptionMagnet extends Tag {
 
     implicit def fromOption[T](v: Option[T]): OptionMagnet[T] = {
 
-      Capability(v) <> this
+      Tag(v) <> this
     }
 
     implicit def box[T](v: T): OptionMagnet[T] = {
 
-      Capability(Option(v)) <> this
+      Tag(Option(v)) <> this
     }
 
 //    implicit class Unbox[T](self: OptionMagnet[T]) {
@@ -38,13 +38,13 @@ object Magnet {
 
   type PreferRightMagnet[+L, +R] = Either[L, R] <> PreferRightCap.type
 
-  trait PreferRightCap_Imp0 extends Capability {
+  trait PreferRightCap_Imp0 extends Tag {
 
     implicit def boxLeft[L](v: L): Left[L, Nothing] <> PreferRightCap.type = {
 
       val left: Left[L, Nothing] = Left[L, Nothing](v)
 
-      val result = Capability(left) <> PreferRightCap
+      val result = Tag(left) <> PreferRightCap
       result
     }
   }
@@ -53,12 +53,12 @@ object Magnet {
 
     implicit def boxRight[R](v: R): Right[Nothing, R] <> this.type = {
 
-      Capability(Right(v)) <> PreferRightCap
+      Tag(Right(v)) <> PreferRightCap
     }
 
     implicit def enable[L, R](v: Either[L, R]): PreferRightMagnet[L, R] = {
 
-      Capability(v) <> this
+      Tag(v) <> this
     }
 
 //    implicit class Unbox[L, R](self: PreferRightMagnet[L, R]) {
@@ -67,7 +67,7 @@ object Magnet {
 //    }
   }
 
-  // `=>` is not sealed, no need to use capability tagging
+  // `=>` is not sealed, no need to use tagging
   trait ComputeMagnet[+R] extends (() => R) {
 
     final def get: R = apply()
@@ -75,7 +75,7 @@ object Magnet {
     def andThen[R2](fn: R => R2): ComputeMagnet[R2]
   }
 
-  case object ComputeMagnet extends Capability {
+  case object ComputeMagnet extends Tag {
 
     implicit class NonPure[+R](v: () => R) extends ComputeMagnet[R] {
 

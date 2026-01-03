@@ -55,8 +55,6 @@ trait HasCircuit {
 
         _prev.andThen(self)
       }
-
-      //      override def normalise: Circuit[I, O] = self.normalise
     }
 
     implicit def _normalisedToFn0[O](v: HasNormalForm[Thunk[O]])(
