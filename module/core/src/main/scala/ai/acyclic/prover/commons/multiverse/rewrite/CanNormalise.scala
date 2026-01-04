@@ -17,5 +17,8 @@ trait CanNormalise[-T, +R] extends CanRewrite[T] {
 
   final override def rewrite(v: T): Seq[Any] = Seq(normalise(v))
   def normalise(v: T): R
+
+  final def apply(v: T): R =
+    normalise(v)
   // normalised form is assumed to be always equal `v`, validation may be required to be impl later
 }

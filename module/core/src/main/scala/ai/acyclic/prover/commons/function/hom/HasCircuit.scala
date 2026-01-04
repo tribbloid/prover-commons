@@ -29,9 +29,9 @@ trait HasCircuit {
       }
     }
 
-    private[HasCircuit] case class Function1View[I, O](
+    case class Function1View[I, O](
         self: Fn[I, O],
-        _definedAt: SrcDefinition
+        otherFnDefinedAt: SrcDefinition
     ) extends Function[I, O] {
 
       def function1: Function1View[I, O] = this
@@ -41,7 +41,7 @@ trait HasCircuit {
       // TODO: both of these are not narrow enough
       final override def andThen[O2](next: O => O2): Function1View[I, O2] = {
 
-        val _next: Fn[O, O2] = Fn.at[O](next)(_definedAt)
+        val _next: Fn[O, O2] = Fn.at[O](next)(otherFnDefinedAt)
 
         val result =
           Fn.Mapped[I, O, O2](self, _next)
@@ -51,7 +51,7 @@ trait HasCircuit {
 
       final override def compose[I1](prev: I1 => I): Function1View[I1, O] = {
 
-        val _prev = Fn.at[I1](prev)(_definedAt)
+        val _prev = Fn.at[I1](prev)(otherFnDefinedAt)
 
         _prev.andThen(self)
       }

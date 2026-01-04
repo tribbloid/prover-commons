@@ -5,6 +5,7 @@ import ai.acyclic.prover.commons.graph.topology.Topology
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
+import scala.language.implicitConversions
 import scala.util.control.Breaks
 
 trait PosetMixin {

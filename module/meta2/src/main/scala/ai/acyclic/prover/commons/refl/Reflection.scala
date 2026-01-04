@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.refl
 
-import ai.acyclic.prover.commons.Delegating
+import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.meta.{HasUniverse, ITyper}
 import ai.acyclic.prover.commons.viz.format.TypeFormat
 

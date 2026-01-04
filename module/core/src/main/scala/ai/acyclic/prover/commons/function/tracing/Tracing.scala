@@ -1,15 +1,17 @@
 package ai.acyclic.prover.commons.function.tracing
 
-import ai.acyclic.prover.commons.Delegating
+import scala.language.implicitConversions
+
+import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.hom.Hom
-
-import scala.language.implicitConversions
 
 case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn.K2_[I, O]] {
 
   lazy val higherOrder: Tracing[Unit, Hom.Fn[I, O]] =
     Tracing(Hom.Thunk.CachedEager(self))
+
+//  def apply(v: I): O = self(v)
 
   def map[O2](right: O => O2)(
       implicit
@@ -81,12 +83,16 @@ case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn.K2_[I, O]
 
   // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
 
-  override def unbox: Hom.Fn[I, O] = self.normalForm
+  override lazy val unbox: Hom.Fn[I, O] = self.normalForm
 }
 
 object Tracing {
+  // Implicit conversions are provided by Delegating.unbox1
 
-  implicit def asFunction1[I, O](v: Tracing[I, O]): I => O = { i =>
-    v.unbox(i)
+  // Additional implicit conversion from Tracing to Function1View for function composition
+  implicit def tracingToFunction[I, O](v: Tracing[I, O])(
+      implicit _definedAt: SrcDefinition
+  ): Hom.HasNormalForm.Function1View[I, O] = {
+    Hom.HasNormalForm.Function1View(v.unbox, _definedAt)
   }
 }

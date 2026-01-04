@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.meta
 
-import ai.acyclic.prover.commons.Delegating
+import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 
 import scala.reflect.api.Universe
 

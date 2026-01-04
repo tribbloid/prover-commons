@@ -53,7 +53,7 @@ trait TypeIRMixin {
 //        (annotations ++ derivedFrom)
         derivedFrom
           .filter { v =>
-            v.typeView.as =:= TypeIR.this.typeView.as
+            v.typeView =:= TypeIR.this.typeView
           }
 
       lazy val recursively: Seq[TypeIR] = {

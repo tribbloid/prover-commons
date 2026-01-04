@@ -182,7 +182,7 @@ trait TypeOfMixin extends HasReflection {
 
         override lazy val nodeText: String = {
 
-          val ttStr = node.as.typeConstructor.toString
+          val ttStr = node.typeConstructor.toString
 
           val size = node.args.size
 

@@ -10,12 +10,13 @@ object HigherOrder2 {
 
   val s1 = {
 
-    val proto = Hom.Fn
+    val proto: Hom.HasNormalForm.Function1View[Int, (Seq[Long], Hom.Fn[Long, Seq[Double]])] = Hom.Fn
       .id[Int]
       .CrossUnit
-      .andThen(
+      .andThen {
+
         fn1.trace >< fn2.trace.higherOrder
-      )
+      }
 
     val result =
       for (
@@ -61,11 +62,11 @@ object HigherOrder2 {
         |: !-+ Mapped
         |: : !-- CrossUnit
         |: : !-+ Pointwise
-        |: :   !-- ${fn1.explain.nodeText}
+        |: :   !-- Blackbox(fn1 <at Circuits.scala:11>)
         |: :   !-+ CachedEager
-        |: :     !-- ${fn2.explain.nodeText}
-        |: !-- Blackbox(result <at HigherOrder2.scala:23>)
-        |!-- Blackbox(result <at HigherOrder2.scala:22>)
+        |: :     !-- Blackbox(fn2 <at Circuits.scala:15>)
+        |: !-- Blackbox(result <at HigherOrder2.scala:24>)
+        |!-- Blackbox(result <at HigherOrder2.scala:23>)
         |""".stripMargin
 //    s2 -> "s2"
 //    s3 -> "s3",
