@@ -67,8 +67,8 @@ object DelegatingSpec {
   case class D3(unbox: Delegating[Delegating[Int]]) extends Delegating[Delegating[Delegating[Int]]]
 
   case class D4(unbox: Delegating[Delegating[Delegating[Int]]])
-    extends Delegating[Delegating[Delegating[Delegating[Int]]]]
+      extends Delegating[Delegating[Delegating[Delegating[Int]]]]
 
   case class D5(unbox: Delegating[Delegating[Delegating[Delegating[Int]]]])
-    extends Delegating[Delegating[Delegating[Delegating[Delegating[Int]]]]]
+      extends Delegating[Delegating[Delegating[Delegating[Delegating[Int]]]]]
 }

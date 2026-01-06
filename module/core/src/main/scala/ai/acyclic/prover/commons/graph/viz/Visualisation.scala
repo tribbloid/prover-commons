@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.{HasInner}
+import ai.acyclic.prover.commons.HasInner
 import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.topology.Axiom.Top

@@ -116,6 +116,7 @@ object ConversionPartSpec {
   case class C(value: Int)
   case class D(value: Int)
 
+  // Direct conversions
   implicit val aToB: ConversionPart[A, B] = new ConversionPart[A, B] {
     override def normalise(v: A): B = B(v.value)
   }
@@ -128,26 +129,9 @@ object ConversionPartSpec {
     override def normalise(v: C): D = D(v.value + 2)
   }
 
-  // Explicit chained instances required for Scala 2.13 implicit resolution
-  implicit val aToC: ConversionPart[A, C] = new ConversionPart[A, C] {
-    override def normalise(v: A): C = {
-      val b = aToB.normalise(v)
-      bToC.normalise(b)
-    }
-  }
-
-  implicit val bToD: ConversionPart[B, D] = new ConversionPart[B, D] {
-    override def normalise(v: B): D = {
-      val c = bToC.normalise(v)
-      cToD.normalise(c)
-    }
-  }
-
-  implicit val aToD: ConversionPart[A, D] = new ConversionPart[A, D] {
-    override def normalise(v: A): D = {
-      val b = aToB.normalise(v)
-      val c = bToC.normalise(b)
-      cToD.normalise(c)
-    }
-  }
+  // Chained conversions (using the chain method from ConversionPart companion)
+  // Scala 2's implicit view search requires these to be explicitly defined as vals
+  implicit val aToC: ConversionPart[A, C] = ConversionPart.chain(aToB, bToC)
+  implicit val bToD: ConversionPart[B, D] = ConversionPart.chain(bToC, cToD)
+  implicit val aToD: ConversionPart[A, D] = ConversionPart.chain(aToC, cToD)
 }

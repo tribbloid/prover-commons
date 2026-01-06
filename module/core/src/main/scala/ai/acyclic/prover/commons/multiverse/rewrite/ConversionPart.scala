@@ -19,6 +19,17 @@ trait ConversionPart[-T, +R] extends Conversion[T, R] with ConversionPart.Backwa
 
 object ConversionPart {
 
+  // Automatically chains two ConversionPart instances
+  // This enables implicit conversions like A -> C when you have A -> B and B -> C
+  implicit def chain[T, R, R2](
+      implicit
+      first: ConversionPart[T, R],
+      next: ConversionPart[R, R2]
+  ): ConversionPart[T, R2] = new ConversionPart[T, R2] {
+
+    override def normalise(v: T): R2 = next.normalise(first.normalise(v))
+  }
+
   trait BackwardMixin[-T, +R] { self: Conversion[T, R] =>
 
     implicit def backwardSearch[T0, R0 >: R](v: T0)(
@@ -29,6 +40,4 @@ object ConversionPart {
     }
 
   }
-  // TODO: current Scala implicit conversion search is too weak to chain summoned implicits
-
 }

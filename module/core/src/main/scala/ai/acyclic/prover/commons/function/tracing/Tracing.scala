@@ -91,7 +91,8 @@ object Tracing {
 
   // Additional implicit conversion from Tracing to Function1View for function composition
   implicit def tracingToFunction[I, O](v: Tracing[I, O])(
-      implicit _definedAt: SrcDefinition
+      implicit
+      _definedAt: SrcDefinition
   ): Hom.HasNormalForm.Function1View[I, O] = {
     Hom.HasNormalForm.Function1View(v.unbox, _definedAt)
   }
