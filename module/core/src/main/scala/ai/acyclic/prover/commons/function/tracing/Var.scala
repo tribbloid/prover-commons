@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.function.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.multiverse.rewrite.Conversion
 
 trait Var[T] {
 
@@ -11,6 +12,12 @@ trait Var[T] {
 }
 
 object Var {
+
+  implicit def _get[T](
+      implicit
+      position: SrcDefinition
+  ): Conversion[Var[T], T] =
+    (v: Var[T]) => v.get(position)
 
   sealed trait Expression[T] extends Var[T] {}
 
