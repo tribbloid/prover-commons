@@ -16,19 +16,7 @@ trait Delegating[+T] {
   protected val unbox: T
 }
 
-object Delegating extends Delegating_Imp0 {
+object Delegating extends Delegating_Imp0 with HasConversionPart {
 
   def _unbox[T](v: Delegating[T]): T = v.unbox
-
-  implicit def unbox2[T]: Conversion[Delegating[Delegating[T]], T] =
-    (v: Delegating[Delegating[T]]) => _unbox(_unbox(v))
-
-  implicit def unbox3[T]: Conversion[Delegating[Delegating[Delegating[T]]], T] =
-    (v: Delegating[Delegating[Delegating[T]]]) => _unbox(_unbox(_unbox(v)))
-
-  implicit def unbox4[T]: Conversion[Delegating[Delegating[Delegating[Delegating[T]]]], T] =
-    (v: Delegating[Delegating[Delegating[Delegating[T]]]]) => _unbox(_unbox(_unbox(_unbox(v))))
-
-  implicit def unbox5[T]: Conversion[Delegating[Delegating[Delegating[Delegating[Delegating[T]]]]], T] =
-    (v: Delegating[Delegating[Delegating[Delegating[Delegating[T]]]]]) => _unbox(_unbox(_unbox(_unbox(_unbox(v)))))
 }

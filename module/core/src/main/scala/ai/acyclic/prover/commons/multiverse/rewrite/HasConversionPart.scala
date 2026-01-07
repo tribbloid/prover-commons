@@ -16,6 +16,7 @@ object HasConversionPart {
 
   // Layered trait hierarchy for implicit priority
   // Shorter chains are preferred through linearization
+  // TODO: this can be much shorter if Scala implicit search is less lame
   trait Imp4 {
     implicit def forwardSearchView4[T, R1, R2, R3, R4, R5](v: T)(
         implicit
