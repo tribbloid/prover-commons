@@ -4,20 +4,20 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class ConversionSpec extends BaseSpec {
 
-  describe("implicitly invoked") {
+  describe("invoke implicit") {
 
-    it("directly") {
+    it("val") {
 
-      case class A()
-      object A extends Conversion[A, Int] {
-        override def normalise(v: A): Int = 1
+      case class A() {}
+      object A {
+        implicit val convert: Conversion[A, Int] = (_: A) => 1
       }
 
       val a: A = A()
       a: Int
     }
 
-    it("indirectly") {
+    it("def") {
 
       case class A[T]() {}
       object A {
@@ -25,6 +25,17 @@ class ConversionSpec extends BaseSpec {
       }
 
       val a: A[String] = A()
+      a: Int
+    }
+
+    it("lazy val") {
+
+      case class A() {}
+      object A {
+        implicit lazy val convert: Conversion[A, Int] = (_: A) => 1
+      }
+
+      val a: A = A()
       a: Int
     }
   }

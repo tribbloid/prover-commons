@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.multiverse.rewrite
 
 import scala.language.implicitConversions
 
-trait HasConversionPart extends HasConversionPart.Imp1 {
+trait HasConversionPart extends HasConversion with HasConversionPart.Imp1 {
 
   /**
     * can be chained, unlike Conversion
