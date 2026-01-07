@@ -5,8 +5,8 @@ import ai.acyclic.prover.commons.graph.viz.{Hierarchy, LinkedHierarchy}
 import ai.acyclic.prover.commons.multiverse.{CanUnapply, Projection, UnappliedForm}
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
-trait Traceable extends Projection.Equals.ByConstruction {
-  import Traceable.*
+trait ComputationGraph extends Projection.Equals.ByConstruction {
+  import ComputationGraph.*
 
   {
     definedAt // eager init
@@ -17,7 +17,7 @@ trait Traceable extends Projection.Equals.ByConstruction {
 
   @transient object explain {
 
-    private val node = Inspection.inspect(Traceable.this)
+    private val node = Inspection.inspect(ComputationGraph.this)
 
     def nodeText: String = {
       node.nodeText
@@ -36,7 +36,7 @@ trait Traceable extends Projection.Equals.ByConstruction {
   }
 }
 
-object Traceable {
+object ComputationGraph {
 
   object Inspection extends UnapplyInspection {
 
@@ -45,7 +45,7 @@ object Traceable {
       val proto = CanUnapply.Native.AndThen { ff =>
         val newPairs = ff.kvPairs.filter {
           case (_, v) =>
-            v.isInstanceOf[Traceable]
+            v.isInstanceOf[ComputationGraph]
         }
         UnappliedForm.Pairs(newPairs, ff.prefix)
       }
@@ -55,9 +55,9 @@ object Traceable {
 
     override lazy val inlined: CanUnapply[Any] = {
 
-      object proto extends CanUnapply[Traceable] {
+      object proto extends CanUnapply[ComputationGraph] {
 
-        override def unapply(v: Traceable): Option[UnappliedForm] = {
+        override def unapply(v: ComputationGraph): Option[UnappliedForm] = {
           v match {
             case vv: Product => CanUnapply.Native.unapply(vv)
             case _ =>

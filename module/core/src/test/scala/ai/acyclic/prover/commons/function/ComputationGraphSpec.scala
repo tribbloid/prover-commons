@@ -3,14 +3,14 @@ package ai.acyclic.prover.commons.function
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
-object TraceableSpec {
+object ComputationGraphSpec {
 
-  val t1: Traceable = new Traceable {}
+  val t1: ComputationGraph = new ComputationGraph {}
 
   case class T2()(
       implicit
       override val _definedAt: SrcDefinition
-  ) extends Traceable
+  ) extends ComputationGraph
 
   val t2: T2 = T2()
 
@@ -31,9 +31,9 @@ object TraceableSpec {
 //  }
 }
 
-class TraceableSpec extends BaseSpec {
+class ComputationGraphSpec extends BaseSpec {
 
-  import TraceableSpec.*
+  import ComputationGraphSpec.*
   describe("of instances") {
 
     it("ad-hoc class") {

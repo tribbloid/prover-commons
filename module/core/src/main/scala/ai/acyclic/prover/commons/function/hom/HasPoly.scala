@@ -3,10 +3,12 @@ package ai.acyclic.prover.commons.function.hom
 import ai.acyclic.prover.commons.tag.Tag
 import ai.acyclic.prover.commons.tag.<>
 import ai.acyclic.prover.commons.compat.TupleX
-import ai.acyclic.prover.commons.function.FnBuilder
+import ai.acyclic.prover.commons.function.{ComputationGraph, FnBuilder}
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
-trait HasPoly extends HasPolyLike {
+trait HasPoly extends HasFunction {
+
+  trait PolyLike extends Serializable with ComputationGraph {}
 
   /**
     * Ad-hoc polymorphic function, the most flexible polymorphism

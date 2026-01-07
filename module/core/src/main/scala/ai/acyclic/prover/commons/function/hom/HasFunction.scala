@@ -1,19 +1,19 @@
 package ai.acyclic.prover.commons.function.hom
 
 import ai.acyclic.prover.commons.collection.CacheMagnet
-import ai.acyclic.prover.commons.function.{FnBuilder, Traceable}
+import ai.acyclic.prover.commons.function.{ComputationGraph, FnBuilder}
 import ai.acyclic.prover.commons.function.bound.{DepDomains, Domains}
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
 import scala.language.implicitConversions
 
-object HasCircuit {
+object HasFunction {
 
-  implicit def asFn(v: HasCircuit): v.Fn.type = v.Fn
+  implicit def asFn(v: HasFunction): v.Fn.type = v.Fn
 }
 
-trait HasCircuit {
+trait HasFunction {
 
   trait HasNormalForm_Impl0 extends Serializable {
 
@@ -69,7 +69,7 @@ trait HasCircuit {
       }
     }
 
-    private[HasCircuit] case class Function0View[O](
+    private[HasFunction] case class Function0View[O](
         self: Thunk[O],
         _definedAt: SrcDefinition
     ) extends Function0[O] {
@@ -87,16 +87,16 @@ trait HasCircuit {
   }
   object HasNormalForm extends HasNormalForm_Impl0 {}
 
-  sealed trait HasNormalForm[+N <: Circuit] {
+  sealed trait HasNormalForm[+N <: FunctionLike] {
 
     def normalForm: N
   }
 
-  trait Circuit extends DepDomains with Traceable with Product with Serializable {
+  trait FunctionLike extends DepDomains with ComputationGraph with Product with Serializable {
 
     def apply(arg: In): OutK[arg.type]
   }
-  object Circuit {
+  object FunctionLike {
 
     implicit class _extFn[I, O](
         self: Fn[I, O]
@@ -116,8 +116,8 @@ trait HasCircuit {
     DepFn.K1_[I] // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
   case object DepFn {
 
-    type K1[-I] = Circuit { type In >: I }
-    trait K1_[-I] extends Circuit { type In >: I }
+    type K1[-I] = FunctionLike { type In >: I }
+    trait K1_[-I] extends FunctionLike { type In >: I }
 
     { // sanity
       implicitly[K1_[Int] <:< K1[Int]]
