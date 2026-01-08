@@ -2,12 +2,12 @@ package ai.acyclic.prover.commons.function.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
-case class InhabitedTracer[T](
+case class InhabitedVar[T](
     defaultValue: T,
     defineAt: SrcDefinition
-) extends Tracer[T](defineAt) {
+) extends Tracer[Unit, T] {
 
-  override def get(
+  override def getValue(
       implicit
       position: SrcDefinition
   ): T = defaultValue

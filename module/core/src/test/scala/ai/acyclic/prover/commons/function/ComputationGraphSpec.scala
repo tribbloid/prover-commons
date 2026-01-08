@@ -41,11 +41,11 @@ class ComputationGraphSpec extends BaseSpec {
     }
 
     it("class") {
-      t2.definedAt.AtLine.short.shouldBe("TraceableSpec.scala:15")
+      t2.definedAt.AtLine.short.shouldBe("ComputationGraphSpec.scala:15")
     }
 
     it("object") {
-      T3.definedAt.AtLine.short.shouldBe("TraceableSpec.scala:17")
+      T3.definedAt.AtLine.short.shouldBe("ComputationGraphSpec.scala:17")
     }
 
 //    it("single-abstract method") {

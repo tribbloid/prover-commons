@@ -199,6 +199,7 @@ trait HasFunction {
       override def apply(arg: I): I & OutK[arg.type] = arg
 
       case object CrossUnit extends Impl[I, (I, Unit)] with Combinator.TrivialConversion {
+        // TODO: remove, use impl in Tuple2Fold
 
         override def apply(arg: I): (I, Unit) = arg -> ()
       }
@@ -281,12 +282,12 @@ trait HasFunction {
       override def apply(arg: I): (I, I) = arg -> arg
     }
 
-    case class DiscardRight[I1, I2](
-    ) extends Impl[(I1, I2), I1]
-        with Combinator.Affine {
-
-      override def apply(arg: (I1, I2)): I1 = arg._1
-    }
+//    case class DiscardRight[I1, I2](
+//    ) extends Impl[(I1, I2), I1]
+//        with Combinator.Affine {
+//
+//      override def apply(arg: (I1, I2)): I1 = arg._1
+//    }
 
     // TODO: remove, equals Pointwise + DiscardRight
 //    case class AbsorbLeft[I, O1, O2](
