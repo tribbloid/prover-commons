@@ -44,13 +44,25 @@ package object tracing {
       }
 
     // produce x => [t1](x + "1") + "2"
-    val t3: Tracer[(String, Unit), String] = {
+    val t31: Tracer[(String, Unit), String] = {
       for (
-        x <- TraceDummy.var1[String];
-        c1 = t1.apply(x);
-        y <- c1
+        x: Var[String] <- TraceDummy.var1[String];
+        y: Var[String] <- t1.apply(x)
       ) yield {
-        y + "2"
+        val result: String = y + "2"
+        result
+      }
+    }
+
+    // ditto
+    val t32: Tracer[(String, Unit), String] = {
+      for (
+        x: Var[String] <- TraceDummy.var1[String];
+        c1: Concrete[String] = t1.apply(x); // TODO: why is it broken
+        y: Var[String] <- c1
+      ) yield {
+        val result: String = y + "2"
+        result
       }
     }
 
