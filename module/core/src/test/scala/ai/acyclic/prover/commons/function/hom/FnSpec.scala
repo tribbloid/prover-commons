@@ -112,15 +112,15 @@ class FnSpec extends BaseSpec {
       }
     }
 
-    it("other-tracing-structure") {
-
-      val h3 = ChainOther.s3.explain.text_hierarchy()
-      val h4 = ChainOther.s4.explain.text_hierarchy()
-
-      println(h3)
-      println("===")
-      println(h4)
-    }
+//    it("other-tracing-structure") {
+//
+//      val h3 = ChainOther.s3.explain.text_hierarchy()
+//      val h4 = ChainOther.s4.explain.text_hierarchy()
+//
+//      println(h3)
+//      println("===")
+//      println(h4)
+//    }
 
     describe("twice") {
 

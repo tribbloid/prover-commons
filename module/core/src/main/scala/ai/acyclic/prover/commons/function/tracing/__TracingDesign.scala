@@ -2,10 +2,11 @@ package ai.acyclic.prover.commons.function.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.hom.Hom
+import scala.language.implicitConversions
 
 object __TracingDesign {
 
-  object TraceDummy {
+  object Trace {
 
     def var1[T](
         implicit
@@ -26,65 +27,89 @@ object __TracingDesign {
 
   object Examples {
 
+    // produce x => x
+    val id: Tracer[String, String] =
+      for (x <- Trace.var1[String]) yield {
+        x
+      }
+
     // produce x => x + "1"
     val t1: Tracer[String, String] =
-      for (x <- TraceDummy.var1[String]) yield {
-        //        Tracer._get[String].apply(x) + "!"
-
+      for (x <- Trace.var1[String]) yield {
         x + "1"
+      }
+
+    // produce x => x + "1"
+    val t1_2: Tracer[String, String] = {
+      for {
+        x <- Trace.var1[String]
+        a = "1"
+      } yield {
+        x + a
+      }
+    }
+    val t1_2_desugared: Tracer[String, String] = {
+      Trace
+        .var1[String]
+        .map { x =>
+          val a = "1"
+          (x, a)
+        }
+        .map {
+          case (x, a) =>
+            x + a
+        }
+    }
+
+    // produce x => [t1](x + "1") + "2"
+    val t1_chained: Tracer[String, String] =
+      for (x <- Trace.var1[String]) yield {
+        val y = t1.apply(x)
+        val result: String = y + "2"
+        result
+      }
+
+    // ditto
+    val t1_chained_2: Tracer[String, String] =
+      for (
+        x <- Trace.var1[String];
+        y = t1.apply(x)
+      ) yield {
+        val result: String = y + "2"
+        result
       }
 
     // produce (x, y) => x + y
     val t2: Tracer[(Int, Int), Int] =
       for (
-        x <- TraceDummy.var1[Int];
-        y <- TraceDummy.var1[Int]
+        x <- Trace.var1[Int];
+        y <- Trace.var1[Int]
       ) yield {
         x + y
       }
 
-    // produce x => [t1](x + "1") + "2"
-    val t31: Tracer[(String, Unit), String] = {
+    // produce x => [t1](y + "1") + "2"
+    // different from t1_chained/t1_chained_2, y is introduced as another variable
+    val t2_chained: Tracer[(String, String), String] = {
       for (
-        x: Var[String] <- TraceDummy.var1[String];
-        y: Var[String] <- t1.apply(x)
+        x <- Trace.var1[String];
+        y <- t1.apply(x)
       ) yield {
         val result: String = y + "2"
         result
       }
     }
 
-    {
-      // TODO: convert t31 definition to dual form
-    }
-
-    // ditto
-    val t32: Tracer[(String, Unit), String] = {
+    val t2_moreChained: Tracer[String, String] = {
       for (
-        x: Var[String] <- TraceDummy.var1[String];
-        c1: Concrete[String] = t1.apply(x); // TODO: why is it broken
-        y: Var[String] <- c1;
+        x: Var[String] <- Trace.var1[String];
+        c1: Tracer[String, String] = t1.apply(x); // TODO: why is it broken
+        y <- c1;
         result = y + "2"
       ) yield {
         result
       }
     }
-
-    {
-      // TODO: convert t32 definition to dual form
-    }
-
-    // produce x => [t1](x + "1") + "2"
-    //    val t4: Tracer[(String, Unit), String] = {
-    //      for (
-    //        x <- Tracing.var1[String];
-    //        y <- Tracing.var1[Int];
-    //        c1 = t1.apply(x);
-    //        z <- c1
-    //      ) yield {
-    //        y + "2"
-    //      }
-    //    }
 
   }
 }

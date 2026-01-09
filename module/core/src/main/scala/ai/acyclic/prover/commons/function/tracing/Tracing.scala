@@ -1,10 +1,10 @@
 package ai.acyclic.prover.commons.function.tracing
 
-import scala.language.implicitConversions
-
-import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.hom.Hom
+import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
+
+import scala.language.implicitConversions
 
 case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn.K2_[I, O]] {
 
@@ -26,21 +26,14 @@ case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn.K2_[I, O]
     Tracing(result)
   }
 
-  def flatMap[O2](right: O => Tracing[I, O2])(
+  def flatMap[I2, O2](right: O => Tracing[I2, O2])(
       implicit
       _definedAt: SrcDefinition
-  ): Tracing[I, O2] = {
+  ): Tracing[(I, I2), O2] = {
 
-    val rightUnboxed: Hom.Fn[I, Hom.Fn[O, O2]] =
-      Hom.Fn.Blackbox[I, Hom.Fn[O, O2]](_definedAt) { i: I =>
-        Hom.Fn.Blackbox[O, O2](_definedAt) { o: O =>
-          right(o).self(i)
-        }
-      }
+    right
 
-    val result = Hom.Fn.FlatMapped[I, O, O2](self, rightUnboxed)
-
-    Tracing(result)
+    ???
   }
 
   def foreach(right: O => Unit)(

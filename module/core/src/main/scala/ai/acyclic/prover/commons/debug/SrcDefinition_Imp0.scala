@@ -5,7 +5,7 @@ trait SrcDefinition_Imp0 {
 
   protected type _FileName = sourcecode.File
 
-  implicit def get0(
+  implicit def _inlined(
       implicit
       _fileName: _FileName,
       _line: sourcecode.Line,

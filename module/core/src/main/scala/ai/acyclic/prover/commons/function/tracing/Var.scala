@@ -4,12 +4,16 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 
 import java.util.UUID
 
-case class Var[T](
-    defineAt: SrcDefinition
+class Var[T](
+    val defineAt: SrcDefinition
 ) extends Expr[T, T] {
 
   val uuid: UUID = UUID.randomUUID()
-
 }
 
-object Var {}
+object Var {
+  def apply[T](defineAt: SrcDefinition): Var[T] = new Var[T](defineAt)
+
+  def unapply[T](v: Var[T]): Option[T] = Some(v.getValue(v.defineAt))
+
+}

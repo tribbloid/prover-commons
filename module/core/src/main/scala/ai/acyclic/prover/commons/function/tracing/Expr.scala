@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.function.tracing
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.hom.Hom
 
-trait Expr[I, O] extends Tracer[I, O] {
+trait Expr[-I, +O] extends Tracer[I, O] {
 
   override def getValue(
       implicit
