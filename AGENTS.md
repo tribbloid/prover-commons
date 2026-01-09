@@ -15,6 +15,10 @@ This file contains information for AI agents working on the prover-commons proje
 - **Main Package**: `ai.acyclic.prover.commons`
 - **Testing**: Uses `testFixtures` for shared test utilities
 
+## Guardrails
+
+see [this](../buildSrc/.agents/guardrails.md)
+
 ## Frequently Used Commands
 
 ### Build & Compile
