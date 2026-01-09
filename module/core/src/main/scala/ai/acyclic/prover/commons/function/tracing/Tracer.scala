@@ -90,39 +90,6 @@ object Tracer extends TracerCanChain with TracerImplicits {
 
   implicit def _asConst[T](v: T): Const[T] = Const(v)
 
-  // UnaryView moved to TracerImplicits
-
-  implicit class BinaryView[I, O1, O2](private val self: Tracer[I, (O1, O2)]) extends AnyVal {
-    // minimal requirement for for-comprehension
-    def map[OO](right: ((Var[O1], Var[O2])) => Gen[OO])(
-        implicit
-        _definedAt: SrcDefinition
-    ): Tracer[I, OO] = {
-      ???
-    }
-
-    def foreach(right: ((Var[O1], Var[O2])) => Unit)(
-        implicit
-        _definedAt: SrcDefinition
-    ): Tracer[I, Unit] = {
-      ???
-    }
-
-    def flatMap[I2, O3](right: ((Var[O1], Var[O2])) => Tracer[I2, O3])(
-        implicit
-        _definedAt: SrcDefinition
-    ): Tracer[(I, I2), O3] = {
-      ???
-    }
-
-    def withFilter(right: ((Var[O1], Var[O2])) => Boolean)(
-        implicit
-        _definedAt: SrcDefinition
-    ): Tracer[I, (O1, O2)] = {
-      ???
-    }
-  }
-
   // CAUTION: do not add Expr2[T] unless absolutely necessary
   // all reduction rules should be defined for curried form that yields higher order function(s)
 }

@@ -49,12 +49,14 @@ object __TracingDesign {
       }
     }
     val t1_2_desugared: Tracer[String, String] = {
-      Trace
+      val v1 = Trace
         .var1[String]
         .map { x =>
           val a = "1"
           (x, a)
         }
+
+      v1
         .map {
           case (x, a) =>
             x + a
@@ -109,6 +111,33 @@ object __TracingDesign {
       ) yield {
         result
       }
+    }
+
+    val t2_moreChained_desugared: Tracer[String, String] = {
+      val v1 = Trace
+        .var1[String]
+        .map { x: Var[String] =>
+          val c1: Tracer[String, String] = t1.apply(x)
+          (x, c1)
+        }
+
+      val result = v1
+        .flatMap {
+          case (x, c1) =>
+            val v1 = c1.map { y =>
+              val result = y + "2"
+              (y, result)
+            }
+
+            val result = v1.map {
+              case (y, result) =>
+                result
+            }
+
+            result
+        }
+
+      result
     }
 
   }
