@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.function.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.hom.Hom
-import scala.language.implicitConversions
 
 object __TracingDesign {
 
@@ -63,20 +62,19 @@ object __TracingDesign {
         }
     }
 
-    // produce x => [t1](x + "1") + "2"
+    // produce x => [y](t1(x))(x + "1") + "2"
     val t1_chained: Tracer[String, String] =
-      for (x <- Trace.var1[String]) yield {
-        val y = t1.apply(x)
-        val result: String = y + "2"
-        result
-      }
-
-    // ditto
-    val t1_chained_2: Tracer[String, String] =
       for (
         x <- Trace.var1[String];
         y = t1.apply(x)
       ) yield {
+        val result: String = y + "2"
+        result
+      }
+    // ditto
+    val t1_chained_2: Tracer[String, String] =
+      for (x <- Trace.var1[String]) yield {
+        val y = t1.apply(x)
         val result: String = y + "2"
         result
       }
@@ -90,55 +88,73 @@ object __TracingDesign {
         x + y
       }
 
-    // produce x => [t1](y + "1") + "2"
+    // produce x => x + ((t1(y))(y + "1")) + "2"
     // different from t1_chained/t1_chained_2, y is introduced as another variable
     val t2_chained: Tracer[(String, String), String] = {
       for (
-        x <- Trace.var1[String];
-        y <- t1.apply(x)
+        x: Var[String] <- Trace.var1[String];
+        y: Var[String] <- t1
       ) yield {
-        val result: String = y + "2"
+        val result: String = x + y + "2"
         result
       }
     }
+    // ditto
+    val t2_chained_desugared: Tracer[(String, String), String] = {
+      Trace.var1[String].flatMap { (x: Var[String]) =>
+        t1.map { (y: Var[String]) =>
+          val result: String = y + "2"
+          result
+        }
+      }
+    }
 
-    val t2_moreChained: Tracer[String, String] = {
+    // TODO: should NOT produce x => x + {y <-}((t1(x))(x + "1")) + "2"
+    val t2_forbidden: Tracer[(String, String), String] = {
       for (
         x: Var[String] <- Trace.var1[String];
-        c1: Tracer[String, String] = t1.apply(x); // TODO: why is it broken
-        y <- c1;
-        result = y + "2"
+        y: Var[String] <- t1.apply(x) // t1(x) should results in something that forbid further for-comprehension
       ) yield {
+        val result: String = x + y + "2"
         result
       }
     }
 
-    val t2_moreChained_desugared: Tracer[String, String] = {
+    // produce x => x + {y <-}([expr1](t1(x))(x + "1")) + "2"
+    val t2_moreChained: Tracer[(String, String), String] = {
+      for (
+        x: Var[String] <- Trace.var1[String];
+        expr1 = t1.apply(x);
+        y: Var[String] <- expr1;
+        result = x + y + "2"
+      ) yield {
+        result
+      }
+    }
+    // ditto
+    val t2_moreChained_desugared: Tracer[(String, String), String] = {
       val v1 = Trace
         .var1[String]
         .map { x: Var[String] =>
-          val c1: Tracer[String, String] = t1.apply(x)
-          (x, c1)
+          val expr1 = t1.apply(x)
+          (x, expr1)
         }
 
-      val result = v1
+      v1
         .flatMap {
-          case (x, c1) =>
-            val v1 = c1.map { y =>
+          case (_, expr1) =>
+            val v1 = expr1.map { y =>
               val result = y + "2"
               (y, result)
             }
 
             val result = v1.map {
-              case (y, result) =>
+              case (_, result) =>
                 result
             }
 
             result
         }
-
-      result
     }
-
   }
 }

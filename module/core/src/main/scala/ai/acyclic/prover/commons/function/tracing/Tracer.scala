@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.function.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.hom.Hom
+import ai.acyclic.prover.commons.function.tracing.Expr.Const
 
 import scala.language.implicitConversions
 
@@ -16,7 +17,7 @@ trait Tracer[-I, +O] {
   def apply[I2](arg: Tracer[I2, I])(
       implicit
       _definedAt: SrcDefinition
-  ): Tracer[I2, O] = {
+  ): Expr._1[I2, O] = {
     ???
   }
 
@@ -46,13 +47,13 @@ trait Tracer[-I, +O] {
   }
   def <*> = zip
 
-//  object zipPar extends zipLike {
-//    override def apply[I2, O2](right: TracingV2[I2, O2])(
-//      implicit
-//      _definedAt: SrcDefinition
-//    ): TracingV2[(I, I2), (O, O2)] = ???
-//  }
-//  def <&> = zipPar
+  //  object zipPar extends zipLike {
+  //    override def apply[I2, O2](right: TracingV2[I2, O2])(
+  //      implicit
+  //      _definedAt: SrcDefinition
+  //    ): TracingV2[(I, I2), (O, O2)] = ???
+  //  }
+  //  def <&> = zipPar
 
   object union {
 
@@ -90,50 +91,8 @@ object Tracer extends TracerCanChain with TracerImplicits {
 
   implicit def _asConst[T](v: T): Const[T] = Const(v)
 
+  // UnaryView moved to TracerImplicits
+
   // CAUTION: do not add Expr2[T] unless absolutely necessary
   // all reduction rules should be defined for curried form that yields higher order function(s)
-}
-
-trait TracerImplicits extends TracerCanChain {
-
-  implicit def _getValue[T](v: Tracer[?, T])(
-      implicit
-      position: SrcDefinition = null
-  ): T =
-    v.getValue
-
-  implicit class UnaryView[I, O](private val self: Tracer[I, O]) {
-
-    // minimal requirement for for-comprehension
-    def map[OO](right: Var[O] => OO)(
-        implicit
-        canChain: CanChain[OO],
-        _definedAt: SrcDefinition
-    ): Tracer[I, canChain.Repr] = {
-      ???
-    }
-
-    def foreach(right: Var[O] => Unit)(
-        implicit
-        _definedAt: SrcDefinition
-    ): Tracer[I, Unit] = {
-      ???
-    }
-
-    def flatMap[I2, OO](right: Var[O] => Tracer[I2, OO])(
-        implicit
-        canChain: CanChain[OO],
-        _definedAt: SrcDefinition
-    ): Tracer[(I, I2), canChain.Repr] = {
-      ???
-    }
-
-    def withFilter(right: Var[O] => Boolean)(
-        implicit
-        _definedAt: SrcDefinition
-    ): Tracer[I, O] = {
-
-      ???
-    }
-  }
 }

@@ -13,7 +13,21 @@ trait Expr[-I, +O] extends Tracer[I, O] {
 
 object Expr {
 
-  case class _1[I, O](
+  case class Const[+T](value: T) extends Expr[Any, T] {
+    override def getValue(
+        implicit
+        position: SrcDefinition
+    ): T = value
+  }
+
+//  case class Thunk[+T](value: Hom.Thunk[T]) extends Expr[Any, T] {
+//    override def getValue(
+//        implicit
+//        position: SrcDefinition
+//    ): T = value.apply()
+//  }
+
+  case class _1[-I, +O](
       primary: Hom.Fn[I, O]
   ) extends Expr[I, O] {
 

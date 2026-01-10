@@ -13,8 +13,4 @@ class Var[T](
 
 object Var {
   def apply[T](defineAt: SrcDefinition): Var[T] = new Var[T](defineAt)
-
-  def unapply[T](v: Var[T]): Option[Var[T]] = Some(v)
-  def unapply[I, J](v: Var[(I, J)]): Option[(Var[I], Var[J])] = ???
-
 }
