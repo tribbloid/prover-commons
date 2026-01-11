@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.function.tracing
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.tracing.Tracer.Endo
 
-trait TracerCanChain {
+trait ConstructorCanChain {
 
   abstract class CanChain[-T](
       implicit

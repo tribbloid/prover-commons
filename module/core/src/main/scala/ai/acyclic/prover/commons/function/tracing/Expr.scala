@@ -3,15 +3,25 @@ package ai.acyclic.prover.commons.function.tracing
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.hom.Hom
 
-trait Expr[-I, +O] extends Tracer[I, O] {
+trait Expr[
+    -P, // type of pending variables in the expression
+    +O
+] extends Tracer[Any, O] {
+  // this makes it a subtype of Tracer[T, O] where T can be anything, in which case it represents the argument T being discarded
 
-  override def getValue(
+  def getValue(
       implicit
       position: SrcDefinition
   ): O = throw new ConcretizationTypeError(this, position)
 }
 
 object Expr {
+
+  implicit def _getValue[T](v: Expr[?, T])(
+      implicit
+      position: SrcDefinition = null
+  ): T =
+    v.getValue
 
   case class Const[+T](value: T) extends Expr[Any, T] {
     override def getValue(
