@@ -5,40 +5,46 @@ import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 import scala.language.implicitConversions
 
-trait Constructor[-I, +O] extends Tracer[I, O] {
+trait ConstructorLike[
+    P, // type of pending input in JIT compilation,
+    -I,
+    +O
+] extends Expr[P, I :=> O] {
   // TODO: should be a view of Expr[?, I :=> O]
 
-  // beta reduction,
-  def apply[P](arg: Expr[P, I])(
+  // beta reduction, notice that P is contravariant, and Expr[Any, I] represents a static I,
+  // so Constructor[Any, I, O] can apply on any Expr[P, I]
+  def apply[PP <: P](arg: Expr[PP, I])(
       implicit
       _definedAt: SrcDefinition
   ): Expr._1[P, O] = {
+
     ???
   }
 
   // enable currying, calculus of variations
-  def liftToHigherOrder( // TODO: this should happen automatically, Constructor should be an Expr
-      implicit
-      _definedAt: SrcDefinition
-  ): Constructor[Unit, I :=> O] = {
-    ???
-  }
+//  def liftToHigherOrder( // TODO: remove, this should happen automatically
+//      implicit
+//      _definedAt: SrcDefinition
+//  ): Constructor[Unit, I :=> O] = {
+//    ???
+//  }
 
   // stolen form ZIO ZLayers, these are shorthands for defining parallel computation graphs, they are not necessary but can make definition shorter
 
   trait zipLike {
 
-    def apply[I2, O2](right: Constructor[I2, O2])(
+    def apply[I2, O2](right: ConstructorLike[P, I2, O2])(
         implicit
         _definedAt: SrcDefinition
-    ): Constructor[(I, I2), (O, O2)]
+    ): ConstructorLike[P, (I, I2), (O, O2)]
   }
 
   object zip extends zipLike {
-    override def apply[I2, O2](right: Constructor[I2, O2])(
+    override def apply[I2, O2](right: ConstructorLike[P, I2, O2])(
         implicit
         _definedAt: SrcDefinition
-    ): Constructor[(I, I2), (O, O2)] = ???
+    ): ConstructorLike[P, (I, I2), (O, O2)] = ???
   }
   def <*> = zip
 
@@ -52,10 +58,10 @@ trait Constructor[-I, +O] extends Tracer[I, O] {
 
   object union {
 
-    def apply[I2 <: I, O2](right: Constructor[I2, O2])(
+    def apply[I2 <: I, O2](right: ConstructorLike[P, I2, O2])(
         implicit
         _definedAt: SrcDefinition
-    ): Constructor[I2, (O, O2)] = {
+    ): ConstructorLike[P, I2, (O, O2)] = {
       ???
     }
   }
@@ -67,7 +73,7 @@ trait Constructor[-I, +O] extends Tracer[I, O] {
   def <+> = OrElseEither
 }
 
-object Constructor extends ConstructorImplicits {
+object ConstructorLike extends ConstructorImplicits {
 
 //  implicit def unzipVar[I, A, B](
 //      v: Constructor[I, (A, B)]

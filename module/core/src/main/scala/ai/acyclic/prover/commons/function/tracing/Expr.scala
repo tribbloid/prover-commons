@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.function.hom.Hom
 
 trait Expr[
-    -P, // type of pending variables in the expression
+    -P, // type of pending variables in JIT tracing
     +O
 ] extends Tracer[Any, O] {
   // this makes it a subtype of Tracer[T, O] where T can be anything, in which case it represents the argument T being discarded
@@ -16,6 +16,19 @@ trait Expr[
 }
 
 object Expr {
+
+  {
+
+    implicitly[(Int => String) <:< (Int => Any)]
+    implicitly[(Any => Int) <:< (String => Int)]
+
+    /**
+      * [[Expr#P]] is contravariant:
+      *   - Expr[NeedGeneric, Int] works whenever Expr[NeedSpecific, Int] is required
+      *   - Expr[Any, Int] represents a static Int and works whenever Expr[?, Int] is required
+      */
+    implicitly[Expr[Any, Int] <:< Expr[String, Int]]
+  }
 
   implicit def _getValue[T](v: Expr[?, T])(
       implicit
