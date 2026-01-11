@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.function.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.function.hom.Hom
+import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 object __TracingDesign {
 
@@ -12,9 +12,9 @@ object __TracingDesign {
         srcDefinition: SrcDefinition
     ): Id[T] = Id[T]()
 
-    def fromFn[I, O](
-        fn: Hom.Fn[I, O]
-    ): Expr[I, O] = Expr._1[I, O](fn)
+    def fromFn[P, O](
+        fn: P :=> O
+    ): Expr[P, O] = Expr._1[P, O](fn)
   }
 
   /**

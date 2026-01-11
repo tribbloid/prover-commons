@@ -37,14 +37,13 @@ object Expr {
 //    ): T = value.apply()
 //  }
 
-  case class _1[-I, +O](
-      primary: Hom.Fn[I, O]
-  ) extends Expr[I, O] {
+  case class _1[-P, +O](
+      primary: Hom.Fn[P, O]
+  ) extends Expr[P, O] {
 
     override def getValue(
         implicit
         position: SrcDefinition
     ): O = ???
   }
-
 }

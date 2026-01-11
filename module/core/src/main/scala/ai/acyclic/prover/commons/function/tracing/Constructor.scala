@@ -1,12 +1,12 @@
 package ai.acyclic.prover.commons.function.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.function.hom.Hom
-import ai.acyclic.prover.commons.function.tracing.Expr.Const
+import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 import scala.language.implicitConversions
 
 trait Constructor[-I, +O] extends Tracer[I, O] {
+  // TODO: should be a view of Expr[?, I :=> O]
 
   // beta reduction,
   def apply[P](arg: Expr[P, I])(
@@ -17,10 +17,10 @@ trait Constructor[-I, +O] extends Tracer[I, O] {
   }
 
   // enable currying, calculus of variations
-  def liftToHigherOrder(
+  def liftToHigherOrder( // TODO: this should happen automatically, Constructor should be an Expr
       implicit
       _definedAt: SrcDefinition
-  ): Constructor[Unit, Hom.Fn[I, O]] = {
+  ): Constructor[Unit, I :=> O] = {
     ???
   }
 
@@ -69,18 +69,16 @@ trait Constructor[-I, +O] extends Tracer[I, O] {
 
 object Constructor extends ConstructorImplicits {
 
-  implicit def unzipVar[I, A, B](
-      v: Constructor[I, (A, B)]
-  )(
-      implicit
-      pos: SrcDefinition
-  ): (Constructor[I, A], Constructor[I, B]) = {
-    val v1: Constructor[I, A] = new UnaryView(v).map(v => v.getValue._1)
-    val v2: Constructor[I, B] = new UnaryView(v).map(v => v.getValue._2)
-    (v1, v2)
-  }
-
-  implicit def _asConst[T](v: T): Const[T] = Const(v)
+//  implicit def unzipVar[I, A, B](
+//      v: Constructor[I, (A, B)]
+//  )(
+//      implicit
+//      pos: SrcDefinition
+//  ): (Constructor[I, A], Constructor[I, B]) = {
+//    val v1: Constructor[I, A] = new UnaryView(v).map(v => v.getValue._1)
+//    val v2: Constructor[I, B] = new UnaryView(v).map(v => v.getValue._2)
+//    (v1, v2)
+//  }
 
   // UnaryView moved to TracerImplicits
 
