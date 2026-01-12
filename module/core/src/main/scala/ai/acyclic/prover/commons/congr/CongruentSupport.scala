@@ -2,15 +2,15 @@ package ai.acyclic.prover.commons.congr
 
 trait CongruentSupport {
 
-  given implies[X, Y](
-      using
-      c: X === Y
-  ): (X =:= Y) = c.equality
+  implicit def implies[X, Y](
+      implicit
+      c: Congruent[X, Y]
+  ): X =:= Y = c.equality
 
-  inline given singletonImplies[X <: Singleton, Y <: Singleton](
-      using
+  implicit def singletonImplies[X <: Singleton, Y <: Singleton](
+      implicit
       ev: X =:= Y
-  ): (X === Y) = new Congruent[X, Y](ev)
+  ): Congruent[X, Y] = new Congruent[X, Y](ev)
 }
 
 object CongruentSupport {}
