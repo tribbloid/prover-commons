@@ -1,10 +1,9 @@
 package ai.acyclic.prover.commons.function.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.function.hom.Hom
 
 trait Expr[
-    -P, // type of pending variables in JIT tracing
+    -Pending, // type of pending variables in JIT tracing
     +O
 ] extends Tracer[O] {
   // this makes it a subtype of Tracer[T, O] where T can be anything, in which case it represents the argument T being discarded
@@ -43,9 +42,7 @@ object Expr {
 //    ): T = value.apply()
 //  }
 
-  case class _1[-P, +O](
-      primary: Hom.Fn[P, O]
-  ) extends Expr[P, O] {
+  case class _1[-P, +O]() extends Expr[P, O] {
 
     override def getValue(
         implicit

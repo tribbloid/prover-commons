@@ -12,9 +12,9 @@ object __TracingDesign {
         srcDefinition: SrcDefinition
     ): Id[T] = Id[T]()
 
-    def fromFn[P, O](
-        fn: P :=> O
-    ): Expr[P, O] = Expr._1[P, O](fn)
+    def fromFn[I, O](
+        fn: I :=> O
+    ) = Const(fn)
   }
 
   /**
