@@ -109,18 +109,6 @@ object __TracingDesign {
       }
     }
 
-    // TODO: should NOT produce x => x + {y <-}((t1(x))(x + "1")) + "2"
-    //  the core problem is that we already assume Var[T] = ID[T]
-//    val t2_forbidden: Constructor[(String, String), String] = {
-//      for (
-//        x: Var[String] <- Trace.id[String];
-//        y: Var[String] <- t1.apply(x) // t1(x) should results in something that forbid further for-comprehension
-//      ) yield {
-//        val result: String = x + y + "2"
-//        result
-//      }
-//    }
-
     // produce x => x + {y <-}([expr1](t1(x))(x + "1")) + "2"
     val t2_moreChained: Constructor[(String, String), String] = {
       for (

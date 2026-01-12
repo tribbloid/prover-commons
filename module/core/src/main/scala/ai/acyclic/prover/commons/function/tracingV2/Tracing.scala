@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 
 import scala.language.implicitConversions
 
-case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn.K2_[I, O]] {
+case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn[I, O]] {
 
   lazy val higherOrder: Tracing[Unit, Hom.Fn[I, O]] =
     Tracing(Hom.Thunk.CachedEager(self))

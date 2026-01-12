@@ -115,19 +115,24 @@ trait HasFunction {
     }
   }
 
-  type DepFn[-I] =
-    DepFn.K1_[I] // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
+
+  trait DepFn[-I] extends HasNormalForm[DepFn[I]] with FunctionLike { type In >: I }
+   // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
   case object DepFn {
 
     type K1[-I] = FunctionLike { type In >: I }
-    trait K1_[-I] extends FunctionLike { type In >: I }
 
     { // sanity
-      implicitly[K1_[Int] <:< K1[Int]]
+      implicitly[DepFn[Int] <:< K1[Int]]
     }
   }
 
-  type Fn[-I, +R] = Fn.K2_[I, R]
+  trait Fn[-I, +O] extends HasNormalForm[Fn[I, O]] with DepFn[I] with Domains {
+
+    type Out <: O
+
+    def normalForm = this // bypassing EqSat, always leads to better representation
+  }
   // TODO: should be K2[I, R] (as refined type), but scala 2 implicit search is too weak fo this
   case object Fn extends FnBuilder.Root {
 
@@ -135,14 +140,8 @@ trait HasFunction {
       * function with computation graph, like a lifted JAXpr
       */
     type K2[-I, +O] = DepFn.K1[I] { type OutK[T] <: O }
-    trait K2_[-I, +O] extends HasNormalForm[K2_[I, O]] with DepFn.K1_[I] with Domains {
-
-      type Out <: O
-
-      def normalForm = this // bypassing EqSat, always leads to better representation
-    }
     { // sanity
-      implicitly[K2_[Int, String] <:< K2[Int, String]]
+      implicitly[Fn[Int, String] <:< K2[Int, String]]
     }
 
     type Tracing[I, O] = ai.acyclic.prover.commons.function.tracingV2.Tracing[I, O]
@@ -152,7 +151,7 @@ trait HasFunction {
     abstract class Impl[I, O](
         implicit
         override val _definedAt: SrcDefinition
-    ) extends K2_[I, O] { // most specific
+    ) extends Fn[I, O] { // most specific
 
       type In = I
       type Out = O
