@@ -1,3 +1,8 @@
 package ai.acyclic.prover.commons.function.tracing
 
-case class Id[T]() extends Constructor[T, T]
+import ai.acyclic.prover.commons.function.hom.Hom.:=>
+import ai.acyclic.prover.commons.function.tracing.Expr
+
+case class Id[T]() extends Expr[T :=> T] {
+  final type Pending = Any
+}

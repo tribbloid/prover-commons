@@ -79,7 +79,7 @@ trait ConstructorImplicits extends ConstructorCanChain {
 
     // beta reduction, notice that P is contravariant, and Expr[Any, I] represents a static I,
     // so Constructor[Any, I, O] can apply on any Expr[P, I]
-    def apply[PP <: P](arg: Expr[PP, I])(
+    def apply[PP <: P](arg: Expr.Gt[PP, I])(
         implicit
         _definedAt: SrcDefinition
     ): Expr._1[P, O] = {

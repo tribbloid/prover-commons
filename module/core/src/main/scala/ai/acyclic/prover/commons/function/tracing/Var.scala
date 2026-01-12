@@ -7,7 +7,9 @@ import java.util.UUID
 class Var[T](
     val defineAt: SrcDefinition,
     val inhabited: Option[Inhabited[T]] = None
-) extends Expr[T, T] {
+) extends Expr[T] {
+
+  final type Pending = T
 
   val uuid: UUID = UUID.randomUUID()
 

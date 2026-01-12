@@ -3,7 +3,7 @@ import ai.acyclic.prover.commons.function.hom.Hom.:=>
 
 package object tracing extends ConstructorImplicits {
 
-  type ConstructorLike[P, -I, +O] = Expr[P, I :=> O]
+  type ConstructorLike[P, -I, +O] = Expr.Gt[P, I :=> O]
 
   object ConstructorLike extends ConstructorImplicits {
     // TODO: in Scala 3 syntax, all implicits are automatically introduced to Expr

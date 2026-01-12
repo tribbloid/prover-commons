@@ -3,10 +3,11 @@ package ai.acyclic.prover.commons.function.tracing
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
 trait Expr[
-    -Pending, // type of pending variables in JIT tracing
     +O
 ] extends Tracer[O] {
   // this makes it a subtype of Tracer[T, O] where T can be anything, in which case it represents the argument T being discarded
+
+  type Pending
 
   def getValue(
       implicit
@@ -15,6 +16,9 @@ trait Expr[
 }
 
 object Expr {
+
+  type Lt[+P, +O] = Expr[O] { type Pending <: P }
+  type Gt[-P, +O] = Expr[O] { type Pending >: P }
 
   {
 
@@ -26,10 +30,10 @@ object Expr {
       *   - Expr[NeedGeneric, Int] works whenever Expr[NeedSpecific, Int] is required
       *   - Expr[Any, Int] represents a static Int and works whenever Expr[?, Int] is required
       */
-    implicitly[Expr[Any, Int] <:< Expr[String, Int]]
+    implicitly[Gt[Any, Int] <:< Gt[String, Int]]
   }
 
-  implicit def _getValue[T](v: Expr[?, T])(
+  implicit def _getValue[T](v: Gt[?, T])(
       implicit
       position: SrcDefinition = null
   ): T =
@@ -42,7 +46,8 @@ object Expr {
 //    ): T = value.apply()
 //  }
 
-  case class _1[-P, +O]() extends Expr[P, O] {
+  case class _1[P, +O]() extends Expr[O] {
+    final type Pending = P
 
     override def getValue(
         implicit
