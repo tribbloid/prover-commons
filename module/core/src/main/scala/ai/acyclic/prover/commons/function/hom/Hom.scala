@@ -4,14 +4,14 @@ object Hom extends Hom_Imp0 {
 
   implicit class _fnExt[I, O](self: Fn[I, O]) extends Serializable {
 
-    def trace: ai.acyclic.prover.commons.function.tracing.Tracing[I, O] =
-      ai.acyclic.prover.commons.function.tracing.Tracing(self.normalForm)
+    def trace: ai.acyclic.prover.commons.function.tracingV2.Tracing[I, O] =
+      ai.acyclic.prover.commons.function.tracingV2.Tracing(self.normalForm)
   }
 
   implicit class _thunkExt[O](self: Thunk[O]) extends Serializable {
 
-    def trace: ai.acyclic.prover.commons.function.tracing.Tracing[Unit, O] =
-      ai.acyclic.prover.commons.function.tracing.Tracing(self.normalForm)
+    def trace: ai.acyclic.prover.commons.function.tracingV2.Tracing[Unit, O] =
+      ai.acyclic.prover.commons.function.tracingV2.Tracing(self.normalForm)
   }
 
   type :=>[-I, +R] = Fn[I, R]

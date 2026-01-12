@@ -16,8 +16,9 @@ object HasFunction {
 trait HasFunction {
 
   trait HasNormalForm_Impl0 extends Serializable {
+    self: HasNormalForm.type =>
 
-    implicit def _normaliseToFn1[I, O](v: HasNormalForm[Fn[I, O]])(
+    implicit def _as1View[I, O](v: HasNormalForm[Fn[I, O]])(
         implicit
         _definedAt: SrcDefinition
     ): Function1View[I, O] = {
@@ -29,7 +30,22 @@ trait HasFunction {
       }
     }
 
-    case class Function1View[I, O](
+    implicit def _as0View[O](v: HasNormalForm[Thunk[O]])(
+        implicit
+        _definedAt: SrcDefinition
+    ): Function0View[O] = {
+      v match {
+
+        case vv: Function0View[_] => vv.asInstanceOf[Function0View[O]]
+        case _ =>
+          Function0View(v.normalForm, _definedAt)
+      }
+    }
+
+  }
+  object HasNormalForm extends HasNormalForm_Impl0 {
+
+    case class Function1View[I, O] private[HasNormalForm] (
         self: Fn[I, O],
         otherFnDefinedAt: SrcDefinition
     ) extends Function[I, O] {
@@ -57,19 +73,7 @@ trait HasFunction {
       }
     }
 
-    implicit def _normalisedToFn0[O](v: HasNormalForm[Thunk[O]])(
-        implicit
-        _definedAt: SrcDefinition
-    ): Function0View[O] = {
-      v match {
-
-        case vv: Function0View[_] => vv.asInstanceOf[Function0View[O]]
-        case _ =>
-          Function0View(v.normalForm, _definedAt)
-      }
-    }
-
-    private[HasFunction] case class Function0View[O](
+    case class Function0View[O] private[HasNormalForm] (
         self: Thunk[O],
         _definedAt: SrcDefinition
     ) extends Function0[O] {
@@ -85,7 +89,6 @@ trait HasFunction {
       def asEager: Thunk.CachedEager[Thunk[O]] = Thunk.CachedEager(self)
     }
   }
-  object HasNormalForm extends HasNormalForm_Impl0 {}
 
   sealed trait HasNormalForm[+N <: FunctionLike] {
 
@@ -142,9 +145,9 @@ trait HasFunction {
       implicitly[K2_[Int, String] <:< K2[Int, String]]
     }
 
-    type Tracing[I, O] = ai.acyclic.prover.commons.function.tracing.Tracing[I, O]
-    val Tracing: ai.acyclic.prover.commons.function.tracing.Tracing.type =
-      ai.acyclic.prover.commons.function.tracing.Tracing
+    type Tracing[I, O] = ai.acyclic.prover.commons.function.tracingV2.Tracing[I, O]
+    val Tracing: ai.acyclic.prover.commons.function.tracingV2.Tracing.type =
+      ai.acyclic.prover.commons.function.tracingV2.Tracing
 
     abstract class Impl[I, O](
         implicit
