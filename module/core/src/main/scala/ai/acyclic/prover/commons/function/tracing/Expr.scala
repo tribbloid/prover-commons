@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.function.hom.Hom
 trait Expr[
     -P, // type of pending variables in JIT tracing
     +O
-] extends Tracer[Any, O] {
+] extends Tracer[O] {
   // this makes it a subtype of Tracer[T, O] where T can be anything, in which case it represents the argument T being discarded
 
   def getValue(
