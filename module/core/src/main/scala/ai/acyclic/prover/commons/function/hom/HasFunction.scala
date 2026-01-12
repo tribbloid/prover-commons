@@ -45,7 +45,7 @@ trait HasFunction {
   }
   object HasNormalForm extends HasNormalForm_Impl0 {
 
-    case class Function1View[I, O] private[HasNormalForm] (
+    case class Function1View[I, O] private[HasFunction] (
         self: Fn[I, O],
         otherFnDefinedAt: SrcDefinition
     ) extends Function[I, O] {
@@ -73,7 +73,7 @@ trait HasFunction {
       }
     }
 
-    case class Function0View[O] private[HasNormalForm] (
+    case class Function0View[O] private[HasFunction] (
         self: Thunk[O],
         _definedAt: SrcDefinition
     ) extends Function0[O] {

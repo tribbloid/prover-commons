@@ -87,6 +87,6 @@ object Tracing {
       implicit
       _definedAt: SrcDefinition
   ): Hom.HasNormalForm.Function1View[I, O] = {
-    Hom.HasNormalForm.Function1View(v.unbox, _definedAt)
+    Hom.HasNormalForm._as1View(v.unbox)
   }
 }

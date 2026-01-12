@@ -36,13 +36,6 @@ object Expr {
   ): T =
     v.getValue
 
-  case class Const[+T](value: T) extends Expr[Any, T] {
-    override def getValue(
-        implicit
-        position: SrcDefinition
-    ): T = value
-  }
-
 //  case class Thunk[+T](value: Hom.Thunk[T]) extends Expr[Any, T] {
 //    override def getValue(
 //        implicit
