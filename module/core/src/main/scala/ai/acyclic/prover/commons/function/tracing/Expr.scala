@@ -11,13 +11,13 @@ trait Expr[
 
   def getValue(
       implicit
-      position: SrcDefinition
-  ): O = throw new ConcretizationTypeError(this, position)
+      defAt: SrcDefinition
+  ): O = throw new ConcretizationTypeError(this, defAt)
 }
 
 object Expr {
 
-  type Lt[+P, +O] = Expr[O] { type Pending <: P }
+//  type Lt[+P, +O] = Expr[O] { type Pending <: P }
   type Gt[-P, +O] = Expr[O] { type Pending >: P }
 
   {
@@ -51,7 +51,16 @@ object Expr {
 
     override def getValue(
         implicit
-        position: SrcDefinition
+        defAt: SrcDefinition
     ): O = ???
+  }
+
+  case class Tuple2[+O1, +O2](_1: Expr[O1], _2: Expr[O2]) extends Expr[(O1, O2)] {
+    final type Pending = Any
+
+    override def getValue(
+        implicit
+        defAt: SrcDefinition
+    ): (O1, O2) = (_1.getValue, _2.getValue)
   }
 }

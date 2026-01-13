@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.function.tracing
 
-import ai.acyclic.prover.commons.debug.SrcDefinition
-
 trait ConstructorCanChain {
 
   abstract class CanChain[-T] {
@@ -44,15 +42,7 @@ trait ConstructorCanChain {
         val lExpr = forL.parse(out._1)
         val rExpr = forR.parse(out._2)
 
-        new Expr[(forL.Repr, forR.Repr)] {
-
-          type Pending = Any
-
-          override def getValue(
-              implicit
-              position: SrcDefinition
-          ): (forL.Repr, forR.Repr) = (lExpr.getValue, rExpr.getValue)
-        }
+        Expr.Tuple2(lExpr, rExpr)
       }
     }
   }

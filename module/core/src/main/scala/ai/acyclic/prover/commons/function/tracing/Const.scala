@@ -8,6 +8,6 @@ case class Const[+T](value: T) extends Expr[T] {
 
   override def getValue(
       implicit
-      position: SrcDefinition
+      defAt: SrcDefinition
   ): T = value
 }

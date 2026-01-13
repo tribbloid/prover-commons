@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 import java.util.UUID
 
 class Var[T](
-    val defineAt: SrcDefinition,
+    val defAt: SrcDefinition,
     val inhabited: Option[Inhabited[T]] = None
 ) extends Expr[T] {
 
@@ -15,7 +15,7 @@ class Var[T](
 
   override def getValue(
       implicit
-      position: SrcDefinition
+      defAt: SrcDefinition
   ): T = inhabited
     .map(_.getExample)
     .getOrElse(
@@ -24,5 +24,5 @@ class Var[T](
 }
 
 object Var {
-  def apply[T](defineAt: SrcDefinition): Var[T] = new Var[T](defineAt)
+  def apply[T](defAt: SrcDefinition): Var[T] = new Var[T](defAt)
 }
