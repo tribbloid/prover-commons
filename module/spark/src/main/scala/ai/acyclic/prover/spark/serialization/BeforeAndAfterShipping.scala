@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.spark.serialization
+package ai.acyclic.prover.spark.serialization
 
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.{Kryo, KryoSerializable}

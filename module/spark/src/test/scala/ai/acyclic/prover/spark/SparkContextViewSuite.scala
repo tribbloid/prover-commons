@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.spark
+package ai.acyclic.prover.spark
 
 import org.apache.hadoop.security.UserGroupInformation
 import org.scalatest.BeforeAndAfterAll

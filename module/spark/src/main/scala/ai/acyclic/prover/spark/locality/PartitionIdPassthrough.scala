@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.spark.locality
+package ai.acyclic.prover.spark.locality
 
 import org.apache.spark.Partitioner
 

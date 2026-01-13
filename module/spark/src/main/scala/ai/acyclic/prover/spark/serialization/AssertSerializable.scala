@@ -1,6 +1,6 @@
-package ai.acyclic.prover.commons.spark.serialization
+package ai.acyclic.prover.spark.serialization
 
-import ai.acyclic.prover.commons.spark.serialization.AssertSerializable.strongCondition
+import AssertSerializable.strongCondition
 import ai.acyclic.prover.commons.util.Causes
 import org.apache.spark.serializer.Serializer
 

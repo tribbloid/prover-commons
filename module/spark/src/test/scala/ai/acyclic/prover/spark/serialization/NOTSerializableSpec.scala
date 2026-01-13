@@ -1,7 +1,7 @@
-package ai.acyclic.prover.commons.spark.serialization
+package ai.acyclic.prover.spark.serialization
 
-import ai.acyclic.prover.commons.spark.TestHelper
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.spark.TestHelper
 import org.apache.spark.SparkException
 
 object NOTSerializableSpec {

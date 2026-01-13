@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.spark.serialization
+package ai.acyclic.prover.spark.serialization
 
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.testlib.BaseSpec

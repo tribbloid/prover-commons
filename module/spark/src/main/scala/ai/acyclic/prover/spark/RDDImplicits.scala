@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.spark
+package ai.acyclic.prover.spark
 
 import org.apache.spark.rdd.RDD
 import scala.language.implicitConversions

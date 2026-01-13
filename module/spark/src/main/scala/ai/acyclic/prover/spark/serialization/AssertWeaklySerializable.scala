@@ -1,3 +1,5 @@
+package ai.acyclic.prover.spark.serialization
+
 //package ai.acyclic.prover.commons.spark.serialization
 //
 //import org.apache.spark.serializer.Serializer

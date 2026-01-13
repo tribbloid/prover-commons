@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.spark
+package ai.acyclic.prover.spark
 
 import ai.acyclic.prover.commons.util.Retry
 import org.apache.hadoop.fs.FileUtil

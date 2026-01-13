@@ -1,7 +1,6 @@
-package ai.acyclic.prover.commons.spark
+package ai.acyclic.prover.spark
 
-import ai.acyclic.prover.commons.spark.WorkerStates
-import ai.acyclic.prover.commons.spark.locality.PartitionIdPassthrough
+import ai.acyclic.prover.spark.locality.PartitionIdPassthrough
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._SQLHelper
 import org.apache.spark.storage.{RDDInfo, StorageLevel}
