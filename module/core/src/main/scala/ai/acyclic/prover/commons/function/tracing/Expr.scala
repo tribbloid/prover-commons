@@ -19,6 +19,8 @@ object Expr {
 
 //  type Lt[+P, +O] = Expr[O] { type Pending <: P }
   type Gt[-P, +O] = Expr[O] { type Pending >: P }
+  type Endo[O] = Gt[O, O]
+  type Static[+O] = Gt[Any, O]
 
   {
 
@@ -31,6 +33,8 @@ object Expr {
       *   - Expr[Any, Int] represents a static Int and works whenever Expr[?, Int] is required
       */
     implicitly[Gt[Any, Int] <:< Gt[String, Int]]
+    implicitly[Static[Int] <:< Gt[String, Int]]
+    implicitly[Static[Int] <:< Endo[Int]]
   }
 
   implicit def _getValue[T](v: Gt[?, T])(
