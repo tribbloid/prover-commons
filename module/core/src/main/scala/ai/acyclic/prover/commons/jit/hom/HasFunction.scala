@@ -144,9 +144,8 @@ trait HasFunction {
       implicitly[Fn[Int, String] <:< K2[Int, String]]
     }
 
-    type Tracing[I, O] = ai.acyclic.prover.commons.jit.tracingV2.Tracing[I, O]
-    val Tracing: ai.acyclic.prover.commons.jit.tracingV2.Tracing.type =
-      ai.acyclic.prover.commons.jit.tracingV2.Tracing
+    val Tracing: ai.acyclic.prover.commons.jit.tracingV1.Tracing.type =
+      ai.acyclic.prover.commons.jit.tracingV1.Tracing
 
     abstract class Impl[I, O](
         implicit
