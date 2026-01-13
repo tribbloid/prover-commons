@@ -1,0 +1,440 @@
+package ai.acyclic.prover.commons.jit.hom
+
+import ai.acyclic.prover.commons.collection.CacheMagnet
+import ai.acyclic.prover.commons.jit.{ComputationGraph, FnBuilder}
+import ai.acyclic.prover.commons.jit.bound.{DepDomains, Domains}
+import ai.acyclic.prover.commons.multiverse.CanEqual
+import ai.acyclic.prover.commons.debug.SrcDefinition
+
+import scala.language.implicitConversions
+
+object HasFunction {
+
+  implicit def asFn(v: HasFunction): v.Fn.type = v.Fn
+}
+
+trait HasFunction {
+
+  trait HasNormalForm_Impl0 extends Serializable {
+    self: HasNormalForm.type =>
+
+    implicit def _as1View[I, O](v: HasNormalForm[Fn[I, O]])(
+        implicit
+        _definedAt: SrcDefinition
+    ): Function1View[I, O] = {
+      v match {
+
+        case vv: Function1View[_, _] => vv.asInstanceOf[Function1View[I, O]]
+        case _ =>
+          Function1View(v.normalForm, _definedAt)
+      }
+    }
+
+    implicit def _as0View[O](v: HasNormalForm[Thunk[O]])(
+        implicit
+        _definedAt: SrcDefinition
+    ): Function0View[O] = {
+      v match {
+
+        case vv: Function0View[_] => vv.asInstanceOf[Function0View[O]]
+        case _ =>
+          Function0View(v.normalForm, _definedAt)
+      }
+    }
+
+  }
+  object HasNormalForm extends HasNormalForm_Impl0 {
+
+    case class Function1View[I, O] private[HasFunction] (
+        self: Fn[I, O],
+        otherFnDefinedAt: SrcDefinition
+    ) extends Function[I, O] {
+
+      def function1: Function1View[I, O] = this
+
+      final override def apply(v: I): O = self(v)
+
+      // TODO: both of these are not narrow enough
+      final override def andThen[O2](next: O => O2): Function1View[I, O2] = {
+
+        val _next: Fn[O, O2] = Fn.at[O](next)(otherFnDefinedAt)
+
+        val result =
+          Fn.Mapped[I, O, O2](self, _next)
+
+        result
+      }
+
+      final override def compose[I1](prev: I1 => I): Function1View[I1, O] = {
+
+        val _prev = Fn.at[I1](prev)(otherFnDefinedAt)
+
+        _prev.andThen(self)
+      }
+    }
+
+    case class Function0View[O] private[HasFunction] (
+        self: Thunk[O],
+        _definedAt: SrcDefinition
+    ) extends Function0[O] {
+
+      def function0: Function0View[O] = this
+
+      final override def apply(): O = self(())
+
+      //      override def normalise: Circuit[I, O] = self.normalise
+
+      def asLazy: Thunk.CachedLazy[O] = Thunk.CachedLazy(self)
+
+      def asEager: Thunk.CachedEager[Thunk[O]] = Thunk.CachedEager(self)
+    }
+  }
+
+  sealed trait HasNormalForm[+N <: FunctionLike] {
+
+    def normalForm: N
+  }
+
+  trait FunctionLike extends DepDomains with ComputationGraph with Product with Serializable {
+
+    def apply(arg: In): OutK[arg.type]
+  }
+  object FunctionLike {
+
+    implicit class _extFn[I, O](
+        self: Fn[I, O]
+    ) extends Serializable {
+
+      def cached(byLookup: => CacheMagnet[I, O]): Fn.CachedLazy[I, O] = {
+        Fn.CachedLazy[I, O](self)(() => byLookup)
+      }
+
+      def cached(): Fn.CachedLazy[I, O] = {
+        Fn.CachedLazy[I, O](self)()
+      }
+    }
+  }
+
+
+  trait DepFn[-I] extends HasNormalForm[DepFn[I]] with FunctionLike { type In >: I }
+   // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
+  case object DepFn {
+
+    type K1[-I] = FunctionLike { type In >: I }
+
+    { // sanity
+      implicitly[DepFn[Int] <:< K1[Int]]
+    }
+  }
+
+  trait Fn[-I, +O] extends HasNormalForm[Fn[I, O]] with DepFn[I] with Domains {
+
+    type Out <: O
+
+    def normalForm = this // bypassing EqSat, always leads to better representation
+  }
+  // TODO: should be K2[I, R] (as refined type), but scala 2 implicit search is too weak fo this
+  case object Fn extends FnBuilder.Root {
+
+    /**
+      * function with computation graph, like a lifted JAXpr
+      */
+    type K2[-I, +O] = DepFn.K1[I] { type OutK[T] <: O }
+    { // sanity
+      implicitly[Fn[Int, String] <:< K2[Int, String]]
+    }
+
+    type Tracing[I, O] = ai.acyclic.prover.commons.jit.tracingV2.Tracing[I, O]
+    val Tracing: ai.acyclic.prover.commons.jit.tracingV2.Tracing.type =
+      ai.acyclic.prover.commons.jit.tracingV2.Tracing
+
+    abstract class Impl[I, O](
+        implicit
+        override val _definedAt: SrcDefinition
+    ) extends Fn[I, O] { // most specific
+
+      type In = I
+      type Out = O
+    }
+
+    trait Mixin
+
+    sealed trait Combinator extends Mixin
+    object Combinator {
+
+      trait Affine extends Combinator
+      trait Linear extends Affine
+//      trait NonLinear extends Combinator
+
+      trait TrivialConversion extends Linear
+      // for conversion between extensionally equal types (but cannot be represented in the current type system)
+
+      // TODO: not all are defined, will add more in the following order:
+      //  - B/C: used in autograd
+      //  - delta/gamma: used in interaction combinators
+      //  - S: used in STLC
+      //  - Y: don't know what is it for
+
+      val I: Identity.type = Identity
+      val B: Mapped.type = Mapped
+      val C: Flipped.type = Flipped
+      val K: Thunk.CachedLazy.type = Thunk.CachedLazy
+
+      val Delta: Pointwise.type = Pointwise
+      val Gamma: Duplicate.type = Duplicate
+    }
+
+    trait Pure extends Mixin {}
+
+    object Pure {
+
+      case class Is[I, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
+
+        override def apply(v: I): R & delegate.OutK[v.type] = delegate.apply(v)
+      }
+    }
+
+    case class Identity[I]()
+        extends Impl[I, I]
+        with Combinator.Linear { // TOOD: this should be contravariant under DepFn
+
+      override def apply(arg: I): I & OutK[arg.type] = arg
+
+      case object CrossUnit extends Impl[I, (I, Unit)] with Combinator.TrivialConversion {
+        // TODO: remove, use impl in Tuple2Fold
+
+        override def apply(arg: I): (I, Unit) = arg -> ()
+      }
+    }
+    def id[I]: Identity[I] = Identity[I]()
+
+    case class Mapped[I, M, O](
+        left: Fn[I, M],
+        right: Fn[M, O]
+    ) extends Impl[I, O]
+        with Combinator.Linear {
+
+      override def apply(arg: I): O = right(left(arg))
+
+      override def normalForm: Fn[I, O] = {
+        (left, right) match {
+          case (_: Identity[_], rr) => rr.normalForm.asInstanceOf[Fn[I, O]]
+          case (ll, _: Identity[_]) => ll.normalForm.asInstanceOf[Fn[I, O]]
+          case (ll, rr)             => Mapped(ll.normalForm, rr.normalForm)
+        }
+      }
+    }
+
+    case class FlatMapped[I, M, O](
+        left: Fn[I, M],
+        right: Fn[I, Fn[M, O]]
+    ) extends Impl[I, O]
+        with Combinator.Linear {
+
+      override def apply(arg: I): O = right(arg)(left(arg))
+
+      override def normalForm: Fn[I, O] = {
+        (left, right) match {
+          case (_: Identity[_], rr) => rr.normalForm.asInstanceOf[Fn[I, O]]
+          case (ll, rr)             => FlatMapped(ll.normalForm, rr.normalForm)
+        }
+      }
+    }
+
+    case class Filtered[I, O](
+        base: Fn[I, O],
+        condition: Fn[O, Boolean]
+    ) extends Impl[I, O]
+        with Combinator.Linear {
+
+      override def apply(arg: I): O = {
+        val result = base(arg)
+        if (condition(result)) result
+        else throw new UnsupportedOperationException(s"Filtered out: $result")
+      }
+    }
+
+    case class Flipped[I1, I2, O](
+        base: Fn[(I1, I2), O]
+    ) extends Impl[(I2, I1), O]
+        with Combinator.Linear {
+
+      override def apply(arg: (I2, I1)): O = {
+
+        base.apply(arg._2 -> arg._1)
+      }
+    }
+
+    case class Pointwise[I1, O1, I2, O2](
+        left: Fn[I1, O1],
+        right: Fn[I2, O2]
+    ) extends Impl[(I1, I2), (O1, O2)]
+        with Combinator.Linear {
+
+      override def apply(arg: (I1, I2)): (O1, O2) = {
+        val lo = left(arg._1)
+        val ro = right(arg._2)
+
+        lo -> ro
+      }
+    }
+
+    case class Duplicate[I]() extends Impl[I, (I, I)] {
+
+      override def apply(arg: I): (I, I) = arg -> arg
+    }
+
+//    case class DiscardRight[I1, I2](
+//    ) extends Impl[(I1, I2), I1]
+//        with Combinator.Affine {
+//
+//      override def apply(arg: (I1, I2)): I1 = arg._1
+//    }
+
+    // TODO: remove, equals Pointwise + DiscardRight
+//    case class AbsorbLeft[I, O1, O2](
+//        left: Thunk[O1],
+//        right: Circuit[I, O2]
+//    ) extends Impl[I, (O1, O2)]
+//        with Combinator.Linear {
+//
+//      override def apply(arg: I): (O1, O2) = {
+//
+//        val lo = left(())
+//        val ro = right(arg)
+//
+//        lo -> ro
+//      }
+//    }
+
+    // TODO: remove, equals Duplicate + Pointwise
+//    case class Fork[I, O1, O2](
+//        left: Circuit[I, O1],
+//        right: Circuit[I, O2]
+//    ) extends Impl[I, (O1, O2)]
+//        with Combinator {
+//
+//      override def apply(arg: I): (O1, O2) = {
+//
+//        val lo = left(arg)
+//        val ro = right(arg)
+//
+//        lo -> ro
+//      }
+//    }
+
+    // there is no absorb right
+
+    case class Blackbox[I, R](
+        final override val _definedAt: SrcDefinition
+    )(fn: I => R)
+        extends Impl[I, R] {
+
+      override def apply(arg: I): R = {
+
+        fn(arg)
+      }
+    }
+
+    implicit def fromFunction1[I, R](fn: I => R)(
+        implicit
+        _definedAt: SrcDefinition
+    ): Fn.Impl[I, R] = {
+      fn match {
+        case HasNormalForm.Function1View(c, _) => c.asInstanceOf[Fn.Impl[I, R]]
+        case _ =>
+          Blackbox[I, R](_definedAt)(fn)
+      }
+    }
+
+    implicit def fromFunction0[R](fn: () => R)(
+        implicit
+        _definedAt: SrcDefinition
+    ): Thunk.Impl[R] = {
+
+      fn match {
+        case HasNormalForm.Function0View(c, _) => c.asInstanceOf[Thunk.Impl[R]]
+        case _                                 => fromFunction1[Unit, R]((_: Unit) => fn())
+      }
+    }
+
+    trait Cached extends Pure
+
+    // TODO: make a dependent class, also in Thunk
+    final case class CachedLazy[I, R](backbone: Fn[I, R])(
+        getLookup: () => CacheMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
+    ) extends Impl[I, R]
+        with Cached {
+
+      lazy val lookup: CacheMagnet[I, R] = getLookup()
+
+      def apply(key: I): R = {
+        lookup.getOrElseUpdateOnce(key) {
+
+          val value = backbone(key)
+          value
+        }
+      }
+
+      def getExisting(arg: I): Option[R] = {
+        lookup
+          .get(arg)
+      }
+    }
+
+    override protected type BuildTarget[I, O] = Fn.Impl[I, O]
+
+    protected def build[I, O](fn: I => O)(
+        implicit
+        _definedAt: SrcDefinition
+    ): BuildTarget[I, O] = {
+
+      Fn.fromFunction1(fn)(_definedAt)
+    }
+
+    case class DomainBuilder[I, O]() extends IDomainBuilder[I, O] {
+
+      type _Lemma = Fn[I, O]
+      type _Impl = Fn.Impl[I, O]
+      type _Native = (I => O)
+
+      def fn[o <: O](fn: I => o)(
+          implicit
+          _definedAt: SrcDefinition
+      ): BuildTarget[I, o] = {
+        apply(fn)(_definedAt)
+      }
+
+      def raw[o <: O](fn: I => o): I => o = fn
+    }
+    def domainBuilder[i, o]: DomainBuilder[i, o] = DomainBuilder()
+  }
+
+  type Thunk[+O] = Thunk.K[O]
+
+  object Thunk {
+
+    type K[+O] = Fn[Unit, O]
+    type Impl[O] = Fn.Impl[Unit, O]
+
+    type Const[O] = Impl[O] & Fn.Pure
+    sealed trait Const_[O] extends Impl[O] with Fn.Pure
+
+    type Cached[O] = Impl[O] & Fn.Cached
+    sealed trait Cached_[O] extends Const_[O] with Fn.Cached {
+
+      protected def value: O
+
+      override def apply(arg: Unit): O = value
+    }
+
+    final case class CachedLazy[O](gen: Thunk[O]) extends Cached_[O] {
+
+      // equivalent to CachedLazy[Unit, O], but much faster
+      @transient protected lazy val value: O = gen(())
+    }
+
+    final case class CachedEager[O](value: O) extends Cached_[O] {}
+
+  }
+}

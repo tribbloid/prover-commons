@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.collection
 
-import ai.acyclic.prover.commons.function.Bijection
+import ai.acyclic.prover.commons.jit.Bijection
 
 import scala.collection.mutable
 

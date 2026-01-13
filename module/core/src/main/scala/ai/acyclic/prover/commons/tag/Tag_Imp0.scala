@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.tag
 
-import ai.acyclic.prover.commons.function.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Hom
 
 private[tag] trait Tag_Imp0 {
 

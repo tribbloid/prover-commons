@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.spark.serialization
 
-import ai.acyclic.prover.commons.function.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.util.Caching
 

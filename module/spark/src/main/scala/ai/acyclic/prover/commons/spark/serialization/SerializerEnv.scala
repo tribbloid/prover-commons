@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.spark.serialization
 
-import ai.acyclic.prover.commons.function.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import org.apache.spark.SparkConf
 import org.apache.spark.serializer.{JavaSerializer, KryoSerializer, Serializer, SerializerInstance}

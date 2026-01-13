@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.meta
 
-import ai.acyclic.prover.commons.function.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 
 import scala.tools.reflect.ToolBox
