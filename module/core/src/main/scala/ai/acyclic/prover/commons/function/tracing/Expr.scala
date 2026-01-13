@@ -56,7 +56,7 @@ object Expr {
   }
 
   case class Tuple2[+O1, +O2](_1: Expr[O1], _2: Expr[O2]) extends Expr[(O1, O2)] {
-    final type Pending = Any
+    final type Pending = (_1.Pending, _2.Pending)
 
     override def getValue(
         implicit
