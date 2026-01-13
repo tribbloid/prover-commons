@@ -8,6 +8,7 @@ object CongruentSpec {
 
   {
     // given type congruence
+    import Congruent.*
     class T1 extends Congruent[T1, T1] {
       type S
 
@@ -20,17 +21,18 @@ object CongruentSpec {
       val t1 = getT1[T1]
       val t2 = getT1[T1]
 
-      given (t1.type === t2.type) = ???
+      implicit val lemma: Congruent[t1.type, t2.type] = ???
 
       // sanity check
-      summon[t1.S =:= t2.S]
-      summon[t1.SS =:= t2.SS]
+      implicitly[t1.S =:= t2.S]
+      implicitly[t1.SS =:= t2.SS]
     }
 
   }
 
   {
     // given singleton types and equality
+    import Congruent.*
     case class S2() {
 
       type S
@@ -39,12 +41,12 @@ object CongruentSpec {
     val sx = new S2()
     val sy = sx
 
-    summon[sx.type <:< Singleton]
-    summon[sy.type <:< Singleton]
+    implicitly[sx.type <:< Singleton]
+    implicitly[sy.type <:< Singleton]
 
-    given (sx.type =:= sy.type) = ???
+    implicit val lemma: Congruent[sx.type, sy.type] = ???
 
 //    import Congruent.given
-    summon[sx.S =:= sy.S]
+    implicitly[sx.S =:= sy.S]
   }
 }
