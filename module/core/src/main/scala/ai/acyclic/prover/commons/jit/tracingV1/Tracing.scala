@@ -8,10 +8,10 @@ import scala.language.implicitConversions
 
 case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn[I, O]] {
 
-  lazy val higherOrder: Tracing[Unit, Hom.Fn[I, O]] =
+  lazy val higherOrder: Tracing[Unit, Hom.Fn[I, O]] = {
     Tracing(Hom.Thunk.CachedEager(self))
-
-//  def apply(v: I): O = self(v)
+    // TODO : get rid of it
+  }
 
   def map[O2](right: O => O2)(
       implicit

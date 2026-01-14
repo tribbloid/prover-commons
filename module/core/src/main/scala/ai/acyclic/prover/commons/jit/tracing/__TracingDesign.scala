@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
+import ai.acyclic.prover.commons.jit.tracing.__TracingDesign.Examples.t1
 
 object __TracingDesign {
 
@@ -47,20 +48,6 @@ object __TracingDesign {
         x + a
       }
     }
-    val t1_2_desugared: Constructor[String, String] = {
-      val v1 = Trace
-        .id[String]
-        .map { x =>
-          val a = "1"
-          (x, a)
-        }
-
-      v1
-        .map {
-          case (x, a) =>
-            x + a
-        }
-    }
 
     // produce x => [y](t1(x))(x + "1") + "2"
     val t1_chained: Constructor[String, String] =
@@ -99,15 +86,6 @@ object __TracingDesign {
         result
       }
     }
-    // ditto
-    val t2_chained_desugared: Constructor[(String, String), String] = {
-      Trace.id[String].flatMap { (_: Var[String]) =>
-        t1.map { (y: Var[String]) =>
-          val result: String = y + "2"
-          result
-        }
-      }
-    }
 
     // produce x => x + {y <-}([expr1](t1(x))(x + "1")) + "2"
     val t2_moreChained: Constructor[(String, String), String] = {
@@ -120,5 +98,33 @@ object __TracingDesign {
         result
       }
     }
+  }
+
+  object Examples_Desugared {
+
+    val t1_2_desugared: Constructor[String, String] = {
+      val v1 = Trace
+        .id[String]
+        .map { x =>
+          val a = "1"
+          (x, a)
+        }
+
+      v1
+        .map {
+          case (x, a) =>
+            x + a
+        }
+    }
+
+    val t2_chained_desugared: Constructor[(String, String), String] = {
+      Trace.id[String].flatMap { (_: Var[String]) =>
+        t1.map { (y: Var[String]) =>
+          val result: String = y + "2"
+          result
+        }
+      }
+    }
+
   }
 }

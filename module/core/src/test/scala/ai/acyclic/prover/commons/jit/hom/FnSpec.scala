@@ -130,11 +130,12 @@ class FnSpec extends BaseSpec {
           it(i.toString) {
 
             val normal = fn.normalForm
-            normal.explain
-              .text_hierarchy()
-              .shouldBe(
-                s
-              )
+
+            val sLeft =
+              normal.explain
+                .text_hierarchy()
+
+            sLeft.shouldBe(s)
 
             val r1 = fn.apply(1)
             assert(r1 == "10b")

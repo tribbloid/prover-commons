@@ -1,12 +1,13 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
+import ai.acyclic.prover.commons.jit.tracingV1.Tracing
 
 object ChainTwice {
 
   import Circuits.*
 
-  val s1 =
+  val s1: Tracing[Int, String] =
     for (
       v <- fn0.trace;
       v1 = 3;
@@ -25,8 +26,8 @@ object ChainTwice {
              |+ Mapped
              |!-+ Mapped
              |: !-- ${fn0.explain.nodeText}
-             |: !-- Blackbox(s1 <at ChainTwice.scala:11>)
-             |!-- Blackbox(s1 <at ChainTwice.scala:11>)
+             |: !-- Blackbox(s1 <at ChainTwice.scala:12>)
+             |!-- Blackbox(s1 <at ChainTwice.scala:12>)
              |""".stripMargin
       )
     )
