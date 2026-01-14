@@ -104,14 +104,15 @@ object SrcDefinition extends SrcDefinition_Imp0 {
   class Inlined(
       _fileName: _FileName,
       _line: sourcecode.Line,
-      _name: sourcecode.Name
+      _name: sourcecode.Name,
+      _enclosing: sourcecode.Enclosing
   ) extends SrcDefinition {
 
     override val fileName: String = _fileName.value
 
     override val lineNumber: Int = _line.value
 
-    override val methodName: String = _name.value
+    override val methodName: String = _name.value // + s" (${_enclosing})"
   }
 
   case class WithCode(

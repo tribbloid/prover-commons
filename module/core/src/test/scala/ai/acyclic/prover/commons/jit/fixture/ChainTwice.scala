@@ -9,11 +9,23 @@ object ChainTwice {
 
   val s1: Tracing[Int, String] =
     for (
-      v <- fn0.trace;
-      v1 = 3;
-      v2 = v1 + v
+      x <- fn0.trace;
+      y = 3;
+      z = y + x
     ) yield {
-      s"${v + v1 + v2}b"
+
+      s"${x + y + z}b"
+    }
+
+  val s1_desugared: Tracing[Int, String] = fn0.trace
+    .map { x =>
+      val y = 3
+      (x, y)
+    }
+    .map {
+      case (x, y) =>
+        val z = y + x
+        s"${x + y + z}b"
     }
 
   lazy val pairs: Seq[(Int :=> String, String)] = {
@@ -22,13 +34,22 @@ object ChainTwice {
       (
         s1,
         s""" 
-             |
              |+ Mapped
              |!-+ Mapped
              |: !-- ${fn0.explain.nodeText}
              |: !-- Blackbox(s1 <at ChainTwice.scala:12>)
              |!-- Blackbox(s1 <at ChainTwice.scala:12>)
              |""".stripMargin
+      ),
+      (
+        s1_desugared,
+        s"""
+           |+ Mapped
+           |!-+ Mapped
+           |: !-- ${fn0.explain.nodeText}
+           |: !-- Blackbox(s1 <at ChainTwice.scala:12>)
+           |!-- Blackbox(s1 <at ChainTwice.scala:12>)
+           |""".stripMargin
       )
     )
   }

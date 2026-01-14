@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 
 trait Expr[
     +O
-] extends Tracer[O] {
+] extends Tracer.RuntimeAOT[O] {
   // this makes it a subtype of Tracer[T, O] where T can be anything, in which case it represents the argument T being discarded
 
   type Pending

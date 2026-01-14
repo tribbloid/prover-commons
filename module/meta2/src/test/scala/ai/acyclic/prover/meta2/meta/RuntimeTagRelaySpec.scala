@@ -1,8 +1,6 @@
 package ai.acyclic.prover.meta2.meta
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.meta2.meta
-import ai.acyclic.prover.meta2.meta.RuntimeTagRelay
 
 class RuntimeTagRelaySpec extends BaseSpec {
 

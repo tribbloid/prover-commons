@@ -5,6 +5,7 @@ dependencies {
     api(project(":prover-commons:infra"))
     testFixturesApi(testFixtures(project(":prover-commons:infra")))
 
+    api("${vs.scala.group}:scala-reflect:${vs.scala.v}")
     api("org.scalameta:ascii-graphs_${vs.scala.binaryV}:0.1.2")
 //    api("org.typelevel:cats-effect_${vs.scala.binaryV}:3.4.5")
 

@@ -5,7 +5,7 @@ package object tracing extends ConstructorImplicits {
 
   type ConstructorLike[P, -I, +O] = Expr.Gt[P, I :=> O]
 
-  object ConstructorLike extends ConstructorImplicits {
+  object TracingFnLike extends ConstructorImplicits {
     // TODO: in Scala 3 syntax, all implicits are automatically introduced to Expr
     //  I wonder if this mechanism can be abused further :->
 
@@ -26,5 +26,5 @@ package object tracing extends ConstructorImplicits {
     // all reduction rules should be defined for curried form that yields higher order function(s)
   }
 
-  type Constructor[-I, +O] = ConstructorLike[Any, I, O]
+  type TracingFn[-I, +O] = ConstructorLike[Any, I, O]
 }

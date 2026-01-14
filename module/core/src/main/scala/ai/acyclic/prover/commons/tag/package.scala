@@ -18,6 +18,9 @@ package object tag {
     *     - Several examples are also features in asynchronous computing library Kyo
     */
   trait Tagged[+C <: Tag]
+  // TODO: In Scala 3 syntax there are other ways to introduce the implicit scope to a type in library, should try them first
+
+  // TODO: can subtypes of Tag decleare Self-type mixin? How to make it happen?
 
   infix type TaggedBy[+T, +C <: Tag] = T & Tagged[C]
 

@@ -3,10 +3,17 @@ package ai.acyclic.prover.commons.jit.tracingV1
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
+import ai.acyclic.prover.commons.TypeTag
 
 import scala.language.implicitConversions
 
-case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn[I, O]] {
+case class Tracing[I, O](
+    self: Hom.Fn[I, O]
+)(
+    implicit
+    val iTag: TypeTag[I],
+    val oTag: TypeTag[O]
+) extends Delegating[Hom.Fn[I, O]] {
 
   lazy val higherOrder: Tracing[Unit, Hom.Fn[I, O]] = {
     Tracing(Hom.Thunk.CachedEager(self))
@@ -15,10 +22,13 @@ case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn[I, O]] {
 
   def map[O2](right: O => O2)(
       implicit
-      _definedAt: SrcDefinition
+      _definedAt: SrcDefinition,
+      o2Tag: TypeTag[O2]
   ): Tracing[I, O2] = {
 
-    val _right: Hom.Fn[O, O2] = Hom.Fn.at[O](right)(_definedAt)
+    val _right: Hom.Fn[O, O2] = Hom.Fn.at[O](
+      right
+    )(_definedAt)
 
     val result =
       Hom.Fn.Mapped[I, O, O2](self, _right)
@@ -61,6 +71,9 @@ case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn[I, O]] {
 
     val result = Hom.Fn.Pointwise(self, right.self)
 
+    implicit val i2Tag = right.iTag
+    implicit val o2Tag = right.oTag
+
     Tracing(result.normalForm)
   }
 
@@ -70,6 +83,8 @@ case class Tracing[I, O](self: Hom.Fn[I, O]) extends Delegating[Hom.Fn[I, O]] {
     val second = Hom.Fn.Pointwise(self, right.self)
 
     val result = Hom.Fn.Mapped[I, (I, I), (O, O2)](first, second)
+
+    implicit val o2Tag = right.oTag
 
     Tracing(result)
   }

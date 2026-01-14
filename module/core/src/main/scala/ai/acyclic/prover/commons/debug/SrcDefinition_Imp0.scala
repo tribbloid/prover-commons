@@ -9,10 +9,12 @@ trait SrcDefinition_Imp0 {
       implicit
       _fileName: _FileName,
       _line: sourcecode.Line,
-      _name: sourcecode.Name
+      _name: sourcecode.Name,
+      _enclosing: sourcecode.Enclosing
   ): Inlined = new Inlined(
     _fileName = _fileName,
     _line = _line,
-    _name = _name
+    _name = _name,
+    _enclosing
   )
 }
