@@ -73,19 +73,22 @@ object __TracingRequirements {
       *
       * AKA exterior diff/1-form/1st-order Taylor series, presumably easier to reason with than pure Jacobian
       */
-    infix trait TangentApproximator[R, T] {
+    case class TangentApproximator[R, T](
+        linearFn: R => T,
+        input: R // <-- actually useless
+    ) extends Function1[R, T] {
 
-      val linearFn: Function1[R, T]
-      val in: R // <-- actually useless in autograd
-      lazy val out: T = linearFn(in) // <-- useful in forward inference
+      lazy val out: T = linearFn(input) // <-- useful in forward inference
+
+      override def apply(v: R): T = linearFn(v)
     }
 
-    /** given a function and a point, return an [[TangentApproximator]] near that point * */
-    type GetTangentElementary = UniVarFunction => F32 => TangentApproximator[F32, F32]
-    val getTangentElementary: GetTangentElementary = ???
+    /** given a function and a point, return an [[TangentApproximator]] near that point */
+    def getTangentElementary(fn: UniVarFunction): F32 => TangentApproximator[F32, F32] = ???
 
-    type GetTangent = Vec3Function => Vec3 => TangentApproximator[Vec3, F32]
-    val getTangent: GetTangent = { throw new UnsupportedOperationException("WTF is this?") }
+    def getTangent(fn: Vec3Function): Vec3 => TangentApproximator[Vec3, F32] = {
+      throw new UnsupportedOperationException("WTF is this?")
+    }
 
     trait Plain {
 
@@ -101,38 +104,44 @@ object __TracingRequirements {
           val f1Tangent = {
             val f1d = getTangentElementary(f1)(x)
 
-            new TangentApproximator[Vec3, F32] {
-
-              override val linearFn: Vec3 => F32 = { (v: Vec3) =>
+            TangentApproximator(
+              { (v: Vec3) =>
                 val (x, y, z) = v
                 f1d.linearFn(x)
-              }
-              override val in: (F32, F32, F32) = (x, y, z)
-            }
+              },
+              (x, y, z)
+            )
           }
 
           val f2Tangent = {
             val f2dy = getTangentElementary((t: F32) => f2(t, z))(y)
             val f2dz = getTangentElementary((t: F32) => f2(y, t))(z)
 
-            TangentApproximator { (v: Vec3) =>
-              {
-                val (x, y, z) = v
-                f2dy(y) + f2dz(z)
-              }
-            }
+            TangentApproximator(
+              { (v: Vec3) =>
+                {
+                  val (x, y, z) = v
+                  f2dy(y) + f2dz(z)
+                }
+              },
+              (x, y, z)
+            )
           }
 
           (f1Tangent, f2Tangent)
       }
 
-      val stage2Tangent: Option[((F32, F32, F32)) => F32] = stage1Tangent.map {
+      val stage2Tangent: Option[TangentApproximator[Vec3, F32]] = stage1Tangent.map {
         case (t1, t2) =>
+          // TODO: all input TangentApproximator should share the same input, this data structure can be shorter and uses dependent type
 
-          TangentApproximator { (v: Vec3) =>
-            t1(v) + t2(v) + 1 // <-- already linear, no need to getTangentElementary again
-            // otherwise, use the output of
-          }
+          TangentApproximator(
+            { (v: Vec3) =>
+              t1(v) + t2(v) + 1 // <-- already linear, no need to getTangentElementary again
+              // otherwise, use the outputs of (t1, t2) to getTangentElementary again
+            },
+            t1.input
+          )
       }
 
       stage2Tangent.get
