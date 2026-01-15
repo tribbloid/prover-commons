@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
-trait ConstructorImplicits extends ConstructorCanChain {
+trait FnImplicits extends FnCanChain {
 
   implicit class UnaryForComprehensionOps[I, O](private val self: TracingFn[I, O]) {
 
@@ -74,7 +74,7 @@ trait ConstructorImplicits extends ConstructorCanChain {
     }
   }
 
-  implicit class BasicOps[P, I, O](private val self: ConstructorLike[P, I, O]) {
+  implicit class BasicOps[P, I, O](private val self: TracingFnLike[P, I, O]) {
 
     // beta reduction, notice that P is contravariant, and Expr[Any, I] represents a static I,
     // so Constructor[Any, I, O] can apply on any Expr[P, I]
@@ -98,17 +98,17 @@ trait ConstructorImplicits extends ConstructorCanChain {
     // they are not necessary but can make definition shorter
     trait zipLike {
 
-      def apply[I2, O2](right: ConstructorLike[P, I2, O2])(
+      def apply[I2, O2](right: TracingFnLike[P, I2, O2])(
           implicit
           _definedAt: SrcDefinition
-      ): ConstructorLike[P, (I, I2), (O, O2)]
+      ): TracingFnLike[P, (I, I2), (O, O2)]
     }
 
     object zip extends zipLike {
-      override def apply[I2, O2](right: ConstructorLike[P, I2, O2])(
+      override def apply[I2, O2](right: TracingFnLike[P, I2, O2])(
           implicit
           _definedAt: SrcDefinition
-      ): ConstructorLike[P, (I, I2), (O, O2)] = ???
+      ): TracingFnLike[P, (I, I2), (O, O2)] = ???
     }
     def <*> = zip
 
@@ -122,10 +122,10 @@ trait ConstructorImplicits extends ConstructorCanChain {
 
     object union {
 
-      def apply[I2 <: I, O2](right: ConstructorLike[P, I2, O2])(
+      def apply[I2 <: I, O2](right: TracingFnLike[P, I2, O2])(
           implicit
           _definedAt: SrcDefinition
-      ): ConstructorLike[P, I2, (O, O2)] = {
+      ): TracingFnLike[P, I2, (O, O2)] = {
         ???
       }
     }

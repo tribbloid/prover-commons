@@ -26,9 +26,9 @@ object __TracingRequirements {
   type Vec3K[T] = (T, T, T)
   type Vec3 = Vec3K[F32]
 
-  type MultiVarFunction = Vec3 => F32
+  type Vec3Function = Vec3 => F32
 
-  val fn: MultiVarFunction = { (v: Vec3) =>
+  val fn: Vec3Function = { (v: Vec3) =>
     val (x, y, z) = v
     f1(x) + f2(y, z) + 1
   }
@@ -66,34 +66,46 @@ object __TracingRequirements {
     trait LinearMixin {
       self: (? => ?) =>
     }
-    infix type Linear[R, T] = Function1[R, T] & LinearMixin
-    object Linear {
-      def apply[R, T](f: R => T): R Linear T = f.asInstanceOf[R Linear T]
+    infix trait LinearApproximator[R, T] extends Function1[R, T] with LinearMixin {
+
+      /**
+        * Alternatively, can be represented by:
+        *   - an input-output value pair, to be used in forward inference
+        *   - a total diff (if output is a number) or a Jacobian (if output is a vector), to be accumulated in any order
+        *     (usually backward)
+        */
+    }
+    object LinearApproximator {
+      def apply[R, T](f: R => T): R LinearApproximator T = {
+
+//        f.asInstanceOf[R LinearApproximator T]
+
+      }
     }
 
-    type GetTangentElementary = UniVarFunction => F32 => UniVarFunction & LinearMixin
-
+    /** given a function and a point, return an [[LinearApproximator]] near that point * */
+    type GetTangentElementary = UniVarFunction => F32 => LinearApproximator[F32, F32]
     val getTangentElementary: GetTangentElementary = ???
 
-    type GetTangent = MultiVarFunction => Vec3 => MultiVarFunction & LinearMixin
-
+    //
+    type GetTangent = Vec3Function => Vec3 => LinearApproximator[Vec3, F32]
     val getTangent: GetTangent = { throw new UnsupportedOperationException("WTF is this?") }
 
-    trait PlainDiff {
+    trait Plain {
 
-      val linear: ((F32, F32, F32)) => MultiVarFunction & LinearMixin = getTangent(fn)
+      val linear: ((F32, F32, F32)) => Vec3Function & LinearMixin = getTangent(fn)
       linear(1, 2, 3)
     }
 
     trait Compiled extends FusingObjective.Compiled {
 
-      val stage1Tangent: Option[(MultiVarFunction & LinearMixin, MultiVarFunction & LinearMixin)] = input.map {
+      val stage1Tangent: Option[(Vec3Function & LinearMixin, Vec3Function & LinearMixin)] = input.map {
         case (x, y, z) =>
 
           val f1Tangent = {
             val f1d = getTangentElementary(f1)(x)
 
-            Linear { (v: Vec3) =>
+            LinearApproximator { (v: Vec3) =>
               {
                 val (x, y, z) = v
                 f1d(x)
@@ -105,7 +117,7 @@ object __TracingRequirements {
             val f2dy = getTangentElementary((t: F32) => f2(t, z))(y)
             val f2dz = getTangentElementary((t: F32) => f2(y, t))(z)
 
-            Linear { (v: Vec3) =>
+            LinearApproximator { (v: Vec3) =>
               {
                 val (x, y, z) = v
                 f2dy(y) + f2dz(z)
@@ -118,7 +130,11 @@ object __TracingRequirements {
 
       val stage2Tangent: Option[((F32, F32, F32)) => F32] = stage1Tangent.map {
         case (t1, t2) =>
-          (v: Vec3) => t1(v) + t2(v) + 1
+
+          LinearApproximator { (v: Vec3) =>
+            t1(v) + t2(v) + 1 // <-- already linear, no need to getTangentElementary again
+            // if not, use the
+          }
       }
 
       stage2Tangent.get

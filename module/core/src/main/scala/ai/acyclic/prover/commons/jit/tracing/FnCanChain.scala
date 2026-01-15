@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.jit.tracing
 
-trait ConstructorCanChain {
+trait FnCanChain {
 
   abstract class CanChain[-T] {
 

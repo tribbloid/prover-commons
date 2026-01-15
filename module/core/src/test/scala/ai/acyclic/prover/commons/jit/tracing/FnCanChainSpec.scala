@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-class ConstructorCanChainSpec extends BaseSpec {
+class FnCanChainSpec extends BaseSpec {
 
   describe("forTuple2") {
 

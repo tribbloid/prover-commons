@@ -1,13 +1,11 @@
 package ai.acyclic.prover.commons.jit
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
-package object tracing extends ConstructorImplicits {
+package object tracing extends FnImplicits {
 
-  type ConstructorLike[P, -I, +O] = Expr.Gt[P, I :=> O]
+  type TracingFnLike[P, -I, +O] = Expr.Gt[P, I :=> O]
 
-  object TracingFnLike extends ConstructorImplicits {
-    // TODO: in Scala 3 syntax, all implicits are automatically introduced to Expr
-    //  I wonder if this mechanism can be abused further :->
+  object TracingFnLike {
 
     //  implicit def unzipVar[I, A, B](
     //      v: Constructor[I, (A, B)]
@@ -26,5 +24,5 @@ package object tracing extends ConstructorImplicits {
     // all reduction rules should be defined for curried form that yields higher order function(s)
   }
 
-  type TracingFn[-I, +O] = ConstructorLike[Any, I, O]
+  type TracingFn[-I, +O] = TracingFnLike[Any, I, O]
 }
