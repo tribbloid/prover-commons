@@ -3,9 +3,9 @@ package ai.acyclic.prover.commons.jit.tracing
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
-trait TracingImplicits extends FnCanChain {
+trait FnImplicits extends FnCanChain {
 
-  implicit class UnaryForComprehensionOps[I, O](private val self: StaticTracingFn[I, O]) {
+  implicit class UnaryForComprehensions[I, O](private val self: StaticTracingFn[I, O]) {
 
     // minimal requirement for for-comprehension
     def map[OO](right: Input[O] => OO)(
@@ -40,7 +40,7 @@ trait TracingImplicits extends FnCanChain {
     }
   }
 
-  implicit class BinaryForComprehensionOps[I, O1, O2](private val self: StaticTracingFn[I, (O1, O2)]) {
+  implicit class BinaryForComprehensions[I, O1, O2](private val self: StaticTracingFn[I, (O1, O2)]) {
     // TODO: should it be of higher implicit tier?
 
     // minimal requirement for for-comprehension
@@ -75,7 +75,7 @@ trait TracingImplicits extends FnCanChain {
     }
   }
 
-  implicit class Tuple2Ops[I1, I2](private val self: (Expr[I1 :=> I1], Expr[I2 :=> I2])) {
+  implicit class Tuple2Ops[I1, I2](private val self: (StaticTracingFn[I1, I1], StaticTracingFn[I2, I2])) {
 
     def map[OO](right: ((Input[I1], Input[I2])) => OO)(
         implicit
@@ -113,21 +113,13 @@ trait TracingImplicits extends FnCanChain {
 
     // beta reduction, notice that P is contravariant, and Expr[Any, I] represents a static I,
     // so Constructor[Any, I, O] can apply on any Expr[P, I]
-    def apply[P2 <: P](arg: Expr.Aux[P2, I])(
+    def apply[P2 <: P](arg: Expr.Aux[P2, I])( // TODO: if compiler is strong enough, P2 can be skipped
         implicit
         _definedAt: SrcDefinition
     ): Expr.Aux[P2, O] = {
 
       ???
     }
-
-    // enable currying, calculus of variations
-//  def liftToHigherOrder( // TODO: remove, this should happen automatically
-//      implicit
-//      _definedAt: SrcDefinition
-//  ): Constructor[Unit, I :=> O] = {
-//    ???
-//  }
 
     // stolen form ZIO ZLayers, these are shorthands for defining parallel computation graphs
     // they are not necessary but can make definition shorter

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
-package object tracing extends TracingImplicits {
+package object tracing extends FnImplicits {
 
   type Input[O] = Expr.Input[O]
 

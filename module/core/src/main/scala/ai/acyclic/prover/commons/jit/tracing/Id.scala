@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
-case class Id[T]() extends Expr.Static[T :=> T] {
+case class Id[T]() extends StaticTracingFn[T, T] {
 
   // TODO: should:
   //  - (override getValue) return a concrete Fn T :=> T
