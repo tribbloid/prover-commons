@@ -8,9 +8,13 @@ object __TracingRequirements {
     * can compile a plain function (direct style) into 2-stages: an optimisation stage and an execution stage.
     *
     * Compilation is always best-effort, in particular, DO NOT assume that:
-    *   - meta-rewriter is always stable, only runtime-AOT tracing is usable
+    *   - meta-rewriter is always usable or stable, the function may contain:
+    *     - (Can only use [[ai.acyclic.prover.commons.jit.tracing.Tracer.RuntimeAOT]] or
+    *       [[ai.acyclic.prover.commons.jit.tracing.Tracer.RuntimeEmpirical]]) java/kotlin code, static recursion
+    *     - (Can only use [[ai.acyclic.prover.commons.jit.tracing.Tracer.RuntimeEmpirical]]) dynamic recursion,
+    *       non-termination & graph breaking
     *   - every elementary function has a diff/grad/tangent form, they can be:
-    *     - not IID (independent & identically distributed)
+    *     - stateful, not IID (independent & identically distributed)
     *     - IID but not pure/deterministic
     *     - pure but not continuous
     *     - continuous but not analytical, only numerical diff approximation is usable

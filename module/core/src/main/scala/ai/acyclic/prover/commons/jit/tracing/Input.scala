@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 
 import java.util.UUID
 
-class Var[T](
+class Input[T](
     val defAt: SrcDefinition,
     val inhabited: Option[Inhabited[T]] = None
 ) extends Expr[T] {
@@ -23,6 +23,6 @@ class Var[T](
     )
 }
 
-object Var {
-  def apply[T](defAt: SrcDefinition): Var[T] = new Var[T](defAt)
+object Input {
+  def apply[T](defAt: SrcDefinition): Input[T] = new Input[T](defAt)
 }

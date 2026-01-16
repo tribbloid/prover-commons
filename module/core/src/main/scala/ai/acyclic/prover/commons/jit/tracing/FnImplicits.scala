@@ -7,7 +7,7 @@ trait FnImplicits extends FnCanChain {
   implicit class UnaryForComprehensionOps[I, O](private val self: TracingFn[I, O]) {
 
     // minimal requirement for for-comprehension
-    def map[OO](right: Var[O] => OO)(
+    def map[OO](right: Input[O] => OO)(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
@@ -15,14 +15,14 @@ trait FnImplicits extends FnCanChain {
       ???
     }
 
-    def foreach(right: Var[O] => Unit)(
+    def foreach(right: Input[O] => Unit)(
         implicit
         _definedAt: SrcDefinition
     ): TracingFn[I, Unit] = {
       ???
     }
 
-    def flatMap[I2, OO](right: Var[O] => TracingFn[I2, OO])(
+    def flatMap[I2, OO](right: Input[O] => TracingFn[I2, OO])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
@@ -30,7 +30,7 @@ trait FnImplicits extends FnCanChain {
       ???
     }
 
-    def withFilter(right: Var[O] => Boolean)(
+    def withFilter(right: Input[O] => Boolean)(
         implicit
         _definedAt: SrcDefinition
     ): TracingFn[I, O] = {
@@ -43,7 +43,7 @@ trait FnImplicits extends FnCanChain {
     // TODO: should it be of higher implicit tier?
 
     // minimal requirement for for-comprehension
-    def map[OO](right: ((Var[O1], Var[O2])) => OO)(
+    def map[OO](right: ((Input[O1], Input[O2])) => OO)(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
@@ -51,14 +51,14 @@ trait FnImplicits extends FnCanChain {
       ???
     }
 
-    def foreach(right: ((Var[O1], Var[O2])) => Unit)(
+    def foreach(right: ((Input[O1], Input[O2])) => Unit)(
         implicit
         _definedAt: SrcDefinition
     ): TracingFn[I, Unit] = {
       ???
     }
 
-    def flatMap[I2, OO](right: ((Var[O1], Var[O2])) => TracingFn[I2, OO])(
+    def flatMap[I2, OO](right: ((Input[O1], Input[O2])) => TracingFn[I2, OO])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
@@ -66,13 +66,15 @@ trait FnImplicits extends FnCanChain {
       ???
     }
 
-    def withFilter(right: ((Var[O1], Var[O2])) => Boolean)(
+    def withFilter(right: ((Input[O1], Input[O2])) => Boolean)(
         implicit
         _definedAt: SrcDefinition
     ): TracingFn[I, (O1, O2)] = {
       ???
     }
   }
+
+  implicit class Tuple2
 
   implicit class BasicOps[P, I, O](private val self: TracingFnLike[P, I, O]) {
 

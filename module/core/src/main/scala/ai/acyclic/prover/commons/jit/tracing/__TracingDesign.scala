@@ -75,12 +75,17 @@ object __TracingDesign {
         x + y
       }
 
+    val t2_alt =
+      for ((x, y) <- (Trace.id[Int], Trace.id[Int])) yield {
+        x + y
+      }
+
     // produce x => x + ((t1(y))(y + "1")) + "2"
     // different from t1_chained/t1_chained_2, y is introduced as another variable
     val t2_chained: TracingFn[(String, String), String] = {
       for (
-        x: Var[String] <- Trace.id[String];
-        y: Var[String] <- t1
+        x: Input[String] <- Trace.id[String];
+        y: Input[String] <- t1
       ) yield {
         val result: String = x + y + "2"
         result
@@ -90,9 +95,9 @@ object __TracingDesign {
     // produce x => x + {y <-}([expr1](t1(x))(x + "1")) + "2"
     val t2_moreChained: TracingFn[(String, String), String] = {
       for (
-        x: Var[String] <- Trace.id[String];
+        x: Input[String] <- Trace.id[String];
         expr1: TracingFn[String, String] = t1;
-        y: Var[String] <- expr1;
+        y: Input[String] <- expr1;
         result = x + y + "2"
       ) yield {
         result
@@ -118,8 +123,8 @@ object __TracingDesign {
     }
 
     val t2_chained_desugared: TracingFn[(String, String), String] = {
-      Trace.id[String].flatMap { (_: Var[String]) =>
-        t1.map { (y: Var[String]) =>
+      Trace.id[String].flatMap { (_: Input[String]) =>
+        t1.map { (y: Input[String]) =>
           val result: String = y + "2"
           result
         }
