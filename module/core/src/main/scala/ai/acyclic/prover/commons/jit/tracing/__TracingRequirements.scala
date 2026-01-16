@@ -9,10 +9,11 @@ object __TracingRequirements {
     *
     * Compilation is always best-effort, in particular, DO NOT assume that:
     *   - meta-rewriter is always usable or stable, the function may contain:
-    *     - (Can only use [[ai.acyclic.prover.commons.jit.tracing.Tracer.RuntimeAOT]] or
-    *       [[ai.acyclic.prover.commons.jit.tracing.Tracer.RuntimeEmpirical]]) java/kotlin code, static recursion
-    *     - (Can only use [[ai.acyclic.prover.commons.jit.tracing.Tracer.RuntimeEmpirical]]) dynamic recursion,
-    *       non-termination & graph breaking
+    *     - (Can only use [[ai.acyclic.prover.commons.jit.tracing.Traceable.RuntimeAOT]] or
+    *       [[ai.acyclic.prover.commons.jit.tracing.Traceable.RuntimeEmpiricalProfilable]]) java/kotlin code, static
+    *       recursion
+    *     - (Can only use [[ai.acyclic.prover.commons.jit.tracing.Traceable.RuntimeEmpiricalProfilable]]) dynamic
+    *       recursion, non-termination & graph breaking
     *   - every elementary function has a diff/grad/tangent form, they can be:
     *     - stateful, not IID (independent & identically distributed)
     *     - IID but not pure/deterministic

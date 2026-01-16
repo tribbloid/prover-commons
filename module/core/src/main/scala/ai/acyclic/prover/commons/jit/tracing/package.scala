@@ -3,6 +3,8 @@ import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
 package object tracing extends TracingImplicits {
 
+  type Input[O] = Expr.Input[O]
+
   type TracingFn[-P, -I, +O] = Expr.Gt[P, I :=> O]
 
   object TracingFn {
@@ -30,6 +32,19 @@ package object tracing extends TracingImplicits {
 
     case class Impl[I, O](
         proto: Input[I] :=> Expr[O]
-    ) extends Expr[I :=> O] {}
+    ) extends Expr.Static[I :=> O] {
+
+      val execute: I :=> O = { // as simple as possible, no runtime tracing or profiling
+        :=>.at[I] { v =>
+          val const = Const(v)
+          val result = proto(const)
+          result.getConcrete
+        }
+      }
+
+      override val concrete: I :=> O = {
+        execute
+      }
+    }
   }
 }

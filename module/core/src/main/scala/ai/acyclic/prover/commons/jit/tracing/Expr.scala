@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 
 trait Expr[
     +O
-] extends Tracer.RuntimeAOT[O] {
+] extends Traceable.RuntimeAOT[O] {
   // this makes it a subtype of Tracer[T, O] where T can be anything, in which case it represents the argument T being discarded
 
   type Pending
@@ -25,10 +25,10 @@ object Expr {
   ): T =
     v.getConcrete
 
-  infix type Aux[-P, +O] = Expr[O] { type Pending = P }
+  infix type Aux[P, +O] = Expr[O] { type Pending = P }
 // infix type Lt[+P, +O] = Expr[O] { type Pending <: P }
   infix type Gt[-P, +O] = Expr[O] { type Pending >: P }
-  type Endo[O] = Gt[O, O]
+  type Input[O] = Gt[O, O]
 
   /**
     * The pending input becomes irrelevant, thus can accept anything
@@ -46,7 +46,7 @@ object Expr {
       */
     implicitly[Gt[Any, Int] <:< Gt[String, Int]]
     implicitly[Discarding[Int] <:< Gt[String, Int]]
-    implicitly[Discarding[Int] <:< Endo[Int]]
+    implicitly[Discarding[Int] <:< Input[Int]]
   }
 
   /**

@@ -1,29 +1,29 @@
 package ai.acyclic.prover.commons.jit.tracing
 
-/**
-  * a placeholder of (value: O), if the value is concrete, [[StaticTracingFn]]'s primary form can be invoked on it to
-  * yield an executable task. But before this happen, it is used to build the computation graph of a [[StaticTracingFn]]
-  * before its invocation
-  *
-  * Ideally this graph can be derived at compile-time (with meta-rewriter), unfortunately our compiler is janky at the
-  * moment and we have to do it later
-  */
-trait Tracer[+O] {}
+import ai.acyclic.prover.commons.debug.SrcDefinition
+
+import java.util.UUID
+
+class Tracer[T](
+    val defAt: SrcDefinition,
+    val inhabited: Option[Inhabited[T]] = None
+) extends Expr[T] {
+
+  type Pending = T
+
+  val uuid: UUID = UUID.randomUUID()
+
+  override def getConcrete(
+      implicit
+      defAt: SrcDefinition
+  ): T = inhabited
+    .map(_.getExample)
+    .getOrElse(
+      super.getConcrete
+    )
+}
 
 object Tracer {
+  def apply[T](defAt: SrcDefinition): Tracer[T] = new Tracer[T](defAt)
 
-  /**
-    * AKA tracing-by-run: [[StaticTracingFn]]'s AOT form can be invoked to yield the computation graph or at least part
-    * of it
-    */
-  trait RuntimeAOT[+O] extends Tracer[O] {}
-
-  /**
-    * in addition to tracing-by-run, each execution of [[StaticTracingFn]] also reveal some internal data of its
-    * computation graph, which are then collected for further JIT optimisation
-    */
-  trait RuntimeEmpirical[O] extends RuntimeAOT[O] {
-
-    // TODO: This capability will be enabled for dynamic recursion, non-termination, graph breaking or empirical JIT optimisation
-  }
 }

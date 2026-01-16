@@ -113,10 +113,10 @@ trait TracingImplicits extends FnCanChain {
 
     // beta reduction, notice that P is contravariant, and Expr[Any, I] represents a static I,
     // so Constructor[Any, I, O] can apply on any Expr[P, I]
-    def apply(arg: Expr.Gt[P, I])(
+    def apply[P2 <: P](arg: Expr.Aux[P2, I])(
         implicit
         _definedAt: SrcDefinition
-    ): Expr.Aux[P, O] = {
+    ): Expr.Aux[P2, O] = {
 
       ???
     }
