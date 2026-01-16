@@ -67,16 +67,17 @@ object __TracingDesign {
       }
 
     // produce (x, y) => x + y
+
     val t2: TracingFn[(Int, Int), Int] =
+      for ((x, y) <- (Trace.id[Int], Trace.id[Int])) yield {
+        x + y
+      }
+
+    val t2_alt: TracingFn[(Int, Int), Int] =
       for (
         x <- Trace.id[Int];
         y <- Trace.id[Int]
       ) yield {
-        x + y
-      }
-
-    val t2_alt =
-      for ((x, y) <- (Trace.id[Int], Trace.id[Int])) yield {
         x + y
       }
 
@@ -130,6 +131,5 @@ object __TracingDesign {
         }
       }
     }
-
   }
 }

@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
 trait FnImplicits extends FnCanChain {
 
@@ -74,7 +75,39 @@ trait FnImplicits extends FnCanChain {
     }
   }
 
-  implicit class Tuple2
+  implicit class Tuple2Ops[I1, I2](private val self: (Expr[I1 :=> I1], Expr[I2 :=> I2])) {
+
+    def map[OO](right: ((Input[I1], Input[I2])) => OO)(
+        implicit
+        canChain: CanChain[OO],
+        _definedAt: SrcDefinition
+    ): TracingFn[(I1, I2), canChain.Repr] = {
+      ???
+    }
+
+    def foreach(right: ((Input[I1], Input[I2])) => Unit)(
+        implicit
+        _definedAt: SrcDefinition
+    ): TracingFn[(I1, I2), Unit] = {
+      ???
+    }
+
+    def flatMap[I3, OO](right: ((Input[I1], Input[I2])) => TracingFn[I3, OO])(
+        implicit
+        canChain: CanChain[OO],
+        _definedAt: SrcDefinition
+    ): TracingFn[(I1, I2, I3), canChain.Repr] = {
+      ???
+    }
+
+    def withFilter(right: ((Input[I1], Input[I2])) => Boolean)(
+        implicit
+        _definedAt: SrcDefinition
+    ): (Expr[I1 :=> I1], Expr[I2 :=> I2]) = {
+
+      ???
+    }
+  }
 
   implicit class BasicOps[P, I, O](private val self: TracingFnLike[P, I, O]) {
 
