@@ -3,44 +3,44 @@ package ai.acyclic.prover.commons.jit.tracing
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
-trait FnImplicits extends FnCanChain {
+trait TracingImplicits extends FnCanChain {
 
-  implicit class UnaryForComprehensionOps[I, O](private val self: TracingFn[I, O]) {
+  implicit class UnaryForComprehensionOps[I, O](private val self: StaticTracingFn[I, O]) {
 
     // minimal requirement for for-comprehension
     def map[OO](right: Input[O] => OO)(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn[I, canChain.Repr] = {
+    ): StaticTracingFn[I, canChain.Repr] = {
       ???
     }
 
     def foreach(right: Input[O] => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): TracingFn[I, Unit] = {
+    ): StaticTracingFn[I, Unit] = {
       ???
     }
 
-    def flatMap[I2, OO](right: Input[O] => TracingFn[I2, OO])(
+    def flatMap[I2, OO](right: Input[O] => StaticTracingFn[I2, OO])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn[(I, I2), canChain.Repr] = {
+    ): StaticTracingFn[(I, I2), canChain.Repr] = {
       ???
     }
 
     def withFilter(right: Input[O] => Boolean)(
         implicit
         _definedAt: SrcDefinition
-    ): TracingFn[I, O] = {
+    ): StaticTracingFn[I, O] = {
 
       ???
     }
   }
 
-  implicit class BinaryForComprehensionOps[I, O1, O2](private val self: TracingFn[I, (O1, O2)]) {
+  implicit class BinaryForComprehensionOps[I, O1, O2](private val self: StaticTracingFn[I, (O1, O2)]) {
     // TODO: should it be of higher implicit tier?
 
     // minimal requirement for for-comprehension
@@ -48,29 +48,29 @@ trait FnImplicits extends FnCanChain {
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn[I, canChain.Repr] = {
+    ): StaticTracingFn[I, canChain.Repr] = {
       ???
     }
 
     def foreach(right: ((Input[O1], Input[O2])) => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): TracingFn[I, Unit] = {
+    ): StaticTracingFn[I, Unit] = {
       ???
     }
 
-    def flatMap[I2, OO](right: ((Input[O1], Input[O2])) => TracingFn[I2, OO])(
+    def flatMap[I2, OO](right: ((Input[O1], Input[O2])) => StaticTracingFn[I2, OO])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn[(I, I2), canChain.Repr] = {
+    ): StaticTracingFn[(I, I2), canChain.Repr] = {
       ???
     }
 
     def withFilter(right: ((Input[O1], Input[O2])) => Boolean)(
         implicit
         _definedAt: SrcDefinition
-    ): TracingFn[I, (O1, O2)] = {
+    ): StaticTracingFn[I, (O1, O2)] = {
       ???
     }
   }
@@ -81,22 +81,22 @@ trait FnImplicits extends FnCanChain {
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn[(I1, I2), canChain.Repr] = {
+    ): StaticTracingFn[(I1, I2), canChain.Repr] = {
       ???
     }
 
     def foreach(right: ((Input[I1], Input[I2])) => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): TracingFn[(I1, I2), Unit] = {
+    ): StaticTracingFn[(I1, I2), Unit] = {
       ???
     }
 
-    def flatMap[I3, OO](right: ((Input[I1], Input[I2])) => TracingFn[I3, OO])(
+    def flatMap[I3, OO](right: ((Input[I1], Input[I2])) => StaticTracingFn[I3, OO])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn[(I1, I2, I3), canChain.Repr] = {
+    ): StaticTracingFn[(I1, I2, I3), canChain.Repr] = {
       ???
     }
 
@@ -109,14 +109,14 @@ trait FnImplicits extends FnCanChain {
     }
   }
 
-  implicit class BasicOps[P, I, O](private val self: TracingFnLike[P, I, O]) {
+  implicit class BasicOps[P, I, O](private val self: TracingFn[P, I, O]) {
 
     // beta reduction, notice that P is contravariant, and Expr[Any, I] represents a static I,
     // so Constructor[Any, I, O] can apply on any Expr[P, I]
     def apply(arg: Expr.Gt[P, I])(
         implicit
         _definedAt: SrcDefinition
-    ): Expr._1[P, O] = {
+    ): Expr.Aux[P, O] = {
 
       ???
     }
@@ -133,17 +133,17 @@ trait FnImplicits extends FnCanChain {
     // they are not necessary but can make definition shorter
     trait zipLike {
 
-      def apply[I2, O2](right: TracingFnLike[P, I2, O2])(
+      def apply[I2, O2](right: TracingFn[P, I2, O2])(
           implicit
           _definedAt: SrcDefinition
-      ): TracingFnLike[P, (I, I2), (O, O2)]
+      ): TracingFn[P, (I, I2), (O, O2)]
     }
 
     object zip extends zipLike {
-      override def apply[I2, O2](right: TracingFnLike[P, I2, O2])(
+      override def apply[I2, O2](right: TracingFn[P, I2, O2])(
           implicit
           _definedAt: SrcDefinition
-      ): TracingFnLike[P, (I, I2), (O, O2)] = ???
+      ): TracingFn[P, (I, I2), (O, O2)] = ???
     }
     def <*> = zip
 
@@ -157,10 +157,10 @@ trait FnImplicits extends FnCanChain {
 
     object union {
 
-      def apply[I2 <: I, O2](right: TracingFnLike[P, I2, O2])(
+      def apply[I2 <: I, O2](right: TracingFn[P, I2, O2])(
           implicit
           _definedAt: SrcDefinition
-      ): TracingFnLike[P, I2, (O, O2)] = {
+      ): TracingFn[P, I2, (O, O2)] = {
         ???
       }
     }

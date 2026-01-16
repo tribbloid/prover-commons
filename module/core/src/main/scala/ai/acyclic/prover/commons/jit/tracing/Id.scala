@@ -2,8 +2,7 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
-case class Id[T]() extends Expr[T :=> T] {
-  final type Pending = Any
+case class Id[T]() extends Expr.Static[T :=> T] {
 
   // TODO: should:
   //  - (override getValue) return a concrete Fn T :=> T
@@ -12,4 +11,5 @@ case class Id[T]() extends Expr[T :=> T] {
   //  - make sure that the IR is associated with hom, not tracing/JIT
   //  this applies to every Constructor
 
+  override val concrete: T :=> T = { v: T => v }
 }

@@ -1,11 +1,11 @@
 package ai.acyclic.prover.commons.jit
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
-package object tracing extends FnImplicits {
+package object tracing extends TracingImplicits {
 
-  type TracingFnLike[P, -I, +O] = Expr.Gt[P, I :=> O]
+  type TracingFn[-P, -I, +O] = Expr.Gt[P, I :=> O]
 
-  object TracingFnLike {
+  object TracingFn {
 
     //  implicit def unzipVar[I, A, B](
     //      v: Constructor[I, (A, B)]
@@ -24,5 +24,12 @@ package object tracing extends FnImplicits {
     // all reduction rules should be defined for curried form that yields higher order function(s)
   }
 
-  type TracingFn[-I, +O] = TracingFnLike[Any, I, O]
+  type StaticTracingFn[-I, +O] = Expr.Static[I :=> O]
+
+  object StaticTracingFn {
+
+    case class Impl[I, O](
+        proto: Input[I] :=> Expr[O]
+    ) extends Expr[I :=> O] {}
+  }
 }

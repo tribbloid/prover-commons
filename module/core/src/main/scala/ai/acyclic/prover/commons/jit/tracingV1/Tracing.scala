@@ -9,10 +9,6 @@ import scala.language.implicitConversions
 
 case class Tracing[I, O](
     self: Hom.Fn[I, O]
-)(
-    implicit
-    val iTag: TypeTag[I],
-    val oTag: TypeTag[O]
 ) extends Delegating[Hom.Fn[I, O]] {
 
   lazy val higherOrder: Tracing[Unit, Hom.Fn[I, O]] = {
@@ -67,12 +63,9 @@ case class Tracing[I, O](
     Tracing(result)
   }
 
-  def ><[I2, O2](right: Tracing[I2, O2]): Tracing[(I, I2), (O, O2)] = {
+  def <*>[I2, O2](right: Tracing[I2, O2]): Tracing[(I, I2), (O, O2)] = {
 
     val result = Hom.Fn.Pointwise(self, right.self)
-
-    implicit val i2Tag = right.iTag
-    implicit val o2Tag = right.oTag
 
     Tracing(result.normalForm)
   }
@@ -83,8 +76,6 @@ case class Tracing[I, O](
     val second = Hom.Fn.Pointwise(self, right.self)
 
     val result = Hom.Fn.Mapped[I, (I, I), (O, O2)](first, second)
-
-    implicit val o2Tag = right.oTag
 
     Tracing(result)
   }

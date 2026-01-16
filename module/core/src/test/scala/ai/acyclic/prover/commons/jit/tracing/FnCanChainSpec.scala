@@ -9,7 +9,7 @@ class FnCanChainSpec extends BaseSpec {
     it("should chain simple values (via forConst or forTuple2)") {
       val cc = implicitly[CanChain[(Int, Int)]]
       val resultExpr = cc.parse((1, 2))
-      assert(resultExpr.getValue(null) == (1, 2))
+      assert(resultExpr.getConcrete(null) == (1, 2))
     }
 
     it("should chain Exprs into Expr of Tuple") {
@@ -26,7 +26,7 @@ class FnCanChainSpec extends BaseSpec {
 
       // Result should be Expr[(Int, Int)]
       // Logic checks:
-      val value = parsed.getValue(null)
+      val value = parsed.getConcrete(null)
       assert(value == (1, 2))
 
       // Ensure it is not just wrapping the tuple of exprs

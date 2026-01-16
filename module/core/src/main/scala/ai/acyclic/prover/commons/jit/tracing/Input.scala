@@ -9,20 +9,26 @@ class Input[T](
     val inhabited: Option[Inhabited[T]] = None
 ) extends Expr[T] {
 
-  final type Pending = T
+  type Pending = T
 
   val uuid: UUID = UUID.randomUUID()
 
-  override def getValue(
+  override def getConcrete(
       implicit
       defAt: SrcDefinition
   ): T = inhabited
     .map(_.getExample)
     .getOrElse(
-      super.getValue
+      super.getConcrete
     )
+
 }
 
 object Input {
   def apply[T](defAt: SrcDefinition): Input[T] = new Input[T](defAt)
+
+  {
+    // sanity
+    implicitly[Input[String] <:< Expr.Gt[Any, String]]
+  }
 }
