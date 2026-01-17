@@ -24,11 +24,8 @@ package object tracing extends FnImp0 {
 
     // CAUTION: do not add Expr2[T] unless absolutely necessary
     // all reduction rules should be defined for curried form that yields higher order function(s)
-  }
 
-  type StaticTracingFn[-I, +O] = Expr.Static[I :=> O]
-
-  object StaticTracingFn {
+    type Static[-I, +O] = Expr.Static[I :=> O]
 
     case class Impl[I, O](
         proto: Input[I] :=> Expr[O]
@@ -47,4 +44,5 @@ package object tracing extends FnImp0 {
       }
     }
   }
+
 }

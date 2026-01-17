@@ -15,6 +15,16 @@ trait Expr[
       implicit
       defAt: SrcDefinition
   ): O = throw new ConcretizationTypeError(this, defAt)
+
+  def higherOrder(
+      implicit
+      defAt: SrcDefinition
+  ): TracingFn.Static[Unit, O] = {
+
+    TracingFn.Impl(
+      ???
+    )
+  }
 }
 
 object Expr {

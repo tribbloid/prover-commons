@@ -7,13 +7,12 @@ import ai.acyclic.prover.commons.TypeTag
 
 import scala.language.implicitConversions
 
-case class TracingFn[I, O](
+case class TracingFn[I, +O](
     self: Hom.Fn[I, O]
 ) extends Delegating[Hom.Fn[I, O]] {
 
   lazy val higherOrder: TracingFn[Unit, Hom.Fn[I, O]] = {
-    TracingFn(Hom.Thunk.CachedEager(self))
-    // TODO : get rid of it
+    TracingFn(Hom.Thunk.Static(self))
   }
 
   def map[O2](right: O => O2)(

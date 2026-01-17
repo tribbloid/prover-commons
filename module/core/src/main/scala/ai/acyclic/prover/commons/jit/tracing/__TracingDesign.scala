@@ -28,19 +28,19 @@ object __TracingDesign {
   object Examples {
 
     // produce x => x
-    val id: StaticTracingFn[String, String] =
+    val id: TracingFn.Static[String, String] =
       for (x <- Trace.id[String]) yield {
         x
       }
 
     // produce x => x + "1"
-    val t1: StaticTracingFn[String, String] =
+    val t1: TracingFn.Static[String, String] =
       for (x <- Trace.id[String]) yield {
         x + "1"
       }
 
     // produce x => x + "1"
-    val t1_2: StaticTracingFn[String, String] = {
+    val t1_2: TracingFn.Static[String, String] = {
       for {
         x <- Trace.id[String]
         a = "1"
@@ -50,7 +50,7 @@ object __TracingDesign {
     }
 
     // produce x => [y](t1(x))(x + "1") + "2"
-    val t1_chained: StaticTracingFn[String, String] =
+    val t1_chained: TracingFn.Static[String, String] =
       for (
         x <- Trace.id[String];
         y = t1.apply(x)
@@ -59,7 +59,7 @@ object __TracingDesign {
         result
       }
     // ditto
-    val t1_chained_2: StaticTracingFn[String, String] =
+    val t1_chained_2: TracingFn.Static[String, String] =
       for (x <- Trace.id[String]) yield {
         val y = t1.apply(x)
         val result: String = y + "2"
@@ -68,12 +68,12 @@ object __TracingDesign {
 
     // produce (x, y) => x + y
 
-    val t2: StaticTracingFn[(Int, Int), Int] =
+    val t2: TracingFn.Static[(Int, Int), Int] =
       for ((x, y) <- (Trace.id[Int], Trace.id[Int])) yield {
         x + y
       }
 
-    val t2_alt: StaticTracingFn[(Int, Int), Int] =
+    val t2_alt: TracingFn.Static[(Int, Int), Int] =
       for (
         x <- Trace.id[Int];
         y <- Trace.id[Int]
@@ -83,7 +83,7 @@ object __TracingDesign {
 
     // produce x => x + ((t1(y))(y + "1")) + "2"
     // different from t1_chained/t1_chained_2, y is introduced as another variable
-    val t2_chained: StaticTracingFn[(String, String), String] = {
+    val t2_chained: TracingFn.Static[(String, String), String] = {
       for (
         x: Input[String] <- Trace.id[String];
         y: Input[String] <- t1
@@ -94,10 +94,10 @@ object __TracingDesign {
     }
 
     // produce x => x + {y <-}([expr1](t1(x))(x + "1")) + "2"
-    val t2_moreChained: StaticTracingFn[(String, String), String] = {
+    val t2_moreChained: TracingFn.Static[(String, String), String] = {
       for (
         x: Input[String] <- Trace.id[String];
-        expr1: StaticTracingFn[String, String] = t1;
+        expr1: TracingFn.Static[String, String] = t1;
         y: Input[String] <- expr1;
         result = x + y + "2"
       ) yield {
@@ -108,7 +108,7 @@ object __TracingDesign {
 
   object Examples_Desugared {
 
-    val t1_2_desugared: StaticTracingFn[String, String] = {
+    val t1_2_desugared: TracingFn.Static[String, String] = {
       val v1 = Trace
         .id[String]
         .map { x =>
@@ -123,7 +123,7 @@ object __TracingDesign {
         }
     }
 
-    val t2_chained_desugared: StaticTracingFn[(String, String), String] = {
+    val t2_chained_desugared: TracingFn.Static[(String, String), String] = {
       Trace.id[String].flatMap { (_: Input[String]) =>
         t1.map { (y: Input[String]) =>
           val result: String = y + "2"

@@ -84,9 +84,9 @@ trait HasFunction {
 
       //      override def normalise: Circuit[I, O] = self.normalise
 
-      def asLazy: Thunk.CachedLazy[O] = Thunk.CachedLazy(self)
+      def asLazy: Thunk.Lazy[O] = Thunk.Lazy(self)
 
-      def asEager: Thunk.CachedEager[Thunk[O]] = Thunk.CachedEager(self)
+      def asEager: Thunk.Static[Thunk[O]] = Thunk.Static(self)
     }
   }
 
@@ -177,7 +177,7 @@ trait HasFunction {
       val I: Identity.type = Identity
       val B: Mapped.type = Mapped
       val C: Flipped.type = Flipped
-      val K: Thunk.CachedLazy.type = Thunk.CachedLazy
+      val K: Thunk.Lazy.type = Thunk.Lazy
 
       val Delta: Pointwise.type = Pointwise
       val Gamma: Duplicate.type = Duplicate
@@ -200,7 +200,7 @@ trait HasFunction {
       override def apply(arg: I): I & OutK[arg.type] = arg
 
       case object CrossUnit extends Impl[I, (I, Unit)] with Combinator.TrivialConversion {
-        // TODO: remove, use impl in Tuple2Fold
+        // TODO: remove, use ZIO Zippable
 
         override def apply(arg: I): (I, Unit) = arg -> ()
       }
@@ -422,18 +422,18 @@ trait HasFunction {
     type Cached[O] = Impl[O] & Fn.Cached
     sealed trait Cached_[O] extends Const_[O] with Fn.Cached {
 
-      protected def value: O
+      protected val value: O
 
       override def apply(arg: Unit): O = value
     }
 
-    final case class CachedLazy[O](gen: Thunk[O]) extends Cached_[O] {
+    final case class Lazy[O](gen: Thunk[O]) extends Cached_[O] {
 
       // equivalent to CachedLazy[Unit, O], but much faster
       @transient protected lazy val value: O = gen(())
     }
 
-    final case class CachedEager[O](value: O) extends Cached_[O] {}
+    final case class Static[O](value: O) extends Cached_[O] {}
 
   }
 }

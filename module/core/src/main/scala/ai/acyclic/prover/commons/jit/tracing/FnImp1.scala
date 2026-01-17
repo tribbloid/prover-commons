@@ -7,13 +7,8 @@ import scala.language.implicitConversions
 
 trait FnImp1 extends FnCanChain with HasConversionPart {
 
-  implicit def tuple2ToFn[I1, O1, I2, O2]: (StaticTracingFn[I1, O1], StaticTracingFn[I2, O2]) ?++>
-    StaticTracingFn[(I1, I2), (O1, O2)] = { v =>
-    ???
-  }
-
   implicit class UnaryForComprehensions[I, O](
-      private val self: StaticTracingFn[I, O]
+      private val self: TracingFn.Static[I, O]
   ) {
 
     // minimal requirement for for-comprehension
@@ -21,36 +16,36 @@ trait FnImp1 extends FnCanChain with HasConversionPart {
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): StaticTracingFn[I, canChain.Repr] = {
+    ): TracingFn.Static[I, canChain.Repr] = {
       ???
     }
 
     def foreach(right: Input[O] => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): StaticTracingFn[I, Unit] = {
+    ): TracingFn.Static[I, Unit] = {
       ???
     }
 
-    def flatMap[I2, OO](right: Input[O] => StaticTracingFn[I2, OO])(
+    def flatMap[I2, OO](right: Input[O] => TracingFn.Static[I2, OO])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): StaticTracingFn[(I, I2), canChain.Repr] = {
+    ): TracingFn.Static[(I, I2), canChain.Repr] = {
       ???
     }
 
     def withFilter(right: Input[O] => Boolean)(
         implicit
         _definedAt: SrcDefinition
-    ): StaticTracingFn[I, O] = {
+    ): TracingFn.Static[I, O] = {
 
       ???
     }
   }
 
   // TODO: the following can be removed by carefully using ConversionPart
-  implicit def tuple2ToOps1[I1, O1, I2, O2]: (StaticTracingFn[I1, O1], StaticTracingFn[I2, O2]) ?++>
+  implicit def tuple2ToOps1[I1, O1, I2, O2]: (TracingFn.Static[I1, O1], TracingFn.Static[I2, O2]) ?++>
     UnaryForComprehensions[(I1, I2), (O1, O2)] = {
     ???
   }

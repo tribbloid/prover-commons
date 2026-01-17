@@ -6,8 +6,13 @@ import scala.language.implicitConversions
 
 trait FnImp0 extends FnImp1 {
 
+  implicit def tuple2ToFn[I1, O1, I2, O2]: (TracingFn.Static[I1, O1], TracingFn.Static[I2, O2]) ?++>
+    TracingFn.Static[(I1, I2), (O1, O2)] = { v =>
+    ???
+  }
+
   implicit class BinaryForComprehensions[I, O1, O2](
-      private val self: StaticTracingFn[I, (O1, O2)]
+      private val self: TracingFn.Static[I, (O1, O2)]
   ) {
     // TODO: should it be of higher implicit tier?
 
@@ -16,34 +21,34 @@ trait FnImp0 extends FnImp1 {
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): StaticTracingFn[I, canChain.Repr] = {
+    ): TracingFn.Static[I, canChain.Repr] = {
       ???
     }
 
     def foreach(right: ((Input[O1], Input[O2])) => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): StaticTracingFn[I, Unit] = {
+    ): TracingFn.Static[I, Unit] = {
       ???
     }
 
-    def flatMap[I2, OO](right: ((Input[O1], Input[O2])) => StaticTracingFn[I2, OO])(
+    def flatMap[I2, OO](right: ((Input[O1], Input[O2])) => TracingFn.Static[I2, OO])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): StaticTracingFn[(I, I2), canChain.Repr] = {
+    ): TracingFn.Static[(I, I2), canChain.Repr] = {
       ???
     }
 
     def withFilter(right: ((Input[O1], Input[O2])) => Boolean)(
         implicit
         _definedAt: SrcDefinition
-    ): StaticTracingFn[I, (O1, O2)] = {
+    ): TracingFn.Static[I, (O1, O2)] = {
       ???
     }
   }
 
-  implicit def tuple2ToOps2[I1, O1, I2, O2]: (StaticTracingFn[I1, O1], StaticTracingFn[I2, O2]) ?++>
+  implicit def tuple2ToOps2[I1, O1, I2, O2]: (TracingFn.Static[I1, O1], TracingFn.Static[I2, O2]) ?++>
     BinaryForComprehensions[(I1, I2), O1, O2] = {
     ???
   }
