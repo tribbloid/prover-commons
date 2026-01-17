@@ -63,7 +63,7 @@ object HigherOrder2 {
         |: : !-- CrossUnit
         |: : !-+ Pointwise
         |: :   !-- Blackbox(fn1 <at Circuits.scala:11>)
-        |: :   !-+ CachedEager
+        |: :   !-+ Static
         |: :     !-- Blackbox(fn2 <at Circuits.scala:15>)
         |: !-- Blackbox(result <at HigherOrder2.scala:24>)
         |!-- Blackbox(result <at HigherOrder2.scala:23>)

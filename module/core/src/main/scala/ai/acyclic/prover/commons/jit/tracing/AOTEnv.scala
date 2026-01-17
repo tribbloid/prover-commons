@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.util.Inhabited
 
 import java.util.UUID
 
@@ -28,7 +29,7 @@ case class AOTEnv() {
         implicit
         defAt: SrcDefinition
     ): T = inhabited
-      .map(_.getExample)
+      .map(_.default)
       .getOrElse(
         super.getConcrete
       )
