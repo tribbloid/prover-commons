@@ -298,6 +298,8 @@ object CanEqual {
 
   implicit class Tagged[LR: ClassTag](self: CanEqual[LR]) {
 
+    private val tagLR = implicitly[ClassTag[LR]]
+
     object ForAny extends Impl[Any] {
 
       val outer = CanEqual.this
@@ -305,8 +307,8 @@ object CanEqual {
       override def hashOfNonTrivial(v: Any): Option[Int] = {
 
         v match {
-          case vv: LR => self.hashOfNonTrivial(vv)
-          case _      => None
+          case vv if tagLR.runtimeClass.isInstance(vv) => self.hashOfNonTrivial(vv.asInstanceOf[LR])
+          case _                                       => None
         }
       }
 
@@ -316,8 +318,8 @@ object CanEqual {
           case (null, null) => Some(true)
           case (null, _)    => Some(false)
           case (_, null)    => Some(false)
-          case (ll: LR, rr: LR) =>
-            self.areEqualNonTrivial(ll, rr)
+          case (ll, rr) if tagLR.runtimeClass.isInstance(ll) && tagLR.runtimeClass.isInstance(rr) =>
+            self.areEqualNonTrivial(ll.asInstanceOf[LR], rr.asInstanceOf[LR])
           case _ => None
         }
       }
@@ -346,12 +348,11 @@ trait CanEqual[-LR] extends Verse {
 
   def areEqual(x: LR, y: LR): Boolean = {
     val determined: Option[Boolean] = (x, y) match {
-      case (x: AnyRef with LR, y: AnyRef with LR) => {
-        if (x.eq(y)) Some(true)
+      case (refX: AnyRef, refY: AnyRef) =>
+        if (refX.eq(refY)) Some(true)
         else areEqualNonTrivial(x, y)
-      }
-      case (_: AnyRef with LR, _) => Some(false)
-      case (_, _: AnyRef with LR) => Some(false)
+      case (_: AnyRef, _) => Some(false)
+      case (_, _: AnyRef) => Some(false)
       case _ =>
         areEqualNonTrivial(x, y)
     }

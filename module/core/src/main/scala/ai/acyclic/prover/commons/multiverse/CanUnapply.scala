@@ -61,14 +61,16 @@ object CanUnapply {
 
   implicit class Tagged[T: ClassTag](self: CanUnapply[T]) {
 
+    private val tagT = implicitly[ClassTag[T]]
+
     object ForAny extends CanUnapply[Any] {
 
       def outer = CanUnapply.this
 
       override def unapply(v: Any): Option[UnappliedForm] = {
         v match {
-          case v: T => self.unapply(v)
-          case _    => None
+          case vv if tagT.runtimeClass.isInstance(vv) => self.unapply(vv.asInstanceOf[T])
+          case _                                       => None
         }
       }
     }
