@@ -3,7 +3,6 @@ package ai.acyclic.prover.meta2.viz.format
 import ai.acyclic.prover.commons.compat.XInt
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.meta2.meta.ScalaReflection
-import ai.acyclic.prover.meta2.{meta, viz}
 import ai.acyclic.prover.meta2.viz.TypeViz
 import ai.acyclic.prover.meta2.viz.format.{EnableOvrd, TypeFormat}
 import ai.acyclic.prover.meta2.viz.format.FormatOvrd.{~~, SingletonName}

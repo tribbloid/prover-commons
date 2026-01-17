@@ -2,7 +2,6 @@ package ai.acyclic.prover.meta2.meta
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.meta2.viz.TypeVizSpec.S1
-import ai.acyclic.prover.meta2.meta
 import ai.acyclic.prover.meta2.viz.TypeViz
 
 class TypeViewMixinSpec extends BaseSpec {

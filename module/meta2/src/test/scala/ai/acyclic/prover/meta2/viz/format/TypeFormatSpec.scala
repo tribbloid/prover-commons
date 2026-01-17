@@ -1,7 +1,6 @@
 package ai.acyclic.prover.meta2.viz.format
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.meta2.viz
 import ai.acyclic.prover.meta2.viz.format.Formats0.TypeInfo
 import ai.acyclic.prover.meta2.viz.format.Formats1.DeAlias
 

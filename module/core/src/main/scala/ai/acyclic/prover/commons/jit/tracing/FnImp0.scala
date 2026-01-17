@@ -2,12 +2,10 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
-import scala.language.implicitConversions
-
 trait FnImp0 extends FnImp1 {
 
   implicit def tuple2ToFn[I1, O1, I2, O2]: (TracingFn.Static[I1, O1], TracingFn.Static[I2, O2]) ?++>
-    TracingFn.Static[(I1, I2), (O1, O2)] = { v =>
+    TracingFn.Static[(I1, I2), (O1, O2)] = { _ =>
     ???
   }
 

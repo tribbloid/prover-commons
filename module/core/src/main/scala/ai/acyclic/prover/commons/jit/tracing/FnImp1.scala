@@ -3,8 +3,6 @@ package ai.acyclic.prover.commons.jit.tracing
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.multiverse.rewrite.HasConversionPart
 
-import scala.language.implicitConversions
-
 trait FnImp1 extends FnCanChain with HasConversionPart {
 
   implicit class UnaryForComprehensions[I, O](

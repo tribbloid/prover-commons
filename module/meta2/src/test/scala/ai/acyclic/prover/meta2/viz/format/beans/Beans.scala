@@ -1,6 +1,5 @@
 package ai.acyclic.prover.meta2.viz.format.beans
 
-import ai.acyclic.prover.meta2.viz
 import ai.acyclic.prover.meta2.viz.format.FormatOvrd.SingletonName
 
 trait Beans {

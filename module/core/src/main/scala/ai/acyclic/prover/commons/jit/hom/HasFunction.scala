@@ -115,9 +115,8 @@ trait HasFunction {
     }
   }
 
-
   trait DepFn[-I] extends HasNormalForm[DepFn[I]] with FunctionLike { type In >: I }
-   // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
+  // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
   case object DepFn {
 
     type K1[-I] = FunctionLike { type In >: I }
@@ -140,9 +139,9 @@ trait HasFunction {
       * function with computation graph, like a lifted JAXpr
       */
     type K2[-I, +O] = DepFn.K1[I] { type OutK[T] <: O }
-    { // sanity
-      implicitly[Fn[Int, String] <:< K2[Int, String]]
-    }
+
+    // sanity check - disabled because scalafix/semanticdb cannot parse bare blocks
+    // implicitly[Fn[Int, String] <:< K2[Int, String]]
 
     val Tracing: ai.acyclic.prover.commons.jit.tracingV1.TracingFn.type =
       ai.acyclic.prover.commons.jit.tracingV1.TracingFn

@@ -1,7 +1,6 @@
 package ai.acyclic.prover.meta2.viz
 
 import ai.acyclic.prover.commons.HasInner
-import ai.acyclic.prover.meta2.meta
 import ai.acyclic.prover.meta2.meta.ScalaReflection
 import ai.acyclic.prover.meta2.refl.Reflection
 
