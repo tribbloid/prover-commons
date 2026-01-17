@@ -28,7 +28,6 @@ object Expr {
   infix type Aux[P, +O] = Expr[O] { type Pending = P }
 // infix type Lt[+P, +O] = Expr[O] { type Pending <: P }
   infix type Gt[-P, +O] = Expr[O] { type Pending >: P }
-  type Input[O] = Gt[O, O]
 
   /**
     * The pending input becomes irrelevant, thus can accept anything

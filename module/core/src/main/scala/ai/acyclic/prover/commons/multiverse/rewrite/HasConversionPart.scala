@@ -10,6 +10,8 @@ trait HasConversionPart extends HasConversion with HasConversionPart.Imp1 {
     * prefer to search for missing parts in forward direction
     */
   trait ConversionPart[-T, +R] extends Conversion[T, R] {}
+
+  infix type ?++>[-T, +R] = Conversion[T, R]
 }
 
 object HasConversionPart {

@@ -11,6 +11,8 @@ trait HasConversion {
     */
   trait Conversion[-T, +R] extends CanNormalise[T, R] with (T => R) {}
 
+  infix type ?=>[-T, +R] = Conversion[T, R]
+
   object Conversion {}
 
   implicit def convert[T, R](v: T)(

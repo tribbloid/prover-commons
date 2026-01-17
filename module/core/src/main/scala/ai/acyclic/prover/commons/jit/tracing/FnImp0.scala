@@ -1,10 +1,20 @@
 package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.multiverse.rewrite.HasConversionPart
 
-trait FnImplicits extends FnCanChain {
+import scala.language.implicitConversions
 
-  implicit class UnaryForComprehensions[I, O](private val self: StaticTracingFn[I, O]) {
+trait FnImp1 extends FnCanChain with HasConversionPart {
+
+  implicit def tuple2ToFn[I1, O1, I2, O2]: (StaticTracingFn[I1, O1], StaticTracingFn[I2, O2]) ?++>
+    StaticTracingFn[(I1, I2), (O1, O2)] = { v =>
+    ???
+  }
+
+  implicit class UnaryForComprehensions[I, O](
+      private val self: StaticTracingFn[I, O]
+  ) {
 
     // minimal requirement for for-comprehension
     def map[OO](right: Input[O] => OO)(
@@ -39,7 +49,18 @@ trait FnImplicits extends FnCanChain {
     }
   }
 
-  implicit class BinaryForComprehensions[I, O1, O2](private val self: StaticTracingFn[I, (O1, O2)]) {
+  // TODO: the following can be removed by carefully using ConversionPart
+  implicit def tuple2ToOps1[I1, O1, I2, O2]: (StaticTracingFn[I1, O1], StaticTracingFn[I2, O2]) ?++>
+    UnaryForComprehensions[(I1, I2), (O1, O2)] = {
+    ???
+  }
+}
+
+trait FnImp0 extends FnImp1 {
+
+  implicit class BinaryForComprehensions[I, O1, O2](
+      private val self: StaticTracingFn[I, (O1, O2)]
+  ) {
     // TODO: should it be of higher implicit tier?
 
     // minimal requirement for for-comprehension
@@ -74,38 +95,9 @@ trait FnImplicits extends FnCanChain {
     }
   }
 
-  implicit class Tuple2Ops[I1, O1, I2, O2](private val self: (StaticTracingFn[I1, O1], StaticTracingFn[I2, O2])) {
-
-    def map[OO](right: ((Input[O1], Input[O2])) => OO)(
-        implicit
-        canChain: CanChain[OO],
-        _definedAt: SrcDefinition
-    ): StaticTracingFn[(I1, I2), canChain.Repr] = {
-      ???
-    }
-
-    def foreach(right: ((Input[O1], Input[O2])) => Unit)(
-        implicit
-        _definedAt: SrcDefinition
-    ): StaticTracingFn[(I1, I2), Unit] = {
-      ???
-    }
-
-    def flatMap[I3, OO](right: ((Input[O1], Input[O2])) => StaticTracingFn[I3, OO])(
-        implicit
-        canChain: CanChain[OO],
-        _definedAt: SrcDefinition
-    ): StaticTracingFn[(I1, I2, I3), canChain.Repr] = {
-      ???
-    }
-
-    def withFilter(right: ((Input[O1], Input[O2])) => Boolean)(
-        implicit
-        _definedAt: SrcDefinition
-    ): (StaticTracingFn[I1, O1], StaticTracingFn[I2, O2]) = {
-
-      ???
-    }
+  implicit def tuple2ToOps2[I1, O1, I2, O2]: (StaticTracingFn[I1, O1], StaticTracingFn[I2, O2]) ?++>
+    BinaryForComprehensions[(I1, I2), O1, O2] = {
+    ???
   }
 
   implicit class BasicOps[P, I, O](private val self: TracingFn[P, I, O]) {

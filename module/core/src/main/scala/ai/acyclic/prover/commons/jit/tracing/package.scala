@@ -1,9 +1,9 @@
 package ai.acyclic.prover.commons.jit
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
-package object tracing extends FnImplicits {
+package object tracing extends FnImp0 {
 
-  type Input[O] = Expr.Input[O]
+  type Input[O] = Expr.Gt[O, O]
 
   type TracingFn[-P, -I, +O] = Expr.Gt[P, I :=> O]
 
