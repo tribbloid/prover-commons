@@ -43,14 +43,14 @@ class TagSpec extends BaseSpec {
 
     it("by upcasting") {
 
-      et1: Ex
-      et12: Ex
-      et12: Ex <> T1
-      et12: Ex <> T2
+      val _ = et1: Ex
+      val _ = et12: Ex
+      val _ = et12: Ex <> T1
+      val _ = et12: Ex <> T2
 
-      et12: (Ex <> T2) <> T1
-      et123: ((Ex <> T3) <> T2) <> T1
-      et123: ((Ex <> T2) <> T3) <> T1
+      val _ = et12: (Ex <> T2) <> T1
+      val _ = et123: ((Ex <> T3) <> T2) <> T1
+      val _ = et123: ((Ex <> T2) <> T3) <> T1
     }
 
     it("by function") {

@@ -378,7 +378,7 @@ trait CanEqual[-LR] extends Verse {
     def nextSerialID: Int = {
       require(
         !locked, {
-          locked
+          val _ = locked
           "cannot write, lookup is locked"
         }
       )

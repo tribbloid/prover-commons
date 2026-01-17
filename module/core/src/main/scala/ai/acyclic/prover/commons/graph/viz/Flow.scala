@@ -160,7 +160,7 @@ abstract class Flow extends Visualisation.Local(Local.AnyGraph) {
         )
         .DepthFirst_Once
 
-      buildBuffers
+      val _ = buildBuffers
 
       val nodeSet: Set[NodeWrapper] = nodeID2Wrapper.lookup.values
         .map { nodeWrapper =>

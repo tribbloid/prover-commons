@@ -20,7 +20,7 @@ object SparkEnvSpec {
     override def beforeAll(): Unit = {
 
       super.beforeAll()
-      sc // initialize before all tests
+      val _ = sc // initialize before all tests
     }
 
   }

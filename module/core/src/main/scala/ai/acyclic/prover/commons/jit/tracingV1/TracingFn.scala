@@ -36,7 +36,7 @@ case class TracingFn[I, +O](
       _definedAt: SrcDefinition
   ): TracingFn[(I, I2), O2] = {
 
-    right
+    val _ = right
 
     ???
   }
