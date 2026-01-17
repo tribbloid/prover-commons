@@ -15,7 +15,8 @@ object HigherOrder2 {
       .CrossUnit
       .andThen {
 
-        fn1.trace <*> fn2.trace.higherOrder
+        fn1.trace <*> // TODO: <-- to eliminate CrossUnit, this is where Unit folding should happen
+          fn2.trace.higherOrder
       }
 
     val result =

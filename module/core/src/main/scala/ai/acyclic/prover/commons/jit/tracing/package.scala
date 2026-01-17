@@ -29,7 +29,7 @@ package object tracing extends FnImp0 {
 
     case class Impl[I, O](
         proto: Input[I] :=> Expr[O]
-    ) extends Expr.Static[I :=> O] {
+    ) extends Static[I, O] {
 
       val execute: I :=> O = { // as simple as possible, no runtime tracing or profiling
         :=>.at[I] { v =>
