@@ -36,7 +36,7 @@ package object tracing extends FnImp0 {
           val const = Const(v)
           val result = proto(const)
           result.getConcrete
-        }
+        }(proto.definedAt)
       }
 
       override val concrete: I :=> O = {
