@@ -1,12 +1,12 @@
 package ai.acyclic.prover.commons.jit.fixture
 
-import ai.acyclic.prover.commons.jit.tracingV1.Tracing
+import ai.acyclic.prover.commons.jit.tracingV1.TracingFn
 
 object PointwiseAndChain {
 
   import Circuits.*
 
-  private val pointwise: Tracing[(Int, Long), (Seq[Long], Seq[Double])] = fn1.trace <*> fn2.trace
+  private val pointwise: TracingFn[(Int, Long), (Seq[Long], Seq[Double])] = fn1.trace <*> fn2.trace
 
   val s1 = pointwise.map {
     case (o1, o2) =>

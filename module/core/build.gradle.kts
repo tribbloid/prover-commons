@@ -15,5 +15,8 @@ dependencies {
 
     api("com.github.ben-manes.caffeine:caffeine:3.2.3")
 
-//    api("zio:1.")
+
+    val zioV = "2.1.24"
+
+    api("dev.zio:zio_${vs.scala.binaryV}:$zioV")
 }

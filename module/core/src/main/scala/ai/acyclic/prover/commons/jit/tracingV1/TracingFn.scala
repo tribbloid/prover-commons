@@ -7,12 +7,12 @@ import ai.acyclic.prover.commons.TypeTag
 
 import scala.language.implicitConversions
 
-case class Tracing[I, O](
+case class TracingFn[I, O](
     self: Hom.Fn[I, O]
 ) extends Delegating[Hom.Fn[I, O]] {
 
-  lazy val higherOrder: Tracing[Unit, Hom.Fn[I, O]] = {
-    Tracing(Hom.Thunk.CachedEager(self))
+  lazy val higherOrder: TracingFn[Unit, Hom.Fn[I, O]] = {
+    TracingFn(Hom.Thunk.CachedEager(self))
     // TODO : get rid of it
   }
 
@@ -20,7 +20,7 @@ case class Tracing[I, O](
       implicit
       _definedAt: SrcDefinition,
       o2Tag: TypeTag[O2]
-  ): Tracing[I, O2] = {
+  ): TracingFn[I, O2] = {
 
     val _right: Hom.Fn[O, O2] = Hom.Fn.at[O](
       right
@@ -29,13 +29,13 @@ case class Tracing[I, O](
     val result =
       Hom.Fn.Mapped[I, O, O2](self, _right)
 
-    Tracing(result)
+    TracingFn(result)
   }
 
-  def flatMap[I2, O2](right: O => Tracing[I2, O2])(
+  def flatMap[I2, O2](right: O => TracingFn[I2, O2])(
       implicit
       _definedAt: SrcDefinition
-  ): Tracing[(I, I2), O2] = {
+  ): TracingFn[(I, I2), O2] = {
 
     right
 
@@ -45,7 +45,7 @@ case class Tracing[I, O](
   def foreach(right: O => Unit)(
       implicit
       _definedAt: SrcDefinition
-  ): Tracing[I, Unit] = {
+  ): TracingFn[I, Unit] = {
 
     map(right)
   }
@@ -53,31 +53,31 @@ case class Tracing[I, O](
   def withFilter(right: O => Boolean)(
       implicit
       _definedAt: SrcDefinition
-  ): Tracing[I, O] = {
+  ): TracingFn[I, O] = {
 
     val _right = Hom.Fn.Blackbox[O, Boolean](_definedAt)(right)
 
     val result =
       Hom.Fn.Filtered[I, O](self, _right)
 
-    Tracing(result)
+    TracingFn(result)
   }
 
-  def <*>[I2, O2](right: Tracing[I2, O2]): Tracing[(I, I2), (O, O2)] = {
+  def <*>[I2, O2](right: TracingFn[I2, O2]): TracingFn[(I, I2), (O, O2)] = {
 
     val result = Hom.Fn.Pointwise(self, right.self)
 
-    Tracing(result.normalForm)
+    TracingFn(result.normalForm)
   }
 
-  def -<[O2](right: Tracing[I, O2]): Tracing[I, (O, O2)] = {
+  def -<[O2](right: TracingFn[I, O2]): TracingFn[I, (O, O2)] = {
 
     val first = Hom.Fn.Duplicate[I]()
     val second = Hom.Fn.Pointwise(self, right.self)
 
     val result = Hom.Fn.Mapped[I, (I, I), (O, O2)](first, second)
 
-    Tracing(result)
+    TracingFn(result)
   }
 
   // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
@@ -85,11 +85,11 @@ case class Tracing[I, O](
   override lazy val unbox: Hom.Fn[I, O] = self.normalForm
 }
 
-object Tracing {
+object TracingFn {
   // Implicit conversions are provided by Delegating.unbox1
 
   // Additional implicit conversion from Tracing to Function1View for function composition
-  implicit def tracingToFunction[I, O](v: Tracing[I, O])(
+  implicit def tracingToFunction[I, O](v: TracingFn[I, O])(
       implicit
       _definedAt: SrcDefinition
   ): Hom.HasNormalForm.Function1View[I, O] = {
