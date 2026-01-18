@@ -7,6 +7,22 @@ import ai.acyclic.prover.commons.TypeTag
 
 import scala.language.implicitConversions
 
+/**
+  * TODO: this class is obsolete, should be replaced with [[ai.acyclic.prover.commons.jit.tracing.TracingFn]]
+  * everywhere.
+  *
+  * here are the rules:
+  *
+  *   - all methods under it becomes extension methods in [[ai.acyclic.prover.commons.jit.tracing.FnImp0]] or its
+  *     supertypes
+  *   - when creating new instance of [[TracingFn]], use existing constructors if possible, ask first before adding new
+  *     constructor
+  *   - all compilation and tests should succeed
+  *   - do not remove or comment out code, specifically code in
+  *     [[ai.acyclic.prover.commons.jit.tracing.__TracingDesign]]
+  *   - the old class should be removed at last
+  *   - your code outside the main package should be minimal
+  */
 case class TracingFn[I, +O](
     concrete: Hom.Fn[I, O]
 ) extends Delegating[Hom.Fn[I, O]] {
