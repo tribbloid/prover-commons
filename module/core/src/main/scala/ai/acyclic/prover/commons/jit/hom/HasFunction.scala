@@ -143,8 +143,8 @@ trait HasFunction {
     // sanity check - disabled because scalafix/semanticdb cannot parse bare blocks
     // implicitly[Fn[Int, String] <:< K2[Int, String]]
 
-    val Tracing: ai.acyclic.prover.commons.jit.tracingV1.TracingFn.type =
-      ai.acyclic.prover.commons.jit.tracingV1.TracingFn
+    val Tracing: ai.acyclic.prover.commons.jit.tracing.TracingFn.type =
+      ai.acyclic.prover.commons.jit.tracing.TracingFn
 
     abstract class Impl[I, O](
         implicit

@@ -27,6 +27,8 @@ package object tracing extends FnImp0 {
 
     type Static[-I, +O] = Expr.Static[I :=> O]
 
+    def apply[I, O](concrete: I :=> O): Static[I, O] = Const(concrete)
+
     case class Impl[I, O](
         proto: Input[I] :=> Expr[O]
     ) extends Static[I, O] {

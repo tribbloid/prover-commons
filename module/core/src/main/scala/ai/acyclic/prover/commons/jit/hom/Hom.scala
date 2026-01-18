@@ -10,8 +10,8 @@ object Hom extends Hom_Imp0 {
         implicit
         iTag: TypeTag[I],
         oTag: TypeTag[O]
-    ): ai.acyclic.prover.commons.jit.tracingV1.TracingFn[I, O] =
-      ai.acyclic.prover.commons.jit.tracingV1.TracingFn(self.normalForm)
+    ): ai.acyclic.prover.commons.jit.tracing.TracingFn.Static[I, O] =
+      ai.acyclic.prover.commons.jit.tracing.Const(self.normalForm)
   }
 
   implicit class _thunkExt[O](self: Thunk[O]) extends Serializable {
@@ -19,8 +19,8 @@ object Hom extends Hom_Imp0 {
     def trace(
         implicit
         oTag: TypeTag[O]
-    ): ai.acyclic.prover.commons.jit.tracingV1.TracingFn[Unit, O] =
-      ai.acyclic.prover.commons.jit.tracingV1.TracingFn(self.normalForm)
+    ): ai.acyclic.prover.commons.jit.tracing.TracingFn.Static[Unit, O] =
+      ai.acyclic.prover.commons.jit.tracing.Const(self.normalForm)
   }
 
   type :=>[-I, +R] = Fn[I, R]

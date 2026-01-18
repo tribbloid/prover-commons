@@ -85,8 +85,8 @@ object __TracingDesign {
     // different from t1_chained/t1_chained_2, y is introduced as another variable
     val t2_chained: TracingFn.Static[(String, String), String] = {
       for (
-        x: Input[String] <- Trace.id[String];
-        y: Input[String] <- t1
+        x <- Trace.id[String];
+        y <- t1
       ) yield {
         val result: String = x + y + "2"
         result
@@ -96,9 +96,9 @@ object __TracingDesign {
     // produce x => x + {y <-}([expr1](t1(x))(x + "1")) + "2"
     val t2_moreChained: TracingFn.Static[(String, String), String] = {
       for (
-        x: Input[String] <- Trace.id[String];
+        x <- Trace.id[String];
         expr1: TracingFn.Static[String, String] = t1;
-        y: Input[String] <- expr1;
+        y <- expr1;
         result = x + y + "2"
       ) yield {
         result
@@ -124,9 +124,9 @@ object __TracingDesign {
     }
 
     val t2_chained_desugared: TracingFn.Static[(String, String), String] = {
-      Trace.id[String].flatMap { (_: Input[String]) =>
-        t1.map { (y: Input[String]) =>
-          val result: String = y + "2"
+      Trace.id[String].flatMap { (x: String) =>
+        t1.map { (y: String) =>
+          val result: String = x + y + "2" // x is available from closure
           result
         }
       }

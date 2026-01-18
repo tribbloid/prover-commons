@@ -1,16 +1,31 @@
 package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Hom.:=>
+import scala.language.implicitConversions
 
 trait FnImp0 extends FnImp1 {
 
-  implicit def tuple2ToFn[I1, O1, I2, O2]: (TracingFn.Static[I1, O1], TracingFn.Static[I2, O2]) ?++>
-    TracingFn.Static[(I1, I2), (O1, O2)] = { _ =>
-    ???
+  // Additional implicit conversion from Tracing to Function1View for function composition
+  implicit def tracingToFunction[I, O](v: Expr.Static[Hom.Fn[I, O]])(
+      implicit
+      _definedAt: SrcDefinition
+  ): Hom.HasNormalForm.Function1View[I, O] = {
+    Hom.HasNormalForm._as1View(v.concrete)
+  }
+
+  implicit def tuple2ToFn[I1, O1, I2, O2]: (Expr.Static[Hom.Fn[I1, O1]], Expr.Static[Hom.Fn[I2, O2]]) ?++>
+    Expr.Static[Hom.Fn[(I1, I2), (O1, O2)]] = { tuple =>
+    val (f1, f2) = tuple
+
+    val result = Hom.Fn.Pointwise(f1.concrete, f2.concrete)
+
+    TracingFn(result)
   }
 
   implicit class BinaryForComprehensions[I, O1, O2](
-      private val self: TracingFn.Static[I, (O1, O2)]
+      private val self: Expr.Static[Hom.Fn[I, (O1, O2)]]
   ) {
     // TODO: should it be of higher implicit tier?
 
@@ -19,65 +34,97 @@ trait FnImp0 extends FnImp1 {
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn.Static[I, canChain.Repr] = {
-      ???
+    ): Expr.Static[Hom.Fn[I, canChain.Repr]] = {
+
+      val rightFn = Hom.Fn.at[(O1, O2)] {
+        case (o1, o2) =>
+          canChain.parse(right((Const(o1), Const(o2)))).getConcrete(_definedAt)
+      }(_definedAt)
+
+      val result = Hom.Fn.Mapped(self.concrete, rightFn)
+      TracingFn(result)
     }
 
     def foreach(right: ((Input[O1], Input[O2])) => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): TracingFn.Static[I, Unit] = {
-      ???
+    ): Expr.Static[Hom.Fn[I, Unit]] = {
+      map(right)
     }
 
-    def flatMap[I2, OO](right: ((Input[O1], Input[O2])) => TracingFn.Static[I2, OO])(
+    def flatMap[I2, OO](right: ((Input[O1], Input[O2])) => Expr.Static[Hom.Fn[I2, OO]])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn.Static[(I, I2), canChain.Repr] = {
-      ???
+    ): Expr.Static[Hom.Fn[(I, I2), canChain.Repr]] = {
+
+      val proto: Hom.:=>[Input[(I, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(I, I2)]] { input =>
+        val (i, i2) = input.getConcrete
+        val (o1, o2) = self.concrete(i)
+        val nextFn = right((Const(o1), Const(o2)))
+        val oo = nextFn.concrete(i2)
+        canChain.parse(oo)
+      }(_definedAt)
+
+      TracingFn.Impl(proto)
     }
 
     def withFilter(right: ((Input[O1], Input[O2])) => Boolean)(
         implicit
         _definedAt: SrcDefinition
-    ): TracingFn.Static[I, (O1, O2)] = {
-      ???
+    ): Expr.Static[Hom.Fn[I, (O1, O2)]] = {
+
+      val rightFn = Hom.Fn.at[(O1, O2)] {
+        case (o1, o2) =>
+          right((Const(o1), Const(o2)))
+      }(_definedAt)
+
+      val result = Hom.Fn.Filtered(self.concrete, rightFn)
+      TracingFn(result)
     }
   }
 
-  implicit def tuple2ToOps2[I1, O1, I2, O2]: (TracingFn.Static[I1, O1], TracingFn.Static[I2, O2]) ?++>
-    BinaryForComprehensions[(I1, I2), O1, O2] = {
-    ???
+  implicit def tuple2ToOps2[I1, O1, I2, O2]: (Expr.Static[Hom.Fn[I1, O1]], Expr.Static[Hom.Fn[I2, O2]]) ?++>
+    BinaryForComprehensions[(I1, I2), O1, O2] = { pair =>
+    val combined = tuple2ToFn(pair)
+    new BinaryForComprehensions(combined)
   }
 
-  implicit class BasicOps[P, I, O](private val self: TracingFn[P, I, O]) {
+  implicit class BasicOps[P, I, O](private val self: Expr.Gt[P, Hom.Fn[I, O]]) {
 
+    // beta reduction, notice that P is contravariant, and Expr[Any, I] represents a static I,
+    // so Constructor[Any, I, O] can apply on any Expr[P, I]
     // beta reduction, notice that P is contravariant, and Expr[Any, I] represents a static I,
     // so Constructor[Any, I, O] can apply on any Expr[P, I]
     def apply[P2 <: P](arg: Expr.Aux[P2, I])( // TODO: if compiler is strong enough, P2 can be skipped
         implicit
         _definedAt: SrcDefinition
-    ): Expr.Aux[P2, O] = {
+    ): Expr.Static[O] = {
 
-      ???
+      val v: I = arg.getConcrete
+      val result: O = self.getConcrete(_definedAt)(v)
+      Const(result)
     }
 
     // stolen form ZIO ZLayers, these are shorthands for defining parallel computation graphs
     // they are not necessary but can make definition shorter
     trait zipLike {
 
-      def apply[I2, O2](right: TracingFn[P, I2, O2])(
+      def apply[I2, O2](right: Expr.Gt[P, Hom.Fn[I2, O2]])(
           implicit
           _definedAt: SrcDefinition
-      ): TracingFn[P, (I, I2), (O, O2)]
+      ): Expr.Static[Hom.Fn[(I, I2), (O, O2)]]
     }
 
     object zip extends zipLike {
-      override def apply[I2, O2](right: TracingFn[P, I2, O2])(
+      override def apply[I2, O2](right: Expr.Gt[P, Hom.Fn[I2, O2]])(
           implicit
           _definedAt: SrcDefinition
-      ): TracingFn[P, (I, I2), (O, O2)] = ???
+      ): Expr.Static[Hom.Fn[(I, I2), (O, O2)]] = {
+
+        val result = Hom.Fn.Pointwise(self.getConcrete, right.getConcrete)
+        TracingFn(result) // returns Static which is subtype of Expr[P, ...]
+      }
     }
     def <*> = zip
 
@@ -91,11 +138,16 @@ trait FnImp0 extends FnImp1 {
 
     object union {
 
-      def apply[I2 <: I, O2](right: TracingFn[P, I2, O2])(
+      def apply[I2 <: I, O2](right: Expr.Gt[P, Hom.Fn[I2, O2]])(
           implicit
           _definedAt: SrcDefinition
-      ): TracingFn[P, I2, (O, O2)] = {
-        ???
+      ): Expr.Static[Hom.Fn[I2, (O, O2)]] = {
+
+        val duplicate = Hom.Fn.Duplicate[I2]()
+        val pointwise = Hom.Fn.Pointwise(self.getConcrete, right.getConcrete)
+
+        val result = Hom.Fn.Mapped(duplicate, pointwise)
+        TracingFn(result)
       }
     }
 

@@ -1,13 +1,15 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
-import ai.acyclic.prover.commons.jit.tracingV1.TracingFn
+import ai.acyclic.prover.commons.jit.tracing.TracingFn
+import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.jit.tracing._
 
 object ChainTwice {
 
   import Circuits.*
 
-  val s1: TracingFn[Int, String] =
+  val s1: TracingFn.Static[Int, String] =
     for (
       x <- fn0.trace;
       y = 3;
@@ -17,7 +19,7 @@ object ChainTwice {
       s"${x + y + z}b"
     }
 
-  val s1_desugared: TracingFn[Int, String] = fn0.trace
+  val s1_desugared: TracingFn.Static[Int, String] = fn0.trace
     .map { x =>
       val y = 3
       (x, y)
@@ -37,8 +39,8 @@ object ChainTwice {
              |+ Mapped
              |!-+ Mapped
              |: !-- ${fn0.explain.nodeText}
-             |: !-- Blackbox(s1 <at ChainTwice.scala:12>)
-             |!-- Blackbox(s1 <at ChainTwice.scala:12>)
+             |: !-- Blackbox(s1 <at ChainTwice.scala:11>)
+             |!-- Blackbox(s1 <at ChainTwice.scala:11>)
              |""".stripMargin
       ),
       (

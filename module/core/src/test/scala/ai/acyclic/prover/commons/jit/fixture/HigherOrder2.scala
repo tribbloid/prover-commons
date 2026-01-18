@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.fixture.Circuits.{fn1, fn2}
 import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.tracing._
 
 object HigherOrder2 {
 
@@ -27,7 +28,7 @@ object HigherOrder2 {
       )
         yield {
 
-          val result = x.flatMap(fn)
+          val result = x.flatMap(v => fn.getConcrete(null)(v))
           result
         }
 

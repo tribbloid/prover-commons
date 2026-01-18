@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import scala.language.implicitConversions
 
 trait Expr[
     +O
@@ -21,9 +22,8 @@ trait Expr[
       defAt: SrcDefinition
   ): TracingFn.Static[Unit, O] = {
 
-    TracingFn.Impl(
-      ???
-    )
+    val v = this.getConcrete
+    Const((_: Unit) => v)
   }
 }
 
