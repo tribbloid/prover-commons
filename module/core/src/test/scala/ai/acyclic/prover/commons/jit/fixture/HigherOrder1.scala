@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
-import ai.acyclic.prover.commons.jit.tracing._
+import ai.acyclic.prover.commons.jit.tracing.*
 
 object HigherOrder1 {
 
@@ -23,13 +23,13 @@ object HigherOrder1 {
 
   val pairs =
     Seq(
-      s1 -> "- Blackbox(s1 <at HigherOrder1.scala:9>)",
+      s1 -> "- Blackbox(s1 <at HigherOrder1.scala:10>)",
       s2 ->
         s"""
           |+ Mapped
           |!-+ Static
           |: !-- ${fn0.explain.nodeText}
-          |!-- Blackbox(result <at HigherOrder1.scala:10>)
+          |!-- Blackbox(result <at HigherOrder1.scala:11>)
           |""".stripMargin
     )
 }

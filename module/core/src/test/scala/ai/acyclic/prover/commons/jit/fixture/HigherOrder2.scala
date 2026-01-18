@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.fixture.Circuits.{fn1, fn2}
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.jit.tracing._
+import ai.acyclic.prover.commons.jit.tracing.*
 
 object HigherOrder2 {
 
@@ -67,8 +67,8 @@ object HigherOrder2 {
         |: :   !-- Blackbox(fn1 <at Circuits.scala:11>)
         |: :   !-+ Static
         |: :     !-- Blackbox(fn2 <at Circuits.scala:15>)
-        |: !-- Blackbox(result <at HigherOrder2.scala:24>)
-        |!-- Blackbox(result <at HigherOrder2.scala:23>)
+        |: !-- Blackbox(result <at HigherOrder2.scala:26>)
+        |!-- Blackbox(result <at HigherOrder2.scala:25>)
         |""".stripMargin
 //    s2 -> "s2"
 //    s3 -> "s3",

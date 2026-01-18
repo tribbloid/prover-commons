@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.jit.hom.Hom
 import scala.language.implicitConversions
 
 trait Expr[
@@ -23,7 +24,8 @@ trait Expr[
   ): TracingFn.Static[Unit, O] = {
 
     val v = this.getConcrete
-    Const((_: Unit) => v)
+    val v_thunk = Hom.Thunk.Static(v)
+    Const(v_thunk)
   }
 }
 

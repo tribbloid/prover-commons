@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.jit.fixture
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 import ai.acyclic.prover.commons.jit.tracing.TracingFn
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.tracing._
+import ai.acyclic.prover.commons.jit.tracing.*
 
 object ChainTwice {
 
@@ -39,8 +39,8 @@ object ChainTwice {
              |+ Mapped
              |!-+ Mapped
              |: !-- ${fn0.explain.nodeText}
-             |: !-- Blackbox(s1 <at ChainTwice.scala:11>)
-             |!-- Blackbox(s1 <at ChainTwice.scala:11>)
+             |: !-- Blackbox(s1 <at ChainTwice.scala:14>)
+             |!-- Blackbox(s1 <at ChainTwice.scala:14>)
              |""".stripMargin
       ),
       (
@@ -49,8 +49,8 @@ object ChainTwice {
            |+ Mapped
            |!-+ Mapped
            |: !-- ${fn0.explain.nodeText}
-           |: !-- Blackbox(s1_desugared <at ChainTwice.scala:21>)
-           |!-- Blackbox(s1_desugared <at ChainTwice.scala:25>)
+           |: !-- Blackbox(s1_desugared <at ChainTwice.scala:23>)
+           |!-- Blackbox(s1_desugared <at ChainTwice.scala:27>)
            |""".stripMargin
       )
     )

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
-import ai.acyclic.prover.commons.jit.tracing._
+import ai.acyclic.prover.commons.jit.tracing.*
 
 object ChainOther {
 
@@ -24,7 +24,7 @@ object ChainOther {
           s"""
              |+ Mapped
              |!-- ${fn0.explain.nodeText}
-             |!-- Blackbox(s1 <at ChainOther.scala:9>)
+             |!-- Blackbox(s1 <at ChainOther.scala:10>)
              |""".stripMargin
         ),
         (
@@ -32,7 +32,7 @@ object ChainOther {
           s""" 
              |+ Mapped
              |!-- ${fn0.explain.nodeText}
-             |!-- Blackbox(s2 <at ChainOther.scala:13>)
+             |!-- Blackbox(s2 <at ChainOther.scala:14>)
              |""".stripMargin
         )
 //        (s3, ""),

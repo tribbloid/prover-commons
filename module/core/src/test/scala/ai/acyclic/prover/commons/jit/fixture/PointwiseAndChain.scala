@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.tracing.TracingFn
-import ai.acyclic.prover.commons.jit.tracing._
+import ai.acyclic.prover.commons.jit.tracing.*
 
 object PointwiseAndChain {
 
@@ -40,7 +40,7 @@ object PointwiseAndChain {
            |!-+ Pointwise
            |: !-- ${fn1.explain.nodeText}
            |: !-- ${fn2.explain.nodeText}
-           |!-- Blackbox(s1 <at PointwiseAndChain.scala:11>)
+           |!-- Blackbox(s1 <at PointwiseAndChain.scala:12>)
            |""".stripMargin
       ),
       (
@@ -51,8 +51,8 @@ object PointwiseAndChain {
              |: !-+ Pointwise
              |: : !-- ${fn1.explain.nodeText}
              |: : !-- ${fn2.explain.nodeText}
-             |: !-- Blackbox(s2 <at PointwiseAndChain.scala:17>)
-             |!-- Blackbox(s2 <at PointwiseAndChain.scala:17>)
+             |: !-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
+             |!-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
              |""".stripMargin
       ),
       (
@@ -63,8 +63,8 @@ object PointwiseAndChain {
              |: !-+ Pointwise
              |: : !-- Blackbox(fn1 <at Circuits.scala:11>)
              |: : !-- Blackbox(fn2 <at Circuits.scala:15>)
-             |: !-- Blackbox(s3 <at PointwiseAndChain.scala:24>)
-             |!-- Blackbox(s3 <at PointwiseAndChain.scala:24>)
+             |: !-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
+             |!-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
              |""".stripMargin
       )
     )

@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.jit.hom.Hom.:=>
+
 import scala.language.implicitConversions
 
 trait FnImp0 extends FnImp1 {

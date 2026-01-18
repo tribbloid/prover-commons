@@ -7,7 +7,7 @@ package object tracing extends FnImp0 {
 
   type TracingFn[-P, -I, +O] = Expr.Gt[P, I :=> O]
 
-  object TracingFn {
+  object TracingFn extends Serializable {
 
     //  implicit def unzipVar[I, A, B](
     //      v: Constructor[I, (A, B)]
