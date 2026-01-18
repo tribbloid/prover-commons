@@ -2,10 +2,9 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 import ai.acyclic.prover.commons.multiverse.rewrite.HasConversionPart
 
-trait FnImp1 extends FnCanChain with HasConversionPart {
+trait FnImp1 extends HasConversionPart {
 
   implicit class UnaryForComprehensions[I, O](
       private val self: Expr.Static[Hom.Fn[I, O]]

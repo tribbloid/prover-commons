@@ -70,7 +70,7 @@ object CanUnapply {
       override def unapply(v: Any): Option[UnappliedForm] = {
         v match {
           case vv if tagT.runtimeClass.isInstance(vv) => self.unapply(vv.asInstanceOf[T])
-          case _                                       => None
+          case _                                      => None
         }
       }
     }

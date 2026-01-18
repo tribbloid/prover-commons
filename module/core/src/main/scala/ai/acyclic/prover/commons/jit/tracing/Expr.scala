@@ -29,13 +29,15 @@ trait Expr[
   }
 }
 
-object Expr {
-
-  implicit def _getValue[T](v: Gt[?, T])(
+trait ExprPriority1 {
+  implicit def _getValue[T](v: Expr.Gt[?, T])(
       implicit
       position: SrcDefinition = null
   ): T =
     v.getConcrete
+}
+
+object Expr extends FnImp0 {
 
   infix type Aux[P, +O] = Expr[O] { type Pending = P }
 // infix type Lt[+P, +O] = Expr[O] { type Pending <: P }

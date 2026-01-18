@@ -298,7 +298,7 @@ object CanEqual {
 
   implicit class Tagged[LR: ClassTag](self: CanEqual[LR]) {
 
-    private val tagLR = implicitly[ClassTag[LR]]
+    implicitly[ClassTag[LR]]
 
     object ForAny extends Impl[Any] {
 

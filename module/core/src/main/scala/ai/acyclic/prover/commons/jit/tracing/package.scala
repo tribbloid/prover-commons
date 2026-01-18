@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 
-package object tracing extends FnImp0 {
+package object tracing extends FnCanChain {
 
   type Input[O] = Expr.Gt[O, O]
 

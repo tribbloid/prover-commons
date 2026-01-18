@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.jit.hom.Hom
 
 import scala.language.implicitConversions
 
-trait FnImp0 extends FnImp1 {
+trait FnImp0 extends FnImp1 with ExprPriority1 {
 
   // Additional implicit conversion from Tracing to Function1View for function composition
   implicit def tracingToFunction[I, O](v: Expr.Static[Hom.Fn[I, O]])(
