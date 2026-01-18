@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.fixture.Circuits.{fn1, fn2}
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.jit.tracing.*
 
 object HigherOrder2 {
 

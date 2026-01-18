@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.tracing.TracingFn
-import ai.acyclic.prover.commons.jit.tracing.*
 
 object PointwiseAndChain {
 
