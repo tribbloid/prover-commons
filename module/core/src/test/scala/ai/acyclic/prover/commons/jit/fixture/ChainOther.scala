@@ -23,7 +23,7 @@ object ChainOther {
           s"""
              |+ Mapped
              |!-- ${fn0.explain.nodeText}
-             |!-- Blackbox(s1 <at ChainOther.scala:10>)
+             |!-- Blackbox(s1 <at ChainOther.scala:9>)
              |""".stripMargin
         ),
         (
@@ -31,7 +31,7 @@ object ChainOther {
           s""" 
              |+ Mapped
              |!-- ${fn0.explain.nodeText}
-             |!-- Blackbox(s2 <at ChainOther.scala:14>)
+             |!-- Blackbox(s2 <at ChainOther.scala:13>)
              |""".stripMargin
         )
 //        (s3, ""),

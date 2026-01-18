@@ -38,8 +38,8 @@ object ChainTwice {
              |+ Mapped
              |!-+ Mapped
              |: !-- ${fn0.explain.nodeText}
-             |: !-- Blackbox(s1 <at ChainTwice.scala:14>)
-             |!-- Blackbox(s1 <at ChainTwice.scala:14>)
+             |: !-- Blackbox(s1 <at ChainTwice.scala:13>)
+             |!-- Blackbox(s1 <at ChainTwice.scala:13>)
              |""".stripMargin
       ),
       (
@@ -48,8 +48,8 @@ object ChainTwice {
            |+ Mapped
            |!-+ Mapped
            |: !-- ${fn0.explain.nodeText}
-           |: !-- Blackbox(s1_desugared <at ChainTwice.scala:23>)
-           |!-- Blackbox(s1_desugared <at ChainTwice.scala:27>)
+           |: !-- Blackbox(s1_desugared <at ChainTwice.scala:22>)
+           |!-- Blackbox(s1_desugared <at ChainTwice.scala:26>)
            |""".stripMargin
       )
     )

@@ -39,7 +39,7 @@ object PointwiseAndChain {
            |!-+ Pointwise
            |: !-- ${fn1.explain.nodeText}
            |: !-- ${fn2.explain.nodeText}
-           |!-- Blackbox(s1 <at PointwiseAndChain.scala:12>)
+           |!-- Blackbox(s1 <at PointwiseAndChain.scala:11>)
            |""".stripMargin
       ),
       (
@@ -50,8 +50,8 @@ object PointwiseAndChain {
              |: !-+ Pointwise
              |: : !-- ${fn1.explain.nodeText}
              |: : !-- ${fn2.explain.nodeText}
-             |: !-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
-             |!-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
+             |: !-- Blackbox(s2 <at PointwiseAndChain.scala:17>)
+             |!-- Blackbox(s2 <at PointwiseAndChain.scala:17>)
              |""".stripMargin
       ),
       (
@@ -62,8 +62,8 @@ object PointwiseAndChain {
              |: !-+ Pointwise
              |: : !-- Blackbox(fn1 <at Circuits.scala:11>)
              |: : !-- Blackbox(fn2 <at Circuits.scala:15>)
-             |: !-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
-             |!-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
+             |: !-- Blackbox(s3 <at PointwiseAndChain.scala:24>)
+             |!-- Blackbox(s3 <at PointwiseAndChain.scala:24>)
              |""".stripMargin
       )
     )

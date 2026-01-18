@@ -22,13 +22,13 @@ object HigherOrder1 {
 
   val pairs =
     Seq(
-      s1 -> "- Blackbox(s1 <at HigherOrder1.scala:10>)",
+      s1 -> "- Blackbox(s1 <at HigherOrder1.scala:9>)",
       s2 ->
         s"""
           |+ Mapped
           |!-+ Static
           |: !-- ${fn0.explain.nodeText}
-          |!-- Blackbox(result <at HigherOrder1.scala:11>)
+          |!-- Blackbox(result <at HigherOrder1.scala:10>)
           |""".stripMargin
     )
 }

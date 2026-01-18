@@ -66,8 +66,8 @@ object HigherOrder2 {
         |: :   !-- Blackbox(fn1 <at Circuits.scala:11>)
         |: :   !-+ Static
         |: :     !-- Blackbox(fn2 <at Circuits.scala:15>)
-        |: !-- Blackbox(result <at HigherOrder2.scala:26>)
-        |!-- Blackbox(result <at HigherOrder2.scala:25>)
+        |: !-- Blackbox(result <at HigherOrder2.scala:25>)
+        |!-- Blackbox(result <at HigherOrder2.scala:24>)
         |""".stripMargin
 //    s2 -> "s2"
 //    s3 -> "s3",
