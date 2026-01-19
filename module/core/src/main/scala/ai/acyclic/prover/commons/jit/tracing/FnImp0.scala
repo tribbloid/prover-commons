@@ -2,10 +2,11 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.multiverse.rewrite.HasConversionPart
 
 import scala.language.implicitConversions
 
-trait FnImp0 extends FnImp1 with ExprPriority1 {
+trait FnImp0 extends HasConversionPart with ExprPriority1 {
 
   // Additional implicit conversion from Tracing to Function1View for function composition
   implicit def tracingToFunction[I, O](v: Expr.Static[Hom.Fn[I, O]])(
@@ -34,43 +35,50 @@ trait FnImp0 extends FnImp1 with ExprPriority1 {
     *   - all tests should pass
     */
 
-  implicit class BinaryForComprehensions[I, O1, O2](
-      private val self: Expr.Static[Hom.Fn[I, (O1, O2)]]
+  implicit class ForComprehensions[Inputs, O](
+      private val self: Expr.Static[Hom.Fn[Inputs, O]]
+  )(
+      implicit
+      val canReify: CanReifyMany[O]
   ) {
 
     // minimal requirement for for-comprehension
-    def map[OO](right: ((Input[O1], Input[O2])) => OO)(
+    def map[OO](right: canReify.Out => OO)(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[I, canChain.Repr]] = {
+    ): Expr.Static[Hom.Fn[Inputs, canChain.Repr]] = {
 
-      val rightFn = Hom.Fn.at[(O1, O2)] {
-        case (o1, o2) =>
-          canChain.parse(right((Const(o1), Const(o2)))).reify(_definedAt)
+      val rightFn = Hom.Fn.at[O] { o =>
+        val v = canReify.reify(o)
+        canChain.parse(right(v)).reify(_definedAt)
       }(_definedAt)
 
       val result = Hom.Fn.Mapped(self.concrete, rightFn)
       TracingFn(result)
     }
 
-    def foreach(right: ((Input[O1], Input[O2])) => Unit)(
+    def foreach(right: canReify.Out => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[I, Unit]] = {
-      map(right)
+    ): Expr.Static[Hom.Fn[Inputs, Unit]] = {
+      implicit val canChain: CanChain[Unit] = implicitly[CanChain[Unit]]
+      map(right).asInstanceOf[Expr.Static[Hom.Fn[Inputs, Unit]]]
     }
 
-    def flatMap[I2, OO](right: ((Input[O1], Input[O2])) => Expr.Static[Hom.Fn[I2, OO]])(
+    def flatMap[I2, OO](right: canReify.Out => Expr.Static[Hom.Fn[I2, OO]])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[(I, I2), canChain.Repr]] = {
+    ): Expr.Static[Hom.Fn[(Inputs, I2), canChain.Repr]] = {
 
-      val proto: Hom.:=>[Input[(I, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(I, I2)]] { input =>
+      val proto: Hom.:=>[Input[(Inputs, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(Inputs, I2)]] { input =>
         val (i, i2) = input.reify
-        val (o1, o2) = self.concrete(i)
-        val nextFn = right((Const(o1), Const(o2)))
+        val o = self.concrete(i)
+
+        val v = canReify.reify(o)
+        val nextFn = right(v)
+
         val oo = nextFn.concrete(i2)
         canChain.parse(oo)
       }(_definedAt)
@@ -78,25 +86,19 @@ trait FnImp0 extends FnImp1 with ExprPriority1 {
       TracingFn.Unary(proto)
     }
 
-    def withFilter(right: ((Input[O1], Input[O2])) => Boolean)(
+    def withFilter(right: canReify.Out => Boolean)(
         implicit
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[I, (O1, O2)]] = {
+    ): Expr.Static[Hom.Fn[Inputs, O]] = {
 
-      val rightFn = Hom.Fn.at[(O1, O2)] {
-        case (o1, o2) =>
-          right((Const(o1), Const(o2)))
+      val rightFn = Hom.Fn.at[O] { o =>
+        val v = canReify.reify(o)
+        right(v)
       }(_definedAt)
 
       val result = Hom.Fn.Filtered(self.concrete, rightFn)
       TracingFn(result)
     }
-  }
-
-  implicit def tuple2ToOps2[I1, O1, I2, O2]: (Expr.Static[Hom.Fn[I1, O1]], Expr.Static[Hom.Fn[I2, O2]]) ?++>
-    BinaryForComprehensions[(I1, I2), O1, O2] = { pair =>
-    val combined = tuple2ToFn(pair)
-    new BinaryForComprehensions(combined)
   }
 
   implicit class BasicOps[P, I, O](private val self: Expr.Gt[P, Hom.Fn[I, O]]) {

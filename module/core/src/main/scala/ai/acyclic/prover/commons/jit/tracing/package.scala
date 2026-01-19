@@ -52,7 +52,12 @@ package object tracing extends FnCanChain {
         canReifyMany: CanReifyMany.Aux[Inputs, II]
     ) extends TracingFn[II, O] {
 
-      override val concrete: II :=> O = ???
+      override val concrete: II :=> O = {
+        :=>.at[II] { ii =>
+          val inputs = canReifyMany.const(ii)
+          proto(inputs)
+        }(proto.definedAt)
+      }
     }
   }
 }

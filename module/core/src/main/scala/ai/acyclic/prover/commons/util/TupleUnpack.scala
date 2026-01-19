@@ -8,6 +8,7 @@ trait TupleUnpack[T] {
   type Tail
 
   def unpack(t: T): (Head, Tail)
+  def pack(h: Head, t: Tail): T // same as Zippable
 }
 
 trait TupleUnpack_Imp0 {
@@ -22,6 +23,7 @@ trait TupleUnpack_Imp0 {
     type Tail = Unit
 
     def unpack(t: T): (T, Unit) = (t, ())
+    def pack(h: T, t: Unit): T = h
   }
 }
 
@@ -31,7 +33,8 @@ object TupleUnpack extends TupleUnpack_Imp0 {
       implicit
       gen: Generic.Aux[P, L],
       isHCons: IsHCons.Aux[L, H, T],
-      tupler: Tupler.Aux[T, TP]
+      tupler: Tupler.Aux[T, TP],
+      genTP: Generic.Aux[TP, T]
   ): Aux[P, H, TP] = new TupleUnpack[P] {
     type Head = H
     type Tail = TP
@@ -41,6 +44,42 @@ object TupleUnpack extends TupleUnpack_Imp0 {
       val h = isHCons.head(l)
       val tail = isHCons.tail(l)
       (h, tupler(tail))
+    }
+
+    def pack(h: H, t: TP): P = {
+      val tail = genTP.to(t)
+      val l = isHCons.cons(h, tail)
+      gen.from(l)
+    }
+  }
+}
+
+trait TupleCons[H, T] {
+  type Out
+
+  def pack(h: H, t: T): Out
+}
+
+object TupleCons {
+
+  type Aux[H, T, O] = TupleCons[H, T] { type Out = O }
+
+  implicit def atomCase[H]: Aux[H, Unit, H] = new TupleCons[H, Unit] {
+    type Out = H
+    def pack(h: H, t: Unit): H = h
+  }
+
+  implicit def tupleCase[H, T <: HList, TP, P](
+      implicit
+      genTP: Generic.Aux[TP, T],
+      tupler: Tupler.Aux[H :: T, P]
+  ): Aux[H, TP, P] = new TupleCons[H, TP] {
+    type Out = P
+
+    def pack(h: H, t: TP): P = {
+      val tailHList = genTP.to(t)
+      val l = h :: tailHList
+      tupler(l)
     }
   }
 }

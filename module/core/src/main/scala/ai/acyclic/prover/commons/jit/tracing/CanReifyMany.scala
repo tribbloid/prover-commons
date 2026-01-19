@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.util.TupleUnpack
-import zio.Zippable
 
 /**
   * Typeclass to convert a tuple of [[Input]] into their corresponding values (using their (reify) function)
@@ -36,13 +35,14 @@ object CanReifyMany extends CanReifyMany_Imp0 {
 
   type Aux[T, O] = CanReifyMany[T] { type Out = O }
 
-//  implicit def atom[O]: Aux[Input[O], O] = new CanReifyMany[Input[O]] {
-//    type Out = O
-//    override def reifyMany(inputs: Input[O])(
-//        implicit
-//        defAt: SrcDefinition
-//    ): O = inputs.reify
-//  } // TODO: remove
+  implicit def atom[O]: Aux[Input[O], O] = new CanReifyMany[Input[O]] {
+    type Out = O
+    override def reify(inputs: Input[O])(
+        implicit
+        defAt: SrcDefinition
+    ): O = inputs.reify
+    override def const(values: O): Input[O] = Const(values)
+  }
 
   implicit val unit: Aux[Unit, Unit] = new CanReifyMany[Unit] {
     type Out = Unit
@@ -58,6 +58,15 @@ object CanReifyMany extends CanReifyMany_Imp0 {
 
 trait CanReifyMany_Imp0 {
 
+  implicit def identity[O]: CanReifyMany.Aux[O, O] = new CanReifyMany[O] {
+    type Out = O
+    override def reify(inputs: O)(
+        implicit
+        defAt: SrcDefinition
+    ): O = inputs
+    override def const(values: O): O = values
+  }
+
   implicit def unpack[
       T,
       Head,
@@ -70,7 +79,7 @@ trait CanReifyMany_Imp0 {
       unpack: TupleUnpack.Aux[T, Head, Tail],
       ev: Head <:< Input[HO],
       tReify: CanReifyMany.Aux[Tail, TLO],
-      zippable: Zippable.Out[HO, TLO, O]
+      unpackO: TupleUnpack.Aux[O, HO, TLO]
   ): CanReifyMany.Aux[T, O] = new CanReifyMany[T] {
     type Out = O
 
@@ -82,11 +91,14 @@ trait CanReifyMany_Imp0 {
       val h: Input[HO] = ev(hRaw)
       val ho = h.reify(defAt)
       val tlo = tReify.reify(t)
-      zippable.zip(ho, tlo)
+      unpackO.pack(ho, tlo)
     }
 
     override def const(values: O): T = {
-      ???
+      val (ho, tlo) = unpackO.unpack(values)
+      val h: Const[HO] = Const(ho)
+      val t = tReify.const(tlo)
+      unpack.pack(h, t)
     }
   }
 }
