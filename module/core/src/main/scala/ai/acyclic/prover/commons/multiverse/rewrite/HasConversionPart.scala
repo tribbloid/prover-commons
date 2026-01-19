@@ -20,40 +20,48 @@ object HasConversionPart {
   // Shorter chains are preferred through linearization
   // TODO: this can be much shorter if Scala implicit search is less lame
   trait Imp4 {
+    self: HasConversionPart =>
+
     implicit def forwardSearchView4[T, R1, R2, R3, R4, R5](v: T)(
         implicit
-        p1: HasConversionPart#ConversionPart[T, R1],
-        p2: HasConversionPart#ConversionPart[R1, R2],
-        p3: HasConversionPart#ConversionPart[R2, R3],
-        p4: HasConversionPart#ConversionPart[R3, R4],
-        p5: HasConversionPart#ConversionPart[R4, R5]
+        p1: ConversionPart[T, R1],
+        p2: ConversionPart[R1, R2],
+        p3: ConversionPart[R2, R3],
+        p4: ConversionPart[R3, R4],
+        p5: ConversionPart[R4, R5]
     ): R5 = p5.normalise(p4.normalise(p3.normalise(p2.normalise(p1.normalise(v)))))
   }
 
   trait Imp3 extends Imp4 {
+    self: HasConversionPart =>
+
     implicit def forwardSearchView3[T, R1, R2, R3, R4](v: T)(
         implicit
-        p1: HasConversionPart#ConversionPart[T, R1],
-        p2: HasConversionPart#ConversionPart[R1, R2],
-        p3: HasConversionPart#ConversionPart[R2, R3],
-        p4: HasConversionPart#ConversionPart[R3, R4]
+        p1: ConversionPart[T, R1],
+        p2: ConversionPart[R1, R2],
+        p3: ConversionPart[R2, R3],
+        p4: ConversionPart[R3, R4]
     ): R4 = p4.normalise(p3.normalise(p2.normalise(p1.normalise(v))))
   }
 
   trait Imp2 extends Imp3 {
+    self: HasConversionPart =>
+
     implicit def forwardSearchView2[T, R1, R2, R3](v: T)(
         implicit
-        p1: HasConversionPart#ConversionPart[T, R1],
-        p2: HasConversionPart#ConversionPart[R1, R2],
-        p3: HasConversionPart#ConversionPart[R2, R3]
+        p1: ConversionPart[T, R1],
+        p2: ConversionPart[R1, R2],
+        p3: ConversionPart[R2, R3]
     ): R3 = p3.normalise(p2.normalise(p1.normalise(v)))
   }
 
   trait Imp1 extends Imp2 {
+    self: HasConversionPart =>
+
     implicit def forwardSearchView[T, R, R2](v: T)(
         implicit
-        left: HasConversionPart#ConversionPart[T, R],
-        right: HasConversionPart#ConversionPart[R, R2]
+        left: ConversionPart[T, R],
+        right: ConversionPart[R, R2]
     ): R2 = right.normalise(left.normalise(v))
   }
 
