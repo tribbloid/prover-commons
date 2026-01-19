@@ -24,10 +24,19 @@ trait FnImp0 extends FnImp1 with ExprPriority1 {
     TracingFn(result)
   }
 
+  /**
+    * TODO: this class and [[UnaryForComprehensions]] should be merged into a single implicit class that:
+    *
+    *   - can handle for comprehension with unary input
+    *   - can hanlde for comprehension with input of tuple of arbitrary sizes
+    *   - use [[CanReifyMany]] to convert tuple of [[Input]] into tuple of values
+    *   - output should use [[TracingFn.Impl]] constructor or [[TracingFn.Unary]]
+    *   - all tests should pass
+    */
+
   implicit class BinaryForComprehensions[I, O1, O2](
       private val self: Expr.Static[Hom.Fn[I, (O1, O2)]]
   ) {
-    // TODO: should it be of higher implicit tier?
 
     // minimal requirement for for-comprehension
     def map[OO](right: ((Input[O1], Input[O2])) => OO)(

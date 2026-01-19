@@ -11,7 +11,7 @@ class CanReifyManySpec extends AnyFunSpec {
 
     it("should reify Input[Int] (atom)") {
       val v1: Input[Int] = Const(1)
-      val reified = implicitly[CanReifyMany[Input[Int]]].reifyMany(v1)
+      val reified = implicitly[CanReifyMany[Input[Int]]].reify(v1)
       assert(reified == 1)
     }
 
@@ -19,7 +19,7 @@ class CanReifyManySpec extends AnyFunSpec {
       val v1: Input[Int] = Const(1)
       val tuple = Tuple1(v1)
       val reifyMany = implicitly[CanReifyMany[Tuple1[Input[Int]]]]
-      val reified = reifyMany.reifyMany(tuple)
+      val reified = reifyMany.reify(tuple)
       assert(reified == 1)
     }
 
@@ -28,7 +28,7 @@ class CanReifyManySpec extends AnyFunSpec {
       val v2: Input[String] = Const("s")
       val tuple = (v1, v2)
       val reifyMany = implicitly[CanReifyMany[(Input[Int], Input[String])]]
-      val reified = reifyMany.reifyMany(tuple)
+      val reified = reifyMany.reify(tuple)
       println(s"Tuple2 reified: $reified")
       assert(reified == (1, "s"))
     }
@@ -39,7 +39,7 @@ class CanReifyManySpec extends AnyFunSpec {
       val v3: Input[Boolean] = Const(true)
       val tuple = (v1, v2, v3)
       val reifyMany = implicitly[CanReifyMany[(Input[Int], Input[String], Input[Boolean])]]
-      val reified = reifyMany.reifyMany(tuple)
+      val reified = reifyMany.reify(tuple)
       println(s"Tuple3 reified: $reified")
       // Zippable with right-recursive structure produces nested tuples: (1, (s, true))
       assert(reified == (1, ("s", true)))

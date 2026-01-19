@@ -15,17 +15,21 @@ import zio.Zippable
   * directly. Make sure all tests are successful.
   */
 trait CanReifyMany[
-    T // (Input[X], Input[Y], ...)
+    I // (Input[X], Input[Y], ...)
 ] {
 
   type Out // (X, Y, ...)
 
-  def reifyMany(
-      inputs: T
+  def reify(
+      inputs: I
   )(
       implicit
       defAt: SrcDefinition
   ): Out
+
+  def const(
+      values: Out
+  ): I
 }
 
 object CanReifyMany extends CanReifyMany_Imp0 {
@@ -42,10 +46,13 @@ object CanReifyMany extends CanReifyMany_Imp0 {
 
   implicit val unit: Aux[Unit, Unit] = new CanReifyMany[Unit] {
     type Out = Unit
-    override def reifyMany(inputs: Unit)(
+
+    override def reify(inputs: Unit)(
         implicit
         defAt: SrcDefinition
     ): Unit = ()
+
+    override def const(values: Unit): Unit = ()
   }
 }
 
@@ -66,15 +73,20 @@ trait CanReifyMany_Imp0 {
       zippable: Zippable.Out[HO, TLO, O]
   ): CanReifyMany.Aux[T, O] = new CanReifyMany[T] {
     type Out = O
-    override def reifyMany(inputs: T)(
+
+    override def reify(inputs: T)(
         implicit
         defAt: SrcDefinition
     ): O = {
       val (hRaw, t): (Head, Tail) = unpack.unpack(inputs)
       val h: Input[HO] = ev(hRaw)
       val ho = h.reify(defAt)
-      val tlo = tReify.reifyMany(t)
+      val tlo = tReify.reify(t)
       zippable.zip(ho, tlo)
+    }
+
+    override def const(values: O): T = {
+      ???
     }
   }
 }

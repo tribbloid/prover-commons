@@ -47,14 +47,12 @@ package object tracing extends FnCanChain {
       }
     }
 
-    case class Zipped[L, R, LR, InZip, O](
-        zipRaw: Zippable.Out[L, R, LR],
-        zipInput: Zippable.Out[Input[L], Input[R], InZip]
-    )(
-        proto: InZip :=> O
-    ) extends TracingFn[LR, R] {
+    case class Impl[Inputs, II, O](
+        proto: Inputs :=> O,
+        canReifyMany: CanReifyMany.Aux[Inputs, II]
+    ) extends TracingFn[II, O] {
 
-      override val concrete: zipRaw.Out :=> R = ???
+      override val concrete: II :=> O = ???
     }
   }
 }
