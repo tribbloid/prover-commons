@@ -28,7 +28,7 @@ trait Expr[
   }
 }
 
-object Expr extends FnImp0 {
+object Expr extends FnImp0 with ExprPriority1 {
 
   infix type Aux[P, +O] = Expr[O] { type Pending = P }
 // infix type Lt[+P, +O] = Expr[O] { type Pending <: P }
