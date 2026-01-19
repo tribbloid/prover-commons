@@ -38,7 +38,7 @@ trait FnImp0 extends FnImp1 with ExprPriority1 {
 
       val rightFn = Hom.Fn.at[(O1, O2)] {
         case (o1, o2) =>
-          canChain.parse(right((Const(o1), Const(o2)))).getConcrete(_definedAt)
+          canChain.parse(right((Const(o1), Const(o2)))).reify(_definedAt)
       }(_definedAt)
 
       val result = Hom.Fn.Mapped(self.concrete, rightFn)
@@ -59,7 +59,7 @@ trait FnImp0 extends FnImp1 with ExprPriority1 {
     ): Expr.Static[Hom.Fn[(I, I2), canChain.Repr]] = {
 
       val proto: Hom.:=>[Input[(I, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(I, I2)]] { input =>
-        val (i, i2) = input.getConcrete
+        val (i, i2) = input.reify
         val (o1, o2) = self.concrete(i)
         val nextFn = right((Const(o1), Const(o2)))
         val oo = nextFn.concrete(i2)
@@ -101,8 +101,8 @@ trait FnImp0 extends FnImp1 with ExprPriority1 {
         _definedAt: SrcDefinition
     ): Expr.Static[O] = {
 
-      val v: I = arg.getConcrete
-      val result: O = self.getConcrete(_definedAt)(v)
+      val v: I = arg.reify
+      val result: O = self.reify(_definedAt)(v)
       Const(result)
     }
 
@@ -122,7 +122,7 @@ trait FnImp0 extends FnImp1 with ExprPriority1 {
           _definedAt: SrcDefinition
       ): Expr.Static[Hom.Fn[(I, I2), (O, O2)]] = {
 
-        val result = Hom.Fn.Pointwise(self.getConcrete, right.getConcrete)
+        val result = Hom.Fn.Pointwise(self.reify, right.reify)
         TracingFn(result) // returns Static which is subtype of Expr[P, ...]
       }
     }
@@ -144,7 +144,7 @@ trait FnImp0 extends FnImp1 with ExprPriority1 {
       ): Expr.Static[Hom.Fn[I2, (O, O2)]] = {
 
         val duplicate = Hom.Fn.Duplicate[I2]()
-        val pointwise = Hom.Fn.Pointwise(self.getConcrete, right.getConcrete)
+        val pointwise = Hom.Fn.Pointwise(self.reify, right.reify)
 
         val result = Hom.Fn.Mapped(duplicate, pointwise)
         TracingFn(result)

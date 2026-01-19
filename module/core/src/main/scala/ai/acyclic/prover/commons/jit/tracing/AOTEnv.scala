@@ -25,13 +25,13 @@ case class AOTEnv() {
 
     val uuid: UUID = UUID.randomUUID()
 
-    override def getConcrete(
+    override def reify(
         implicit
         defAt: SrcDefinition
     ): T = inhabited
       .map(_.default)
       .getOrElse(
-        super.getConcrete
+        super.reify
       )
   }
 

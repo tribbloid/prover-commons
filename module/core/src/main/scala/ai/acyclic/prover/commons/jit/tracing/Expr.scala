@@ -12,7 +12,7 @@ trait Expr[
 
   // type IsConcrete // reserved for tracking if an expression can be evaluated immediately at compile-time
 
-  def getConcrete(
+  def reify(
       implicit
       defAt: SrcDefinition
   ): O = throw new ConcretizationTypeError(this, defAt)
@@ -22,7 +22,7 @@ trait Expr[
       defAt: SrcDefinition
   ): TracingFn[Unit, O] = {
 
-    val v = this.getConcrete
+    val v = this.reify
     val v_thunk = Hom.Thunk.Static(v)
     Const(v_thunk)
   }
@@ -63,7 +63,7 @@ object Expr extends FnImp0 {
 
     def concrete: O
 
-    override def getConcrete(
+    override def reify(
         implicit
         defAt: SrcDefinition
     ): O = concrete
@@ -88,9 +88,9 @@ object Expr extends FnImp0 {
   case class Tuple2[+O1, +O2](_1: Expr[O1], _2: Expr[O2]) extends Expr[(O1, O2)] {
     final type Pending = (_1.Pending, _2.Pending)
 
-    override def getConcrete(
+    override def reify(
         implicit
         defAt: SrcDefinition
-    ): (O1, O2) = (_1.getConcrete, _2.getConcrete)
+    ): (O1, O2) = (_1.reify, _2.reify)
   }
 }

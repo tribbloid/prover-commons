@@ -7,5 +7,5 @@ trait ExprPriority1 {
       implicit
       defAt: SrcDefinition = null
   ): T =
-    v.getConcrete
+    v.reify
 }

@@ -27,7 +27,7 @@ object HigherOrder2 {
       )
         yield {
 
-          val result = x.flatMap(v => fn.getConcrete(null)(v))
+          val result = x.flatMap(v => fn.reify(null)(v))
           result
         }
 

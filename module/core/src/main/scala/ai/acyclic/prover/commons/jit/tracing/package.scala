@@ -38,7 +38,7 @@ package object tracing extends FnCanChain {
         :=>.at[I] { v =>
           val const = Const(v)
           val result = proto(const)
-          result.getConcrete
+          result.reify
         }(proto.definedAt)
       }
 

@@ -18,7 +18,7 @@ trait FnImp1 extends HasConversionPart {
     ): Expr.Static[Hom.Fn[I, canChain.Repr]] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
-        canChain.parse(right(Const(o))).getConcrete(_definedAt)
+        canChain.parse(right(Const(o))).reify(_definedAt)
       }(_definedAt)
 
       val result = Hom.Fn.Mapped(self.concrete, rightFn)
@@ -65,7 +65,7 @@ trait FnImp1 extends HasConversionPart {
     ): Expr.Static[Hom.Fn[(I, I2), canChain.Repr]] = {
 
       val proto: Hom.:=>[Input[(I, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(I, I2)]] { input =>
-        val (i, i2) = input.getConcrete
+        val (i, i2) = input.reify
         val o: O = self.concrete(i)
         val nextFn = right(Const(o))
         val oo = nextFn.concrete(i2)
@@ -82,7 +82,7 @@ trait FnImp1 extends HasConversionPart {
     ): Expr.Static[Hom.Fn[(I, I2), canChain.Repr]] = {
 
       val proto: Hom.:=>[Input[(I, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(I, I2)]] { input =>
-        val (i, i2) = input.getConcrete
+        val (i, i2) = input.reify
         val o: O = self.concrete(i)
         val nextFn = right(o)
         val oo = nextFn.concrete(i2)
