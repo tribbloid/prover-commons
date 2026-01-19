@@ -37,14 +37,12 @@ trait FnImp0 extends HasConversionPart with ExprPriority1 {
 
   implicit class ForComprehensions[Inputs, O](
       private val self: Expr.Static[Hom.Fn[Inputs, O]]
-  )(
-      implicit
-      val canReify: CanReifyMany[O]
   ) {
 
     // minimal requirement for for-comprehension
-    def map[OO](right: canReify.Out => OO)(
+    def map[OO, Unpacked](right: Unpacked => OO)(
         implicit
+        canReify: CanReifyMany.Aux[O, Unpacked],
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
     ): Expr.Static[Hom.Fn[Inputs, canChain.Repr]] = {
@@ -58,16 +56,17 @@ trait FnImp0 extends HasConversionPart with ExprPriority1 {
       TracingFn(result)
     }
 
-    def foreach(right: canReify.Out => Unit)(
+    def foreach[Unpacked](right: Unpacked => Unit)(
         implicit
+        canReify: CanReifyMany.Aux[O, Unpacked],
         _definedAt: SrcDefinition
     ): Expr.Static[Hom.Fn[Inputs, Unit]] = {
-      implicit val canChain: CanChain[Unit] = implicitly[CanChain[Unit]]
       map(right).asInstanceOf[Expr.Static[Hom.Fn[Inputs, Unit]]]
     }
 
-    def flatMap[I2, OO](right: canReify.Out => Expr.Static[Hom.Fn[I2, OO]])(
+    def flatMap[I2, OO, Unpacked](right: Unpacked => Expr.Static[Hom.Fn[I2, OO]])(
         implicit
+        canReify: CanReifyMany.Aux[O, Unpacked],
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
     ): Expr.Static[Hom.Fn[(Inputs, I2), canChain.Repr]] = {
@@ -86,8 +85,9 @@ trait FnImp0 extends HasConversionPart with ExprPriority1 {
       TracingFn.Unary(proto)
     }
 
-    def withFilter(right: canReify.Out => Boolean)(
+    def withFilter[Unpacked](right: Unpacked => Boolean)(
         implicit
+        canReify: CanReifyMany.Aux[O, Unpacked],
         _definedAt: SrcDefinition
     ): Expr.Static[Hom.Fn[Inputs, O]] = {
 

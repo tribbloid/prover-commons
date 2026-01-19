@@ -35,14 +35,14 @@ object CanReifyMany extends CanReifyMany_Imp0 {
 
   type Aux[T, O] = CanReifyMany[T] { type Out = O }
 
-  implicit def atom[O]: Aux[Input[O], O] = new CanReifyMany[Input[O]] {
-    type Out = O
-    override def reify(inputs: Input[O])(
-        implicit
-        defAt: SrcDefinition
-    ): O = inputs.reify
-    override def const(values: O): Input[O] = Const(values)
-  }
+//  implicit def atom[O]: Aux[Input[O], O] = new CanReifyMany[Input[O]] {
+//    type Out = O
+//    override def reify(inputs: Input[O])(
+//        implicit
+//        defAt: SrcDefinition
+//    ): O = inputs.reify
+//    override def const(values: O): Input[O] = Const(values)
+//  }
 
   implicit val unit: Aux[Unit, Unit] = new CanReifyMany[Unit] {
     type Out = Unit
@@ -58,17 +58,19 @@ object CanReifyMany extends CanReifyMany_Imp0 {
 
 trait CanReifyMany_Imp0 {
 
-  implicit def identity[O]: CanReifyMany.Aux[O, O] = new CanReifyMany[O] {
-    type Out = O
-    override def reify(inputs: O)(
-        implicit
-        defAt: SrcDefinition
-    ): O = inputs
-    override def const(values: O): O = values
-  }
+//  implicit def identity[O]: CanReifyMany.Aux[O, O] = new CanReifyMany[O] {
+//    type Out = O
+//    override def reify(inputs: O)(
+//        implicit
+//        defAt: SrcDefinition
+//    ): O = inputs
+//    override def const(values: O): O = values
+//  }
+
+  implicitly[Const[Int] <:< Input[Int]]
 
   implicit def unpack[
-      T,
+      T <: Product,
       Head,
       Tail,
       HO,
@@ -77,9 +79,10 @@ trait CanReifyMany_Imp0 {
   ](
       implicit
       unpack: TupleUnpack.Aux[T, Head, Tail],
-      ev: Head <:< Input[HO],
+      ev: Head <:< Input[HO], // TODO: this can be avoided, there is only 1 Head
       tReify: CanReifyMany.Aux[Tail, TLO],
-      unpackO: TupleUnpack.Aux[O, HO, TLO]
+      unpackO: TupleUnpack.Aux[O, HO, TLO],
+      bound: Const[HO] <:< Head // TODO: ditto
   ): CanReifyMany.Aux[T, O] = new CanReifyMany[T] {
     type Out = O
 
@@ -98,7 +101,8 @@ trait CanReifyMany_Imp0 {
       val (ho, tlo) = unpackO.unpack(values)
       val h: Const[HO] = Const(ho)
       val t = tReify.const(tlo)
-      unpack.pack(h, t)
+      val _h: Head = bound(h)
+      unpack.pack(_h, t)
     }
   }
 }
