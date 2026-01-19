@@ -1,6 +1,8 @@
 package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.util.TupleUnpack
+import zio.Zippable
 
 /**
   * Typeclass to convert a tuple of [[Input]] into their corresponding values (using their (reify) function)
@@ -11,8 +13,6 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
   *
   * Implementation should use [[ai.acyclic.prover.commons.util.TupleUnpack]] for the recursion. Do not use shapeless
   * directly. Make sure all tests are successful.
-  *
-  * TODO: implement both the typeclass and its test suite
   */
 trait CanReifyMany[
     T // (Input[X], Input[Y], ...)
@@ -28,4 +28,53 @@ trait CanReifyMany[
   ): Out
 }
 
-object CanReifyMany {}
+object CanReifyMany extends CanReifyMany_Imp0 {
+
+  type Aux[T, O] = CanReifyMany[T] { type Out = O }
+
+  implicit def atom[O]: Aux[Input[O], O] = new CanReifyMany[Input[O]] {
+    type Out = O
+    override def reifyMany(inputs: Input[O])(
+        implicit
+        defAt: SrcDefinition
+    ): O = inputs.reify
+  }
+
+  implicit val unit: Aux[Unit, Unit] = new CanReifyMany[Unit] {
+    type Out = Unit
+    override def reifyMany(inputs: Unit)(
+        implicit
+        defAt: SrcDefinition
+    ): Unit = ()
+  }
+}
+
+trait CanReifyMany_Imp0 {
+
+  implicit def tuple[
+      T <: Product,
+      Head,
+      Tail,
+      HO,
+      TLO,
+      O
+  ](
+      implicit
+      unpack: TupleUnpack.Aux[T, Head, Tail],
+      ev: Head <:< Input[HO],
+      tReify: CanReifyMany.Aux[Tail, TLO],
+      zippable: Zippable.Out[HO, TLO, O]
+  ): CanReifyMany.Aux[T, O] = new CanReifyMany[T] {
+    type Out = O
+    override def reifyMany(inputs: T)(
+        implicit
+        defAt: SrcDefinition
+    ): O = {
+      val (hRaw, t): (Head, Tail) = unpack.unpack(inputs)
+      val h: Input[HO] = ev(hRaw)
+      val ho = h.reify(defAt)
+      val tlo = tReify.reifyMany(t)
+      zippable.zip(ho, tlo)
+    }
+  }
+}
