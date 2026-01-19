@@ -1,11 +1,14 @@
 package ai.acyclic.prover.commons.jit
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
+import zio.Zippable
 
 package object tracing extends FnCanChain {
 
   type Input[O] = Expr.Gt[O, O]
 
-  type TracingFn[-P, -I, +O] = Expr.Gt[P, I :=> O]
+  type TracingFnLike[-P, -I, +O] = Expr.Gt[P, I :=> O]
+
+  type TracingFn[-I, +O] = Expr.Static[I :=> O]
 
   object TracingFn extends Serializable {
 
@@ -25,13 +28,11 @@ package object tracing extends FnCanChain {
     // CAUTION: do not add Expr2[T] unless absolutely necessary
     // all reduction rules should be defined for curried form that yields higher order function(s)
 
-    type Static[-I, +O] = Expr.Static[I :=> O]
+    def apply[I, O](concrete: I :=> O): TracingFn[I, O] = Const(concrete)
 
-    def apply[I, O](concrete: I :=> O): Static[I, O] = Const(concrete)
-
-    case class Impl[I, O](
+    case class Unary[I, O](
         proto: Input[I] :=> Expr[O]
-    ) extends Static[I, O] {
+    ) extends TracingFn[I, O] {
 
       val execute: I :=> O = { // as simple as possible, no runtime tracing or profiling
         :=>.at[I] { v =>
@@ -45,6 +46,10 @@ package object tracing extends FnCanChain {
         execute
       }
     }
+
+//    case class Tupled[H, T, O](
+//        zippable: Zippable[H, T]
+//    ) extends TracingFn[zippable.Out, T] {}
   }
 
 }

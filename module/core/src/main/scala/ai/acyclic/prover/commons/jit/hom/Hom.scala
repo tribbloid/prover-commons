@@ -10,7 +10,7 @@ object Hom extends Hom_Imp0 {
         implicit
         iTag: TypeTag[I],
         oTag: TypeTag[O]
-    ): ai.acyclic.prover.commons.jit.tracing.TracingFn.Static[I, O] =
+    ): ai.acyclic.prover.commons.jit.tracing.TracingFn[I, O] =
       ai.acyclic.prover.commons.jit.tracing.Const(self.normalForm)
   }
 
@@ -19,7 +19,7 @@ object Hom extends Hom_Imp0 {
     def trace(
         implicit
         oTag: TypeTag[O]
-    ): ai.acyclic.prover.commons.jit.tracing.TracingFn.Static[Unit, O] =
+    ): ai.acyclic.prover.commons.jit.tracing.TracingFn[Unit, O] =
       ai.acyclic.prover.commons.jit.tracing.Const(self.normalForm)
   }
 

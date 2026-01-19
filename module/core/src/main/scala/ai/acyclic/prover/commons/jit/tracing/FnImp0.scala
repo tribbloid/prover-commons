@@ -66,7 +66,7 @@ trait FnImp0 extends FnImp1 with ExprPriority1 {
         canChain.parse(oo)
       }(_definedAt)
 
-      TracingFn.Impl(proto)
+      TracingFn.Unary(proto)
     }
 
     def withFilter(right: ((Input[O1], Input[O2])) => Boolean)(

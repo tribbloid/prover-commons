@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom
-import scala.language.implicitConversions
 
 trait Expr[
     +O
@@ -21,20 +20,12 @@ trait Expr[
   def higherOrder(
       implicit
       defAt: SrcDefinition
-  ): TracingFn.Static[Unit, O] = {
+  ): TracingFn[Unit, O] = {
 
     val v = this.getConcrete
     val v_thunk = Hom.Thunk.Static(v)
     Const(v_thunk)
   }
-}
-
-trait ExprPriority1 {
-  implicit def _getValue[T](v: Expr.Gt[?, T])(
-      implicit
-      position: SrcDefinition = null
-  ): T =
-    v.getConcrete
 }
 
 object Expr extends FnImp0 {

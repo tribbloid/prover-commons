@@ -72,7 +72,7 @@ trait FnImp1 extends HasConversionPart {
         canChain.parse(oo)
       }(_definedAt)
 
-      TracingFn.Impl(proto)
+      TracingFn.Unary(proto)
     }
 
     def flatMap[I2, OO](right: O => Expr.Static[Hom.Fn[I2, OO]])(
@@ -89,7 +89,7 @@ trait FnImp1 extends HasConversionPart {
         canChain.parse(oo)
       }(_definedAt)
 
-      TracingFn.Impl(proto)
+      TracingFn.Unary(proto)
     }
 
     def withFilterExpr(right: Input[O] => Boolean)(
@@ -117,7 +117,7 @@ trait FnImp1 extends HasConversionPart {
   }
 
   // TODO: the following can be removed by carefully using ConversionPart
-  implicit def tuple2ToOps1[I1, O1, I2, O2]: (TracingFn.Static[I1, O1], TracingFn.Static[I2, O2]) ?++>
+  implicit def tuple2ToOps1[I1, O1, I2, O2]: (TracingFn[I1, O1], TracingFn[I2, O2]) ?++>
     UnaryForComprehensions[(I1, I2), (O1, O2)] = {
     ???
   }
