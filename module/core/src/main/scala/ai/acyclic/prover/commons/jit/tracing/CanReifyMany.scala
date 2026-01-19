@@ -32,13 +32,13 @@ object CanReifyMany extends CanReifyMany_Imp0 {
 
   type Aux[T, O] = CanReifyMany[T] { type Out = O }
 
-  implicit def atom[O]: Aux[Input[O], O] = new CanReifyMany[Input[O]] {
-    type Out = O
-    override def reifyMany(inputs: Input[O])(
-        implicit
-        defAt: SrcDefinition
-    ): O = inputs.reify
-  }
+//  implicit def atom[O]: Aux[Input[O], O] = new CanReifyMany[Input[O]] {
+//    type Out = O
+//    override def reifyMany(inputs: Input[O])(
+//        implicit
+//        defAt: SrcDefinition
+//    ): O = inputs.reify
+//  } // TODO: remove
 
   implicit val unit: Aux[Unit, Unit] = new CanReifyMany[Unit] {
     type Out = Unit
@@ -51,8 +51,8 @@ object CanReifyMany extends CanReifyMany_Imp0 {
 
 trait CanReifyMany_Imp0 {
 
-  implicit def tuple[
-      T <: Product,
+  implicit def unpack[
+      T,
       Head,
       Tail,
       HO,
