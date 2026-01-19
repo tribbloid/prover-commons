@@ -7,7 +7,7 @@ import ai.acyclic.prover.commons.multiverse.rewrite.HasConversionPart
 import scala.language.implicitConversions
 
 //trait FnImp0 extends HasConversionPart with ExprPriority1 {
-trait FnImp1_ extends HasConversionPart {
+trait FnImp1 extends HasConversionPart {
 
   // Additional implicit conversion from Tracing to Function1View for function composition
   implicit def tracingToFunction[I, O](v: Expr.Static[Hom.Fn[I, O]])(
@@ -27,26 +27,27 @@ trait FnImp1_ extends HasConversionPart {
   }
 
   /**
-    * TODO: this class and [[UnaryForComprehensions]] should be merged into a single implicit class that:
+    * one implicit class the rules all for-comprehension:
     *
     *   - can handle for comprehension with unary input
     *   - can hanlde for comprehension with input of tuple of arbitrary sizes
-    *   - use [[CanReifyMany]] to convert tuple of [[Input]] into tuple of values
-    *   - output should use [[TracingFn.Impl]] constructor or [[TracingFn.Unary]]
-    *   - all tests should pass
+    *   - use [[CanReifyMany]] to convert a single [[Input]] tuple of [[Input]] into tuple of values
+    *   - yields [[TracingFn.Impl]] [[TracingFn.Unary]]
+    *
+    * unfortunately Scala compiler is too weak to deduce function argument type from lambda, otherwise
+    * [[ForInputComprehensions]] can be removed
     */
-
-  implicit class ForComprehensions[Inputs, O](
-      private val self: Expr.Static[Hom.Fn[Inputs, O]]
+  implicit class ForTupleComprehensions[IInputs, O](
+      private val self: Expr.Static[Hom.Fn[IInputs, O]]
   ) {
 
     // minimal requirement for for-comprehension
-    def map[OO, Unpacked](right: Unpacked => OO)(
+    def map[OO, ITuple](right: ITuple => OO)(
         implicit
-        canReify: CanReifyMany.Aux[O, Unpacked],
+        canReify: CanReifyMany.Aux[O, ITuple],
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[Inputs, canChain.Repr]] = {
+    ): Expr.Static[Hom.Fn[IInputs, canChain.Repr]] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
         val v = canReify.reify(o)
@@ -61,8 +62,8 @@ trait FnImp1_ extends HasConversionPart {
         implicit
         canReify: CanReifyMany.Aux[O, Unpacked],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[Inputs, Unit]] = {
-      map(right).asInstanceOf[Expr.Static[Hom.Fn[Inputs, Unit]]]
+    ): Expr.Static[Hom.Fn[IInputs, Unit]] = {
+      map(right).asInstanceOf[Expr.Static[Hom.Fn[IInputs, Unit]]]
     }
 
     def flatMap[I2, OO, Unpacked](right: Unpacked => Expr.Static[Hom.Fn[I2, OO]])(
@@ -70,9 +71,9 @@ trait FnImp1_ extends HasConversionPart {
         canReify: CanReifyMany.Aux[O, Unpacked],
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[(Inputs, I2), canChain.Repr]] = {
+    ): Expr.Static[Hom.Fn[(IInputs, I2), canChain.Repr]] = {
 
-      val proto: Hom.:=>[Input[(Inputs, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(Inputs, I2)]] { input =>
+      val proto: Hom.:=>[Input[(IInputs, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(IInputs, I2)]] { input =>
         val (i, i2) = input.reify
         val o = self.concrete(i)
 
@@ -90,7 +91,7 @@ trait FnImp1_ extends HasConversionPart {
         implicit
         canReify: CanReifyMany.Aux[O, Unpacked],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[Inputs, O]] = {
+    ): Expr.Static[Hom.Fn[IInputs, O]] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
         val v = canReify.reify(o)

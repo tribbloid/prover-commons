@@ -19,6 +19,9 @@ trait CanReifyMany[
 
   type Out // (X, Y, ...)
 
+  /**
+    * may fail with [[ConcretizationTypeError]], which is why [[SrcDefinition]] is required
+    */
   def reify(
       inputs: I
   )(
@@ -26,6 +29,9 @@ trait CanReifyMany[
       defAt: SrcDefinition
   ): Out
 
+  /**
+    * never fails
+    */
   def const(
       values: Out
   ): I
@@ -33,7 +39,7 @@ trait CanReifyMany[
 
 object CanReifyMany extends CanReifyMany_Imp0 {
 
-  type Aux[T, O] = CanReifyMany[T] { type Out = O }
+  infix type Aux[T, O] = CanReifyMany[T] { type Out = O }
 
 //  implicit def atom[O]: Aux[Input[O], O] = new CanReifyMany[Input[O]] {
 //    type Out = O

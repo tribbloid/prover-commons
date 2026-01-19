@@ -4,9 +4,9 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.multiverse.rewrite.HasConversionPart
 
-trait FnImp0 extends FnImp1_ with HasConversionPart {
+trait FnImp0 extends FnImp1 with HasConversionPart {
 
-  implicit class UnaryForComprehensions[I, O](
+  implicit class ForInputComprehensions[I, O](
       private val self: Expr.Static[Hom.Fn[I, O]]
   ) {
 
@@ -118,7 +118,7 @@ trait FnImp0 extends FnImp1_ with HasConversionPart {
 
   // TODO: the following can be removed by carefully using ConversionPart
   implicit def tuple2ToOps1[I1, O1, I2, O2]: (TracingFn[I1, O1], TracingFn[I2, O2]) ?++>
-    UnaryForComprehensions[(I1, I2), (O1, O2)] = {
+    ForInputComprehensions[(I1, I2), (O1, O2)] = {
     ???
   }
 }
