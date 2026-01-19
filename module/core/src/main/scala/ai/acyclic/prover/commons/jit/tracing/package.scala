@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.jit
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
-import zio.Zippable
 
 package object tracing extends FnCanChain {
 

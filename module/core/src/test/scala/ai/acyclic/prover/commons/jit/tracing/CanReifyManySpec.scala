@@ -42,7 +42,8 @@ class CanReifyManySpec extends AnyFunSpec {
       val reified = reifyMany.reify(tuple)
       println(s"Tuple3 reified: $reified")
       // Zippable with right-recursive structure produces nested tuples: (1, (s, true))
-      assert(reified == (1, ("s", true)))
+      // But CanReifyMany produces flat tuples
+      assert(reified == (1, "s", true))
     }
   }
 }

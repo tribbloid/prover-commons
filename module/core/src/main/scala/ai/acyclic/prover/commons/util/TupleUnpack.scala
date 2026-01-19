@@ -60,7 +60,15 @@ trait TupleCons[H, T] {
   def pack(h: H, t: T): Out
 }
 
-object TupleCons {
+trait TupleCons_Imp0 {
+
+  implicit def binaryCase[H, T]: TupleCons[H, T] { type Out = (H, T) } = new TupleCons[H, T] {
+    type Out = (H, T)
+    def pack(h: H, t: T): (H, T) = (h, t)
+  }
+}
+
+object TupleCons extends TupleCons_Imp0 {
 
   type Aux[H, T, O] = TupleCons[H, T] { type Out = O }
 
@@ -69,7 +77,7 @@ object TupleCons {
     def pack(h: H, t: Unit): H = h
   }
 
-  implicit def tupleCase[H, T <: HList, TP, P](
+  implicit def tupleCase[H, T <: HList, TP <: Product, P](
       implicit
       genTP: Generic.Aux[TP, T],
       tupler: Tupler.Aux[H :: T, P]
