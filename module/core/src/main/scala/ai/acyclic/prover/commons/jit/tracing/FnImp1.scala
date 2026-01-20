@@ -10,21 +10,23 @@ import scala.language.implicitConversions
 trait FnImp1 extends HasConversionPart {
 
   // Additional implicit conversion from Tracing to Function1View for function composition
-  implicit def tracingToFunction[I, O](v: Expr.Static[Hom.Fn[I, O]])(
+  implicit def tracingToFunctionView[I, O](v: TracingFn[I, O])(
       implicit
       _definedAt: SrcDefinition
   ): Hom.HasNormalForm.Function1View[I, O] = {
     Hom.HasNormalForm._as1View(v.concrete)
   }
 
-  implicit def tuple2ToFn[I1, O1, I2, O2]: (Expr.Static[Hom.Fn[I1, O1]], Expr.Static[Hom.Fn[I2, O2]]) ?++>
-    Expr.Static[Hom.Fn[(I1, I2), (O1, O2)]] = { tuple =>
+  implicit def tuple2ToFn[I1, O1, I2, O2]: (TracingFn[I1, O1], TracingFn[I2, O2]) ?++>
+    TracingFn[(I1, I2), (O1, O2)] = { tuple =>
     val (f1, f2) = tuple
 
     val result = Hom.Fn.Pointwise(f1.concrete, f2.concrete)
 
     TracingFn(result)
   }
+
+//  implicit def
 
   /**
     * one implicit class the rules all for-comprehension:
@@ -35,10 +37,10 @@ trait FnImp1 extends HasConversionPart {
     *   - yields [[TracingFn.Impl]] [[TracingFn.Unary]]
     *
     * unfortunately Scala compiler is too weak to deduce function argument type from lambda, otherwise
-    * [[ForInputComprehensions]] can be removed
+    * [[ai.acyclic.prover.commons.jit.tracing.Expr.ForInputComprehensions]] can be removed
     */
   implicit class ForTupleComprehensions[IInputs, O](
-      private val self: Expr.Static[Hom.Fn[IInputs, O]]
+      private val self: TracingFn[IInputs, O]
   ) {
 
     // minimal requirement for for-comprehension
@@ -47,7 +49,7 @@ trait FnImp1 extends HasConversionPart {
         canReify: CanReifyMany.Aux[O, ITuple],
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[IInputs, canChain.Repr]] = {
+    ): TracingFn[IInputs, canChain.Repr] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
         val v = canReify.reify(o)
@@ -62,16 +64,16 @@ trait FnImp1 extends HasConversionPart {
         implicit
         canReify: CanReifyMany.Aux[O, Unpacked],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[IInputs, Unit]] = {
-      map(right).asInstanceOf[Expr.Static[Hom.Fn[IInputs, Unit]]]
+    ): TracingFn[IInputs, Unit] = {
+      map(right)
     }
 
-    def flatMap[I2, OO, Unpacked](right: Unpacked => Expr.Static[Hom.Fn[I2, OO]])(
+    def flatMap[I2, OO, Unpacked](right: Unpacked => TracingFn[I2, OO])(
         implicit
         canReify: CanReifyMany.Aux[O, Unpacked],
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[(IInputs, I2), canChain.Repr]] = {
+    ): TracingFn[(IInputs, I2), canChain.Repr] = {
 
       val proto: Hom.:=>[Input[(IInputs, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(IInputs, I2)]] { input =>
         val (i, i2) = input.reify
@@ -91,7 +93,7 @@ trait FnImp1 extends HasConversionPart {
         implicit
         canReify: CanReifyMany.Aux[O, Unpacked],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[IInputs, O]] = {
+    ): TracingFn[IInputs, O] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
         val v = canReify.reify(o)
@@ -103,7 +105,7 @@ trait FnImp1 extends HasConversionPart {
     }
   }
 
-  implicit class BasicOps[P, I, O](private val self: Expr.Gt[P, Hom.Fn[I, O]]) {
+  implicit class BasicOps[P, I, O](private val self: TracingFnLike[P, I, O]) {
 
     // beta reduction, notice that P is contravariant, and Expr[Any, I] represents a static I,
     // so Constructor[Any, I, O] can apply on any Expr[P, I]
@@ -123,17 +125,17 @@ trait FnImp1 extends HasConversionPart {
     // they are not necessary but can make definition shorter
     trait zipLike {
 
-      def apply[I2, O2](right: Expr.Gt[P, Hom.Fn[I2, O2]])(
+      def apply[I2, O2](right: TracingFnLike[P, I2, O2])(
           implicit
           _definedAt: SrcDefinition
-      ): Expr.Static[Hom.Fn[(I, I2), (O, O2)]]
+      ): TracingFn[(I, I2), (O, O2)]
     }
 
     object zip extends zipLike {
-      override def apply[I2, O2](right: Expr.Gt[P, Hom.Fn[I2, O2]])(
+      override def apply[I2, O2](right: TracingFnLike[P, I2, O2])(
           implicit
           _definedAt: SrcDefinition
-      ): Expr.Static[Hom.Fn[(I, I2), (O, O2)]] = {
+      ): TracingFn[(I, I2), (O, O2)] = {
 
         val result = Hom.Fn.Pointwise(self.reify, right.reify)
         TracingFn(result) // returns Static which is subtype of Expr[P, ...]
@@ -151,10 +153,10 @@ trait FnImp1 extends HasConversionPart {
 
     object union {
 
-      def apply[I2 <: I, O2](right: Expr.Gt[P, Hom.Fn[I2, O2]])(
+      def apply[I2 <: I, O2](right: TracingFnLike[P, I2, O2])(
           implicit
           _definedAt: SrcDefinition
-      ): Expr.Static[Hom.Fn[I2, (O, O2)]] = {
+      ): TracingFn[I2, (O, O2)] = {
 
         val duplicate = Hom.Fn.Duplicate[I2]()
         val pointwise = Hom.Fn.Pointwise(self.reify, right.reify)
