@@ -4,11 +4,17 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.multiverse.rewrite.HasConversionPart
 
+import scala.language.implicitConversions
+
 trait FnImp0 extends FnImp1 with HasConversionPart {
 
-  implicit class ForInputComprehensions[I, O](
-      private val self: Expr.Static[Hom.Fn[I, O]]
-  ) {
+  implicit def _inputView[I, O](
+      self: Expr.Static[Hom.Fn[I, O]]
+  ): ForInputComprehensions[I, O] = ForInputComprehensions(self)
+
+  case class ForInputComprehensions[I, O](
+      self: Expr.Static[Hom.Fn[I, O]]
+  ) extends PartiallyConverted {
 
     // minimal requirement for for-comprehension
     def mapExpr[OO](right: Input[O] => OO)(

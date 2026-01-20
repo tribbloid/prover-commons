@@ -39,9 +39,13 @@ trait FnImp1 extends HasConversionPart {
     * unfortunately Scala compiler is too weak to deduce function argument type from lambda, otherwise
     * [[ai.acyclic.prover.commons.jit.tracing.Expr.ForInputComprehensions]] can be removed
     */
-  implicit class ForTupleComprehensions[IInputs, O](
-      private val self: TracingFn[IInputs, O]
-  ) {
+  implicit def _tupleView[IInputs, O](
+      self: TracingFn[IInputs, O]
+  ): ForTupleComprehensions[IInputs, O] = ForTupleComprehensions(self)
+
+  case class ForTupleComprehensions[IInputs, O](
+      self: TracingFn[IInputs, O]
+  ) extends PartiallyConverted {
 
     // minimal requirement for for-comprehension
     def map[OO, ITuple](right: ITuple => OO)(
