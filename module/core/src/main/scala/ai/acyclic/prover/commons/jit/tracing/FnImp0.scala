@@ -7,8 +7,9 @@ import ai.acyclic.prover.commons.multiverse.rewrite.HasConversionPart
 import scala.language.implicitConversions
 
 trait FnImp0 extends FnImp1 with HasConversionPart {
+  self: Expr.type =>
 
-  implicit def _inputView[I, O](
+  implicit def _forInput_<-[I, O](
       self: Expr.Static[Hom.Fn[I, O]]
   ): ForInputComprehensions[I, O] = ForInputComprehensions(self)
 
@@ -122,9 +123,19 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
     }
   }
 
+  implicit def tuple2ToFn[I1, O1, I2, O2]: (TracingFn[I1, O1], TracingFn[I2, O2]) ?++>
+    TracingFn[(I1, I2), (O1, O2)] = { tuple =>
+    val (f1, f2) = tuple
+
+    val result = Hom.Fn.Pointwise(f1.concrete, f2.concrete)
+
+    TracingFn(result)
+  }
+
   // TODO: the following can be removed by carefully using ConversionPart
   implicit def tuple2ToOps1[I1, O1, I2, O2]: (TracingFn[I1, O1], TracingFn[I2, O2]) ?++>
     ForInputComprehensions[(I1, I2), (O1, O2)] = {
     ???
   }
+
 }

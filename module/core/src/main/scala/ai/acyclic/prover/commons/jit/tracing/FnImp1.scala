@@ -8,6 +8,7 @@ import scala.language.implicitConversions
 
 //trait FnImp0 extends HasConversionPart with ExprPriority1 {
 trait FnImp1 extends HasConversionPart {
+  self: Expr.type =>
 
   // Additional implicit conversion from Tracing to Function1View for function composition
   implicit def tracingToFunctionView[I, O](v: TracingFn[I, O])(
@@ -15,15 +16,6 @@ trait FnImp1 extends HasConversionPart {
       _definedAt: SrcDefinition
   ): Hom.HasNormalForm.Function1View[I, O] = {
     Hom.HasNormalForm._as1View(v.concrete)
-  }
-
-  implicit def tuple2ToFn[I1, O1, I2, O2]: (TracingFn[I1, O1], TracingFn[I2, O2]) ?++>
-    TracingFn[(I1, I2), (O1, O2)] = { tuple =>
-    val (f1, f2) = tuple
-
-    val result = Hom.Fn.Pointwise(f1.concrete, f2.concrete)
-
-    TracingFn(result)
   }
 
 //  implicit def
@@ -39,7 +31,7 @@ trait FnImp1 extends HasConversionPart {
     * unfortunately Scala compiler is too weak to deduce function argument type from lambda, otherwise
     * [[ai.acyclic.prover.commons.jit.tracing.Expr.ForInputComprehensions]] can be removed
     */
-  implicit def _tupleView[IInputs, O](
+  implicit def _forTuple_<-[IInputs, O](
       self: TracingFn[IInputs, O]
   ): ForTupleComprehensions[IInputs, O] = ForTupleComprehensions(self)
 
