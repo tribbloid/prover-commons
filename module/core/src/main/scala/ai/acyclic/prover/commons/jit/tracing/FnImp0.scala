@@ -10,11 +10,11 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
   self: Expr.type =>
 
   implicit def _forInput_<-[I, O](
-      self: Expr.Static[Hom.Fn[I, O]]
+      self: TracingFn[I, O]
   ): ForInputComprehensions[I, O] = ForInputComprehensions(self)
 
   case class ForInputComprehensions[I, O](
-      self: Expr.Static[Hom.Fn[I, O]]
+      self: TracingFn[I, O]
   ) extends PartiallyConverted {
 
     // minimal requirement for for-comprehension
@@ -22,7 +22,7 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[I, canChain.Repr]] = {
+    ): TracingFn[I, canChain.Repr] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
         canChain.parse(right(Const(o))).reify(_definedAt)
@@ -35,7 +35,7 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
     def map[O2](right: O => O2)(
         implicit
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[I, O2]] = {
+    ): TracingFn[I, O2] = {
 
       val rightFn = Hom.Fn.at[O](right)(_definedAt)
       val result = Hom.Fn.Mapped(self.concrete, rightFn)
@@ -45,7 +45,7 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
     def foreachExpr(right: Input[O] => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[I, Unit]] = {
+    ): TracingFn[I, Unit] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
         right(Const(o))
@@ -58,18 +58,18 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
     def foreach(right: O => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[I, Unit]] = {
+    ): TracingFn[I, Unit] = {
 
       val rightFn = Hom.Fn.at[O](right)(_definedAt)
       val result = Hom.Fn.Mapped(self.concrete, rightFn)
       TracingFn(result)
     }
 
-    def flatMapExpr[I2, OO](right: Input[O] => Expr.Static[Hom.Fn[I2, OO]])(
+    def flatMapExpr[I2, OO](right: Input[O] => TracingFn[I2, OO])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[(I, I2), canChain.Repr]] = {
+    ): TracingFn[(I, I2), canChain.Repr] = {
 
       val proto: Hom.:=>[Input[(I, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(I, I2)]] { input =>
         val (i, i2) = input.reify
@@ -82,11 +82,11 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
       TracingFn.Unary(proto)
     }
 
-    def flatMap[I2, OO](right: O => Expr.Static[Hom.Fn[I2, OO]])(
+    def flatMap[I2, OO](right: O => TracingFn[I2, OO])(
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[(I, I2), canChain.Repr]] = {
+    ): TracingFn[(I, I2), canChain.Repr] = {
 
       val proto: Hom.:=>[Input[(I, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(I, I2)]] { input =>
         val (i, i2) = input.reify
@@ -102,7 +102,7 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
     def withFilterExpr(right: Input[O] => Boolean)(
         implicit
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[I, O]] = {
+    ): TracingFn[I, O] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
         right(Const(o))
@@ -115,7 +115,7 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
     def withFilter(right: O => Boolean)(
         implicit
         _definedAt: SrcDefinition
-    ): Expr.Static[Hom.Fn[I, O]] = {
+    ): TracingFn[I, O] = {
 
       val rightFn = Hom.Fn.at[O](right)(_definedAt)
       val result = Hom.Fn.Filtered(self.concrete, rightFn)

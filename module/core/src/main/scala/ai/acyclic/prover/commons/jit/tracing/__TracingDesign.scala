@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.tracing
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.hom.Hom
+
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 import ai.acyclic.prover.commons.jit.tracing.__TracingDesign.Examples.t1
 
@@ -61,7 +61,7 @@ object __TracingDesign {
       }
 
     // produce x => [y](t1(x))(x + "1") + [z](t1(y)) + "2"
-    val t1_chainedTwice: Expr.Static[Hom.Fn[String, String]] =
+    val t1_chainedTwice: TracingFn[String, String] =
       for (
         x <- Trace.id[String];
         y = t1.apply(x);
