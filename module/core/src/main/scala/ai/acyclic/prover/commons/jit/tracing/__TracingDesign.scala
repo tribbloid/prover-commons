@@ -72,7 +72,7 @@ object __TracingDesign {
       }
 
     // produce (x, y) => x + y
-    val t2: TracingFn[(Int, Int), Int] =
+    val t2 =
       for ((x, y) <- (Trace.id[Int], Trace.id[Int])) yield {
         x + y
       }

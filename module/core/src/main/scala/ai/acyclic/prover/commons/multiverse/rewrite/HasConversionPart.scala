@@ -1,11 +1,10 @@
 package ai.acyclic.prover.commons.multiverse.rewrite
 
-import zio.=!=
-
 import scala.annotation.implicitNotFound
 import scala.language.implicitConversions
 
-trait HasConversionPart extends HasConversion with HasConversionPart.Imp1 {
+trait HasConversionPart extends HasConversion with HasConversionPart.MidPrioritySteps with HasConversionPart.Imp1 {
+  import HasConversionPart.=!=
 
   trait Step[-T, +R] {
     def normalise(v: T): R
@@ -23,14 +22,6 @@ trait HasConversionPart extends HasConversion with HasConversionPart.Imp1 {
     implicit def witness[T <: PartiallyConverted]: IsPartiallyConverted[T] = new IsPartiallyConverted[T] {}
   }
 
-  implicit def _stepFromPartiallyConverted[T, R](
-      implicit
-      fn: T => R,
-      ev: T =!= R,
-      guard: IsPartiallyConverted[R]
-  ): Step[T, R] =
-    (v: T) => fn(v)
-
   /**
     * can be chained, unlike Conversion
     *
@@ -38,7 +29,7 @@ trait HasConversionPart extends HasConversion with HasConversionPart.Imp1 {
     */
   type ConversionPart[-T, +R] = HasConversionPart.ConversionPart[T, R]
 
-  infix type ?++>[-T, +R] = Conversion[T, R]
+  infix type ?++>[-T, +R] = ConversionPart[T, R]
 
   trait PartiallyConverted {}
 
@@ -68,16 +59,40 @@ object HasConversionPart {
 
   trait ConversionPart[-T, +R] extends Conversion[T, R] {}
 
-//  @implicitNotFound(msg = "Cannot prove that ${A} =!= ${B}.")
-//  trait =!=[A, B]
-//  object =!= {
-//    implicit def neq[A, B]: A =!= B = new =!=[A, B] {}
-//    implicit def neqAmbig1[A]: A =!= A = null
-//    implicit def neqAmbig2[A]: A =!= A = null
-//  }
+  @implicitNotFound(msg = "Cannot prove that ${A} =!= ${B}.")
+  trait =!=[A, B]
+  object =!= {
+    implicit def neq[A, B]: A =!= B = new =!=[A, B] {}
+    implicit def neqAmbig1[A]: A =!= A = null
+    implicit def neqAmbig2[A]: A =!= A = null
+  }
 
   // ConversionStepLowPriority removed to prevent implicit divergence loop with generic T=>R functions
   // Users should use ConversionPart explicitly or provide specific wrappers.
+
+  trait LowPrioritySteps {
+    self: HasConversionPart =>
+
+    implicit def _stepFromPartiallyConvertedFn[T, R](
+        implicit
+        fn: T => R,
+        ev: T =!= R,
+        guard: IsPartiallyConverted[R]
+    ): Step[T, R] =
+      (v: T) => fn(v)
+  }
+
+  trait MidPrioritySteps extends LowPrioritySteps {
+    self: HasConversionPart =>
+
+    implicit def _stepFromPartiallyConvertedConv[T, R](
+        implicit
+        fn: Conversion[T, R],
+        ev: T =!= R,
+        guard: IsPartiallyConverted[R]
+    ): Step[T, R] =
+      (v: T) => fn(v)
+  }
 
   // Layered trait hierarchy for implicit priority
   // Shorter chains are preferred through linearization

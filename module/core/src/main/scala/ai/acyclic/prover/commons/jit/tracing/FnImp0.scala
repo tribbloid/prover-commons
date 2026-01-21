@@ -9,9 +9,11 @@ import scala.language.implicitConversions
 trait FnImp0 extends FnImp1 with HasConversionPart {
   self: Expr.type =>
 
-  implicit def _forInput_<-[I, O](
-      self: TracingFn[I, O]
-  ): ForInputComprehensions[I, O] = ForInputComprehensions(self)
+  implicit def _forInput_<-[I, O]: Conversion[TracingFn[I, O], ForInputComprehensions[I, O]] =
+    new Conversion[TracingFn[I, O], ForInputComprehensions[I, O]] {
+      override def normalise(v: TracingFn[I, O]): ForInputComprehensions[I, O] =
+        ForInputComprehensions(v)
+    }
 
   case class ForInputComprehensions[I, O](
       self: TracingFn[I, O]
@@ -130,12 +132,6 @@ trait FnImp0 extends FnImp1 with HasConversionPart {
     val result = Hom.Fn.Pointwise(f1.concrete, f2.concrete)
 
     TracingFn(result)
-  }
-
-  // TODO: the following can be removed by carefully using ConversionPart
-  implicit def tuple2ToOps1[I1, O1, I2, O2]: (TracingFn[I1, O1], TracingFn[I2, O2]) ?++>
-    ForInputComprehensions[(I1, I2), (O1, O2)] = {
-    ???
   }
 
 }
