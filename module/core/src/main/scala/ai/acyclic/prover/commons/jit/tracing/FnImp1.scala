@@ -31,12 +31,19 @@ trait FnImp1 extends HasConversionPart {
     * unfortunately Scala compiler is too weak to deduce function argument type from lambda, otherwise
     * [[ai.acyclic.prover.commons.jit.tracing.Expr.ForInputComprehensions]] can be removed
     */
-  implicit def _forTuplePacked_<-[IInputs, O, Unpacked](
-      self: TracingFn[IInputs, O]
+  implicit def _forTuple_<-[I, O, Unpacked](
+      self: TracingFn[I, O]
   )(
       implicit
       canReify: CanReifyMany.Aux[O, Unpacked]
-  ): ForComprehensions[IInputs, O, Unpacked] = ForComprehensions(self, canReify)
+  ): ForComprehensions[I, O, Unpacked] = ForComprehensions(self, canReify)
+
+//  implicit def _forTupleDisjoint_<-[DisjointFns, I, O](
+//      self: DisjointFns // <-- e.g.  (TracingFn[I1, O1], TracingFn[I2, O2], ...)
+//                                                      )(
+//      implicit
+//      canReify: CanReifyMany.Aux[DisjointFns, ]
+//  ): ForComprehensions[] TODO
 
   implicit def _forTuple2_<-[I1, O1, I2, O2](
       self: (TracingFn[I1, O1], TracingFn[I2, O2])
@@ -48,15 +55,15 @@ trait FnImp1 extends HasConversionPart {
     ForComprehensions(fn, canReify)
   }
 
-  case class ForComprehensions[IInputs, O, Unpacked](
-      self: TracingFn[IInputs, O],
+  case class ForComprehensions[I, O, Unpacked](
+      self: TracingFn[I, O],
       canReify: CanReifyMany.Aux[O, Unpacked]
   ) extends PartiallyConverted {
 
     def foreach(right: Unpacked => Unit)(
         implicit
         _definedAt: SrcDefinition
-    ): TracingFn[IInputs, Unit] = {
+    ): TracingFn[I, Unit] = {
       map(right)
     }
 
@@ -65,7 +72,7 @@ trait FnImp1 extends HasConversionPart {
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn[IInputs, canChain.Repr] = {
+    ): TracingFn[I, canChain.Repr] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
         val v = canReify.reify(o)
@@ -80,9 +87,9 @@ trait FnImp1 extends HasConversionPart {
         implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
-    ): TracingFn[(IInputs, I2), canChain.Repr] = {
+    ): TracingFn[(I, I2), canChain.Repr] = {
 
-      val proto: Hom.:=>[Input[(IInputs, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(IInputs, I2)]] { input =>
+      val proto: Hom.:=>[Input[(I, I2)], Expr[canChain.Repr]] = Hom.:=>.at[Input[(I, I2)]] { input =>
         val (i, i2) = input.reify
         val o = self.concrete(i)
 
@@ -99,7 +106,7 @@ trait FnImp1 extends HasConversionPart {
     def withFilter(right: Unpacked => Boolean)(
         implicit
         _definedAt: SrcDefinition
-    ): TracingFn[IInputs, O] = {
+    ): TracingFn[I, O] = {
 
       val rightFn = Hom.Fn.at[O] { o =>
         val v = canReify.reify(o)
