@@ -38,12 +38,15 @@ trait FnImp1 extends HasConversionPart {
       canReify: CanReifyMany.Aux[O, Unpacked]
   ): ForComprehensions[I, O, Unpacked] = ForComprehensions(self, canReify)
 
-//  implicit def _forTupleDisjoint_<-[DisjointFns, I, O](
-//      self: DisjointFns // <-- e.g.  (TracingFn[I1, O1], TracingFn[I2, O2], ...)
+//  implicit def _forTupleDisjoint_<-[
+//    Exprs, // <-- e.g.  (TracingFn[I1, O1], TracingFn[I2, O2], ...)
+//    Fns // <-- e.g.  (I1 :=> O1, I2 :=> O2, ...)
+//  ](
+//                                                  self: Exprs
 //                                                      )(
 //      implicit
-//      canReify: CanReifyMany.Aux[DisjointFns, ]
-//  ): ForComprehensions[] TODO
+//      canReify: CanReifyMany.Aux[Exprs, Fns]
+//  ): ForComprehensions[]
 
   implicit def _forTuple2_<-[I1, O1, I2, O2](
       self: (TracingFn[I1, O1], TracingFn[I2, O2])
