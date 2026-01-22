@@ -31,18 +31,28 @@ trait FnImp1 extends HasConversionPart {
     * unfortunately Scala compiler is too weak to deduce function argument type from lambda, otherwise
     * [[ai.acyclic.prover.commons.jit.tracing.Expr.ForInputComprehensions]] can be removed
     */
-  implicit def _forTuple_<-[IInputs, O](
+  implicit def _forTuple_<-[IInputs, O, Unpacked](
       self: TracingFn[IInputs, O]
-  ): ForTupleComprehensions[IInputs, O] = ForTupleComprehensions(self)
+  )(
+      implicit
+      canReify: CanReifyMany.Aux[O, Unpacked]
+  ): ForTupleComprehensions[IInputs, O, Unpacked] = ForTupleComprehensions(self, canReify)
 
-  case class ForTupleComprehensions[IInputs, O](
-      self: TracingFn[IInputs, O]
+  case class ForTupleComprehensions[IInputs, O, Unpacked](
+      self: TracingFn[IInputs, O],
+      canReify: CanReifyMany.Aux[O, Unpacked]
   ) extends PartiallyConverted {
 
-    // minimal requirement for for-comprehension
-    def map[OO, ITuple](right: ITuple => OO)(
+    def foreach(right: Unpacked => Unit)(
         implicit
-        canReify: CanReifyMany.Aux[O, ITuple],
+        _definedAt: SrcDefinition
+    ): TracingFn[IInputs, Unit] = {
+      map(right)
+    }
+
+    // minimal requirement for for-comprehension
+    def map[OO](right: Unpacked => OO)(
+        implicit
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
     ): TracingFn[IInputs, canChain.Repr] = {
@@ -56,17 +66,8 @@ trait FnImp1 extends HasConversionPart {
       TracingFn(result)
     }
 
-    def foreach[Unpacked](right: Unpacked => Unit)(
+    def flatMap[I2, OO](right: Unpacked => TracingFn[I2, OO])(
         implicit
-        canReify: CanReifyMany.Aux[O, Unpacked],
-        _definedAt: SrcDefinition
-    ): TracingFn[IInputs, Unit] = {
-      map(right)
-    }
-
-    def flatMap[I2, OO, Unpacked](right: Unpacked => TracingFn[I2, OO])(
-        implicit
-        canReify: CanReifyMany.Aux[O, Unpacked],
         canChain: CanChain[OO],
         _definedAt: SrcDefinition
     ): TracingFn[(IInputs, I2), canChain.Repr] = {
@@ -85,9 +86,8 @@ trait FnImp1 extends HasConversionPart {
       TracingFn.Unary(proto)
     }
 
-    def withFilter[Unpacked](right: Unpacked => Boolean)(
+    def withFilter(right: Unpacked => Boolean)(
         implicit
-        canReify: CanReifyMany.Aux[O, Unpacked],
         _definedAt: SrcDefinition
     ): TracingFn[IInputs, O] = {
 
@@ -117,6 +117,20 @@ trait FnImp1 extends HasConversionPart {
       Const(result)
     }
 
+    def <*> = zip
+
+    def <> = OrElse
+
+    def <+> = OrElseEither
+
+    //  object zipPar extends zipLike {
+    //    override def apply[I2, O2](right: TracingV2[I2, O2])(
+    //      implicit
+    //      _definedAt: SrcDefinition
+    //    ): TracingV2[(I, I2), (O, O2)] = ???
+    //  }
+    //  def <&> = zipPar
+
     // stolen form ZIO ZLayers, these are shorthands for defining parallel computation graphs
     // they are not necessary but can make definition shorter
     trait zipLike {
@@ -137,15 +151,6 @@ trait FnImp1 extends HasConversionPart {
         TracingFn(result) // returns Static which is subtype of Expr[P, ...]
       }
     }
-    def <*> = zip
-
-    //  object zipPar extends zipLike {
-    //    override def apply[I2, O2](right: TracingV2[I2, O2])(
-    //      implicit
-    //      _definedAt: SrcDefinition
-    //    ): TracingV2[(I, I2), (O, O2)] = ???
-    //  }
-    //  def <&> = zipPar
 
     object union {
 
@@ -163,9 +168,7 @@ trait FnImp1 extends HasConversionPart {
     }
 
     object OrElse {}
-    def <> = OrElse
 
     object OrElseEither {}
-    def <+> = OrElseEither
   }
 }
