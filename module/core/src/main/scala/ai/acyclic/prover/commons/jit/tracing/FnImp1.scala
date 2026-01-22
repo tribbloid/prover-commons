@@ -31,14 +31,24 @@ trait FnImp1 extends HasConversionPart {
     * unfortunately Scala compiler is too weak to deduce function argument type from lambda, otherwise
     * [[ai.acyclic.prover.commons.jit.tracing.Expr.ForInputComprehensions]] can be removed
     */
-  implicit def _forTuple_<-[IInputs, O, Unpacked](
+  implicit def _forTuplePacked_<-[IInputs, O, Unpacked](
       self: TracingFn[IInputs, O]
   )(
       implicit
       canReify: CanReifyMany.Aux[O, Unpacked]
-  ): ForTupleComprehensions[IInputs, O, Unpacked] = ForTupleComprehensions(self, canReify)
+  ): ForComprehensions[IInputs, O, Unpacked] = ForComprehensions(self, canReify)
 
-  case class ForTupleComprehensions[IInputs, O, Unpacked](
+  implicit def _forTuple2_<-[I1, O1, I2, O2](
+      self: (TracingFn[I1, O1], TracingFn[I2, O2])
+  )(
+      implicit
+      canReify: CanReifyMany.Aux[(O1, O2), (O1, O2)]
+  ): ForComprehensions[(I1, I2), (O1, O2), (O1, O2)] = {
+    val fn: TracingFn[(I1, I2), (O1, O2)] = tuple2ToFn(self)
+    ForComprehensions(fn, canReify)
+  }
+
+  case class ForComprehensions[IInputs, O, Unpacked](
       self: TracingFn[IInputs, O],
       canReify: CanReifyMany.Aux[O, Unpacked]
   ) extends PartiallyConverted {
