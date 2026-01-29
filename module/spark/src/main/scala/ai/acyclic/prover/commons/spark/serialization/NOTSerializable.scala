@@ -15,7 +15,7 @@ trait NOTSerializable extends BeforeAndAfterShipping {
     trigger
   }
 
-  private lazy val trigger = {
+  private lazy val trigger: Trigger[Nothing] = {
     val msg = s"${this.getClass.getCanonicalName} is NOT serializable"
     Trigger(Internal(msg))
   }
@@ -23,10 +23,9 @@ trait NOTSerializable extends BeforeAndAfterShipping {
 
 object NOTSerializable {
 
-  case class Internal(msg: String) extends BeforeAndAfterShipping {
+  private case class Internal(msg: String) extends BeforeAndAfterShipping {
 
-    private lazy val error =
-      new NotSerializableException(msg)
+    private def error = new NotSerializableException(msg)
 
     override def beforeDeparture(): Unit = {
       throw error
