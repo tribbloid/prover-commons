@@ -10,18 +10,18 @@ class TuplesSpec extends BaseSpec {
 
     it("can construct and deconstruct") {
 
-      val t: Unit >< Int >< String = Unit >< 1 >< "a"
-      val t2 = Tuples.cons(Tuples.cons(Unit, 1), "a")
+      val t: _0 >< Int >< String = _0 >< 1 >< "a"
+      val t2 = Tuples.cons(Tuples.cons(_0, 1), "a")
 
       assert(t == t2)
 
       val (tail, head) = Tuples.deCons(t)
       assert(head == "a")
-      assert(tail == Unit >< 1)
+      assert(tail == _0 >< 1)
     }
 
     it("GetV") {
-      val t: String :: Int :: HNil = Unit >< 1 >< "a"
+      val t: String :: Int :: HNil = _0 >< 1 >< "a"
       val inter = Tuples.InterOps(t)
       val getV = inter.GetV
       import getV.getter
@@ -34,7 +34,7 @@ class TuplesSpec extends BaseSpec {
       val k: "k" = "k"
       val v = 1
       val f = shapeless.labelled.field[k.type](v)
-      val t = Unit >< f
+      val t = _0 >< f
 
       val inter = Tuples.InterOps(t)
       val getField = inter.GetField

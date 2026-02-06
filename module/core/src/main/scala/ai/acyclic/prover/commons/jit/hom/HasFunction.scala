@@ -360,7 +360,7 @@ trait HasFunction {
 
   sealed trait ConstantFn[+O] extends Fn[Any, O] with Fn.CachedPure {
 
-    protected val value: O
+    val value: O
   }
 
   type Thunk[+O] = Fn[Unit, O]
@@ -381,12 +381,12 @@ trait HasFunction {
     final case class Lazy[O](gen: Thunk[O]) extends Impl[O] {
 
       // equivalent to CachedLazy[Unit, O], but much faster
-      @transient protected lazy val value: O = gen(())
+      @transient lazy val value: O = gen(())
     }
 
-    final case class NotProvided[O]() extends Impl[O] {
+    case object NotProvided extends Impl[Nothing] {
 
-      @transient protected lazy val value: O = throw new NoSuchElementException("missing, not provided")
+      @transient lazy val value: Nothing = throw new NoSuchElementException("missing, not provided")
     }
   }
 }

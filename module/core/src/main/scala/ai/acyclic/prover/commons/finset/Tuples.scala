@@ -14,15 +14,13 @@ object Tuples extends Finsets {
   import shapeless.::
 
   override type VBound = Any
+
   override type Fin = HList
 
-  type Tuple = Fin
+  type _0 = HNil.type
+  val _0: _0 = HNil
 
-  override type Empty = HNil
-  override val Empty: HNil = HNil
-
-  type Unit = Empty
-  val Unit = Empty
+  override val _Empty: _0 = _0
 
   infix type ><[+TAIL <: Fin, +HEAD <: VBound] = HEAD :: TAIL
 

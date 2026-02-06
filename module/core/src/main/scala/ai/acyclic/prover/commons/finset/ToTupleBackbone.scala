@@ -14,23 +14,37 @@ trait ToTupleBackbone extends Finsets {
 
   trait Fin extends Product with Serializable {
 
-    type _Tuple <: Tuples.Fin
+    type Tuple <: Tuples.Fin
     val asTuple: Tuples.Fin
     lazy val asTupleOps: Tuples.InterOps[asTuple.type] = Tuples.InterOps(asTuple)
 
-//    type _NativeTuple <: Product TODO: need to impl this later
-
     def asList: List[VBound]
+
+    /**
+      * return a Scala tuple with the same arity, e.g.
+      *   - if Tuple is A :: B :: HNil, NativeTuple should be (A, B)
+      *   - if Tuple is HNil, NativeTuple should be Unit
+      */
+//    def asNativeTuple[T](
+//        implicit
+//        v: Unit = ???
+//    ): NativeTupleView[T] = {
+//
+//      // TODO: implement
+//    }
   }
 
-  case object _Empty extends Fin {
-    override type _Tuple = HNil
+  trait NativeTupleView[T] {
+
+    val value: T
+  }
+
+  protected case object _Empty extends Fin {
+    override type Tuple = HNil
     override val asTuple: HNil = HNil
     override def asList: List[VBound] = Nil
     override lazy val toString: String = EMPTY
   }
-  override type Empty = _Empty.type
-  override val Empty: _Empty.type = _Empty
 
   sealed trait ><[
       +TAIL <: Fin,
@@ -55,8 +69,7 @@ trait ToTupleBackbone extends Finsets {
   }
 
   // cartesian product symbol
-  // cartesian product symbol
-  case class ConsImpl[
+  case class Cons[
       TAIL <: Fin,
       HEAD <: VBound
   ](
@@ -68,18 +81,19 @@ trait ToTupleBackbone extends Finsets {
     type Tail = TAIL
     type Head = HEAD
 
-    override type _Tuple = HEAD :: tail._Tuple
+    override type Tuple = HEAD :: tail.Tuple
+
   }
 
   final override def cons[TAIL <: Fin, HEAD <: VBound](tail: TAIL, head: HEAD) =
-    ConsImpl(tail, head)
+    Cons(tail, head)
 
   final override def deCons[TAIL <: Fin, HEAD <: VBound](
       cons: TAIL >< HEAD
   ): (TAIL, HEAD) = {
 
     cons match {
-      case cons: ConsImpl[tail, head] => (cons.tail, cons.head)
+      case cons: Cons[tail, head] => (cons.tail, cons.head)
     }
   }
 }

@@ -15,8 +15,9 @@ trait LeftNested {
 
   type Fin
 
-  type Empty <: Fin
-  val Empty: Empty
+  protected val _Empty: Fin
+  type Empty = _Empty.type
+  final def Empty: Empty = _Empty
 
   infix type ><[+TAIL <: Fin, +HEAD <: VBound] <: Fin // <- ket-bra notation for product
 
