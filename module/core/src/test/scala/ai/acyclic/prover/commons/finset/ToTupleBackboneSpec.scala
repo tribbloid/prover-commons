@@ -22,6 +22,12 @@ class ToTupleBackboneSpec extends BaseSpec {
     it("toString should return correct string") {
       assert(Empty.toString == ToTupleBackbone.EMPTY)
     }
+    it("should behave as a Product") {
+      assert(Empty.productArity == 0)
+      assert(Empty.productIterator.isEmpty)
+      assert(Empty.canEqual(Empty))
+      assert(intercept[IndexOutOfBoundsException](Empty.productElement(0)).isInstanceOf[IndexOutOfBoundsException])
+    }
   }
 
   describe("ConsImpl") {
@@ -67,6 +73,30 @@ class ToTupleBackboneSpec extends BaseSpec {
       assert(tuple.toString.contains("1"))
       assert(tuple.toString.contains("a"))
       assert(tuple.toString.contains("><"))
+    }
+    it("should behave as a Product") {
+      val tuple = Empty >< 1
+      assert(tuple.productArity == 2)
+      assert(tuple.productElement(0) == Empty)
+      assert(tuple.productElement(1) == 1)
+      assert(tuple.productIterator.toList == List(Empty, 1))
+      assert(tuple.canEqual(Empty >< 1))
+      assert(!tuple.canEqual(Empty))
+    }
+
+    it("should work with nested tuple Empty >< 1 >< 2") {
+      val tuple = Empty >< 1 >< 2
+
+      assert(tuple.head == 2)
+      assert(tuple.tail.head == 1)
+      assert(tuple.tail.tail == Empty)
+
+      assert(tuple.productArity == 2) // TODO: this is not idiomatic, should be 3
+
+      assert(tuple.productElement(0) == Empty >< 1)
+      assert(tuple.productElement(1) == 2)
+
+      assert(tuple.asList == List(1, 2))
     }
   }
 }

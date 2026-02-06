@@ -12,7 +12,7 @@ trait ToTupleBackbone extends Finsets {
 
   import ToTupleBackbone.*
 
-  trait Fin { //      TODO: make this a subtype of Product
+  trait Fin extends Product with Serializable {
 
     type _Tuple <: Tuples.Fin
     def asTuple: _Tuple
@@ -23,16 +23,14 @@ trait ToTupleBackbone extends Finsets {
     def asList: List[VBound]
   }
 
-  sealed class Empty extends Fin {
-
+  case object EmptyObj extends Fin {
     override type _Tuple = HNil
     override def asTuple: HNil = HNil
-
     override def asList: List[VBound] = Nil
-
     override lazy val toString: String = EMPTY
   }
-  override val Empty = new Empty
+  override type Empty = EmptyObj.type
+  override val Empty: EmptyObj.type = EmptyObj
 
   sealed trait ><[
       +TAIL <: Fin,
@@ -44,12 +42,13 @@ trait ToTupleBackbone extends Finsets {
   }
 
   // cartesian product symbol
-  class ConsImpl[
+  // cartesian product symbol
+  case class ConsImpl[
       TAIL <: Fin,
       HEAD <: VBound
   ](
-      val tail: TAIL,
-      val head: HEAD
+      tail: TAIL,
+      head: HEAD
   ) extends (TAIL >< HEAD) {
 
     // in scala 3 these will be gone
@@ -62,19 +61,17 @@ trait ToTupleBackbone extends Finsets {
     override def asList: List[VBound] = tail.asList ++ Seq(head)
 
     override lazy val toString: String = {
-      val tailStr = tail match {
-        case _: Empty => ""
-        case _        => tail.toString + " ><\n"
-      }
+      val tailStr =
+        if (tail == EmptyObj) ""
+        else tail.toString + " ><\n"
 
       s"""$tailStr${TextBlock(head.toString).indent("  ").build}
          | """.stripMargin.trim
     }
-
   }
 
   final override def cons[TAIL <: Fin, HEAD <: VBound](tail: TAIL, head: HEAD) =
-    new ConsImpl(tail, head)
+    ConsImpl(tail, head)
 
   final override def deCons[TAIL <: Fin, HEAD <: VBound](
       cons: TAIL >< HEAD
