@@ -15,22 +15,22 @@ trait ToTupleBackbone extends Finsets {
   trait Fin extends Product with Serializable {
 
     type _Tuple <: Tuples.Fin
-    def asTuple: _Tuple
-    lazy val asTupleOps: Tuples.InterOps[_Tuple] = Tuples.InterOps(asTuple)
+    val asTuple: Tuples.Fin
+    lazy val asTupleOps: Tuples.InterOps[asTuple.type] = Tuples.InterOps(asTuple)
 
 //    type _NativeTuple <: Product TODO: need to impl this later
 
     def asList: List[VBound]
   }
 
-  case object EmptyObj extends Fin {
+  case object _Empty extends Fin {
     override type _Tuple = HNil
-    override def asTuple: HNil = HNil
+    override val asTuple: HNil = HNil
     override def asList: List[VBound] = Nil
     override lazy val toString: String = EMPTY
   }
-  override type Empty = EmptyObj.type
-  override val Empty: EmptyObj.type = EmptyObj
+  override type Empty = _Empty.type
+  override val Empty: _Empty.type = _Empty
 
   sealed trait ><[
       +TAIL <: Fin,
@@ -39,6 +39,19 @@ trait ToTupleBackbone extends Finsets {
 
     val tail: TAIL
     val head: HEAD
+
+    override lazy val asTuple = head :: tail.asTuple
+
+    override def asList: List[VBound] = tail.asList ++ Seq(head)
+
+    override lazy val toString: String = {
+      val tailStr =
+        if (tail == _Empty) ""
+        else tail.toString + " ><\n"
+
+      s"""$tailStr${TextBlock(head.toString).indent("  ").build}
+         | """.stripMargin.trim
+    }
   }
 
   // cartesian product symbol
@@ -56,18 +69,6 @@ trait ToTupleBackbone extends Finsets {
     type Head = HEAD
 
     override type _Tuple = HEAD :: tail._Tuple
-    override def asTuple: _Tuple = head :: tail.asTuple
-
-    override def asList: List[VBound] = tail.asList ++ Seq(head)
-
-    override lazy val toString: String = {
-      val tailStr =
-        if (tail == EmptyObj) ""
-        else tail.toString + " ><\n"
-
-      s"""$tailStr${TextBlock(head.toString).indent("  ").build}
-         | """.stripMargin.trim
-    }
   }
 
   final override def cons[TAIL <: Fin, HEAD <: VBound](tail: TAIL, head: HEAD) =
