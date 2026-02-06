@@ -7,7 +7,7 @@ object __FunctionDesignDoc {
     *   - monomorphic, dependent or polymorphic (parametric or ad-hoc)
     *   - optionally, with named or nameless argument(s)
     *     - TODO: this is wildly infeasible due to high runtime overhead of `XX :: HNil`
-    *     - TODO: should be made default once Args implementation is delegated to 0-overhead TupleSystem
+    *     - TODO: should be made default once Args implementation is delegated to 0-overhead Finsets
     *   - analyzed and printed as an AST (required by static analysis)
     *   - transformed with chain rules or other functor laws (required by Bayesian inference and differential
     *     programming)
