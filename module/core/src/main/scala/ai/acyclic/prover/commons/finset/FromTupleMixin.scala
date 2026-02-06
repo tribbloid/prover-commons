@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.finset
 
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.finset.Tuples.{:*, Nil}
+import ai.acyclic.prover.commons.finset.Tuples.{:*, Unit}
 
 trait FromTupleMixin {
   self: Finsets =>
@@ -10,9 +10,9 @@ trait FromTupleMixin {
 
     final val outer = self
 
-    implicit val _0: Nil |- Eye = {
-      at[Tuples.Eye] { _ =>
-        Eye
+    implicit val _0: Unit |- Empty = {
+      at[Tuples.Empty] { _ =>
+        Empty
       }
     }
 

@@ -15,8 +15,8 @@ trait LeftNested {
 
   type Fin
 
-  type Eye <: Fin
-  val Eye: Eye
+  type Empty <: Fin
+  val Empty: Empty
 
   infix type ><[+TAIL <: Fin, +HEAD <: VBound] <: Fin // <- ket-bra notation for product
 
@@ -45,5 +45,5 @@ trait LeftNested {
 
   implicit class tupleOps[SELF <: Fin](val self: SELF) extends _TupleOps[SELF] {}
 
-  implicit def eyeExtension(s: this.type): tupleOps[Eye] = tupleOps[Eye](Eye)
+  implicit def eyeExtension(s: this.type): tupleOps[Empty] = tupleOps[Empty](Empty)
 }

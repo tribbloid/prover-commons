@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.finset
 
 import ai.acyclic.prover.commons.jit.hom.Hom
 import shapeless.labelled.FieldType
-import shapeless.ops.record.Selector
+//import shapeless.ops.record.Selector
 import shapeless.{HList, HNil}
 
 /**
@@ -18,11 +18,11 @@ object Tuples extends Finsets {
 
   type Tuple = Fin
 
-  override type Eye = HNil
-  override val Eye: HNil = HNil
+  override type Empty = HNil
+  override val Empty: HNil = HNil
 
-  type Nil = Eye
-  val Nil = Eye
+  type Unit = Empty
+  val Unit = Empty
 
   infix type ><[+TAIL <: Fin, +HEAD <: VBound] = HEAD :: TAIL
 
@@ -44,7 +44,7 @@ object Tuples extends Finsets {
 
       implicit def getter[S](
           implicit
-          _selector: Selector[H, S]
+          _selector: shapeless.ops.hlist.Selector[H, S]
       ): Impl[S, _selector.Out] = at[S] { _ =>
         _selector(hh)
       }
@@ -55,7 +55,7 @@ object Tuples extends Finsets {
 
       implicit def getter[S](
           implicit
-          _selector: Selector[H, S]
+          _selector: shapeless.ops.record.Selector[H, S]
       ): Impl[S, FieldType[S, _selector.Out]] = at[S] { _ =>
         _selector(hh).asInstanceOf[FieldType[S, _selector.Out]]
       }

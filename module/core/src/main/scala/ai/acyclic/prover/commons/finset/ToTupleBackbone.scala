@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.finset
 
 import ai.acyclic.prover.commons
 import ai.acyclic.prover.commons.finset
-import ai.acyclic.prover.commons.finset.ToTupleBackbone.EYE
+import ai.acyclic.prover.commons.finset.ToTupleBackbone.EMPTY
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.{::, HList, HNil}
 
@@ -12,25 +12,27 @@ trait ToTupleBackbone extends Finsets {
 
   import ToTupleBackbone.*
 
-  trait Fin {
+  trait Fin { //      TODO: make this a subtype of Product
 
     type _Tuple <: Tuples.Fin
     def asTuple: _Tuple
     lazy val asTupleOps: Tuples.InterOps[_Tuple] = Tuples.InterOps(asTuple)
 
+//    type _NativeTuple <: Product TODO: need to impl this later
+
     def asList: List[VBound]
   }
 
-  sealed class Eye extends Fin {
+  sealed class Empty extends Fin {
 
     override type _Tuple = HNil
     override def asTuple: HNil = HNil
 
     override def asList: List[VBound] = Nil
 
-    override lazy val toString: String = EYE
+    override lazy val toString: String = EMPTY
   }
-  override val Eye = new Eye
+  override val Empty = new Empty
 
   sealed trait ><[
       +TAIL <: Fin,
@@ -61,8 +63,8 @@ trait ToTupleBackbone extends Finsets {
 
     override lazy val toString: String = {
       val tailStr = tail match {
-        case _: Eye => ""
-        case _      => tail.toString + " ><\n"
+        case _: Empty => ""
+        case _        => tail.toString + " ><\n"
       }
 
       s"""$tailStr${TextBlock(head.toString).indent("  ").build}
@@ -86,12 +88,7 @@ trait ToTupleBackbone extends Finsets {
 
 object ToTupleBackbone {
 
-  final val EYE = "∅"
+  final val EMPTY = "∅"
 
-  object W {
-
-    final val eye = "Eye"
-
-    final val >< = " >< "
-  }
+  final val >< = " >< "
 }
