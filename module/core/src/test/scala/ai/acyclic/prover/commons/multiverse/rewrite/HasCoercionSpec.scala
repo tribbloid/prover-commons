@@ -1,6 +1,10 @@
 package ai.acyclic.prover.commons.multiverse.rewrite
 
+import ai.acyclic.prover.commons.multiverse.rewrite.HasCoercionSpec.H2.<%<
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.verification.Verify
+
+import scala.language.implicitConversions
 
 class HasCoercionSpec extends BaseSpec {
 
@@ -61,15 +65,49 @@ class HasCoercionSpec extends BaseSpec {
       assert(e.v == 7)
     }
 
-    it("coercion can be summoned from Coerced") {
+  }
+
+  describe("Coersion can be summoned") {
+
+    import HasCoercionSpec.H2.*
+
+    it("from Coerced") {
 
       implicitly[B <%< C]
     }
 
-    it("coercion can be summoned from subtyping") {
+    it("from subtyping") {
 
       implicitly[D1 <%< D]
     }
+
+    it("NOT from any implicit function") {
+
+      implicit def notCoercion(v: C): Int = ???
+
+      Verify.typeError(
+        "implicitly[C <%< Int]"
+      )
+    }
+
+    it(".. explicitly") {
+
+      implicit def notCoercion: C => Int = ???
+
+      Verify.typeError(
+        "implicitly[C <%< Int]"
+      )
+    }
+
+    it("NOT from any implicit class") {
+
+      implicit class NotCoercion(v: C)
+
+      Verify.typeError(
+        "implicitly[C <%< NotCoercion]"
+      )
+    }
+
   }
 
 }
