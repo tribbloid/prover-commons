@@ -1,5 +1,3 @@
 package ai.acyclic.prover.commons.tuple
 
-class Pointwise {
-
-}
+class Pointwise[X, B] {}

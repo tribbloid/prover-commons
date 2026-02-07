@@ -38,10 +38,10 @@ class HasCoercionSpec extends BaseSpec {
     }
   }
 
-  describe("Coerced mixed with ConversionPart") {
+  describe("Coerced mixed with Coercion") {
 
-    import HasCoercionSpec.H2
-    import H2.*
+    import HasCoercionSpec.H2.*
+
     val a = A(1)
 
     it("can cast through Lemma B chain") {
@@ -59,6 +59,16 @@ class HasCoercionSpec extends BaseSpec {
 
       val e: E = a
       assert(e.v == 7)
+    }
+
+    it("coercion can be summoned from Coerced") {
+
+      implicitly[B <%< C]
+    }
+
+    it("coercion can be summoned from subtyping") {
+
+      implicitly[D1 <%< D]
     }
   }
 
