@@ -96,7 +96,8 @@ object HasCoercionSpec {
     // Lemma B: T => R where R <: Coerced
     implicit val aToB: A => B = (x: A) => B(x.v + 1)
 
-    case class D(v: Int)
+    trait D { def v: Int }
+    case class D1(v: Int) extends D
     case class E(v: Int)
 
     implicit class C(val b: B) extends Coerced
@@ -108,7 +109,7 @@ object HasCoercionSpec {
 
     // Lemma A: ConversionPart
     // C -> D
-    implicit val cToD: Coercion[C, D] = (x: C) => D(x.b.v + 2)
+    implicit val cToD: Coercion[C, D1] = (x: C) => D1(x.b.v + 2)
 
     // D -> E
     implicit val dToE: Coercion[D, E] = (x: D) => E(x.v + 3)
