@@ -98,6 +98,27 @@ trait ToTupleBackbone extends Finsets {
     }
   }
 
+  trait FinToHList[-F <: Fin] {
+    type Out <: HList
+    def apply(f: F): Out
+  }
+  object FinToHList {
+    type Aux[-F <: Fin, O <: HList] = FinToHList[F] { type Out = O }
+
+    implicit val empty: Aux[Empty, HNil] = new FinToHList[Empty] {
+      type Out = HNil
+      def apply(f: Empty): HNil = HNil
+    }
+
+    implicit def cons[TAIL <: Fin, HEAD <: VBound, TO <: HList](
+        implicit
+        tailT: Aux[TAIL, TO]
+    ): Aux[TAIL >< HEAD, HEAD :: TO] = new FinToHList[TAIL >< HEAD] {
+      type Out = HEAD :: TO
+      def apply(f: TAIL >< HEAD): HEAD :: TO = f.head :: tailT(f.tail)
+    }
+  }
+
   /**
     * Polymorphic function from [[Fin]] to Scala Tuple or Unit
     *
@@ -105,7 +126,16 @@ trait ToTupleBackbone extends Finsets {
     *   - Empty >< A >< B -> (A, B)
     *   - Empty -> Unit
     */
-  trait ToFlatTuple extends Poly {}
+  trait ToFlatTuple extends Poly {
+
+    implicit def generic[F <: Fin, L <: HList, Out](
+        implicit
+        toHList: FinToHList.Aux[F, L],
+        tupler: shapeless.ops.hlist.Tupler.Aux[L, Out]
+    ): F |- Out = at[F] { v =>
+      tupler(toHList(v))
+    }
+  }
   object ToFlatTuple extends ToFlatTuple {}
 
   /**
@@ -115,7 +145,12 @@ trait ToTupleBackbone extends Finsets {
     *   - Empty >< A >< B -> (A, B)
     *   - Empty -> Unit
     */
-  trait ToFlat extends Poly {}
+  trait ToFlat extends ToFlatTuple {
+
+    implicit def singleton[H <: VBound]: (Empty >< H) |- H = at[Empty >< H] { v =>
+      v.head
+    }
+  }
   object ToFlat extends ToFlat {}
 }
 
