@@ -13,6 +13,8 @@ trait Pointwise extends Finsets {
   case class DTuple[T <: Tuples.Fin, H <: VBound](v: T :* H) extends Delegate(v)
 
   // incremental construction of DTuple.
-  // it should be implemented such that _Empty >< X >< Y = DTuple(Tuples._0 :* X :* Y)
-  type ><[T <: Fin, H] = DTuple[? <: T, ? <: H]
+  // it should be implemented such that Empty >< VBound >< VBound =:= DTuple[Tuples._0 :* VBound, VBound]
+  type ><[+T <: Fin, +H] = DTuple[? <: T, ? <: H]
+
+  implicitly[Empty >< VBound >< VBound =:= DTuple[Tuples._0 :* VBound, VBound]]
 }
