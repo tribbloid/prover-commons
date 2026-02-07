@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.finset
 
+import ai.acyclic.prover.commons.jit.hom.Hom.Poly
+
 import scala.language.implicitConversions
 
 /**
@@ -13,12 +15,6 @@ trait ToTupleMixin {
     override type VBound = self.VBound
   }
 
-//  implicit def unitView(v: Eye): Backbone.Eye = Backbone.Eye
-
-//  implicit def consView[T <: Fin, H <: VBound](v: T >< H) = {
-//    val t_h = deCons(v)
-//    Backbone.cons(t_h._1, t_h._2)
-//  }
 }
 
 object ToTupleMixin {}

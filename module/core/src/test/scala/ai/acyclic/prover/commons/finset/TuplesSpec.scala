@@ -22,7 +22,7 @@ class TuplesSpec extends BaseSpec {
 
     it("GetV") {
       val t: String :: Int :: HNil = _0 >< 1 >< "a"
-      val inter = Tuples.InterOps(t)
+      val inter = Tuples.Ops(t)
       val getV = inter.GetV
       import getV.getter
       val v = getV(0)
@@ -36,7 +36,7 @@ class TuplesSpec extends BaseSpec {
       val f = shapeless.labelled.field[k.type](v)
       val t = _0 >< f
 
-      val inter = Tuples.InterOps(t)
+      val inter = Tuples.Ops(t)
       val getField = inter.GetField
       import getField.getter
 

@@ -12,7 +12,7 @@ class ToTupleBackboneSpec extends BaseSpec {
 
   describe("Empty") {
     it("asTuple should return HNil") {
-      assert(Empty.asTuple == HNil)
+      assert(Empty.tuple == HNil)
     }
 
     it("asList should return Nil") {
@@ -41,7 +41,7 @@ class ToTupleBackboneSpec extends BaseSpec {
 
     it("asTuple should return correct HList") {
       val tuple = Empty >< 1 >< "a"
-      val hlist = tuple.asTuple
+      val hlist = tuple.tuple
 
       assert(hlist == "a" :: 1 :: HNil)
     }

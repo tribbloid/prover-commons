@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.finset
 import ai.acyclic.prover.commons
 import ai.acyclic.prover.commons.finset
 import ai.acyclic.prover.commons.finset.ToTupleBackbone.EMPTY
+import ai.acyclic.prover.commons.jit.hom.Hom.Poly
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.{::, HList, HNil}
 
@@ -15,8 +16,8 @@ trait ToTupleBackbone extends Finsets {
   trait Fin extends Product with Serializable {
 
     type Tuple <: Tuples.Fin
-    val asTuple: Tuples.Fin
-    lazy val asTupleOps: Tuples.InterOps[asTuple.type] = Tuples.InterOps(asTuple)
+    val tuple: Tuples.Fin
+    final lazy val tupleOps: Tuples.Ops[tuple.type] = Tuples.Ops(tuple)
 
     def asList: List[VBound]
 
@@ -41,7 +42,7 @@ trait ToTupleBackbone extends Finsets {
 
   protected case object _Empty extends Fin {
     override type Tuple = HNil
-    override val asTuple: HNil = HNil
+    override val tuple: HNil = HNil
     override def asList: List[VBound] = Nil
     override lazy val toString: String = EMPTY
   }
@@ -54,7 +55,7 @@ trait ToTupleBackbone extends Finsets {
     val tail: TAIL
     val head: HEAD
 
-    override lazy val asTuple = head :: tail.asTuple
+    override lazy val tuple = head :: tail.tuple
 
     override def asList: List[VBound] = tail.asList ++ Seq(head)
 
@@ -96,6 +97,26 @@ trait ToTupleBackbone extends Finsets {
       case cons: Cons[tail, head] => (cons.tail, cons.head)
     }
   }
+
+  /**
+    * Polymorphic function from [[Fin]] to Scala Tuple or Unit
+    *
+    * e.g.
+    *   - Empty >< A >< B -> (A, B)
+    *   - Empty -> Unit
+    */
+  trait ToFlatTuple extends Poly {}
+  object ToFlatTuple extends ToFlatTuple {}
+
+  /**
+    * Same as [[ToFlatTuple]], but convert Empty ><
+    *
+    * e.g.
+    *   - Empty >< A >< B -> (A, B)
+    *   - Empty -> Unit
+    */
+  trait ToFlat extends Poly {}
+  object ToFlat extends ToFlat {}
 }
 
 object ToTupleBackbone {

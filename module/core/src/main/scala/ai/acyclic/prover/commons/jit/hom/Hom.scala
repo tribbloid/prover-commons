@@ -38,7 +38,7 @@ object Hom extends Hom_Imp0 {
 
     type Fn[I, R] = Fn.Impl[I, R]
 
-    type Poly = Hom.Poly
+//    type Poly = Hom.Poly
 
     type Poly1[I[_], R[_]] = BoundView.top.Poly1.Impl[I, R]
   }

@@ -35,7 +35,7 @@ object Tuples extends Finsets {
     cons.tail -> cons.head
   }
 
-  implicit class InterOps[H <: Fin](hh: H) {
+  implicit class Ops[H <: Fin](hh: H) {
 
     // https://stackoverflow.com/questions/66036106/can-shapeless-record-type-be-used-as-a-poly1-part-2
     trait GetV extends Hom.Poly {
