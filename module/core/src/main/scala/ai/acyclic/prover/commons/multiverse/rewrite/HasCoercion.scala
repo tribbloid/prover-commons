@@ -17,6 +17,13 @@ trait HasCoercion extends HasConversion with HasCoercion.MidPrioritySteps with H
   ): Step[T, R] =
     (v: T) => p.normalise(v)
 
+  implicit def subtypeCoercion[T, R](
+      implicit
+      ev: T <:< R
+  ): Coercion[T, R] = new Coercion[T, R] {
+    override def normalise(v: T): R = ev(v)
+  }
+
   trait IsPartiallyCoerced[T]
   object IsPartiallyCoerced {
     implicit def witness[T <: Coerced]: IsPartiallyCoerced[T] = new IsPartiallyCoerced[T] {}
@@ -79,6 +86,14 @@ object HasCoercion { // TODO: name should be Coercion or Coe.
         guard: IsPartiallyCoerced[R]
     ): Step[T, R] =
       (v: T) => fn(v)
+
+    implicit def coercionFromFn[T, R](
+        implicit
+        fn: T => R,
+        guard: IsPartiallyCoerced[R]
+    ): Coercion[T, R] = new Coercion[T, R] {
+      override def normalise(v: T): R = fn(v)
+    }
   }
 
   // Layered trait hierarchy for implicit priority

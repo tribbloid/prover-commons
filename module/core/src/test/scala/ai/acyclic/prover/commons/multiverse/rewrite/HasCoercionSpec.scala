@@ -83,7 +83,7 @@ class HasCoercionSpec extends BaseSpec {
 
     it("NOT from any implicit function") {
 
-      implicit def notCoercion(v: C): Int = ???
+      implicit def notCoercion(v: C): Int = 1
 
       Verify.typeError(
         "implicitly[C <%< Int]"
@@ -92,7 +92,7 @@ class HasCoercionSpec extends BaseSpec {
 
     it(".. explicitly") {
 
-      implicit def notCoercion: C => Int = ???
+      implicit def notCoercion: C => Int = _ => 1
 
       Verify.typeError(
         "implicitly[C <%< Int]"
