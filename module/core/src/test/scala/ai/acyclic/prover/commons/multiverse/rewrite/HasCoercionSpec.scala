@@ -2,11 +2,11 @@ package ai.acyclic.prover.commons.multiverse.rewrite
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-class HasConversionPartSpec extends BaseSpec {
+class HasCoercionSpec extends BaseSpec {
 
   describe("defined in object") {
 
-    import HasConversionPartSpec.H1.*
+    import HasCoercionSpec.H1.*
     val a = A(1)
 
     it("can cast directly") {
@@ -23,7 +23,7 @@ class HasConversionPartSpec extends BaseSpec {
 
   describe("defined in package") {
 
-    import ConversionPartSpecFixture.*
+    import CoercionSpecFixture.*
     val a = A(1)
 
     it("can cast directly") {
@@ -38,9 +38,9 @@ class HasConversionPartSpec extends BaseSpec {
     }
   }
 
-  describe("PartiallyConverted mixed with ConversionPart") {
+  describe("Coerced mixed with ConversionPart") {
 
-    import HasConversionPartSpec.H2
+    import HasCoercionSpec.H2
     import H2.*
     val a = A(1)
 
@@ -54,19 +54,19 @@ class HasConversionPartSpec extends BaseSpec {
 
     it("can cast through mixed chain") {
       // A -> B -> C -> D -> E
-      val d: D = a // Lemma B -> Lemma B -> Lemma A
+      val d: D = a
       assert(d.v == 4)
 
-      val e: E = a // Lemma B -> Lemma B -> Lemma A -> Lemma A
+      val e: E = a
       assert(e.v == 7)
     }
   }
 
 }
 
-object HasConversionPartSpec {
+object HasCoercionSpec {
 
-  trait H1 extends HasConversionPart {
+  trait H1 extends HasCoercion {
 
     case class A(value: Int)
     case class B(value: Int)
@@ -76,30 +76,30 @@ object HasConversionPartSpec {
     case class F(value: Int)
 
     // Direct conversions
-    implicit def aToB: ConversionPart[A, B] = (v: A) => B(v.value)
+    implicit def aToB: Coercion[A, B] = (v: A) => B(v.value)
 
-    implicit val bToC: ConversionPart[B, C] = (v: B) => C(v.value + 1)
+    implicit val bToC: Coercion[B, C] = (v: B) => C(v.value + 1)
 
-    implicit lazy val cToD: ConversionPart[C, D] = (v: C) => D(v.value + 2)
+    implicit lazy val cToD: Coercion[C, D] = (v: C) => D(v.value + 2)
 
-    implicit val dToE: ConversionPart[D, E] = (v: D) => E(v.value + 3)
+    implicit val dToE: Coercion[D, E] = (v: D) => E(v.value + 3)
 
-    implicit val eToF: ConversionPart[E, F] = (v: E) => F(v.value + 4)
+    implicit val eToF: Coercion[E, F] = (v: E) => F(v.value + 4)
   }
   object H1 extends H1
 
-  trait H2 extends HasConversionPart {
+  trait H2 extends HasCoercion {
 
     case class A(v: Int)
 
-    case class B(v: Int) extends PartiallyConverted
-    // Lemma B: T => R where R <: PartiallyConverted
+    case class B(v: Int) extends Coerced
+    // Lemma B: T => R where R <: Coerced
     implicit val aToB: A => B = (x: A) => B(x.v + 1)
 
     case class D(v: Int)
     case class E(v: Int)
 
-    implicit class C(val b: B) extends PartiallyConverted
+    implicit class C(val b: B) extends Coerced
     // Implicit class already bprovides B -> C conversion method,
     // but Scala 2.13 is too weak to use it in chained summoning, the following line can be removed in Scala 3
     implicit val bToC: B => C = (x: B) => new C(x)
@@ -108,10 +108,10 @@ object HasConversionPartSpec {
 
     // Lemma A: ConversionPart
     // C -> D
-    implicit val cToD: ConversionPart[C, D] = (x: C) => D(x.b.v + 2)
+    implicit val cToD: Coercion[C, D] = (x: C) => D(x.b.v + 2)
 
     // D -> E
-    implicit val dToE: ConversionPart[D, E] = (x: D) => E(x.v + 3)
+    implicit val dToE: Coercion[D, E] = (x: D) => E(x.v + 3)
   }
   object H2 extends H2
 }

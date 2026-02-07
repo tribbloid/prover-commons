@@ -2,7 +2,14 @@ package ai.acyclic.prover.commons.multiverse.rewrite
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-class ConversionSpec extends BaseSpec {
+object HasConversionSpec {
+
+  object H1 extends HasConversion {}
+}
+
+class HasConversionSpec extends BaseSpec {
+
+  import HasConversionSpec.H1.*
 
   describe("invoke implicit") {
 

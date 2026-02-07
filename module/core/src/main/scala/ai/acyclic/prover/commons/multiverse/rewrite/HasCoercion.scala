@@ -3,8 +3,8 @@ package ai.acyclic.prover.commons.multiverse.rewrite
 import scala.annotation.implicitNotFound
 import scala.language.implicitConversions
 
-trait HasConversionPart extends HasConversion with HasConversionPart.MidPrioritySteps with HasConversionPart.Imp1 {
-  import HasConversionPart.=!=
+trait HasCoercion extends HasConversion with HasCoercion.MidPrioritySteps with HasCoercion.Imp1 {
+  import HasCoercion.=!=
 
   trait Step[-T, +R] {
     def normalise(v: T): R
@@ -12,26 +12,23 @@ trait HasConversionPart extends HasConversion with HasConversionPart.MidPriority
 
   implicit def _stepFromPart[T, R](
       implicit
-      p: ConversionPart[T, R],
+      p: Coercion[T, R],
       ev: T =!= R
   ): Step[T, R] =
     (v: T) => p.normalise(v)
 
-  trait IsPartiallyConverted[T]
-  object IsPartiallyConverted {
-    implicit def witness[T <: PartiallyConverted]: IsPartiallyConverted[T] = new IsPartiallyConverted[T] {}
+  trait IsPartiallyCoerced[T]
+  object IsPartiallyCoerced {
+    implicit def witness[T <: Coerced]: IsPartiallyCoerced[T] = new IsPartiallyCoerced[T] {}
   }
 
-  /**
-    * can be chained, unlike Conversion
-    *
-    * prefer to search for missing parts in forward direction
-    */
-  type ConversionPart[-T, +R] = HasConversionPart.ConversionPart[T, R]
+  trait Coercion[-T, +R] extends Conversion[T, R] {}
 
-  infix type ?++>[-T, +R] = ConversionPart[T, R]
+  infix type Coe[-T, +R] = Coercion[T, R]
+  infix type <%<[-T, +R] = Coercion[T, R] // resembles <:<
+  infix type >%>[+R, -T] = T <%< R // resembles >:>
 
-  trait PartiallyConverted {}
+  trait Coerced {}
 
 }
 
@@ -42,7 +39,7 @@ trait HasConversionPart extends HasConversion with HasConversionPart.MidPriority
   *
   *   1. summon a TypeClass from:
   *      - (Lemma A) ConversionPart[T, R]
-  *      - (Lemma B) (T => R) where R <: [[PartiallyConverted]]
+  *      - (Lemma B) (T => R) where R <: [[Coerced]]
   *   2. summon instances of forwardSearchView from the TYpeClass
   *
   * chained conversion using both ConversionPart and PartiallyConverted should be tested
@@ -55,41 +52,31 @@ trait HasConversionPart extends HasConversion with HasConversionPart.MidPriority
   *
   * Do NOT modify or remove existing test case
   */
-object HasConversionPart {
-
-  trait ConversionPart[-T, +R] extends Conversion[T, R] {}
+object HasCoercion { // TODO: name should be Coercion or Coe.
 
   @implicitNotFound(msg = "Cannot prove that ${A} =!= ${B}.")
-  trait =!=[A, B]
-  object =!= {
-    implicit def neq[A, B]: A =!= B = new =!=[A, B] {}
-    implicit def neqAmbig1[A]: A =!= A = null
-    implicit def neqAmbig2[A]: A =!= A = null
-  }
-
-  // ConversionStepLowPriority removed to prevent implicit divergence loop with generic T=>R functions
-  // Users should use ConversionPart explicitly or provide specific wrappers.
+  type =!=[A, B] = zio.=!=[A, B]
 
   trait LowPrioritySteps {
-    self: HasConversionPart =>
+    self: HasCoercion =>
 
-    implicit def _stepFromPartiallyConvertedFn[T, R](
+    implicit def _stepFromPartiallyCoercedFn[T, R](
         implicit
         fn: T => R,
         ev: T =!= R,
-        guard: IsPartiallyConverted[R]
+        guard: IsPartiallyCoerced[R]
     ): Step[T, R] =
       (v: T) => fn(v)
   }
 
   trait MidPrioritySteps extends LowPrioritySteps {
-    self: HasConversionPart =>
+    self: HasCoercion =>
 
-    implicit def _stepFromPartiallyConvertedConv[T, R](
+    implicit def _stepFromPartiallyCoercedConv[T, R](
         implicit
         fn: Conversion[T, R],
         ev: T =!= R,
-        guard: IsPartiallyConverted[R]
+        guard: IsPartiallyCoerced[R]
     ): Step[T, R] =
       (v: T) => fn(v)
   }
@@ -98,7 +85,7 @@ object HasConversionPart {
   // Shorter chains are preferred through linearization
   // this can be much shorter if Scala implicit search is less lame
   trait Imp4 {
-    self: HasConversionPart =>
+    self: HasCoercion =>
 
     implicit def forwardSearchView4[T, R1, R2, R3, R4, R5](v: T)(
         implicit
@@ -111,7 +98,7 @@ object HasConversionPart {
   }
 
   trait Imp3 extends Imp4 {
-    self: HasConversionPart =>
+    self: HasCoercion =>
 
     implicit def forwardSearchView3[T, R1, R2, R3, R4](v: T)(
         implicit
@@ -123,7 +110,7 @@ object HasConversionPart {
   }
 
   trait Imp2 extends Imp3 {
-    self: HasConversionPart =>
+    self: HasCoercion =>
 
     implicit def forwardSearchView2[T, R1, R2, R3](v: T)(
         implicit
@@ -134,7 +121,7 @@ object HasConversionPart {
   }
 
   trait Imp1 extends Imp2 {
-    self: HasConversionPart =>
+    self: HasCoercion =>
 
     implicit def forwardSearchView[T, R, R2](v: T)(
         implicit

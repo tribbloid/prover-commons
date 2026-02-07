@@ -1,6 +1,8 @@
 package ai.acyclic.prover
 
-package object commons {
+import ai.acyclic.prover.commons.multiverse.rewrite.HasCoercion
+
+package object commons extends HasCoercion {
 
   type >:>[+B, -A] = A <:< B
 

@@ -16,7 +16,7 @@ trait Delegating[+T] {
   protected val unbox: T
 }
 
-object Delegating extends Delegating_Imp0 with HasConversionPart {
+object Delegating extends Delegating_Imp0 with HasCoercion {
 
   def _unbox[T](v: Delegating[T]): T = v.unbox
 }

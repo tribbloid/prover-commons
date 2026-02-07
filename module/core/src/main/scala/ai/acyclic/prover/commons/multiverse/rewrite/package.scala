@@ -1,3 +1,3 @@
 package ai.acyclic.prover.commons.multiverse
 
-package object rewrite extends HasConversionPart {}
+package object rewrite {}

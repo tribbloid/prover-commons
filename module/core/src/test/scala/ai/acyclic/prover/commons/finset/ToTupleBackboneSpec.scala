@@ -115,19 +115,19 @@ class ToTupleBackboneSpec extends BaseSpec {
     it("should convert Empty >< A >< B to (A, B)") {
       val tuple = Empty >< 1 >< "a"
       val res = ToFlatTuple(tuple)
-      assert(res == (1, "a"))
+      assert(res == ("a", 1))
     }
 
     it("should convert Empty >< A >< B >< C to (A, B, C)") {
       val tuple = Empty >< 1 >< "a" >< true
       val res = ToFlatTuple(tuple)
-      assert(res == (1, "a", true))
+      assert(res == (true, "a", 1))
     }
 
     it("should convert Empty >< A >< B >< C >< D to (A, B, C, D)") {
       val tuple = Empty >< 1 >< "a" >< true >< 3.14
       val res = ToFlatTuple(tuple)
-      assert(res == (1, "a", true, 3.14))
+      assert(res == (3.14, true, "a", 1))
     }
   }
 
@@ -146,19 +146,19 @@ class ToTupleBackboneSpec extends BaseSpec {
     it("should convert Empty >< A >< B to (A, B)") {
       val tuple = Empty >< 1 >< "a"
       val res = ToFlat(tuple)
-      assert(res == (1, "a"))
+      assert(res == ("a", 1))
     }
 
     it("should convert Empty >< A >< B >< C to (A, B, C)") {
       val tuple = Empty >< 1 >< "a" >< true
       val res = ToFlat(tuple)
-      assert(res == (1, "a", true))
+      assert(res == (true, "a", 1))
     }
 
     it("should convert Empty >< A >< B >< C >< D to (A, B, C, D)") {
       val tuple = Empty >< 1 >< "a" >< true >< 3.14
       val res = ToFlat(tuple)
-      assert(res == (1, "a", true, 3.14))
+      assert(res == (3.14, true, "a", 1))
     }
   }
 }
