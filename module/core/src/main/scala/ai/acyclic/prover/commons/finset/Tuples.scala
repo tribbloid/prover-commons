@@ -24,7 +24,7 @@ object Tuples extends Finsets {
 
   infix type ><[+TAIL <: Fin, +HEAD <: VBound] = HEAD :: TAIL
 
-  type :*[+TAIL <: Fin, +HEAD <: VBound] = HEAD :: TAIL
+  infix type :*[+TAIL <: Fin, +HEAD <: VBound] = HEAD :: TAIL
 
   override def cons[TAIL <: HList, HEAD](tail: TAIL, head: HEAD): TAIL >< HEAD = {
 
