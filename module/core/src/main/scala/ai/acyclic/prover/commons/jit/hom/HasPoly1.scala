@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.bound.TypeBound
 import ai.acyclic.prover.commons.multiverse.CanEqual
-import ai.acyclic.prover.commons.util.K
+import ai.acyclic.prover.commons.util.PredefKinds
 
 object HasPoly1 {}
 
@@ -136,7 +136,7 @@ trait HasPoly1 extends HasPoly {
       }
 
       implicit class Is[I, O](backbone: Fn[I, O])
-          extends Impl[K.Drop1[_, I], K.Drop1[_, O]]()(backbone._definedAt)
+          extends Impl[PredefKinds.Drop1[_, I], PredefKinds.Drop1[_, O]]()(backbone._definedAt)
           with BySpecialise {
 
         override type In[T >: bound.Min <: bound.Max] = I
@@ -148,11 +148,11 @@ trait HasPoly1 extends HasPoly {
 
     }
 
-    type Dependent[+O[_ >: bound.Min <: bound.Max]] = Poly1[K.Invar, O]
+    type Dependent[+O[_ >: bound.Min <: bound.Max]] = Poly1[PredefKinds.Invar, O]
     // TODO: remove, superseded by DepFn
     case object Dependent {
 
-      trait Impl[O[_ >: bound.Min <: bound.Max]] extends Poly1.Impl[K.Invar, O]
+      trait Impl[O[_ >: bound.Min <: bound.Max]] extends Poly1.Impl[PredefKinds.Invar, O]
     }
   }
 

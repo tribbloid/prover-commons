@@ -1,6 +1,6 @@
 package ai.acyclic.prover.infra
 
-object Foundation {
+object FoundationSpike {
 
   trait Arrow
   object Arrow {

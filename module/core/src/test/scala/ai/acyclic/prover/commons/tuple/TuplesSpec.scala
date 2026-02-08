@@ -1,7 +1,7 @@
-package ai.acyclic.prover.commons.finset
+package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.finset.Tuples.*
+import ai.acyclic.prover.commons.tuple.Tuples.*
 import shapeless.{::, HNil}
 
 class TuplesSpec extends BaseSpec {
@@ -10,7 +10,7 @@ class TuplesSpec extends BaseSpec {
 
     it("can construct and deconstruct") {
 
-      val t: Int ><: String ><: _0 = 1 ><: "a" ><: _0
+      val t: Int ><: String ><: Nil = 1 ><: "a" ><: _0
       val t2 = Tuples.cons(1, Tuples.cons("a", _0))
 
       assert(t == t2)

@@ -1,22 +1,20 @@
-package ai.acyclic.prover.commons.finset
+package ai.acyclic.prover.commons.tuple.backbone
 
-import ai.acyclic.prover.commons
-import ai.acyclic.prover.commons.finset
-import ai.acyclic.prover.commons.finset.ToTupleBackbone.EMPTY
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
+import ai.acyclic.prover.commons.tuple.{BTuples, Tuples}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.{::, HList, HNil}
 
 import scala.language.implicitConversions
 
-trait ToTupleBackbone extends Finsets {
+trait RecursiveHeapBackbone extends Backbone {
 
-  import ToTupleBackbone.*
+  import RecursiveHeapBackbone.*
 
-  trait Fin extends Product with Serializable {
+  trait Inductive extends Product with Serializable {
 
-    type Tuple <: Tuples.Fin
-    val tuple: Tuples.Fin
+    type Tuple <: Tuples.Inductive
+    val tuple: Tuples.Inductive
     final lazy val tupleOps: Tuples.Ops[tuple.type] = Tuples.Ops(tuple)
 
     def asList: List[VBound]
@@ -27,17 +25,17 @@ trait ToTupleBackbone extends Finsets {
     val value: T
   }
 
-  protected case object _Empty extends Fin {
+  protected case object _0 extends Inductive {
     override type Tuple = HNil
     override val tuple: HNil = HNil
-    override def asList: List[VBound] = Nil
+    override def asList: List[VBound] = List.empty
     override lazy val toString: String = EMPTY
   }
 
   sealed trait ><:[
       +HEAD <: VBound,
-      +TAIL <: Fin
-  ] extends Fin {
+      +TAIL <: Inductive
+  ] extends Inductive {
 
     val head: HEAD
     val tail: TAIL
@@ -48,7 +46,7 @@ trait ToTupleBackbone extends Finsets {
 
     override lazy val toString: String = {
       val tailStr =
-        if (tail == _Empty) ""
+        if (tail == _0) ""
         else " ><: " + tail.toString
 
       s"""${TextBlock(head.toString).indent("  ").build}$tailStr
@@ -59,7 +57,7 @@ trait ToTupleBackbone extends Finsets {
   // cartesian product symbol
   case class Cons[
       HEAD <: VBound,
-      TAIL <: Fin
+      TAIL <: Inductive
   ](
       head: HEAD,
       tail: TAIL
@@ -73,10 +71,10 @@ trait ToTupleBackbone extends Finsets {
 
   }
 
-  final override def cons[HEAD <: VBound, TAIL <: Fin](head: HEAD, tail: TAIL) =
+  final override def cons[HEAD <: VBound, TAIL <: Inductive](head: HEAD, tail: TAIL) =
     Cons(head, tail)
 
-  final override def deCons[HEAD <: VBound, TAIL <: Fin](
+  final override def deCons[HEAD <: VBound, TAIL <: Inductive](
       cons: HEAD ><: TAIL
   ): (HEAD, TAIL) = {
 
@@ -85,19 +83,19 @@ trait ToTupleBackbone extends Finsets {
     }
   }
 
-  trait FinToHList[-F <: Fin] {
+  trait FinToHList[-F <: Inductive] {
     type Out <: HList
     def apply(f: F): Out
   }
   object FinToHList {
-    type Aux[-F <: Fin, O <: HList] = FinToHList[F] { type Out = O }
+    type Aux[-F <: Inductive, O <: HList] = FinToHList[F] { type Out = O }
 
     implicit val empty: Aux[Empty, HNil] = new FinToHList[Empty] {
       type Out = HNil
       def apply(f: Empty): HNil = HNil
     }
 
-    implicit def cons[HEAD <: VBound, TAIL <: Fin, TO <: HList](
+    implicit def cons[HEAD <: VBound, TAIL <: Inductive, TO <: HList](
         implicit
         tailT: Aux[TAIL, TO]
     ): Aux[HEAD ><: TAIL, HEAD :: TO] = new FinToHList[HEAD ><: TAIL] {
@@ -107,7 +105,7 @@ trait ToTupleBackbone extends Finsets {
   }
 
   /**
-    * Polymorphic function from [[Fin]] to Scala Tuple or Unit
+    * Polymorphic function from [[Inductive]] to Scala Tuple or Unit
     *
     * e.g.
     *   - A ><: B ><: Empty -> (A, B)
@@ -115,7 +113,7 @@ trait ToTupleBackbone extends Finsets {
     */
   trait ToFlatTuple extends Poly {
 
-    implicit def generic[F <: Fin, L <: HList, Out](
+    implicit def generic[F <: Inductive, L <: HList, Out](
         implicit
         toHList: FinToHList.Aux[F, L],
         tupler: shapeless.ops.hlist.Tupler.Aux[L, Out]
@@ -141,7 +139,7 @@ trait ToTupleBackbone extends Finsets {
   object ToFlat extends ToFlat {}
 }
 
-object ToTupleBackbone {
+object RecursiveHeapBackbone {
 
   final val EMPTY = "∅"
 

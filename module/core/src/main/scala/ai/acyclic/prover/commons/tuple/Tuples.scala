@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.finset
+package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.jit.hom.Hom
 import shapeless.labelled.FieldType
@@ -8,34 +8,35 @@ import shapeless.{HList, HNil}
 /**
   * just a Finsets with no bound, delegating to shapeless
   */
-object Tuples extends Finsets {
+object Tuples extends BTuples {
   // TODO: unmaintained for Scala 3, should move to formless or interop backport that supports *: operator
 
   import shapeless.::
 
   override type VBound = Any
 
-  override type Fin = HList
+  override type Inductive = HList
+  type Tuple = Inductive
 
-  type _0 = HNil.type
-  val _0: _0 = HNil
+  override val _0: HNil.type = HNil
 
-  override val _Empty: _0 = _0
+  type Unit = Empty
+  val Unit: Nil = Empty
 
-  infix type ><:[+HEAD <: VBound, +TAIL <: Fin] = HEAD :: TAIL
+  infix type ><:[+HEAD <: VBound, +TAIL <: Inductive] = HEAD :: TAIL
 
-  infix type :*[+HEAD <: VBound, +TAIL <: Fin] = HEAD ><: TAIL
+  infix type *:[+HEAD <: VBound, +TAIL <: Inductive] = HEAD ><: TAIL
 
   override def cons[HEAD, TAIL <: HList](head: HEAD, tail: TAIL): HEAD ><: TAIL = {
 
     head :: tail
   }
 
-  override def deCons[HEAD <: VBound, TAIL <: HList](cons: HEAD :* TAIL): (HEAD, TAIL) = {
+  override def deCons[HEAD <: VBound, TAIL <: HList](cons: HEAD *: TAIL): (HEAD, TAIL) = {
     cons.head -> cons.tail
   }
 
-  implicit class Ops[H <: Fin](hh: H) {
+  implicit class Ops[H <: Inductive](hh: H) {
 
     // https://stackoverflow.com/questions/66036106/can-shapeless-record-type-be-used-as-a-poly1-part-2
     trait GetV extends Hom.Poly {

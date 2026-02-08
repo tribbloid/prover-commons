@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.util
 
-object K {
+object PredefKinds {
 
   type Invar[T] = T
 

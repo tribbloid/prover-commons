@@ -1,11 +1,12 @@
-package ai.acyclic.prover.commons.finset
+package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.tuple.backbone.RecursiveHeapBackbone
 import shapeless.{::, HNil}
 
 class ToTupleBackboneSpec extends BaseSpec {
 
-  object Fixture extends ToTupleBackbone {
+  object Fixture extends RecursiveHeapBackbone {
     type VBound = Any
   }
   import Fixture.*
@@ -20,7 +21,7 @@ class ToTupleBackboneSpec extends BaseSpec {
     }
 
     it("toString should return correct string") {
-      assert(Empty.toString == ToTupleBackbone.EMPTY)
+      assert(Empty.toString == RecursiveHeapBackbone.EMPTY)
     }
     it("should behave as a Product") {
       assert(Empty.productArity == 0)

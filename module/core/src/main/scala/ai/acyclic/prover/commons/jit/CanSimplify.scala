@@ -6,7 +6,7 @@ object CanSimplify extends CanSimplify_Impl0 {}
 
 trait CanSimplify[+N <: FunctionLike] extends FunctionLike {
 
-  type PartialEvalInputs <: Args.Fin
+  type PartialEvalInputs <: Args.Inductive
   lazy val noneProvided: PartialEvalInputs = throw new UnsupportedOperationException("PartialEvalInputs not provided")
   def partialEval(env: PartialEvalEnv[PartialEvalInputs]): N = {
     this.asInstanceOf[N]

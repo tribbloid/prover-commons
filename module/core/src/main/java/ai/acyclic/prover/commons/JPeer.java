@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons;
 
-public class JPeer {
+public class JPeer { // TODO: move to test
 
     public static String hello() {
         return "hi from Java";
