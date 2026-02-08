@@ -19,19 +19,19 @@ class FromTupleMixinSpec extends BaseSpec {
       assert(res == Tuples._0)
     }
 
-    it("should convert Tuple1 to Empty >< A") {
+    it("should convert Tuple1 to A ><: Empty") {
       val res = FromFlatTuple(Tuple1(1))
-      assert(res == Empty >< 1)
+      assert(res == 1 ><: Empty)
     }
 
-    it("should convert (A, B) to Empty >< A >< B") {
+    it("should convert (A, B) to A ><: B ><: Empty") {
       val res = FromFlatTuple((1, "a"))
-      assert(res == Empty >< "a" >< 1)
+      assert(res == 1 ><: "a" ><: Empty)
     }
 
-    it("should convert (A, B, C) to Empty >< A >< B >< C") {
+    it("should convert (A, B, C) to A ><: B ><: C ><: Empty") {
       val res = FromFlatTuple((1, "a", true))
-      assert(res == Empty >< true >< "a" >< 1)
+      assert(res == 1 ><: "a" ><: true ><: Empty)
     }
 
     it("should fail compilation for non-tuple types") {
@@ -46,29 +46,29 @@ class FromTupleMixinSpec extends BaseSpec {
       assert(res == Empty)
     }
 
-    it("should convert Tuple1 to Empty >< A") {
+    it("should convert Tuple1 to A ><: Empty") {
       val res = FromFlat(Tuple1(1))
-      assert(res == Empty >< 1)
+      assert(res == 1 ><: Empty)
     }
 
-    it("should convert (A, B) to Empty >< A >< B") {
+    it("should convert (A, B) to A ><: B ><: Empty") {
       val res = FromFlat((1, "a"))
-      assert(res == Empty >< "a" >< 1)
+      assert(res == 1 ><: "a" ><: Empty)
     }
 
-    it("should convert (A, B, C) to Empty >< A >< B >< C") {
+    it("should convert (A, B, C) to A ><: B ><: C ><: Empty") {
       val res = FromFlat((1, "a", true))
-      assert(res == Empty >< true >< "a" >< 1)
+      assert(res == 1 ><: "a" ><: true ><: Empty)
     }
 
-    it("should convert atom to Empty >< A") {
+    it("should convert atom to A ><: Empty") {
       val res = FromFlat(1)
-      assert(res == Empty >< 1)
+      assert(res == 1 ><: Empty)
     }
 
-    it("should convert atom (String) to Empty >< A") {
+    it("should convert atom (String) to A ><: Empty") {
       val res = FromFlat("abc")
-      assert(res == Empty >< "abc")
+      assert(res == "abc" ><: Empty)
     }
   }
 }

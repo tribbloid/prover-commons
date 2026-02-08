@@ -20,19 +20,6 @@ trait ToTupleBackbone extends Finsets {
     final lazy val tupleOps: Tuples.Ops[tuple.type] = Tuples.Ops(tuple)
 
     def asList: List[VBound]
-
-    /**
-      * return a Scala tuple with the same arity, e.g.
-      *   - if Tuple is A :: B :: HNil, NativeTuple should be (A, B)
-      *   - if Tuple is HNil, NativeTuple should be Unit
-      */
-//    def asNativeTuple[T](
-//        implicit
-//        v: Unit = ???
-//    ): NativeTupleView[T] = {
-//
-//      // TODO: implement
-//    }
   }
 
   trait NativeTupleView[T] {
@@ -47,54 +34,54 @@ trait ToTupleBackbone extends Finsets {
     override lazy val toString: String = EMPTY
   }
 
-  sealed trait ><[
-      +TAIL <: Fin,
-      +HEAD <: VBound
+  sealed trait ><:[
+      +HEAD <: VBound,
+      +TAIL <: Fin
   ] extends Fin {
 
-    val tail: TAIL
     val head: HEAD
+    val tail: TAIL
 
     override lazy val tuple = head :: tail.tuple
 
-    override def asList: List[VBound] = tail.asList ++ Seq(head)
+    override def asList: List[VBound] = head :: tail.asList
 
     override lazy val toString: String = {
       val tailStr =
         if (tail == _Empty) ""
-        else tail.toString + " ><\n"
+        else " ><: " + tail.toString
 
-      s"""$tailStr${TextBlock(head.toString).indent("  ").build}
+      s"""${TextBlock(head.toString).indent("  ").build}$tailStr
          | """.stripMargin.trim
     }
   }
 
   // cartesian product symbol
   case class Cons[
-      TAIL <: Fin,
-      HEAD <: VBound
+      HEAD <: VBound,
+      TAIL <: Fin
   ](
-      tail: TAIL,
-      head: HEAD
-  ) extends (TAIL >< HEAD) {
+      head: HEAD,
+      tail: TAIL
+  ) extends (HEAD ><: TAIL) {
 
     // in scala 3 these will be gone
-    type Tail = TAIL
     type Head = HEAD
+    type Tail = TAIL
 
     override type Tuple = HEAD :: tail.Tuple
 
   }
 
-  final override def cons[TAIL <: Fin, HEAD <: VBound](tail: TAIL, head: HEAD) =
-    Cons(tail, head)
+  final override def cons[HEAD <: VBound, TAIL <: Fin](head: HEAD, tail: TAIL) =
+    Cons(head, tail)
 
-  final override def deCons[TAIL <: Fin, HEAD <: VBound](
-      cons: TAIL >< HEAD
-  ): (TAIL, HEAD) = {
+  final override def deCons[HEAD <: VBound, TAIL <: Fin](
+      cons: HEAD ><: TAIL
+  ): (HEAD, TAIL) = {
 
     cons match {
-      case cons: Cons[tail, head] => (cons.tail, cons.head)
+      case cons: Cons[head, tail] => (cons.head, cons.tail)
     }
   }
 
@@ -110,12 +97,12 @@ trait ToTupleBackbone extends Finsets {
       def apply(f: Empty): HNil = HNil
     }
 
-    implicit def cons[TAIL <: Fin, HEAD <: VBound, TO <: HList](
+    implicit def cons[HEAD <: VBound, TAIL <: Fin, TO <: HList](
         implicit
         tailT: Aux[TAIL, TO]
-    ): Aux[TAIL >< HEAD, HEAD :: TO] = new FinToHList[TAIL >< HEAD] {
+    ): Aux[HEAD ><: TAIL, HEAD :: TO] = new FinToHList[HEAD ><: TAIL] {
       type Out = HEAD :: TO
-      def apply(f: TAIL >< HEAD): HEAD :: TO = f.head :: tailT(f.tail)
+      def apply(f: HEAD ><: TAIL): HEAD :: TO = f.head :: tailT(f.tail)
     }
   }
 
@@ -123,7 +110,7 @@ trait ToTupleBackbone extends Finsets {
     * Polymorphic function from [[Fin]] to Scala Tuple or Unit
     *
     * e.g.
-    *   - Empty >< A >< B -> (A, B)
+    *   - A ><: B ><: Empty -> (A, B)
     *   - Empty -> Unit
     */
   trait ToFlatTuple extends Poly {
@@ -142,12 +129,12 @@ trait ToTupleBackbone extends Finsets {
     * Same as [[ToFlatTuple]], but convert Empty ><
     *
     * e.g.
-    *   - Empty >< A >< B -> (A, B)
+    *   - A ><: B ><: Empty -> (A, B)
     *   - Empty -> Unit
     */
   trait ToFlat extends ToFlatTuple {
 
-    implicit def singleton[H <: VBound]: (Empty >< H) |- H = at[Empty >< H] { v =>
+    implicit def singleton[H <: VBound]: (H ><: Empty) |- H = at[H ><: Empty] { v =>
       v.head
     }
   }
@@ -158,5 +145,5 @@ object ToTupleBackbone {
 
   final val EMPTY = "∅"
 
-  final val >< = " >< "
+  final val >< = " ><: "
 }

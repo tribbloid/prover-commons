@@ -9,4 +9,4 @@ import ai.acyclic.prover.commons.finset.Tuples.{:*, _0}
   *
   * it was previously called "Tuple", this was a mistake
   */
-trait Finsets extends LeftNested with FromTupleMixin with ToTupleMixin {}
+trait Finsets extends RightNested with FromTupleMixin with ToTupleMixin {}

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.eval
 
 import ai.acyclic.prover.commons.>:>
-import ai.acyclic.prover.commons.finset.ToTupleBackbone.><
+
 import ai.acyclic.prover.commons.finset.{Finsets, ToTupleBackbone}
 import ai.acyclic.prover.commons.jit.hom
 import ai.acyclic.prover.commons.jit.hom.Hom
@@ -28,27 +28,27 @@ object Args extends Finsets {
     override type Peer = Empty
   }
 
-  infix trait ><[+T <: Fin, +H <: VBound] extends Fin {
+  infix trait ><:[+H <: VBound, +T <: Fin] extends Fin {
 
-    def tail: T
     def head: H
+    def tail: T
   }
 
-  type ><![+T <: Fin, +X] = T >< ConstantFn[X]
+  type ><![+X, +T <: Fin] = ConstantFn[X] ><: T
 
 //  case class NoneProvided[D, T <: NoInfo[D], X](tail: T)(
 //      implicit
 //      zip: Zippable[D, X]
 //  ) extends NoInfo[zip.Out]
-//      with (T ><! X) {
+//      with (X ><! T) {
 //
 //    override lazy val head: ConstantFn[X] = Const.NotProvided
 //
-//    override type Peer = tail.Peer >< ConstantFn[X]
+//    override type Peer = ConstantFn[X] ><: tail.Peer
 //  }
 
-  override def cons[TAIL <: Fin, HEAD <: VBound](tail: TAIL, head: HEAD): TAIL >< HEAD = ???
+  override def cons[HEAD <: VBound, TAIL <: Fin](head: HEAD, tail: TAIL): HEAD ><: TAIL = ???
 
-  override def deCons[TAIL <: Fin, HEAD <: VBound](cons: TAIL >< HEAD): (TAIL, HEAD) =
-    cons.tail -> cons.head
+  override def deCons[HEAD <: VBound, TAIL <: Fin](cons: HEAD ><: TAIL): (HEAD, TAIL) =
+    cons.head -> cons.tail
 }

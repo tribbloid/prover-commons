@@ -1,7 +1,8 @@
 package ai.acyclic.prover.commons.finset
 
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.finset.Tuples.:*
+import ai.acyclic.prover.commons.finset.Tuples.><:
+import shapeless.::
 
 trait FromTupleMixin {
   self: Finsets =>
@@ -17,18 +18,18 @@ trait FromTupleMixin {
     }
 
     implicit def _inductive[
+        HEAD <: VBound,
         H_TAIL <: Tuples.Fin,
-        TAIL <: Fin,
-        HEAD <: VBound
+        TAIL <: Fin
     ](
         implicit
         forTail: H_TAIL |- TAIL
-    ): (H_TAIL :* HEAD) |- ><[TAIL, HEAD] = {
+    ): (HEAD :: H_TAIL) |- (HEAD ><: TAIL) = {
 
-      at[H_TAIL :* HEAD] { v =>
+      at[HEAD :: H_TAIL] { v =>
         val prev = forTail(v.tail)
 
-        cons(prev, v.head)
+        cons(v.head, prev)
       }
     }
   }
@@ -42,7 +43,7 @@ trait FromTupleMixin {
     * A polymorphic function that takes a Scala tuple or Unit and convert to a [[Fin]]
     *
     * e.g.
-    *   - (A, B) -> Empty >< A >< B
+    *   - (A, B) -> A ><: B ><: Empty
     *   - Unit -> Empty
     */
   trait FromFlatTuple extends Hom.Poly {
@@ -67,15 +68,15 @@ trait FromTupleMixin {
   object FromFlatTuple extends FromFlatTuple
 
   /**
-    * similar to [[FromFlatTuple]], but has a fallback case that can convert any type A into `Empty >< A`
+    * similar to [[FromFlatTuple]], but has a fallback case that can convert any type A into `A ><: Empty`
     */
   trait FromFlatLowPriority extends Hom.Poly {
 
     implicit def atomCase[A <: VBound](
         implicit
         refute: shapeless.Refute[shapeless.Generic[A]]
-    ): A |- (Empty >< A) = at[A] { a =>
-      Empty >< a
+    ): A |- (A ><: Empty) = at[A] { a =>
+      a ><: Empty
     }
   }
 

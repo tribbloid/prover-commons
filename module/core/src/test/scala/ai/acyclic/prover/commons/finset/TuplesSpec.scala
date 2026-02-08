@@ -10,18 +10,18 @@ class TuplesSpec extends BaseSpec {
 
     it("can construct and deconstruct") {
 
-      val t: _0 >< Int >< String = _0 >< 1 >< "a"
-      val t2 = Tuples.cons(Tuples.cons(_0, 1), "a")
+      val t: Int ><: String ><: _0 = 1 ><: "a" ><: _0
+      val t2 = Tuples.cons(1, Tuples.cons("a", _0))
 
       assert(t == t2)
 
-      val (tail, head) = Tuples.deCons(t)
-      assert(head == "a")
-      assert(tail == _0 >< 1)
+      val (head, tail) = Tuples.deCons(t)
+      assert(head == 1)
+      assert(tail == "a" ><: _0)
     }
 
     it("GetV") {
-      val t: String :: Int :: HNil = _0 >< 1 >< "a"
+      val t: Int :: String :: HNil = 1 ><: "a" ><: _0
       val inter = Tuples.Ops(t)
       val getV = inter.GetV
       import getV.getter
@@ -34,7 +34,7 @@ class TuplesSpec extends BaseSpec {
       val k: "k" = "k"
       val v = 1
       val f = shapeless.labelled.field[k.type](v)
-      val t = _0 >< f
+      val t = f ><: _0
 
       val inter = Tuples.Ops(t)
       val getField = inter.GetField

@@ -22,17 +22,17 @@ object Tuples extends Finsets {
 
   override val _Empty: _0 = _0
 
-  infix type ><[+TAIL <: Fin, +HEAD <: VBound] = HEAD :: TAIL
+  infix type ><:[+HEAD <: VBound, +TAIL <: Fin] = HEAD :: TAIL
 
-  infix type :*[+TAIL <: Fin, +HEAD <: VBound] = HEAD :: TAIL
+  infix type :*[+HEAD <: VBound, +TAIL <: Fin] = HEAD ><: TAIL
 
-  override def cons[TAIL <: HList, HEAD](tail: TAIL, head: HEAD): TAIL >< HEAD = {
+  override def cons[HEAD, TAIL <: HList](head: HEAD, tail: TAIL): HEAD ><: TAIL = {
 
     head :: tail
   }
 
-  override def deCons[TAIL <: HList, HEAD <: VBound](cons: TAIL :* HEAD): (TAIL, HEAD) = {
-    cons.tail -> cons.head
+  override def deCons[HEAD <: VBound, TAIL <: HList](cons: HEAD :* TAIL): (HEAD, TAIL) = {
+    cons.head -> cons.tail
   }
 
   implicit class Ops[H <: Fin](hh: H) {
