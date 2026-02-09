@@ -15,19 +15,18 @@ trait Converter extends Hom.Poly {
   val from: BTuples
   val to: BTuples
 
-  implicit def emptyCase: from.Empty |- to.Empty =
+  implicit lazy val emptyCase: from.Empty |- to.Empty =
     at[from.Empty] { _ =>
       to.Empty
     }
 
   implicit def inductiveCase[
-      HEAD <: from.VBound,
+      HEAD <: from.VBound & to.VBound,
       TAIL <: from.Inductive,
       TO_TAIL <: to.Inductive
   ](
       implicit
-      tailCase: TAIL |- TO_TAIL,
-      bound: HEAD <:< to.VBound
+      tailCase: TAIL |- TO_TAIL
   ): from.><:[HEAD, TAIL] |- to.><:[HEAD & to.VBound, TO_TAIL] =
     at[from.><:[HEAD, TAIL]] { v =>
       val (head, tail) = from.deCons(v)

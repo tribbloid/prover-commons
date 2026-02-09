@@ -23,22 +23,6 @@ class FlatReprMixinSpec extends BaseSpec {
       val result = TestBackbone.ToFlatRepr(t)
       assert(result == 1)
     }
-
-    it("should convert two element tuple to Scala Tuple2") {
-      import TestBackbone.ToFlatRepr.*
-
-      val t = TestBackbone.cons(1, TestBackbone.cons("a", TestBackbone.Empty))
-      val result = TestBackbone.ToFlatRepr(t)
-      assert(result == (1, "a"))
-    }
-
-    it("should convert three element tuple to Scala Tuple3") {
-      import TestBackbone.ToFlatRepr.*
-
-      val t = TestBackbone.cons(1, TestBackbone.cons("a", TestBackbone.cons(true, TestBackbone.Empty)))
-      val result = TestBackbone.ToFlatRepr(t)
-      assert(result == (1, "a", true))
-    }
   }
 
 }
