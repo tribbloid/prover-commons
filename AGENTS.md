@@ -24,7 +24,7 @@ see [this](../buildSrc/.agent/common-commands.md)
 
 ## Code Style & Conventions
 
-see [this](.agents/code-convention.md) and [this](../buildSrc/.agent/file-organization.md)
+see [this](.agent/code-convention.md) and [this](../buildSrc/.agent/file-organization.md)
 
 ## Development Workflow
 
