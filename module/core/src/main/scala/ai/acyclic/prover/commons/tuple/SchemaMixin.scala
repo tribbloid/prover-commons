@@ -11,9 +11,9 @@ trait SchemaMixin {
 
   trait ToFlatRepr_Imp0 extends Poly {
 
-    implicit def forTuples[I <: self.Inductive, L <: HList, O](
+    implicit def forTuples[I <: Inductive, L <: HList, O](
         implicit
-        toTuple: self.ToTuple.|-[I, L],
+        toTuple: ToTuple.|-[I, L],
         hlistToFlat: Tupler.Aux[L, O]
     ): I |- O = at[I] { i =>
       hlistToFlat(toTuple(i))
