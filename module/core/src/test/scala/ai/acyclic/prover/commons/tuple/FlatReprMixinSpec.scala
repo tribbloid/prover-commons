@@ -4,12 +4,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.tuple.backbone.RecursiveHeapBackbone
 
 class FlatReprMixinSpec extends BaseSpec {
-
-  // Custom backbone for testing - same as TupleConverterMixinSpec
-  object TestBackbone extends RecursiveHeapBackbone {
-    override type VBound = Any
-
-  }
+  import FlatReprMixinSpec.*
 
   describe("ToFlatRepr") {
 
@@ -44,6 +39,15 @@ class FlatReprMixinSpec extends BaseSpec {
       val result = TestBackbone.ToFlatRepr(t)
       assert(result == (1, "a", true))
     }
+  }
+
+}
+
+object FlatReprMixinSpec {
+
+  // Custom backbone for testing - same as TupleConverterMixinSpec
+  object TestBackbone extends RecursiveHeapBackbone {
+    override type VBound = Any
   }
 
 }

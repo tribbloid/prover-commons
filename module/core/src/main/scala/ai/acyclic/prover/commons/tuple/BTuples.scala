@@ -25,6 +25,7 @@ import scala.language.implicitConversions
   * consequently, this trait is only a scaffold, user should choose a backbone for exact implementation
   */
 trait BTuples extends RightNestedAxiom with TupleConverterMixin with FlatReprMixin {
+  self: Singleton =>
 
   def cons[HEAD <: VBound, TAIL <: Inductive](head: HEAD, tail: TAIL): HEAD ><: TAIL
 

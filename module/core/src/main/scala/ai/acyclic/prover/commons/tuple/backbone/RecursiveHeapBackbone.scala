@@ -8,6 +8,7 @@ import shapeless.{::, HList, HNil}
 import scala.language.implicitConversions
 
 trait RecursiveHeapBackbone extends Backbone {
+  self: Singleton =>
 
   import RecursiveHeapBackbone.*
 

@@ -3,5 +3,6 @@ package ai.acyclic.prover.commons.tuple.backbone
 import ai.acyclic.prover.commons.tuple.BTuples
 
 trait Backbone extends BTuples {
+  self: Singleton =>
 
 }

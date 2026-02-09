@@ -6,4 +6,6 @@ import ai.acyclic.prover.commons.tuple.BTuples
   *
   * hope AI can implement it later
   */
-trait ContiguousMemoryBackbone extends Backbone {}
+trait ContiguousMemoryBackbone extends Backbone {
+  self: Singleton =>
+}
