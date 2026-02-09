@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
 
 object CanSimplify extends CanSimplify_Impl0 {}
 
-trait CanSimplify[+N <: FunctionLike] extends FunctionLike {
+trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresentation {
 
   type PartialEvalInputs <: Args.Inductive
   lazy val noneProvided: PartialEvalInputs = throw new UnsupportedOperationException("PartialEvalInputs not provided")

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.collection.CacheMagnet
-import ai.acyclic.prover.commons.jit.{CanSimplify, FnBuilder, FunctionLike, Rule}
+import ai.acyclic.prover.commons.jit.{CanSimplify, FnBuilder, IntermediateRepresentation, Rule}
 import ai.acyclic.prover.commons.jit.bound.Domains
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
@@ -15,13 +15,13 @@ object HasFunction {
 
 trait HasFunction {
 
-  trait DepFn[-I] extends FunctionLike with CanSimplify[DepFn[I]] {
+  trait DepFn[-I] extends IntermediateRepresentation with CanSimplify[DepFn[I]] {
     type In >: I
   }
   // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
   case object DepFn {
 
-    type K1[-I] = FunctionLike { type In >: I }
+    type K1[-I] = IntermediateRepresentation { type In >: I }
 
     type constraint <: Any
 

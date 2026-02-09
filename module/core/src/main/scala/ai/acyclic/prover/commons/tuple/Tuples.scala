@@ -36,7 +36,7 @@ object Tuples extends BTuples {
     cons.head -> cons.tail
   }
 
-  implicit class Ops[H <: Inductive](hh: H) {
+  implicit class Ops[H <: Tuple](hh: H) {
 
     // https://stackoverflow.com/questions/66036106/can-shapeless-record-type-be-used-as-a-poly1-part-2
     trait GetV extends Hom.Poly {
