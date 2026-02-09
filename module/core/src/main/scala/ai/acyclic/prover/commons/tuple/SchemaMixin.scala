@@ -9,6 +9,17 @@ import shapeless.{::, HList, HNil}
 trait SchemaMixin {
   self: BTuples =>
 
+  trait ToFlatRepr_Imp0 extends Poly {
+
+    implicit def forTuples[I <: self.Inductive, L <: HList, O](
+        implicit
+        toTuple: self.ToTuple.|-[I, L],
+        hlistToFlat: Tupler.Aux[L, O]
+    ): I |- O = at[I] { i =>
+      hlistToFlat(toTuple(i))
+    }
+  }
+
   /**
     * can convert a [[Inductive]] to a flat Scala tuple or Unit or value and back
     *
@@ -18,15 +29,12 @@ trait SchemaMixin {
     *   - A -> A ><: Empty
     *   - Unit -> Empty
     */
-  object ToFlatRepr extends Poly {
+  object ToFlatRepr extends ToFlatRepr_Imp0 {
 
-    implicit def default[I <: self.Inductive, L <: HList, O](
-        implicit
-        toTuple: self.ToTuple.|-[I, L],
-        hlistToFlat: Tupler.Aux[L, O]
-    ): I |- O = at[I] { i =>
-      hlistToFlat(toTuple(i))
+    implicit def forValue[V]: (V ><: Empty) |- V = at[V ><: Empty] { i =>
+      deCons(i)._1
     }
+
   }
 
   /**
