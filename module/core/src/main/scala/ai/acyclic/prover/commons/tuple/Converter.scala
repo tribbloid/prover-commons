@@ -31,9 +31,6 @@ trait Converter extends Hom.Poly {
   ): from.><:[HEAD, TAIL] |- to.><:[HEAD & to.VBound, TO_TAIL] =
     at[from.><:[HEAD, TAIL]] { v =>
       val (head, tail) = from.deCons(v)
-      to.cons[HEAD & to.VBound, TO_TAIL](
-        head.asInstanceOf[HEAD & to.VBound],
-        tailCase(tail).asInstanceOf[TO_TAIL]
-      )
+      to.cons[HEAD & to.VBound, TO_TAIL](head.asInstanceOf[HEAD & to.VBound], tailCase(tail))
     }
 }
