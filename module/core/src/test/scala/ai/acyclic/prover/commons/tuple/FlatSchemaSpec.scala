@@ -34,7 +34,9 @@ class FlatSchemaSpec extends BaseSpec {
       val expected = (v1, v2)
 
       // Explicit check
-      val schema = implicitly[Tuples.FlatSchema { type Repr = Int ><: String ><: HNil; type FlatRepr = (Int, String) }]
+      val schema = implicitly[
+        Tuples.FlatSchema { type Repr = Int ><: String ><: HNil; type FlatRepr = (Int, String) }
+      ]
 
       assert(schema.forward(tuple) == expected)
       assert(schema.reverse(expected) == tuple)

@@ -41,6 +41,16 @@ trait SchemaMixin {
 
     infix type ~>[X, Y] = FlatSchema { type Repr = X; type FlatRepr = Y }
 
+    implicit final def from[X](
+        implicit
+        ev: X ~> ?
+    ): ev.type = ev
+
+    implicit final def to[Y](
+        implicit
+        ev: ? ~> Y
+    ): ev.type = ev
+
     implicit def unitCase: Empty ~> Unit = new FlatSchema {
       override type Repr = Empty
       override type FlatRepr = Unit
@@ -68,43 +78,6 @@ trait SchemaMixin {
         cons(v, Empty)
       }
     }
-
-    implicit def genericTupleCase[
-        I <: Inductive,
-        H <: shapeless.HList,
-        T <: Product
-    ](
-        implicit
-        toHList: ToTuple.Impl[I, H],
-        fromHList: FromTuple.Impl[H, I],
-        tupler: shapeless.ops.hlist.Tupler.Aux[H, T],
-        gen: shapeless.Generic.Aux[T, H]
-//        hListRuntime: HListRuntime[H]
-    ): I ~> T = new FlatSchema {
-      override type Repr = I
-      override type FlatRepr = T
-
-      override def toRuntimeList(v: Inductive): List[Any] = {
-        val h = toHList(v.asInstanceOf[I])
-        h.runtimeList
-      }
-
-      override def forward(v: Inductive): T = {
-        val h = toHList(v.asInstanceOf[I])
-        tupler(h)
-      }
-
-      override def reverse(v: T): Inductive = {
-        val h = gen.to(v)
-        fromHList(h)
-      }
-    }
-
-    implicit def identityToTuple[H <: shapeless.HList]: ToTuple.Impl[H, H] =
-      ToTuple.at[H](h => h)
-
-    implicit def identityFromTuple[H <: shapeless.HList]: FromTuple.Impl[H, H] =
-      FromTuple.at[H](h => h)
   }
 }
 
