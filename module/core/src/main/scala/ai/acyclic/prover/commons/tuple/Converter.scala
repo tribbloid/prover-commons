@@ -28,11 +28,11 @@ trait Converter extends Hom.Poly {
       implicit
       tailCase: TAIL |- TO_TAIL,
       bound: HEAD <:< to.VBound
-  ): from.><:[HEAD, TAIL] |- to.><:[HEAD with to.VBound, TO_TAIL] =
+  ): from.><:[HEAD, TAIL] |- to.><:[HEAD & to.VBound, TO_TAIL] =
     at[from.><:[HEAD, TAIL]] { v =>
       val (head, tail) = from.deCons(v)
-      to.cons[HEAD with to.VBound, TO_TAIL](
-        head.asInstanceOf[HEAD with to.VBound],
+      to.cons[HEAD & to.VBound, TO_TAIL](
+        head.asInstanceOf[HEAD & to.VBound],
         tailCase(tail).asInstanceOf[TO_TAIL]
       )
     }
