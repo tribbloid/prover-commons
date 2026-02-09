@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.tuple
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.tuple.backbone.RecursiveHeapBackbone
 
-class FlatSchemaSpec extends BaseSpec {
+class FlatReprMixinSpec extends BaseSpec {
 
   // Custom backbone for testing - same as TupleConverterMixinSpec
   object TestBackbone extends RecursiveHeapBackbone {

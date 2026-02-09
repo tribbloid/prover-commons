@@ -6,7 +6,7 @@ import shapeless.ops.hlist.Tupler
 import scala.language.implicitConversions
 import shapeless.{::, HList, HNil}
 
-trait SchemaMixin {
+trait FlatReprMixin {
   self: BTuples =>
 
   trait ToFlatRepr_Imp0 extends Poly {
@@ -46,4 +46,4 @@ trait SchemaMixin {
 
 }
 
-object SchemaMixin {}
+object FlatReprMixin {}
