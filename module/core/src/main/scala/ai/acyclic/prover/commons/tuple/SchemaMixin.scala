@@ -13,10 +13,7 @@ trait SchemaMixin {
     *
     * For the same reason, construction/inference of Schema should be interned
     */
-  trait Schema {
-
-    type Repr <: Inductive
-  }
+  trait Schema[Repr <: Inductive] {}
 
   /**
     * can convert a [[Inductive]] to a flat Scala tuple or Unit or value and back
@@ -27,48 +24,32 @@ trait SchemaMixin {
     *   - A -> A ><: Empty
     *   - Unit -> Empty
     */
-  trait FlatSchema extends Schema {
+  trait FlatSchema[
+      Repr <: Inductive,
+      FlatRepr <: Any // actually Product | Unit | Value
+  ] extends Schema[Repr] {
 
-    type FlatRepr <: Any // actually Product | Unit | Value
-
-    def forward(v: Inductive): FlatRepr // this should never yield a Tuple1, it should be flattened to a single value
-    def reverse(v: FlatRepr): Inductive
+    def forward(v: Repr): FlatRepr // this should never yield a Tuple1, it should be flattened to a single value
+    def reverse(v: FlatRepr): Repr
   }
 
   object FlatSchema {
 
-    infix type ~>[X, Y] = FlatSchema { type Repr = X; type FlatRepr = Y }
+    infix type <->[X <: Inductive, Y] = FlatSchema[X, Y]
+
+//    infix type ~>[-X <: Inductive, +Y] = FlatSchema[? <: X, ? <: Y]
+//    infix type <~[-Y <: Inductive, +X] = FlatSchema[? <: X, ? <: Y]
 
     implicit final def from[X](
         implicit
-        ev: X ~> ?
+        ev: X <-> ?
     ): ev.type = ev
 
     implicit final def to[Y](
         implicit
-        ev: ? ~> Y
+        ev: ? <-> Y
     ): ev.type = ev
 
-    implicit def unitCase: Empty ~> Unit = new FlatSchema {
-      override type Repr = Empty
-      override type FlatRepr = Unit
-
-      override def forward(v: Inductive): Unit = ()
-      override def reverse(v: Unit): Inductive = Empty
-    }
-
-    implicit def valueCase[H <: VBound]: (H ><: Empty) ~> H = new FlatSchema {
-      override type Repr = H ><: Empty
-      override type FlatRepr = H
-
-      override def forward(v: Inductive): H = {
-        val (h, _) = deCons[H, Empty](v.asInstanceOf[Repr])
-        h
-      }
-      override def reverse(v: H): Inductive = {
-        cons(v, Empty)
-      }
-    }
   }
 }
 
