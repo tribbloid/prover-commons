@@ -13,10 +13,11 @@ trait RightNestedAxiom {
 
   type Inductive
 
+  protected val _0: Inductive
+
   // aliases
-  type Empty <: Inductive
-  protected val _0: Empty
   final def Empty: Empty = _0
+  type Empty = _0.type
 
   type Nil = Empty
   val Nil: Nil = Empty
