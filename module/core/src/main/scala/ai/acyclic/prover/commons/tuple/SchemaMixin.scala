@@ -63,6 +63,7 @@ object SchemaMixin {
       def apply(l: H :: T): H = l.head
     }
 
+    // TODO: the following cases are not exhaustive, they should be merged into a single case defined inductively
     implicit def tuple2Case[H1, H2, T <: HList](
         implicit
         ev: T <:< HNil
