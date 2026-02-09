@@ -26,10 +26,10 @@ object Hom extends Hom_Imp0 {
   type :=>[-I, +R] = Fn[I, R]
   val :=> : Fn.type = Fn
 
-  type Poly1[-I[_], +R[_]] = BoundView.top.Poly1[I, R]
+  type Poly1[-I[_], +R[_]] = BoundView.top.UnnaturalTransformation[I, R]
 
-  type :|~>[-I[_], +R[_]] = BoundView.top.Poly1[I, R]
-  val :|~> = BoundView.top.Poly1
+  type :|~>[-I[_], +R[_]] = BoundView.top.UnnaturalTransformation[I, R]
+  val :|~> = BoundView.top.UnnaturalTransformation
 
   type :|->[+R[_]] = BoundView.top.Dependent[R]
   val :|-> = BoundView.top.Dependent
@@ -40,7 +40,7 @@ object Hom extends Hom_Imp0 {
 
 //    type Poly = Hom.Poly
 
-    type Poly1[I[_], R[_]] = BoundView.top.Poly1.Impl[I, R]
+    type Poly1[I[_], R[_]] = BoundView.top.UnnaturalTransformation.Impl[I, R]
   }
 
 //  override type BuildTarget[I, O] = Fn.Impl[I, O]

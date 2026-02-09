@@ -6,19 +6,22 @@ import ai.acyclic.prover.commons.jit.bound.TypeBound
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.util.PredefKinds
 
-object HasPoly1 {}
+object HasUnnaturalTransformation {}
 
-trait HasPoly1 extends HasPoly {
+/**
+  * see https://ncatlab.org/nlab/show/unnatural+transformation
+  */
+trait HasUnnaturalTransformation extends HasPoly {
 
   // keep it final to use Scala 3 type project to refer to inner classes without initialising it
   final case class BoundView[D <: TypeBound](bound: D) {
 
-    type Poly1[
+    type UnnaturalTransformation[
         -I[T >: bound.Min <: bound.Max],
         +O[T >: bound.Min <: bound.Max]
-    ] = Poly1.Compat[I, O]
+    ] = UnnaturalTransformation.Compat[I, O]
 
-    case object Poly1 {
+    case object UnnaturalTransformation {
 
       /**
         * the most general form of poly1 in DOT calculus takes a bound and generate a function it should be cast into
@@ -148,11 +151,11 @@ trait HasPoly1 extends HasPoly {
 
     }
 
-    type Dependent[+O[_ >: bound.Min <: bound.Max]] = Poly1[PredefKinds.Invar, O]
+    type Dependent[+O[_ >: bound.Min <: bound.Max]] = UnnaturalTransformation[PredefKinds.Invar, O]
     // TODO: remove, superseded by DepFn
     case object Dependent {
 
-      trait Impl[O[_ >: bound.Min <: bound.Max]] extends Poly1.Impl[PredefKinds.Invar, O]
+      trait Impl[O[_ >: bound.Min <: bound.Max]] extends UnnaturalTransformation.Impl[PredefKinds.Invar, O]
     }
   }
 
