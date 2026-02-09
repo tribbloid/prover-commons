@@ -25,26 +25,35 @@ trait SchemaMixin {
   }
 
   /**
-    * Polymorphic function, takes a [[Inductive]] and convert to a lat Scala tuple or Unit or value,
+    * can convert a [[Inductive]] to a flat Scala tuple or Unit or value and back
     *
     * e.g.
-    *   - [(A, B)] -> Schema[A ><: B ><: Empty]
-    *   - [(A)] -> Schema[A ><: Empty]
-    *   - [A] -> Schema[A ><: Empty]
-    *   - Unit -> Schema[Empty]
+    *   - (A, B) <-> A ><: B ><: Empty
+    *   - (A) <-> A ><: Empty
+    *   - A -> A ><: Empty
+    *   - Unit -> Empty
     */
   trait FlatSchema extends Schema {
 
     type FlatRepr <: Any // actually Product | Unit | Value
 
-    def toFlat(v: Inductive): FlatRepr // this should never yield a Tuple1, it should be flattened to a single value
-    def fromFlat(v: FlatRepr): Inductive
+    def forward(v: Inductive): FlatRepr // this should never yield a Tuple1, it should be flattened to a single value
+    def reverse(v: FlatRepr): Inductive
   }
 
   object FlatSchema {
 
     infix type ~>[X, Y] = FlatSchema { type Repr = X; type FlatRepr = Y }
 
+    implicit final def from[X](
+        implicit
+        ev: X ~> ?
+    ): ev.type = ev
+
+    implicit final def to[Y](
+        implicit
+        ev: ? ~> Y
+    ): ev.type = ev
   }
 }
 
