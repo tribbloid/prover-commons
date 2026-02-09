@@ -18,7 +18,6 @@ trait SchemaMixin {
     type Repr <: Inductive
 
     def toRuntimeList(v: Inductive): List[Any]
-    def fromRuntimeList(l: List[Any]): Inductive
   }
 
   /**
@@ -47,7 +46,6 @@ trait SchemaMixin {
       override type FlatRepr = Unit
 
       override def toRuntimeList(v: Inductive): List[Any] = scala.Nil
-      override def fromRuntimeList(l: List[Any]): Inductive = Empty
 
       override def forward(v: Inductive): Unit = ()
       override def reverse(v: Unit): Inductive = Empty
@@ -61,9 +59,6 @@ trait SchemaMixin {
         val (h, _) = deCons[H, Empty](v.asInstanceOf[Repr])
         List(h)
       }
-      override def fromRuntimeList(l: List[Any]): Inductive = {
-        cons(l.head.asInstanceOf[H], Empty)
-      }
 
       override def forward(v: Inductive): H = {
         val (h, _) = deCons[H, Empty](v.asInstanceOf[Repr])
@@ -74,95 +69,42 @@ trait SchemaMixin {
       }
     }
 
-    implicit def tuple2Case[T1 <: VBound, T2 <: VBound]: (T1 ><: T2 ><: Empty) ~> (T1, T2) = new FlatSchema {
-      override type Repr = T1 ><: T2 ><: Empty
-      override type FlatRepr = (T1, T2)
+    implicit def genericTupleCase[
+        I <: Inductive,
+        H <: shapeless.HList,
+        T <: Product
+    ](
+        implicit
+        toHList: ToTuple.Impl[I, H],
+        fromHList: FromTuple.Impl[H, I],
+        tupler: shapeless.ops.hlist.Tupler.Aux[H, T],
+        gen: shapeless.Generic.Aux[T, H]
+//        hListRuntime: HListRuntime[H]
+    ): I ~> T = new FlatSchema {
+      override type Repr = I
+      override type FlatRepr = T
 
       override def toRuntimeList(v: Inductive): List[Any] = {
-        val (t1, tail1) = deCons[T1, T2 ><: Empty](v.asInstanceOf[Repr])
-        val (t2, _) = deCons[T2, Empty](tail1)
-        List(t1, t2)
+        val h = toHList(v.asInstanceOf[I])
+        h.runtimeList
       }
 
-      override def fromRuntimeList(l: List[Any]): Inductive = {
-        cons(l(0).asInstanceOf[T1], cons(l(1).asInstanceOf[T2], Empty))
+      override def forward(v: Inductive): T = {
+        val h = toHList(v.asInstanceOf[I])
+        tupler(h)
       }
 
-      override def forward(v: Inductive): (T1, T2) = {
-        val (t1, tail1) = deCons[T1, T2 ><: Empty](v.asInstanceOf[Repr])
-        val (t2, _) = deCons[T2, Empty](tail1)
-        (t1, t2)
-      }
-
-      override def reverse(v: (T1, T2)): Inductive = {
-        cons(v._1, cons(v._2, Empty))
+      override def reverse(v: T): Inductive = {
+        val h = gen.to(v)
+        fromHList(h)
       }
     }
 
-    implicit def tuple3Case[T1 <: VBound, T2 <: VBound, T3 <: VBound]: (T1 ><: T2 ><: T3 ><: Empty) ~> (T1, T2, T3) =
-      new FlatSchema {
-        override type Repr = T1 ><: T2 ><: T3 ><: Empty
-        override type FlatRepr = (T1, T2, T3)
+    implicit def identityToTuple[H <: shapeless.HList]: ToTuple.Impl[H, H] =
+      ToTuple.at[H](h => h)
 
-        override def toRuntimeList(v: Inductive): List[Any] = {
-          val (t1, tail1) = deCons[T1, T2 ><: T3 ><: Empty](v.asInstanceOf[Repr])
-          val (t2, tail2) = deCons[T2, T3 ><: Empty](tail1)
-          val (t3, _) = deCons[T3, Empty](tail2)
-          List(t1, t2, t3)
-        }
-
-        override def fromRuntimeList(l: List[Any]): Inductive = {
-          cons(l(0).asInstanceOf[T1], cons(l(1).asInstanceOf[T2], cons(l(2).asInstanceOf[T3], Empty)))
-        }
-
-        override def forward(v: Inductive): (T1, T2, T3) = {
-          val (t1, tail1) = deCons[T1, T2 ><: T3 ><: Empty](v.asInstanceOf[Repr])
-          val (t2, tail2) = deCons[T2, T3 ><: Empty](tail1)
-          val (t3, _) = deCons[T3, Empty](tail2)
-          (t1, t2, t3)
-        }
-
-        override def reverse(v: (T1, T2, T3)): Inductive = {
-          cons(v._1, cons(v._2, cons(v._3, Empty)))
-        }
-      }
-
-    implicit def tuple4Case[
-        T1 <: VBound,
-        T2 <: VBound,
-        T3 <: VBound,
-        T4 <: VBound
-    ]: (T1 ><: T2 ><: T3 ><: T4 ><: Empty) ~> (T1, T2, T3, T4) = new FlatSchema {
-      override type Repr = T1 ><: T2 ><: T3 ><: T4 ><: Empty
-      override type FlatRepr = (T1, T2, T3, T4)
-
-      override def toRuntimeList(v: Inductive): List[Any] = {
-        val (t1, tail1) = deCons[T1, T2 ><: T3 ><: T4 ><: Empty](v.asInstanceOf[Repr])
-        val (t2, tail2) = deCons[T2, T3 ><: T4 ><: Empty](tail1)
-        val (t3, tail3) = deCons[T3, T4 ><: Empty](tail2)
-        val (t4, _) = deCons[T4, Empty](tail3)
-        List(t1, t2, t3, t4)
-      }
-
-      override def fromRuntimeList(l: List[Any]): Inductive = {
-        cons(
-          l(0).asInstanceOf[T1],
-          cons(l(1).asInstanceOf[T2], cons(l(2).asInstanceOf[T3], cons(l(3).asInstanceOf[T4], Empty)))
-        )
-      }
-
-      override def forward(v: Inductive): (T1, T2, T3, T4) = {
-        val (t1, tail1) = deCons[T1, T2 ><: T3 ><: T4 ><: Empty](v.asInstanceOf[Repr])
-        val (t2, tail2) = deCons[T2, T3 ><: T4 ><: Empty](tail1)
-        val (t3, tail3) = deCons[T3, T4 ><: Empty](tail2)
-        val (t4, _) = deCons[T4, Empty](tail3)
-        (t1, t2, t3, t4)
-      }
-
-      override def reverse(v: (T1, T2, T3, T4)): Inductive = {
-        cons(v._1, cons(v._2, cons(v._3, cons(v._4, Empty))))
-      }
-    }
+    implicit def identityFromTuple[H <: shapeless.HList]: FromTuple.Impl[H, H] =
+      FromTuple.at[H](h => h)
   }
 }
 

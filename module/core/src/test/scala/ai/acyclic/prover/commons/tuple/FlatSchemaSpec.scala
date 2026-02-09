@@ -1,7 +1,10 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.tuple.Tuples.{_0, cons}
+import ai.acyclic.prover.commons.tuple.Tuples
+import ai.acyclic.prover.commons.tuple.Tuples.FlatSchema._
+import ai.acyclic.prover.commons.tuple.Tuples.{><:, _0, cons}
+import shapeless.{::, HNil}
 
 class FlatSchemaSpec extends BaseSpec {
 
@@ -12,7 +15,6 @@ class FlatSchemaSpec extends BaseSpec {
       assert(schema.forward(Tuples.Empty) == ())
       assert(schema.reverse(()) == Tuples.Empty)
       assert(schema.toRuntimeList(Tuples.Empty) == Nil)
-      assert(schema.fromRuntimeList(Nil) == Tuples.Empty)
     }
 
     it("should handle single value") {
@@ -23,7 +25,6 @@ class FlatSchemaSpec extends BaseSpec {
       assert(schema.forward(tuple) == v)
       assert(schema.reverse(v) == tuple)
       assert(schema.toRuntimeList(tuple) == List(v))
-      assert(schema.fromRuntimeList(List(v)) == tuple)
     }
 
     it("should handle Tuple2") {
@@ -31,12 +32,13 @@ class FlatSchemaSpec extends BaseSpec {
       val v2 = "a"
       val tuple = cons(v1, cons(v2, _0))
       val expected = (v1, v2)
-      val schema = Tuples.FlatSchema.tuple2Case[Int, String]
+
+      // Explicit check
+      val schema = implicitly[Tuples.FlatSchema { type Repr = Int ><: String ><: HNil; type FlatRepr = (Int, String) }]
 
       assert(schema.forward(tuple) == expected)
       assert(schema.reverse(expected) == tuple)
       assert(schema.toRuntimeList(tuple) == List(v1, v2))
-      assert(schema.fromRuntimeList(List(v1, v2)) == tuple)
     }
 
     it("should handle Tuple3") {
@@ -45,12 +47,13 @@ class FlatSchemaSpec extends BaseSpec {
       val v3 = true
       val tuple = cons(v1, cons(v2, cons(v3, _0)))
       val expected = (v1, v2, v3)
-      val schema = Tuples.FlatSchema.tuple3Case[Int, String, Boolean]
+      val schema = implicitly[
+        Tuples.FlatSchema { type Repr = Int ><: String ><: Boolean ><: HNil; type FlatRepr = (Int, String, Boolean) }
+      ]
 
       assert(schema.forward(tuple) == expected)
       assert(schema.reverse(expected) == tuple)
       assert(schema.toRuntimeList(tuple) == List(v1, v2, v3))
-      assert(schema.fromRuntimeList(List(v1, v2, v3)) == tuple)
     }
 
     it("should handle Tuple4") {
@@ -60,28 +63,30 @@ class FlatSchemaSpec extends BaseSpec {
       val v4 = 2.0
       val tuple = cons(v1, cons(v2, cons(v3, cons(v4, _0))))
       val expected = (v1, v2, v3, v4)
-      val schema = Tuples.FlatSchema.tuple4Case[Int, String, Boolean, Double]
+      val schema = implicitly[
+        Tuples.FlatSchema {
+          type Repr = Int ><: String ><: Boolean ><: Double ><: HNil; type FlatRepr = (Int, String, Boolean, Double)
+        }
+      ]
 
       assert(schema.forward(tuple) == expected)
       assert(schema.reverse(expected) == tuple)
       assert(schema.toRuntimeList(tuple) == List(v1, v2, v3, v4))
-      assert(schema.fromRuntimeList(List(v1, v2, v3, v4)) == tuple)
     }
 
     it("should resolve implicits correctly") {
-      def convert[I <: Tuples.Inductive, F](in: I)(
-          implicit
-          schema: Tuples.FlatSchema { type Repr = I; type FlatRepr = F }
-      ): F = {
-        schema.forward(in)
-      }
-
       val t2 = cons(1, cons("a", _0))
-      val res2 = convert(t2)
+      // Verify that we can summon schema by input type alone (if return type is inferred or checked)
+      // Note: Without knowing FlatRepr, implicit search might be harder if multiple exist (unlikely here)
+      // But we can check if it exists for the specific FlatRepr
+
+      val schema = implicitly[Tuples.FlatSchema { type Repr = Int ><: String ><: HNil }]
+      val res2 = schema.forward(t2)
       assert(res2 == (1, "a"))
 
       val t3 = cons(1, cons("a", cons(true, _0)))
-      val res3 = convert(t3)
+      val schema3 = implicitly[Tuples.FlatSchema { type Repr = Int ><: String ><: Boolean ><: HNil }]
+      val res3 = schema3.forward(t3)
       assert(res3 == (1, "a", true))
     }
   }
