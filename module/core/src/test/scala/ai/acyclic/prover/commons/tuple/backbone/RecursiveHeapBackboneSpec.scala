@@ -1,10 +1,9 @@
-package ai.acyclic.prover.commons.tuple
+package ai.acyclic.prover.commons.tuple.backbone
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.tuple.backbone.RecursiveHeapBackbone
-import shapeless.{::, HNil}
+import shapeless.HNil
 
-class ToTupleBackboneSpec extends BaseSpec {
+class RecursiveHeapBackboneSpec extends BaseSpec {
 
   object Fixture extends RecursiveHeapBackbone {
     type VBound = Any
