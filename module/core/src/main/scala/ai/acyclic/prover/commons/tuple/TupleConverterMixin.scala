@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.tuple.Tuples.><:
-import shapeless.::
+import shapeless.HNil
 
 trait TupleConverterMixin {
   self: BTuples =>
