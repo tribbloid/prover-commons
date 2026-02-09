@@ -40,7 +40,7 @@ trait SchemaMixin {
 //    infix type ~>[-X <: Inductive, +Y] = FlatSchema[? <: X, ? <: Y]
 //    infix type <~[-Y <: Inductive, +X] = FlatSchema[? <: X, ? <: Y]
 
-    implicit final def from[X](
+    implicit final def from[X <: Inductive](
         implicit
         ev: X <-> ?
     ): ev.type = ev
