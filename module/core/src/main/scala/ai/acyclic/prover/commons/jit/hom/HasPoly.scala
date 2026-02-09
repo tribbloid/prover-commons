@@ -24,6 +24,7 @@ trait HasPoly extends HasFunction {
       override val _definedAt: SrcDefinition
   ) extends PolyLike
       with FnBuilder.Root {
+    // TODO: construction/inference of Case should be interned
 
     object CaseTag extends Tag
 
