@@ -16,8 +16,6 @@ trait SchemaMixin {
   trait Schema {
 
     type Repr <: Inductive
-
-    def toRuntimeList(v: Inductive): List[Any]
   }
 
   /**
@@ -55,8 +53,6 @@ trait SchemaMixin {
       override type Repr = Empty
       override type FlatRepr = Unit
 
-      override def toRuntimeList(v: Inductive): List[Any] = scala.Nil
-
       override def forward(v: Inductive): Unit = ()
       override def reverse(v: Unit): Inductive = Empty
     }
@@ -64,11 +60,6 @@ trait SchemaMixin {
     implicit def valueCase[H <: VBound]: (H ><: Empty) ~> H = new FlatSchema {
       override type Repr = H ><: Empty
       override type FlatRepr = H
-
-      override def toRuntimeList(v: Inductive): List[Any] = {
-        val (h, _) = deCons[H, Empty](v.asInstanceOf[Repr])
-        List(h)
-      }
 
       override def forward(v: Inductive): H = {
         val (h, _) = deCons[H, Empty](v.asInstanceOf[Repr])
