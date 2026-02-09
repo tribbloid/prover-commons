@@ -31,8 +31,8 @@ trait SchemaMixin {
     */
   object ToFlatRepr extends ToFlatRepr_Imp0 {
 
-    implicit def forValue[V]: (V ><: Empty) |- V = at[V ><: Empty] { i =>
-      deCons(i)._1
+    implicit def forValue[V <: VBound]: (V ><: Empty) |- V = at[V ><: Empty] {
+      case head :: _ => head.asInstanceOf[V]
     }
 
   }
