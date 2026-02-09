@@ -17,7 +17,7 @@ class ToTupleBackboneSpec extends BaseSpec {
     }
 
     it("asList should return Nil") {
-      assert(Empty.asList == Nil)
+      assert(Empty.asList == List.empty)
     }
 
     it("toString should return correct string") {

@@ -6,7 +6,7 @@ import shapeless.labelled.FieldType
 import shapeless.{HList, HNil}
 
 /**
-  * just a Finsets with no bound, delegating to shapeless
+  * just BTuples with no bound, delegating to shapeless/formless
   */
 object Tuples extends BTuples {
   // TODO: unmaintained for Scala 3, should move to formless or interop backport that supports *: operator
