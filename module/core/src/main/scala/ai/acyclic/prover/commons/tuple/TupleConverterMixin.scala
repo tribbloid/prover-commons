@@ -10,6 +10,10 @@ trait TupleConverterMixin {
   object FromTuple extends Converter {
     val from: Tuples.type = Tuples
     val to: self.type = self
+
+    implicit lazy val hnilCase: HNil |- to.Empty = at[HNil] { _ =>
+      to.Empty
+    }
   }
 
   object ToTuple extends Converter {

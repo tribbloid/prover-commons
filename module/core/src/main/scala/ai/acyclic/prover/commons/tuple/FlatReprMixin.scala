@@ -11,13 +11,15 @@ trait FlatReprMixin {
 
   trait ToFlatRepr_Imp0 extends Poly {
 
-    implicit def forTuples[I <: self.Inductive, L <: HList, O](
+    implicit def forTuples[I <: self.Inductive, L <: HList, LN <: HList, O](
         implicit
-        toHList: ToTuple.:=>[I, L],
-        hlistToFlat: Tupler.Aux[L, O]
+        toHList: ToTuple.|-[I, L],
+        normalize: NormalizeHList.Aux[L, LN],
+        hlistToFlat: Tupler.Aux[LN, O]
     ): I |- O = at[I] { i =>
-      hlistToFlat(toHList(i))
+      hlistToFlat(normalize(toHList(i)))
     }
+
   }
 
   /**
@@ -47,12 +49,40 @@ trait FlatReprMixin {
 
     implicit val forUnit: Unit |- Empty = at[Unit](_ => self.Empty)
 
-    implicit def forProduct[P <: Product, L <: HList, O <: Inductive](
+    implicit def forProduct[P <: Product, L <: HList, O](
         implicit
         gen: Generic.Aux[P, L],
         fromTuple: FromTuple.|-[L, O]
     ): P |- O = at[P] { p =>
       fromTuple(gen.to(p))
+    }
+
+  }
+
+  trait NormalizeHList[L] {
+    type Out <: HList
+    def apply(l: L): Out
+  }
+
+  object NormalizeHList {
+    type Aux[L, O <: HList] = NormalizeHList[L] { type Out = O }
+
+    implicit val hnilType: Aux[HNil.type, HNil] = new NormalizeHList[HNil.type] {
+      type Out = HNil
+      def apply(l: HNil.type): HNil = HNil
+    }
+
+    implicit val hnilTrait: Aux[HNil, HNil] = new NormalizeHList[HNil] {
+      type Out = HNil
+      def apply(l: HNil): HNil = HNil
+    }
+
+    implicit def hcons[H, T <: HList, TO <: HList](
+        implicit
+        tail: Aux[T, TO]
+    ): Aux[H :: T, H :: TO] = new NormalizeHList[H :: T] {
+      type Out = H :: TO
+      def apply(l: H :: T): H :: TO = l.head :: tail(l.tail)
     }
   }
 

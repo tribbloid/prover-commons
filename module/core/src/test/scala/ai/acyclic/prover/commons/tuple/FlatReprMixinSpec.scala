@@ -27,29 +27,6 @@ class FlatReprMixinSpec extends BaseSpec {
       assert(result == 1)
     }
 
-    it("debug Tupler on intersection types") {
-      type L = (Int with Any) :: (Int with Any) :: HNil
-      // This should compile if Tupler handles intersection types
-      val tupler = implicitly[Tupler[L]]
-      val l: L = 1 :: 2 :: HNil
-      assert(tupler(l) == (1, 2))
-    }
-
-    it("debug ToTuple") {
-      val t = TestBackbone.cons(1, TestBackbone.Empty)
-      val h = TestBackbone.ToTuple(t)
-      assert(h == 1 :: HNil)
-    }
-
-    it("debug FromTuple implicit resolution") {
-      val tuple = (1, 2, 3)
-      type T = (Int, Int, Int)
-      val gen = implicitly[Generic[T]]
-      println(s"Generic found: ${gen.to(tuple)}")
-      val fromTuple = implicitly[TestBackbone.FromTuple.|-[gen.Repr, TestBackbone.Inductive]]
-      println(s"FromTuple found: $fromTuple")
-    }
-
     it("should convert 2-element tuple to scala tuple") {
       import TestBackbone.ToFlatRepr.*
 
@@ -124,5 +101,4 @@ object FlatReprMixinSpec {
   object TestBackbone extends RecursiveHeapBackbone {
     override type VBound = Any
   }
-
 }
