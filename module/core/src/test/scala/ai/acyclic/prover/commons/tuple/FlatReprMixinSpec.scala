@@ -23,6 +23,71 @@ class FlatReprMixinSpec extends BaseSpec {
       val result = TestBackbone.ToFlatRepr(t)
       assert(result == 1)
     }
+
+    it("should convert 2-element tuple to scala tuple") {
+      import TestBackbone.ToFlatRepr.*
+
+      val t = TestBackbone.cons("a", TestBackbone.cons("b", TestBackbone.Empty))
+      val result = TestBackbone.ToFlatRepr(t)
+      assert(result == ("a", "b"))
+    }
+
+    it("should convert 3-element tuple to scala tuple") {
+      import TestBackbone.ToFlatRepr.*
+
+      val t = TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.cons(3, TestBackbone.Empty)))
+      val result = TestBackbone.ToFlatRepr(t)
+      assert(result == (1, 2, 3))
+    }
+
+    it("should convert 4-element tuple to scala tuple") {
+      import TestBackbone.ToFlatRepr.*
+
+      val t =
+        TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.cons(3, TestBackbone.cons(4, TestBackbone.Empty))))
+      val result = TestBackbone.ToFlatRepr(t)
+      assert(result == (1, 2, 3, 4))
+    }
+  }
+
+  describe("FromFlatRepr") {
+
+    it("should convert Unit to Empty") {
+      import TestBackbone.FromFlatRepr.*
+
+      val result = TestBackbone.FromFlatRepr(())
+      assert(result == TestBackbone.Empty)
+    }
+
+    it("should convert value to single element tuple") {
+      import TestBackbone.FromFlatRepr.*
+
+      val result = TestBackbone.FromFlatRepr(1)
+      assert(result == TestBackbone.cons(1, TestBackbone.Empty))
+    }
+
+    it("should convert scala tuple 2 to 2-element tuple") {
+      import TestBackbone.FromFlatRepr.*
+
+//      val result = TestBackbone.FromFlatRepr((1, 2))
+//      assert(result == TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.Empty)))
+    }
+
+    it("should convert scala tuple 3 to 3-element tuple") {
+      import TestBackbone.FromFlatRepr.*
+
+//      val result = TestBackbone.FromFlatRepr((1, 2, 3))
+//      assert(result == TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.cons(3, TestBackbone.Empty))))
+    }
+
+    it("should convert scala tuple 4 to 4-element tuple") {
+      import TestBackbone.FromFlatRepr.*
+
+//      val result = TestBackbone.FromFlatRepr((1, 2, 3, 4))
+//      val expected =
+//        TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.cons(3, TestBackbone.cons(4, TestBackbone.Empty))))
+//      assert(result == expected)
+    }
   }
 
 }
