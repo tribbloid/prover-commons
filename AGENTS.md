@@ -14,6 +14,8 @@ This file contains information for AI agents working on the prover-commons proje
 - **Main Package**: `ai.acyclic.prover.commons`
 - **Testing**: Uses `testFixtures` for shared test utilities
 
+All the following links should be resolved using their absolute paths. Some of them are outside the project root.
+
 ## Guardrails (violate only if user explicitly says "ignore AGENTS.md")
 
 see [this](../buildSrc/.agent/guardrails.md)
