@@ -2,6 +2,9 @@ package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.tuple.backbone.RecursiveHeapBackbone
+import shapeless.*
+import shapeless.ops.hlist.Tupler
+import ai.acyclic.prover.commons.tuple.Tuples
 
 class FlatReprMixinSpec extends BaseSpec {
   import FlatReprMixinSpec.*
@@ -22,6 +25,29 @@ class FlatReprMixinSpec extends BaseSpec {
       val t = TestBackbone.cons(1, TestBackbone.Empty)
       val result = TestBackbone.ToFlatRepr(t)
       assert(result == 1)
+    }
+
+    it("debug Tupler on intersection types") {
+      type L = (Int with Any) :: (Int with Any) :: HNil
+      // This should compile if Tupler handles intersection types
+      val tupler = implicitly[Tupler[L]]
+      val l: L = 1 :: 2 :: HNil
+      assert(tupler(l) == (1, 2))
+    }
+
+    it("debug ToTuple") {
+      val t = TestBackbone.cons(1, TestBackbone.Empty)
+      val h = TestBackbone.ToTuple(t)
+      assert(h == 1 :: HNil)
+    }
+
+    it("debug FromTuple implicit resolution") {
+      val tuple = (1, 2, 3)
+      type T = (Int, Int, Int)
+      val gen = implicitly[Generic[T]]
+      println(s"Generic found: ${gen.to(tuple)}")
+      val fromTuple = implicitly[TestBackbone.FromTuple.|-[gen.Repr, TestBackbone.Inductive]]
+      println(s"FromTuple found: $fromTuple")
     }
 
     it("should convert 2-element tuple to scala tuple") {
@@ -62,31 +88,31 @@ class FlatReprMixinSpec extends BaseSpec {
     it("should convert value to single element tuple") {
       import TestBackbone.FromFlatRepr.*
 
-      val result = TestBackbone.FromFlatRepr(1)
-      assert(result == TestBackbone.cons(1, TestBackbone.Empty))
+      val result = TestBackbone.FromFlatRepr("a")
+      assert(result == TestBackbone.cons("a", TestBackbone.Empty))
     }
 
     it("should convert scala tuple 2 to 2-element tuple") {
       import TestBackbone.FromFlatRepr.*
 
-//      val result = TestBackbone.FromFlatRepr((1, 2))
-//      assert(result == TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.Empty)))
+      val result = TestBackbone.FromFlatRepr((1, 2))
+      assert(result == TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.Empty)))
     }
 
     it("should convert scala tuple 3 to 3-element tuple") {
       import TestBackbone.FromFlatRepr.*
 
-//      val result = TestBackbone.FromFlatRepr((1, 2, 3))
-//      assert(result == TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.cons(3, TestBackbone.Empty))))
+      val result = TestBackbone.FromFlatRepr((1, 2, 3))
+      assert(result == TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.cons(3, TestBackbone.Empty))))
     }
 
     it("should convert scala tuple 4 to 4-element tuple") {
       import TestBackbone.FromFlatRepr.*
 
-//      val result = TestBackbone.FromFlatRepr((1, 2, 3, 4))
-//      val expected =
-//        TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.cons(3, TestBackbone.cons(4, TestBackbone.Empty))))
-//      assert(result == expected)
+      val result = TestBackbone.FromFlatRepr((1, 2, 3, 4))
+      val expected =
+        TestBackbone.cons(1, TestBackbone.cons(2, TestBackbone.cons(3, TestBackbone.cons(4, TestBackbone.Empty))))
+      assert(result == expected)
     }
   }
 

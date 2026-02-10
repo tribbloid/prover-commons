@@ -87,10 +87,11 @@ class AssertSerializableSpike extends BaseSpec {
 
         val poly: Hom.Poly = new Hom.Poly {}
 
-        val poly1: Hom.Poly1[Seq, Vector] = new Hom.Impl.Poly1[Seq, Vector] {
+        val unnaturalTransformation: Hom.UnnaturalTransformation[Seq, Vector] =
+          new Hom.Impl.UnnaturalTransformation[Seq, Vector] {
 
-          override def apply[T <: Any](arg: Seq[T]): Vector[T] = arg.toVector
-        }
+            override def apply[T <: Any](arg: Seq[T]): Vector[T] = arg.toVector
+          }
 
 //        val dependent: Hom.Dependent[Vector] = new Hom.Impl.Dependent[Vector] {
 //
@@ -104,7 +105,7 @@ class AssertSerializableSpike extends BaseSpec {
         //      singleAbstractMethod,
         Seq(circuit, circuit.cached()),
         poly,
-        Seq(poly1, poly1.cached())
+        Seq(unnaturalTransformation, unnaturalTransformation.cached())
 //        Seq(dependent, dependent.cached())
         //      poly.cached()
       ).zipWithIndex.foreach {
