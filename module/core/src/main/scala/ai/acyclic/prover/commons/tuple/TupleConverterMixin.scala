@@ -13,8 +13,8 @@ trait TupleConverterMixin {
     val from: Tuples.type = Tuples
     val to: self.type = self
 
-    implicit lazy val hnilCase: HNil |- to.Empty = at[HNil] { _ =>
-      to.Empty
+    implicit lazy val hnilCase: HNil |- to.Eye = at[HNil] { _ =>
+      to.Eye
     }
   }
 
@@ -23,7 +23,7 @@ trait TupleConverterMixin {
     val from: self.type = self
     val to: Tuples.type = Tuples
 
-    implicit lazy val hnilCase: from.Empty |- HNil = at[from.Empty] { _ =>
+    implicit lazy val hnilCase: from.Eye |- HNil = at[from.Eye] { _ =>
       HNil
     }
   }

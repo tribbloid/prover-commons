@@ -15,17 +15,17 @@ object Tuples extends BTuples {
 
   override type VBound = Any
 
-  override type Inductive = HList
-  type Tuple = Inductive
+  override type Prod = HList
+  type Tuple = Prod
 
-  override val _0: HNil.type = HNil
+  override val _1: HNil.type = HNil
 
-  type Unit = Empty
-  val Unit: Nil = Empty
+  type Unit = Eye
+  val Unit: Nil = Eye
 
-  infix type ><:[+HEAD <: VBound, +TAIL <: Inductive] = HEAD :: TAIL
+  infix type ><:[+HEAD <: VBound, +TAIL <: Prod] = HEAD :: TAIL
 
-  infix type *:[+HEAD <: VBound, +TAIL <: Inductive] = HEAD ><: TAIL
+  infix type *:[+HEAD <: VBound, +TAIL <: Prod] = HEAD ><: TAIL
 
   override def cons[HEAD, TAIL <: HList](head: HEAD, tail: TAIL): HEAD ><: TAIL = {
 

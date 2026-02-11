@@ -7,19 +7,12 @@ import shapeless.{::, HList, HNil}
 
 import scala.language.implicitConversions
 
-trait RecursiveHeapBackbone extends Backbone {
+trait SchemaBackbone extends Backbone {
   self: Singleton =>
 
   import RecursiveHeapBackbone.*
 
-  trait Prod extends Product with Serializable {
-
-    type Tuple <: Tuples.Prod
-    val tuple: Tuples.Prod
-    final lazy val tupleOps: Tuples.Ops[tuple.type] = Tuples.Ops(tuple)
-
-    def asList: List[VBound]
-  }
+  trait Prod extends Product with Serializable {}
 
   trait NativeTupleView[T] {
 
@@ -27,33 +20,14 @@ trait RecursiveHeapBackbone extends Backbone {
   }
 
   protected case object _1 extends Prod {
-    override type Tuple = HNil.type
-    override val tuple: HNil = HNil
-    override def asList: List[VBound] = List.empty
     override lazy val toString: String = EMPTY
+
   }
 
   sealed trait ><:[
       +HEAD <: VBound,
       +TAIL <: Prod
-  ] extends Prod {
-
-    val head: HEAD
-    val tail: TAIL
-
-    override lazy val tuple = head :: tail.tuple
-
-    override def asList: List[VBound] = head :: tail.asList
-
-    override lazy val toString: String = {
-      val tailStr =
-        if (tail == _1) ""
-        else " ><: " + tail.toString
-
-      s"""${TextBlock(head.toString).indent("  ").build}$tailStr
-         | """.stripMargin.trim
-    }
-  }
+  ] extends Prod {}
 
   // cartesian product symbol
   case class Cons[
@@ -68,8 +42,6 @@ trait RecursiveHeapBackbone extends Backbone {
     type Head = HEAD
     type Tail = TAIL
 
-    override type Tuple = HEAD :: tail.Tuple
-
   }
 
   final override def cons[HEAD <: VBound, TAIL <: Prod](head: HEAD, tail: TAIL) =
@@ -83,12 +55,4 @@ trait RecursiveHeapBackbone extends Backbone {
       case cons: Cons[head, tail] => (cons.head, cons.tail)
     }
   }
-
-}
-
-object RecursiveHeapBackbone {
-
-  final val EMPTY = "∅"
-
-  final val >< = " ><: "
 }

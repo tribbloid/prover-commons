@@ -7,23 +7,22 @@ import shapeless.{::, Generic, HList, HNil}
 trait FlatReprMixin {
   self: BTuples =>
 
-  import self._
+  import self.*
 
   trait ToFlatRepr_Imp0 extends Poly {
 
-    implicit def forTuples[I <: self.Inductive, L <: HList, LN <: HList, O](
+    implicit def forTuples[I <: self.Prod, L <: HList, LN <: HList, O](
         implicit
         toHList: ToTuple.|-[I, L],
-        normalize: NormalizeHList.Aux[L, LN],
-        hlistToFlat: Tupler.Aux[LN, O]
+        hlistToFlat: Tupler.Aux[L, O]
     ): I |- O = at[I] { i =>
-      hlistToFlat(normalize(toHList(i)))
+      hlistToFlat(toHList(i))
     }
 
   }
 
   /**
-    * can convert a [[Inductive]] to a flat Scala tuple or Unit or value and back
+    * can convert a [[Prod]] to a flat Scala tuple or Unit or value and back
     *
     * e.g.
     *   - (A, B) <-> A ><: B ><: Empty
@@ -33,9 +32,9 @@ trait FlatReprMixin {
     */
   object ToFlatRepr extends ToFlatRepr_Imp0 {
 
-    implicit lazy val forUnit: Empty |- Unit = at[Empty](_ => ())
+    implicit lazy val forUnit: Eye |- Unit = at[Eye](_ => ())
 
-    implicit def forValue[V <: VBound]: (V ><: Empty) |- V = at[V ><: Empty] { v =>
+    implicit def forValue[V <: VBound]: (V ><: Eye) |- V = at[V ><: Eye] { v =>
       val (head, _) = self.deCons(v)
       head
     }
@@ -47,9 +46,9 @@ trait FlatReprMixin {
     */
   object FromFlatRepr extends Poly with FromFlatRepr_LowPriority {
 
-    implicit val forUnit: Unit |- Empty = at[Unit](_ => self.Empty)
+    implicit val forUnit: Unit |- Eye = at[Unit](_ => self.Eye)
 
-    implicit def forProduct[P <: Product, L <: HList, O](
+    implicit def forProduct[P <: Prod, L <: HList, O](
         implicit
         gen: Generic.Aux[P, L],
         fromTuple: FromTuple.|-[L, O]
@@ -59,38 +58,11 @@ trait FlatReprMixin {
 
   }
 
-  trait NormalizeHList[L] {
-    type Out <: HList
-    def apply(l: L): Out
-  }
-
-  object NormalizeHList {
-    type Aux[L, O <: HList] = NormalizeHList[L] { type Out = O }
-
-    implicit val hnilType: Aux[HNil.type, HNil] = new NormalizeHList[HNil.type] {
-      type Out = HNil
-      def apply(l: HNil.type): HNil = HNil
-    }
-
-    implicit val hnilTrait: Aux[HNil, HNil] = new NormalizeHList[HNil] {
-      type Out = HNil
-      def apply(l: HNil): HNil = HNil
-    }
-
-    implicit def hcons[H, T <: HList, TO <: HList](
-        implicit
-        tail: Aux[T, TO]
-    ): Aux[H :: T, H :: TO] = new NormalizeHList[H :: T] {
-      type Out = H :: TO
-      def apply(l: H :: T): H :: TO = l.head :: tail(l.tail)
-    }
-  }
-
   trait FromFlatRepr_LowPriority {
     poly: Poly =>
 
-    implicit def forValue[V <: VBound]: V |- (V ><: Empty) = at[V] { v =>
-      self.cons(v, self.Empty)
+    implicit def forValue[V <: VBound]: V |- (V ><: Eye) = at[V] { v =>
+      self.cons(v, self.Eye)
     }
   }
 

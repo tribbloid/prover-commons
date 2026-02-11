@@ -7,7 +7,7 @@ package ai.acyclic.prover.commons.jit.eval
   *   partial input type (Const[T]) or a tuple of several of them
   */
 case class PartialEvalEnv[
-    I <: Args.Inductive
+    I <: Args.Prod
 ](
     inputs: I,
     failFast: Boolean, // used in function.apply, if false, will evaluate the graph with best effort

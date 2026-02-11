@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.tuple
 import ai.acyclic.prover.commons.jit.hom.Hom
 
 /**
-  * Polymorphic function, each instance can convert from [[from.Inductive]] to [[to.Inductive]]
+  * Polymorphic function, each instance can convert from [[from.Prod]] to [[to.Prod]]
   *
   * e.g.
   *   - A ><: B ><: from.Empty -> A ><: B ><: to.Empty
@@ -15,21 +15,21 @@ trait Converter extends Hom.Poly {
   val from: BTuples
   val to: BTuples
 
-  implicit lazy val emptyCase: from.Empty |- to.Empty =
-    at[from.Empty] { _ =>
-      to.Empty
+  implicit lazy val emptyCase: from.Eye |- to.Eye =
+    at[from.Eye] { _ =>
+      to.Eye
     }
 
   implicit def inductiveCase[
       HEAD <: from.VBound & to.VBound,
-      TAIL <: from.Inductive,
-      TO_TAIL <: to.Inductive
+      TAIL <: from.Prod,
+      TO_TAIL <: to.Prod
   ](
       implicit
       tailCase: TAIL |- TO_TAIL
-  ): from.><:[HEAD, TAIL] |- to.><:[HEAD & to.VBound, TO_TAIL] =
+  ): from.><:[HEAD, TAIL] |- to.><:[HEAD, TO_TAIL] =
     at[from.><:[HEAD, TAIL]] { v =>
       val (head, tail) = from.deCons(v)
-      to.cons[HEAD & to.VBound, TO_TAIL](head.asInstanceOf[HEAD & to.VBound], tailCase(tail))
+      to.cons[HEAD, TO_TAIL](head, tailCase(tail))
     }
 }

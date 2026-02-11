@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.tuple.Tuples.{*:, _0}
+import ai.acyclic.prover.commons.tuple.Tuples.{*:, _1}
 
 import scala.language.implicitConversions
 
@@ -24,12 +24,12 @@ import scala.language.implicitConversions
   *
   * consequently, this trait is only a scaffold, user should choose a backbone for exact implementation
   */
-trait BTuples extends RightNestedAxiom with TupleConverterMixin with FlatReprMixin {
+trait BTuples extends RightAssociated with TupleConverterMixin with FlatReprMixin {
   self: Singleton =>
 
-  def cons[HEAD <: VBound, TAIL <: Inductive](head: HEAD, tail: TAIL): HEAD ><: TAIL
+  def cons[HEAD <: VBound, TAIL <: Prod](head: HEAD, tail: TAIL): HEAD ><: TAIL
 
-  sealed trait _TupleOps[SELF <: Inductive] {
+  sealed trait _TupleOps[SELF <: Prod] {
 
     def self: SELF
 
@@ -40,7 +40,7 @@ trait BTuples extends RightNestedAxiom with TupleConverterMixin with FlatReprMix
     ): HEAD ><: SELF = cons(head, self)
   }
 
-  implicit class tupleOps[SELF <: Inductive](val self: SELF) extends _TupleOps[SELF] {}
+  implicit class tupleOps[SELF <: Prod](val self: SELF) extends _TupleOps[SELF] {}
 
-  implicit def eyeExtension(s: this.type): tupleOps[Empty] = tupleOps[Empty](Empty)
+  implicit def eyeExtension(s: this.type): tupleOps[Eye] = tupleOps[Eye](Eye)
 }

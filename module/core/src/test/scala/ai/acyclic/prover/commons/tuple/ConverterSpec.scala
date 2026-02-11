@@ -21,25 +21,25 @@ class ConverterSpec extends BaseSpec {
   describe("Converter") {
 
     it("empty") {
-      val v1 = B1.Empty
+      val v1 = B1.Eye
       val v2 = Conv(v1)
-      assert(v2 == B2.Empty)
+      assert(v2 == B2.Eye)
     }
 
     it("single") {
       //      import B1._
       //      import B1.tupleOps
 
-      val v1 = 1 ><: B1.Empty
+      val v1 = 1 ><: B1.Eye
       val v2 = Conv(v1)
-      assert(v2 == 1 ><: B2.Empty)
+      assert(v2 == 1 ><: B2.Eye)
     }
 
     it("multiple") {
 
-      val v1 = 1 ><: "a" ><: B1.Empty
+      val v1 = 1 ><: "a" ><: B1.Eye
       val v2 = Conv(v1)
-      assert(v2 == 1 ><: "a" ><: B2.Empty)
+      assert(v2 == 1 ><: "a" ><: B2.Eye)
 
     }
   }
@@ -60,9 +60,9 @@ class ConverterSpec extends BaseSpec {
     }
 
     it("pass") {
-      val v1 = 1 ><: B3.Empty
+      val v1 = 1 ><: B3.Eye
       val v2 = Conv2(v1)
-      assert(v2 == 1 ><: B4.Empty)
+      assert(v2 == 1 ><: B4.Eye)
     }
 
   }
