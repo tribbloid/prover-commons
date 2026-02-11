@@ -48,7 +48,7 @@ trait FlatReprMixin {
 
     implicit val forUnit: Unit |- Eye = at[Unit](_ => self.Eye)
 
-    implicit def forProduct[P <: Prod, L <: HList, O](
+    implicit def forProduct[P <: Product, L <: HList, O](
         implicit
         gen: Generic.Aux[P, L],
         fromTuple: FromTuple.|-[L, O]
