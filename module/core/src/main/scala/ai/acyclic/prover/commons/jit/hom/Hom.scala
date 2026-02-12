@@ -26,13 +26,14 @@ object Hom extends Hom_Imp0 {
   type :=>[-I, +R] = Fn[I, R]
   val :=> : Fn.type = Fn
 
-  type UnnaturalTransformation[-I[_], +R[_]] = BoundView.top.UnnaturalTransformation[I, R]
-
   type :|~>[-I[_], +R[_]] = BoundView.top.UnnaturalTransformation[I, R]
   val :|~> = BoundView.top.UnnaturalTransformation
 
-  type :|->[+R[_]] = BoundView.top.Dependent[R]
-  val :|-> = BoundView.top.Dependent
+//  type :|->[+R[_]] = BoundView.top.Dependent[R] // TODO: superseded
+//  val :|-> = BoundView.top.Dependent
+
+  type Dependent[+R[_]] = DepFn[Any] { type OutK[T] <: R[T] }
+  type :|->[+R[_]] = Dependent[R]
 
   object Impl {
 

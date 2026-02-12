@@ -1,6 +1,7 @@
 package ai.acyclic.prover.spark.serialization
 
 import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Hom.:|~>
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.util.Caching
 
@@ -87,10 +88,10 @@ class AssertSerializableSpike extends BaseSpec {
 
         val poly: Hom.Poly = new Hom.Poly {}
 
-        val unnaturalTransformation: Hom.UnnaturalTransformation[Seq, Vector] =
+        val unnaturalTransformation: Seq :|~> Vector =
           new Hom.Impl.UnnaturalTransformation[Seq, Vector] {
 
-            override def apply[T <: Any](arg: Seq[T]): Vector[T] = arg.toVector
+            override def refine[T <: Any]: Hom.Fn[Seq[T], Vector[T]] = Hom.Fn.at[Seq[T]](v => v.toVector)
           }
 
 //        val dependent: Hom.Dependent[Vector] = new Hom.Impl.Dependent[Vector] {
