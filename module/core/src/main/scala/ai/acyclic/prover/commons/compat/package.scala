@@ -10,7 +10,7 @@ package object compat {
   type XStr = String & Singleton
 
   type TupleX = shapeless.HList
-  object TupleX {
+  object TupleX { // TODO: merge into HList
 
     trait OpsMixin { // hollow inside, but mixin will bring _ops into the implicit scope
       self: TupleX =>

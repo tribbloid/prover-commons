@@ -1,15 +1,15 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.tuple.backbone.RecursiveHeapBackbone
+import ai.acyclic.prover.commons.tuple.backbone.NestedBackbone
 
 class ConverterSpec extends BaseSpec {
 
-  object B1 extends RecursiveHeapBackbone {
+  object B1 extends NestedBackbone {
     override type VBound = Any
   }
 
-  object B2 extends RecursiveHeapBackbone {
+  object B2 extends NestedBackbone {
     override type VBound = Any
   }
 
@@ -49,11 +49,11 @@ class ConverterSpec extends BaseSpec {
 
   describe("Constrained") {
 
-    object B3 extends RecursiveHeapBackbone {
+    object B3 extends NestedBackbone {
       override type VBound = Int
     }
 
-    object B4 extends RecursiveHeapBackbone {
+    object B4 extends NestedBackbone {
       override type VBound = Int
     }
 

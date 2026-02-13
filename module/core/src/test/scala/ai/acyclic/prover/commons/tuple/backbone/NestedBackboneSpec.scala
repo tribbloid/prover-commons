@@ -3,9 +3,9 @@ package ai.acyclic.prover.commons.tuple.backbone
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import shapeless.HNil
 
-class RecursiveHeapBackboneSpec extends BaseSpec {
+class NestedBackboneSpec extends BaseSpec {
 
-  object Fixture extends RecursiveHeapBackbone {
+  object Fixture extends NestedBackbone {
     type VBound = Any
   }
   import Fixture.*
@@ -20,7 +20,7 @@ class RecursiveHeapBackboneSpec extends BaseSpec {
     }
 
     it("toString should return correct string") {
-      assert(Eye.toString == RecursiveHeapBackbone.EMPTY)
+      assert(Eye.toString == NestedBackbone.EMPTY)
     }
     it("should behave as a Product") {
       assert(Eye.productArity == 0)
@@ -74,15 +74,6 @@ class RecursiveHeapBackboneSpec extends BaseSpec {
       assert(tuple.toString.contains("a"))
       assert(tuple.toString.contains("><:"))
     }
-    it("should behave as a Product") {
-      val tuple = 1 ><: Eye
-      assert(tuple.productArity == 2)
-      assert(tuple.productElement(0) == 1)
-      assert(tuple.productElement(1) == Eye)
-      assert(tuple.productIterator.toList == List(1, Eye))
-      assert(tuple.canEqual(1 ><: Eye))
-      assert(!tuple.canEqual(Eye))
-    }
 
     it("should work with nested tuple 1 ><: 2 ><: Empty") {
       val tuple = 1 ><: 2 ><: Eye
@@ -90,11 +81,6 @@ class RecursiveHeapBackboneSpec extends BaseSpec {
       assert(tuple.head == 1)
       assert(tuple.tail.head == 2)
       assert(tuple.tail.tail == Eye)
-
-      assert(tuple.productArity == 2)
-
-      assert(tuple.productElement(0) == 1)
-      assert(tuple.productElement(1) == 2 ><: Eye)
 
       assert(tuple.asList == List(1, 2))
     }

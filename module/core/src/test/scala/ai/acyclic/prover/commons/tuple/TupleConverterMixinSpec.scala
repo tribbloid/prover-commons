@@ -1,13 +1,13 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.tuple.backbone.RecursiveHeapBackbone
+import ai.acyclic.prover.commons.tuple.backbone.NestedBackbone
 import shapeless.{::, HNil}
 
 class TupleConverterMixinSpec extends BaseSpec {
 
   // Custom backbone for testing - expose _0 as a public value
-  object TestBackbone extends RecursiveHeapBackbone {
+  object TestBackbone extends NestedBackbone {
     override type VBound = Any
 
   }

@@ -1,31 +1,30 @@
 package ai.acyclic.prover.commons.tuple.backbone
 
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
+import ai.acyclic.prover.commons.tuple.HLists.*:
 import ai.acyclic.prover.commons.tuple.{backbone, HLists, MonoidalProds}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.{::, HList, HNil}
 
 import scala.language.implicitConversions
 
-trait RecursiveHeapBackbone extends Backbone {
+trait NestedBackbone extends Backbone {
   self: Singleton =>
 
-  import RecursiveHeapBackbone.*
+  import NestedBackbone.*
 
   object Schema extends SchemaBackbone {
 
-    override type VBound = RecursiveHeapBackbone.this.VBound
+    override type VBound = NestedBackbone.this.VBound
 
   }
 
-  override type Element[V <: VBound] = V
-
-  trait Prod extends Schema.Prod with Product with Serializable {
+  trait Prod extends Schema.Prod with Serializable {
 
     val HList: HList
     final lazy val tupleOps: HLists.Ops[HList.type] = HLists.Ops(HList)
 
-    def asList: List[VBound]
+    def asList: List[Element[VBound]]
   }
 
   trait NativeTupleView[T] {
@@ -34,21 +33,19 @@ trait RecursiveHeapBackbone extends Backbone {
   }
 
   protected case object _1 extends Schema._1 with Prod {
-    override val HList: HNil = HNil
+    override val HList: HNil.type = HNil
     override def asList: List[VBound] = List.empty
     override lazy val toString: String = EMPTY
   }
 
-  sealed trait ><:[
-      +HEAD <: VBound,
+  case class ><:[
+      L <: VBound,
       +TAIL <: Prod
-  ] extends Schema.><:[HEAD, TAIL]
+  ](
+      val head: Element[L],
+      override val tail: TAIL
+  ) extends Schema.><:[L, TAIL](tail)
       with Prod {
-
-    val head: HEAD
-    val tail: TAIL
-
-    override lazy val HList = head :: tail.HList
 
     override def asList: List[VBound] = head :: tail.asList
 
@@ -60,40 +57,26 @@ trait RecursiveHeapBackbone extends Backbone {
       s"""${TextBlock(head.toString).indent("  ").build}$tailStr
          | """.stripMargin.trim
     }
-  }
 
-  // cartesian product symbol
-  case class Cons[
-      HEAD <: VBound,
-      TAIL <: Prod
-  ](
-      head: HEAD,
-      tail: TAIL
-  ) extends (HEAD ><: TAIL) {
-
-    // in scala 3 these will be gone
-    type Head = HEAD
-    type Tail = TAIL
-
-    override type HList = HEAD :: tail.HList
-
+    override type HList = L *: tail.HList
+    override lazy val HList = head :: tail.HList
   }
 
   final override def cons[HEAD <: VBound, TAIL <: Prod](head: HEAD, tail: TAIL) =
-    Cons(head, tail)
+    new ><:(head, tail)
 
   final override def deCons[HEAD <: VBound, TAIL <: Prod](
       cons: HEAD ><: TAIL
   ): (HEAD, TAIL) = {
 
     cons match {
-      case cons: Cons[head, tail] => (cons.head, cons.tail)
+      case cons: ><:[head, tail] => (cons.head, cons.tail)
     }
   }
 
 }
 
-object RecursiveHeapBackbone {
+object NestedBackbone {
 
   final val EMPTY = "∅"
 

@@ -77,7 +77,7 @@ object MonoidalProds {
 
   trait LeftAssociative extends Cartesian {
 
-    infix type :><[+TAIL <: Prod, +R <: VBound] <: Prod
+    infix type :><[+TAIL <: Prod, R <: VBound] <: Prod
   }
 
   /**
@@ -89,7 +89,7 @@ object MonoidalProds {
     /**
       * The product (Bra-ket notation)
       */
-    infix type ><:[+L <: VBound, +TAIL <: Prod] <: Prod
+    infix type ><:[L <: VBound, +TAIL <: Prod] <: Prod
 
   }
 }

@@ -10,11 +10,12 @@ import scala.language.implicitConversions
 trait SchemaBackbone extends Backbone {
   self: Singleton =>
 
-  import RecursiveHeapBackbone.*
+  import HLists.*
+  import NestedBackbone.*
 
   override type Element[V <: VBound] = Unit
 
-  trait Prod extends Product with Serializable {
+  trait Prod extends Serializable {
 
     type HList <: HLists.Prod
   }
@@ -26,13 +27,17 @@ trait SchemaBackbone extends Backbone {
   }
   protected case object _1 extends _1 {}
 
-  trait ><:[
-      +HEAD <: VBound,
+  class ><:[
+      L <: VBound,
       +TAIL <: Prod
-  ] extends Prod {
-    import HLists.*
+  ](
+      val tail: TAIL
+  ) extends Prod {
 
-    override type HList = HEAD *: TAIL
+    override type HList <: L *: tail.HList
   }
 
+  override def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL = new ><:(tail)
+
+  override def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL) = (HLists.Unit, cons.tail)
 }
