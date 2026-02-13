@@ -8,12 +8,14 @@ import shapeless.{HList, HNil}
 /**
   * just BTuples with no bound, delegating to shapeless/formless
   */
-object Tuples extends BTuples {
+object Tuples extends MonoidalProds {
   // TODO: unmaintained for Scala 3, should move to formless or interop backport that supports *: operator
 
   import shapeless.::
 
   override type VBound = Any
+
+  override type Element[V <: VBound] = V
 
   override type Prod = HList
   type Tuple = Prod
@@ -27,7 +29,7 @@ object Tuples extends BTuples {
 
   infix type *:[+HEAD <: VBound, +TAIL <: Prod] = HEAD ><: TAIL
 
-  override def cons[HEAD, TAIL <: HList](head: HEAD, tail: TAIL): HEAD ><: TAIL = {
+  override def cons[HEAD <: VBound, TAIL <: HList](head: HEAD, tail: TAIL): HEAD ><: TAIL = {
 
     head :: tail
   }
@@ -60,6 +62,5 @@ object Tuples extends BTuples {
       }
     }
     object GetField extends GetField
-
   }
 }

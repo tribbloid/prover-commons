@@ -99,4 +99,21 @@ object __FunctionDesignDoc {
     * the define-by-run API will be postponed, as ArithExpr is hyper-optimised for SIMD linear algebra, the more general
     * G-EqSat impl won't rely on it
     */
+
+  /**
+    * take away:
+    *
+    * type bound & variance bound are subsets of implicit parameter, both are type-level constraint that can be checked
+    * at compileTime:
+    *
+    * `def fn[T <: Max](t: T)` <=> `def fn[T](t: T)(using T <:< Max)`
+    *
+    * `class X[T >: Min <: Max]` <=> `class C[T](using T <:< Max, T >:> Min)`
+    *
+    * `class Y[-A, +B]` <=> class Y[A, B]{ given[A2, B2] (using A2 >:> A, B2 <:< B): Y[A2, B2] <:< Y[A, B] }
+    *
+    * `type Z[-A, +B]` <=> type Z[A, B] { given[A2, B2] (using A2 >:> A, B2 <:< B): Y[A2, B2] <:< Y[A, B] }
+    *
+    * they should be perceived as syntax sugar that are enabled all the time. The problem is: Can it be proven?
+    */
 }

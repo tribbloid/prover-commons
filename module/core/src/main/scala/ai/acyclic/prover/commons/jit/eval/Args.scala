@@ -2,13 +2,13 @@ package ai.acyclic.prover.commons.jit.eval
 
 import ai.acyclic.prover.commons.>:>
 
-import ai.acyclic.prover.commons.tuple.BTuples
+import ai.acyclic.prover.commons.tuple.MonoidalProds
 import ai.acyclic.prover.commons.jit.hom
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.tuple.backbone.RecursiveHeapBackbone
 import zio.Zippable
 
-object Args extends BTuples {
+object Args extends MonoidalProds {
 
   import Hom.*
 

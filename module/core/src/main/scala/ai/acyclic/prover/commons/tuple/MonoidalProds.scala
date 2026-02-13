@@ -24,23 +24,72 @@ import scala.language.implicitConversions
   *
   * consequently, this trait is only a scaffold, user should choose a backbone for exact implementation
   */
-trait BTuples extends RightAssociated with TupleConverterMixin with FlatReprMixin {
+trait MonoidalProds extends MonoidalProds.RightAssociative with TupleConverterMixin with FlatReprMixin {
   self: Singleton =>
 
-  def cons[HEAD <: VBound, TAIL <: Prod](head: HEAD, tail: TAIL): HEAD ><: TAIL
+  def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL
+  def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL)
 
   sealed trait _TupleOps[SELF <: Prod] {
 
     def self: SELF
 
     def ><:[
-        HEAD <: VBound
+        L <: VBound
     ](
-        head: HEAD
-    ): HEAD ><: SELF = cons(head, self)
+        head: Element[L]
+    ): L ><: SELF = cons(head, self)
   }
 
   implicit class tupleOps[SELF <: Prod](val self: SELF) extends _TupleOps[SELF] {}
 
   implicit def eyeExtension(s: this.type): tupleOps[Eye] = tupleOps[Eye](Eye)
+}
+
+object MonoidalProds {
+
+  import scala.language.implicitConversions
+
+  /**
+    * Cartesian product on its own (armed with product & left/right projection) is not monoidal:
+    *
+    * (X >< Y) >< Z and X >< (Y >< Z) are different types
+    */
+  sealed trait Cartesian {
+
+    type VBound // TODO: remove, should be superseded by <:< in Element
+
+    type Prod
+
+    protected val _1: Prod
+
+    type Element[T <: VBound]
+
+    /**
+      * Identity element of the product (MATLAB terminology)
+      */
+    final def Eye: Eye = _1
+    type Eye = _1.type
+
+    type Nil = Eye
+    val Nil: Nil = Eye
+  }
+
+  trait LeftAssociative extends Cartesian {
+
+    infix type :><[+TAIL <: Prod, +R <: VBound] <: Prod
+  }
+
+  /**
+    *   - head to the left
+    *   - tail to the right
+    */
+  trait RightAssociative extends Cartesian {
+
+    /**
+      * The product (Bra-ket notation)
+      */
+    infix type ><:[+L <: VBound, +TAIL <: Prod] <: Prod
+
+  }
 }

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.tuple.backbone
 
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
-import ai.acyclic.prover.commons.tuple.{BTuples, Tuples}
+import ai.acyclic.prover.commons.tuple.{MonoidalProds, Tuples}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.{::, HList, HNil}
 

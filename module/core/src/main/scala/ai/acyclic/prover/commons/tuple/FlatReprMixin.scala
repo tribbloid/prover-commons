@@ -5,7 +5,7 @@ import shapeless.ops.hlist.Tupler
 import shapeless.{::, Generic, HList, HNil}
 
 trait FlatReprMixin {
-  self: BTuples =>
+  self: MonoidalProds =>
 
   import self.*
 
@@ -34,7 +34,7 @@ trait FlatReprMixin {
 
     implicit lazy val forUnit: Eye |- Unit = at[Eye](_ => ())
 
-    implicit def forValue[V <: VBound]: (V ><: Eye) |- V = at[V ><: Eye] { v =>
+    implicit def forValue[V <: VBound]: (V ><: Eye) |- Element[V] = at[V ><: Eye] { v =>
       val (head, _) = self.deCons(v)
       head
     }
@@ -61,7 +61,7 @@ trait FlatReprMixin {
   trait FromFlatRepr_LowPriority {
     poly: Poly =>
 
-    implicit def forValue[V <: VBound]: V |- (V ><: Eye) = at[V] { v =>
+    implicit def forValue[V <: VBound]: Element[V] |- (V ><: Eye) = at[V] { v =>
       self.cons(v, self.Eye)
     }
   }

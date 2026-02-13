@@ -12,8 +12,8 @@ import ai.acyclic.prover.commons.jit.hom.Hom
   */
 trait Converter extends Hom.Poly {
 
-  val from: BTuples
-  val to: BTuples
+  val from: MonoidalProds
+  val to: MonoidalProds
 
   implicit lazy val emptyCase: from.Eye |- to.Eye =
     at[from.Eye] { _ =>
