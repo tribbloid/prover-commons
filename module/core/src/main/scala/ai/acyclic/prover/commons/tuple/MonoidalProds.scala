@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.tuple.Tuples.{*:, _1}
+import ai.acyclic.prover.commons.tuple.HLists.{*:, _1}
 
 import scala.language.implicitConversions
 
@@ -24,7 +24,7 @@ import scala.language.implicitConversions
   *
   * consequently, this trait is only a scaffold, user should choose a backbone for exact implementation
   */
-trait MonoidalProds extends MonoidalProds.RightAssociative with TupleConverterMixin with FlatReprMixin {
+trait MonoidalProds extends MonoidalProds.RightAssociative with HListConverterMixin with FlatReprMixin {
   self: Singleton =>
 
   def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL

@@ -16,6 +16,9 @@ class ConverterSpec extends BaseSpec {
   object Conv extends Converter {
     override val from: B1.type = B1
     override val to: B2.type = B2
+
+    override def pointwise[T <: from.VBound & to.VBound]: from.Element[T] => to.Element[T] =
+      v => v.asInstanceOf[to.Element[T]]
   }
 
   describe("Converter") {
@@ -57,6 +60,9 @@ class ConverterSpec extends BaseSpec {
     object Conv2 extends Converter {
       override val from: B3.type = B3
       override val to: B4.type = B4
+
+      override def pointwise[T <: from.VBound & to.VBound]: from.Element[T] => to.Element[T] =
+        v => v.asInstanceOf[to.Element[T]]
     }
 
     it("pass") {

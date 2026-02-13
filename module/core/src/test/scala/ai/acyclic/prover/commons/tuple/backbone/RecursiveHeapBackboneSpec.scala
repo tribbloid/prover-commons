@@ -12,7 +12,7 @@ class RecursiveHeapBackboneSpec extends BaseSpec {
 
   describe("Empty") {
     it("asTuple should return HNil") {
-      assert(Eye.tuple == HNil)
+      assert(Eye.HList == HNil)
     }
 
     it("asList should return Nil") {
@@ -41,7 +41,7 @@ class RecursiveHeapBackboneSpec extends BaseSpec {
 
     it("asTuple should return correct HList") {
       val tuple = 1 ><: "a" ><: Eye
-      val hlist = tuple.tuple
+      val hlist = tuple.HList
 
       assert(hlist == 1 :: "a" :: HNil)
     }

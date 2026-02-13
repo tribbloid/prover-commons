@@ -13,12 +13,11 @@ trait FlatReprMixin {
 
     implicit def forTuples[I <: self.Prod, L <: HList, LN <: HList, O](
         implicit
-        toHList: ToTuple.|-[I, L],
+        toHList: ToHList.|-[I, L],
         hlistToFlat: Tupler.Aux[L, O]
     ): I |- O = at[I] { i =>
       hlistToFlat(toHList(i))
     }
-
   }
 
   /**
@@ -51,7 +50,7 @@ trait FlatReprMixin {
     implicit def forProduct[P <: Product, L <: HList, O](
         implicit
         gen: Generic.Aux[P, L],
-        fromTuple: FromTuple.|-[L, O]
+        fromTuple: FromHList.|-[L, O]
     ): P |- O = at[P] { p =>
       fromTuple(gen.to(p))
     }
@@ -61,7 +60,7 @@ trait FlatReprMixin {
   trait FromFlatRepr_LowPriority {
     poly: Poly =>
 
-    implicit def forValue[V <: VBound]: Element[V] |- (V ><: Eye) = at[V] { v =>
+    implicit def forValue[V <: VBound]: Element[V] |- (V ><: Eye) = at[Element[V]] { v =>
       self.cons(v, self.Eye)
     }
   }

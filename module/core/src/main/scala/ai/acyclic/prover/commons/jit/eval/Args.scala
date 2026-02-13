@@ -14,6 +14,8 @@ object Args extends MonoidalProds {
 
   override type VBound = ConstantFn[?]
 
+  override type Element[V <: VBound] = V
+
   /**
     * choose 1 of the 2 options:
     *

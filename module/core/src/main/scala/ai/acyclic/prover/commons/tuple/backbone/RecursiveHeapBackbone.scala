@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.tuple.backbone
 
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
-import ai.acyclic.prover.commons.tuple.{MonoidalProds, Tuples}
+import ai.acyclic.prover.commons.tuple.{backbone, HLists, MonoidalProds}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.{::, HList, HNil}
 
@@ -12,11 +12,18 @@ trait RecursiveHeapBackbone extends Backbone {
 
   import RecursiveHeapBackbone.*
 
-  trait Prod extends Product with Serializable {
+  object Schema extends SchemaBackbone {
 
-    type Tuple <: Tuples.Prod
-    val tuple: Tuples.Prod
-    final lazy val tupleOps: Tuples.Ops[tuple.type] = Tuples.Ops(tuple)
+    override type VBound = RecursiveHeapBackbone.this.VBound
+
+  }
+
+  override type Element[V <: VBound] = V
+
+  trait Prod extends Schema.Prod with Product with Serializable {
+
+    val HList: HList
+    final lazy val tupleOps: HLists.Ops[HList.type] = HLists.Ops(HList)
 
     def asList: List[VBound]
   }
@@ -26,9 +33,8 @@ trait RecursiveHeapBackbone extends Backbone {
     val value: T
   }
 
-  protected case object _1 extends Prod {
-    override type Tuple = HNil.type
-    override val tuple: HNil = HNil
+  protected case object _1 extends Schema._1 with Prod {
+    override val HList: HNil = HNil
     override def asList: List[VBound] = List.empty
     override lazy val toString: String = EMPTY
   }
@@ -36,12 +42,13 @@ trait RecursiveHeapBackbone extends Backbone {
   sealed trait ><:[
       +HEAD <: VBound,
       +TAIL <: Prod
-  ] extends Prod {
+  ] extends Schema.><:[HEAD, TAIL]
+      with Prod {
 
     val head: HEAD
     val tail: TAIL
 
-    override lazy val tuple = head :: tail.tuple
+    override lazy val HList = head :: tail.HList
 
     override def asList: List[VBound] = head :: tail.asList
 
@@ -68,7 +75,7 @@ trait RecursiveHeapBackbone extends Backbone {
     type Head = HEAD
     type Tail = TAIL
 
-    override type Tuple = HEAD :: tail.Tuple
+    override type HList = HEAD :: tail.HList
 
   }
 

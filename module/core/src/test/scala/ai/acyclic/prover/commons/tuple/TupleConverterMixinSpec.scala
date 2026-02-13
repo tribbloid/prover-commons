@@ -16,54 +16,54 @@ class TupleConverterMixinSpec extends BaseSpec {
 
     it("should convert Empty to HNil via emptyCase") {
       val empty = TestBackbone.Eye
-      val result = TestBackbone.ToTuple(empty)
+      val result = TestBackbone.ToHList(empty)
       assert(result == HNil)
     }
 
     it("should convert single element tuple") {
-      import TestBackbone.ToTuple._
+      import TestBackbone.ToHList._
 
       val t = TestBackbone.cons(1, TestBackbone.Eye)
-      val converted = TestBackbone.ToTuple(t)
+      val converted = TestBackbone.ToHList(t)
 
       assert(converted == (1 :: HNil))
     }
 
     it("should convert two element tuple") {
-      import TestBackbone.ToTuple._
+      import TestBackbone.ToHList._
 
       val t = TestBackbone.cons(1, TestBackbone.cons("a", TestBackbone.Eye))
-      val converted = TestBackbone.ToTuple(t)
+      val converted = TestBackbone.ToHList(t)
 
       assert(converted == (1 :: "a" :: HNil))
     }
 
     it("should convert three element tuple") {
-      import TestBackbone.ToTuple._
+      import TestBackbone.ToHList._
 
       val t = TestBackbone.cons(1, TestBackbone.cons("a", TestBackbone.cons(true, TestBackbone.Eye)))
-      val converted = TestBackbone.ToTuple(t)
+      val converted = TestBackbone.ToHList(t)
 
       assert(converted == (1 :: "a" :: true :: HNil))
     }
 
     it("should preserve types") {
-      import TestBackbone.ToTuple._
+      import TestBackbone.ToHList._
 
       val t = TestBackbone.cons(42, TestBackbone.cons("hello", TestBackbone.Eye))
-      val converted: Int :: String :: HNil = TestBackbone.ToTuple(t)
+      val converted: Int :: String :: HNil = TestBackbone.ToHList(t)
 
       assert(converted.head == 42)
       assert(converted.tail.head == "hello")
     }
 
     it("should handle nested types") {
-      import TestBackbone.ToTuple._
+      import TestBackbone.ToHList._
 
       val innerTuple = TestBackbone.cons("nested", TestBackbone.Eye)
       val outerTuple = TestBackbone.cons(1, TestBackbone.cons(innerTuple, TestBackbone.Eye))
 
-      val converted = TestBackbone.ToTuple(outerTuple)
+      val converted = TestBackbone.ToHList(outerTuple)
       assert(converted.head == 1)
       assert(converted.tail.head == innerTuple)
     }
@@ -72,7 +72,7 @@ class TupleConverterMixinSpec extends BaseSpec {
   describe("FromTuple") {
 
     it("should convert HNil to Empty via emptyCase") {
-      val result = TestBackbone.FromTuple(HNil)
+      val result = TestBackbone.FromHList(HNil)
       assert(result == TestBackbone.Eye)
     }
 
@@ -80,11 +80,11 @@ class TupleConverterMixinSpec extends BaseSpec {
     // construction is difficult. Instead, we test the implicit resolution approach.
 
     it("should resolve implicit chain for conversion") {
-      import TestBackbone.FromTuple._
+      import TestBackbone.FromHList._
 
       // The implicit chain should be able to resolve for simple cases
       // This tests that the implicit machinery is set up correctly
-      val emptyResult = TestBackbone.FromTuple(HNil)
+      val emptyResult = TestBackbone.FromHList(HNil)
       assert(emptyResult == TestBackbone.Eye)
     }
   }
@@ -92,11 +92,11 @@ class TupleConverterMixinSpec extends BaseSpec {
   describe("Round-trip conversion") {
 
     it("should round-trip Empty") {
-      import TestBackbone.ToTuple._
+      import TestBackbone.ToHList._
 
       val original = TestBackbone.Eye
-      val toTuples = TestBackbone.ToTuple(original)
-      val backToFin = TestBackbone.FromTuple(toTuples)
+      val toTuples = TestBackbone.ToHList(original)
+      val backToFin = TestBackbone.FromHList(toTuples)
 
       assert(backToFin == original)
     }
@@ -106,11 +106,11 @@ class TupleConverterMixinSpec extends BaseSpec {
     // Verify that ToTuple output is compatible with shapeless operations
 
     it("should produce HList compatible with shapeless ops") {
-      import TestBackbone.ToTuple._
+      import TestBackbone.ToHList._
       import shapeless.ops.hlist._
 
       val t = TestBackbone.cons(1, TestBackbone.cons("a", TestBackbone.cons(3.14, TestBackbone.Eye)))
-      val hlist: Int :: String :: Double :: HNil = TestBackbone.ToTuple(t)
+      val hlist: Int :: String :: Double :: HNil = TestBackbone.ToHList(t)
 
       // Use shapeless Length to verify structure
       val len = Length[Int :: String :: Double :: HNil]

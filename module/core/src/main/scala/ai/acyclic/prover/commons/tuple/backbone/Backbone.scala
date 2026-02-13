@@ -4,5 +4,4 @@ import ai.acyclic.prover.commons.tuple.MonoidalProds
 
 trait Backbone extends MonoidalProds {
   self: Singleton =>
-
 }

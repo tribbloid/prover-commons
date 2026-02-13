@@ -3,4 +3,6 @@ import ai.acyclic.prover.commons.tuple.MonoidalProds
 
 trait SeqBackbone extends Backbone {
   self: Singleton =>
+
+  override type Element[V <: VBound] = V
 }

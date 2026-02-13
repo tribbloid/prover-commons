@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.tuple.backbone.RecursiveHeapBackbone
 import shapeless.*
 import shapeless.ops.hlist.Tupler
-import ai.acyclic.prover.commons.tuple.Tuples
+import ai.acyclic.prover.commons.tuple.HLists
 
 class FlatReprMixinSpec extends BaseSpec {
   import FlatReprMixinSpec.*

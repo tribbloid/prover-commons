@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.tuple.backbone
 
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
-import ai.acyclic.prover.commons.tuple.{MonoidalProds, Tuples}
+import ai.acyclic.prover.commons.tuple.{HLists, MonoidalProds}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.{::, HList, HNil}
 
@@ -12,47 +12,27 @@ trait SchemaBackbone extends Backbone {
 
   import RecursiveHeapBackbone.*
 
-  trait Prod extends Product with Serializable {}
+  override type Element[V <: VBound] = Unit
 
-  trait NativeTupleView[T] {
+  trait Prod extends Product with Serializable {
 
-    val value: T
+    type HList <: HLists.Prod
   }
 
-  protected case object _1 extends Prod {
+  trait _1 extends Prod {
+
+    override type HList = HNil.type
     override lazy val toString: String = EMPTY
-
   }
+  protected case object _1 extends _1 {}
 
-  sealed trait ><:[
+  trait ><:[
       +HEAD <: VBound,
       +TAIL <: Prod
-  ] extends Prod {}
+  ] extends Prod {
+    import HLists.*
 
-  // cartesian product symbol
-  case class Cons[
-      HEAD <: VBound,
-      TAIL <: Prod
-  ](
-      head: HEAD,
-      tail: TAIL
-  ) extends (HEAD ><: TAIL) {
-
-    // in scala 3 these will be gone
-    type Head = HEAD
-    type Tail = TAIL
-
+    override type HList = HEAD *: TAIL
   }
 
-  final override def cons[HEAD <: VBound, TAIL <: Prod](head: HEAD, tail: TAIL) =
-    Cons(head, tail)
-
-  final override def deCons[HEAD <: VBound, TAIL <: Prod](
-      cons: HEAD ><: TAIL
-  ): (HEAD, TAIL) = {
-
-    cons match {
-      case cons: Cons[head, tail] => (cons.head, cons.tail)
-    }
-  }
 }
