@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.>:>
 import ai.acyclic.prover.commons.tuple.MonoidalProds
 import ai.acyclic.prover.commons.jit.hom
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.tuple.backbone.NestedBackbone
+import ai.acyclic.prover.commons.tuple.backbone.InductiveBackbone
 import zio.Zippable
 
 object Args extends MonoidalProds {

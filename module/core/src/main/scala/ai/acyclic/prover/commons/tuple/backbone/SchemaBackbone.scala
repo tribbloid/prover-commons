@@ -11,7 +11,7 @@ trait SchemaBackbone extends Backbone {
   self: Singleton =>
 
   import HLists.*
-  import NestedBackbone.*
+  import InductiveBackbone.*
 
   override type Element[V <: VBound] = Unit
 

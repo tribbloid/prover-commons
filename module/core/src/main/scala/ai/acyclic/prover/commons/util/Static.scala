@@ -19,5 +19,7 @@ object Static {
     trait Impl extends Static {}
 
     def get[T <: Impl]: T
+
+    final def apply[T <: Impl](): T = get[T]
   }
 }

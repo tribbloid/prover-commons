@@ -1,15 +1,15 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.tuple.backbone.NestedBackbone
+import ai.acyclic.prover.commons.tuple.backbone.InductiveBackbone
 import shapeless.{::, HNil}
 
 class TupleConverterMixinSpec extends BaseSpec {
 
   // Custom backbone for testing - expose _0 as a public value
-  object TestBackbone extends NestedBackbone {
+  object TestBackbone extends InductiveBackbone {
     override type VBound = Any
-
+    override type Element[V <: VBound] = V
   }
 
   describe("ToTuple") {

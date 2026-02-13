@@ -7,7 +7,5 @@ trait HasPhantom {
   object Phantom extends Static.Def {
 
     override def get[T <: Impl]: T = null.asInstanceOf[T]
-
-    def apply[T <: Phantom](): T = get[T]
   }
 }

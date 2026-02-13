@@ -3,10 +3,11 @@ package ai.acyclic.prover.commons.tuple.backbone
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import shapeless.HNil
 
-class NestedBackboneSpec extends BaseSpec {
+class InductiveBackboneSpec extends BaseSpec {
 
-  object Fixture extends NestedBackbone {
+  object Fixture extends InductiveBackbone {
     type VBound = Any
+    override type Element[V <: VBound] = V
   }
   import Fixture.*
 
@@ -20,7 +21,7 @@ class NestedBackboneSpec extends BaseSpec {
     }
 
     it("toString should return correct string") {
-      assert(Eye.toString == NestedBackbone.EMPTY)
+      assert(Eye.toString == InductiveBackbone.EMPTY)
     }
     it("should behave as a Product") {
       assert(Eye.productArity == 0)

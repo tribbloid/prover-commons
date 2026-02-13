@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.tuple.backbone.NestedBackbone
+import ai.acyclic.prover.commons.tuple.backbone.InductiveBackbone
 import shapeless.*
 import shapeless.ops.hlist.Tupler
 import ai.acyclic.prover.commons.tuple.HLists
@@ -98,7 +98,8 @@ class FlatReprMixinSpec extends BaseSpec {
 object FlatReprMixinSpec {
 
   // Custom backbone for testing - same as TupleConverterMixinSpec
-  object TestBackbone extends NestedBackbone {
+  object TestBackbone extends InductiveBackbone {
     override type VBound = Any
+    override type Element[V <: VBound] = V
   }
 }

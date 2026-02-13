@@ -8,14 +8,14 @@ import shapeless.{::, HList, HNil}
 
 import scala.language.implicitConversions
 
-trait NestedBackbone extends Backbone {
+trait InductiveBackbone extends Backbone {
   self: Singleton =>
 
-  import NestedBackbone.*
+  import InductiveBackbone.*
 
   object Schema extends SchemaBackbone {
 
-    override type VBound = NestedBackbone.this.VBound
+    override type VBound = InductiveBackbone.this.VBound
 
   }
 
@@ -34,7 +34,7 @@ trait NestedBackbone extends Backbone {
 
   protected case object _1 extends Schema._1 with Prod {
     override val HList: HNil.type = HNil
-    override def asList: List[VBound] = List.empty
+    override def asList: List[Element[VBound]] = List.empty
     override lazy val toString: String = EMPTY
   }
 
@@ -47,7 +47,7 @@ trait NestedBackbone extends Backbone {
   ) extends Schema.><:[L, TAIL](tail)
       with Prod {
 
-    override def asList: List[VBound] = head :: tail.asList
+    override def asList: List[Element[VBound]] = head.asInstanceOf[Element[VBound]] :: tail.asList
 
     override lazy val toString: String = {
       val tailStr =
@@ -59,15 +59,15 @@ trait NestedBackbone extends Backbone {
     }
 
     override type HList = L *: tail.HList
-    override lazy val HList = head :: tail.HList
+    override lazy val HList = head.asInstanceOf[L] :: tail.HList
   }
 
-  final override def cons[HEAD <: VBound, TAIL <: Prod](head: HEAD, tail: TAIL) =
+  final override def cons[HEAD <: VBound, TAIL <: Prod](head: Element[HEAD], tail: TAIL) =
     new ><:(head, tail)
 
   final override def deCons[HEAD <: VBound, TAIL <: Prod](
       cons: HEAD ><: TAIL
-  ): (HEAD, TAIL) = {
+  ): (Element[HEAD], TAIL) = {
 
     cons match {
       case cons: ><:[head, tail] => (cons.head, cons.tail)
@@ -76,7 +76,7 @@ trait NestedBackbone extends Backbone {
 
 }
 
-object NestedBackbone {
+object InductiveBackbone {
 
   final val EMPTY = "∅"
 

@@ -1,16 +1,18 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.tuple.backbone.NestedBackbone
+import ai.acyclic.prover.commons.tuple.backbone.InductiveBackbone
 
 class ConverterSpec extends BaseSpec {
 
-  object B1 extends NestedBackbone {
+  object B1 extends InductiveBackbone {
     override type VBound = Any
+    override type Element[V <: VBound] = V
   }
 
-  object B2 extends NestedBackbone {
+  object B2 extends InductiveBackbone {
     override type VBound = Any
+    override type Element[V <: VBound] = V
   }
 
   object Conv extends Converter {
@@ -49,12 +51,14 @@ class ConverterSpec extends BaseSpec {
 
   describe("Constrained") {
 
-    object B3 extends NestedBackbone {
+    object B3 extends InductiveBackbone {
       override type VBound = Int
+      override type Element[V <: VBound] = V
     }
 
-    object B4 extends NestedBackbone {
+    object B4 extends InductiveBackbone {
       override type VBound = Int
+      override type Element[V <: VBound] = V
     }
 
     object Conv2 extends Converter {
