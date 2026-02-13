@@ -15,6 +15,8 @@ trait Converter extends Hom.Poly {
   val from: MonoidalProds
   val to: MonoidalProds
 
+  def pointwise[T <: from.VBound & to.VBound]: from.Element[T] => to.Element[T]
+
   implicit lazy val emptyCase: from.Eye |- to.Eye =
     at[from.Eye] { _ =>
       to.Eye
