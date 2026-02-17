@@ -1,15 +1,15 @@
 package ai.acyclic.prover.commons.jit.eval
 
-import ai.acyclic.prover.commons.tuple.Products
+import ai.acyclic.prover.commons.tuple.{Products, Schemata}
 import ai.acyclic.prover.commons.jit.hom.Hom
 
 object Args extends Products.Monoidal {
 
   import Hom.*
 
-  override type VBound = ConstantFn[?]
+  override type VBound = Any
 
-  override type Element[V <: VBound] = V
+  override type Element[V <: VBound] = ConstantFn[V]
 
   /**
     * choose 1 of the 2 options:
@@ -21,62 +21,18 @@ object Args extends Products.Monoidal {
     * Second option looks more cleaner: only need to summon once as the last step. In the first option, we need to
     * summon repeatedly for recursive partial evaluation/reduction
     */
-  trait Prod {
+  trait Prod extends ElementsMixin.Prod {}
 
-    def schema: Schema
-  }
+  object Eye extends Prod with ElementsMixin.Eye
+  override type Eye = Eye.type
 
-  /**
-    * all members are [[Const.NotProvided]], if used in partial eval, will yield an optimised function
-    */
-  trait Schema extends Prod {
-
-    final override def schema: this.type = this
-  }
-  object Schema {
-
-    case class ><[+X, +T <: Schema](
-        tail: T
-    ) extends (ConstantFn[X] ><: T)
-        with Schema {
-
-      val head: ConstantFn[X] = Const.NotProvided
-    }
-  }
-
-  protected case object _1 extends Schema {}
-
-  sealed trait ><:[+H <: ConstantFn[?], +T <: Prod] extends Prod {
-
-    val head: H
-    val tail: T
-  }
+  sealed trait ><:[H, T <: Prod] extends Prod with ElementsMixin.><:[H, T] {}
 
   // Should this defined as a dependent type of Schema (which is a phantom & always available)
   // the only capability it grants is to remove some pending arguments that are guaranteed to be provided
-  infix trait ><[+X, +T <: Prod] extends (ConstantFn[X] ><: T) {
 
-    override def schema = Schema.><[X, Schema](tail.schema) // TODO: not narrow enough
-  }
+  override def cons[L <: Args.VBound, TAIL <: Prod](head: Hom.ConstantFn[L], tail: TAIL): L ><: TAIL = ???
 
-  type ><![+X, +Y] = (ConstantFn[X] ><: ConstantFn[Y] ><: Eye) {} // should this be a trait?
+  override def deCons[L <: Args.VBound, TAIL <: Prod](cons: L ><: TAIL): (Hom.ConstantFn[L], TAIL) = ???
 
-//  case class NoneProvided[D, T <: NoInfo[D], X](tail: T)(
-//      implicit
-//      zip: Zippable[D, X]
-//  ) extends NoInfo[zip.Out]
-//      with (X ><! T) {
-//
-//    override lazy val head: ConstantFn[X] = Const.NotProvided
-//
-//    override type Peer = ConstantFn[X] ><: tail.Peer
-//  }
-
-  override def cons[HEAD <: VBound, TAIL <: Prod](head: Element[HEAD], tail: TAIL): HEAD ><: TAIL = ???
-
-  override def deCons[HEAD <: VBound, TAIL <: Prod](cons: HEAD ><: TAIL): (Element[HEAD], TAIL) = {
-
-    cons.head -> cons.tail
-  }
-//    cons.head -> cons.tail
 }

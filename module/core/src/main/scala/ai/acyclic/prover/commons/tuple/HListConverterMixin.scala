@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.tuple
 import shapeless.HNil
 
 trait HListConverterMixin {
-  self: Products.Monoidal =>
+  self: Schemata.Monoidal =>
 
   // the following 2 objects are particularly troublesome, as shapeless HNil type is actually a trait, not a singleton
   // this is insane, hope future alternatives can get rid of it

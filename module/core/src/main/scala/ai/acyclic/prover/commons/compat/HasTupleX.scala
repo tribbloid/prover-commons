@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.compat
 
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
-import ai.acyclic.prover.commons.tuple.Products
+import ai.acyclic.prover.commons.tuple.{Products, Schemata}
 import shapeless.labelled.FieldType
 import shapeless.ops.hlist.Tupler
 import shapeless.{Generic, HList}
@@ -11,7 +11,7 @@ trait HasTupleX {
 
   type TupleX = TupleX.Prod
 
-  type *:[X, Y <: TupleX] = TupleX.><:[X, Y]
+  type *:[+X, +Y <: TupleX] = TupleX.><:[X, Y]
 
   object TupleX extends Products.Monoidal { // TODO: merge into HList
 
@@ -37,7 +37,7 @@ trait HasTupleX {
     type Unital = Nil
     val Unital: Nil = Eye
 
-    override infix type ><:[H, Tail <: Prod] = shapeless.::[H, Tail]
+    override infix type ><:[+H, +Tail <: Prod] = shapeless.::[H, Tail]
 
     type Builder = shapeless.ProductArgs
     object of extends Builder {
