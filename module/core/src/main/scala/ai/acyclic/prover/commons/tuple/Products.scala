@@ -12,26 +12,22 @@ object Products {
   sealed trait Cartesian {
 
     type VBound // TODO: remove, should be superseded by <:< in Element
+    type Element[T <: VBound]
 
     type Prod
-
-    protected val _1: Prod
-
-    type Element[T <: VBound]
 
     /**
       * Identity element of the product (MATLAB terminology)
       */
-    final def Eye: Eye = _1
-    type Eye = _1.type
-
+    type Eye <: Prod
+    type T0 = Eye // aliases
     type Nil = Eye
-    val Nil: Nil = Eye
   }
 
   trait LeftAssociative extends Cartesian {
 
     infix type :><[TAIL <: Prod, R <: VBound] <: Prod
+    type T1[R <: VBound] = Eye :>< R
   }
 
   /**
@@ -44,6 +40,7 @@ object Products {
       * The product (Bra-ket notation)
       */
     infix type ><:[L <: VBound, TAIL <: Prod] <: Prod
+    type T1[L <: VBound] = L ><: Eye
 
   }
 
@@ -66,8 +63,7 @@ object Products {
     *
     * consequently, this trait is only a scaffold, user should choose a backbone for exact implementation
     */
-  trait Monoidal extends Products.RightAssociative with HListConverterMixin with FlatReprMixin {
-    self: Singleton =>
+  trait Monoidal extends Products.RightAssociative {
 
     def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL
     def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL)
@@ -84,7 +80,5 @@ object Products {
     }
 
     implicit class tupleOps[SELF <: Prod](val self: SELF) extends _TupleOps[SELF] {}
-
-    implicit def eyeExtension(s: this.type): tupleOps[Eye] = tupleOps[Eye](Eye)
   }
 }

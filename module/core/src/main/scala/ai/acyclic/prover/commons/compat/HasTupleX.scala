@@ -1,12 +1,17 @@
 package ai.acyclic.prover.commons.compat
 
+import ai.acyclic.prover.commons.tuple.Products
+
 trait HasTupleX {
 
   type TupleX = shapeless.HList
 
-  type *:[X, Y <: TupleX] = shapeless.::[X, Y]
+  type *:[X, Y <: TupleX] = TupleX.><:[X, Y]
 
-  object TupleX { // TODO: merge into HList
+  object TupleX extends Products.Monoidal { // TODO: merge into HList
+
+    override type VBound = Any
+    override type Element[T] = T
 
     trait OpsMixin { // hollow inside, but mixin will bring _ops into the implicit scope
       self: TupleX =>
@@ -14,19 +19,18 @@ trait HasTupleX {
 
     implicit class _ops[T <: TupleX](self: T) {
 
-      def *:[H](h: H): H *: T = (h :: self).asInstanceOf[H *: T]
+      def *:[H](h: H): *:[H, T] & OpsMixin = (h :: self).asInstanceOf[*:[H, T] & OpsMixin]
     }
 
-    type Nil = shapeless.HNil
-    protected val Nil: shapeless.HNil & OpsMixin = shapeless.HNil.asInstanceOf[shapeless.HNil & OpsMixin]
+    override type Prod = shapeless.HList
 
-    type _1 = Nil
-    val _1 = Nil
+    type Eye = shapeless.HNil
+    protected val Eye: shapeless.HNil & OpsMixin = shapeless.HNil.asInstanceOf[shapeless.HNil & OpsMixin]
 
-    val Unit: Nil = Nil
     type Unit = Nil
+    val Unit: Nil = Eye
 
-    type T1[T] = T *: Nil
+    override infix type ><:[H, Tail <: Prod] = shapeless.::[H, Tail]
 
     type Builder = shapeless.ProductArgs
     object of extends Builder {
@@ -43,5 +47,6 @@ trait HasTupleX {
     }
 
     type Mapper = shapeless.Poly1
+
   }
 }

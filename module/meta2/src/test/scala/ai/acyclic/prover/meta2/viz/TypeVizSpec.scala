@@ -1,7 +1,7 @@
 package ai.acyclic.prover.meta2.viz
 
 import ai.acyclic.prover.commons.compat.Key
-import ai.acyclic.prover.commons.compat.TupleX._1
+import ai.acyclic.prover.commons.compat.TupleX.T0
 import ai.acyclic.prover.meta2.meta.WeakTypeTag
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.meta2.viz.TypeViz

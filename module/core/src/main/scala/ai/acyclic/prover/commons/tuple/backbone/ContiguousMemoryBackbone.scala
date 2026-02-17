@@ -5,6 +5,6 @@ package ai.acyclic.prover.commons.tuple.backbone
   *
   * hope AI can implement it later
   */
-trait ContiguousMemoryBackbone extends Backbone {
+trait ContiguousMemoryBackbone extends Scaffold {
   self: Singleton =>
 }

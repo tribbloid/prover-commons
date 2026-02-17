@@ -64,7 +64,7 @@ class InductiveBackboneSpec extends BaseSpec {
 
     it("cons should construct correctly") {
       val tuple = cons(1, Eye)
-      assert(tuple.head == 1)
+      assert(tuple.element == 1)
       assert(tuple.tail == Eye)
     }
 

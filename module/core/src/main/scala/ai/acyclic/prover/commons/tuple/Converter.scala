@@ -15,12 +15,9 @@ trait Converter extends Hom.Poly {
   val from: Products.Monoidal
   val to: Products.Monoidal
 
-  def pointwise[T <: from.VBound & to.VBound]: from.Element[T] => to.Element[T]
+  implicit def emptyCase: from.Eye :=> to.Eye
 
-  implicit lazy val emptyCase: from.Eye |- to.Eye =
-    at[from.Eye] { _ =>
-      to.Eye
-    }
+  def pointwise[T <: from.VBound & to.VBound]: from.Element[T] :=> to.Element[T]
 
   implicit def inductiveCase[
       HEAD <: from.VBound & to.VBound,
@@ -32,6 +29,7 @@ trait Converter extends Hom.Poly {
   ): from.><:[HEAD, TAIL] |- to.><:[HEAD, TO_TAIL] =
     at[from.><:[HEAD, TAIL]] { v =>
       val (head, tail) = from.deCons(v)
-      to.cons(pointwise(head), tailCase(tail))
+      val _head: to.Element[HEAD] = pointwise[HEAD](head)
+      to.cons(_head, tailCase(tail))
     }
 }
