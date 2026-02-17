@@ -17,14 +17,14 @@ abstract class Elements extends Backbone {
     val data: Data
     final lazy val hListOps = TupleX._ops(data)
 
-    def runtimeList: List[Element[? <: VBound]]
+    def runtimeSeq: Seq[Element[? <: VBound]]
   }
 
   trait Eye extends Prod with schema.Eye {
 
     type Data = HNil
     override val data: HNil.type = HNil
-    override def runtimeList: List[Element[? <: VBound]] = List.empty
+    override def runtimeSeq: Seq[Element[? <: VBound]] = Seq.empty
     override lazy val toString: String = EMPTY
   }
 
@@ -39,7 +39,7 @@ abstract class Elements extends Backbone {
     override type Data = Element[L] *: tail.Data
     override lazy val data: Data = element *: TupleX._ops(tail.data)
 
-    override def runtimeList: List[Element[? <: VBound]] = tail.runtimeList.prepended(element)
+    override def runtimeSeq: Seq[Element[? <: VBound]] = tail.runtimeSeq.prepended(element)
 
     override lazy val toString: String = {
       val tailStr = tail match {
