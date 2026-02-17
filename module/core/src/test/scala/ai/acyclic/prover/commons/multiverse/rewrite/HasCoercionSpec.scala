@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.multiverse.rewrite
 
-import ai.acyclic.prover.commons.multiverse.rewrite.HasCoercionSpec.H2.<%<
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.verification.Verify
 

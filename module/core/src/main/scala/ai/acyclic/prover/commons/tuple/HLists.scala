@@ -8,7 +8,7 @@ import shapeless.{HList, HNil}
 /**
   * just BTuples with no bound, delegating to shapeless/formless
   */
-object HLists extends MonoidalProds {
+object HLists extends Products.Monoidal {
   // TODO: unmaintained for Scala 3, should move to formless or interop backport that supports *: operator
 
   import shapeless.::

@@ -4,46 +4,10 @@ import ai.acyclic.prover.commons.compat.NamedTupleX.:=
 import shapeless.labelled.{field, FieldType}
 import shapeless.tag.@@
 
-package object compat {
+package object compat extends HasTupleX {
 
   type XInt = Int & Singleton
   type XStr = String & Singleton
-
-  type TupleX = shapeless.HList
-  object TupleX { // TODO: merge into HList
-
-    trait OpsMixin { // hollow inside, but mixin will bring _ops into the implicit scope
-      self: TupleX =>
-    }
-
-    implicit class _ops[T <: TupleX](self: T) {
-
-      def *:[H](h: H): H *: T = (h :: self).asInstanceOf[H *: T]
-    }
-
-    type T0 = shapeless.HNil
-    val T0: T0 & OpsMixin = shapeless.HNil.asInstanceOf[T0 & OpsMixin]
-
-    type *:[X, Y <: TupleX] = shapeless.::[X, Y]
-
-    type T1[T] = T *: T0
-
-    type Builder = shapeless.ProductArgs
-    object of extends Builder {
-
-      def applyProduct[L <: TupleX](list: L): L = list
-    }
-
-    type Builder_narrow = shapeless.SingletonProductArgs
-
-    object ofNarrow extends Builder_narrow {
-
-      def applyProduct[L <: TupleX](list: L): L = list
-
-    }
-
-    type Mapper = shapeless.Poly1
-  }
 
   type Lazy[+T] = shapeless.Lazy[T]
 

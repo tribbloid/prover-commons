@@ -1,14 +1,9 @@
 package ai.acyclic.prover.commons.jit.eval
 
-import ai.acyclic.prover.commons.>:>
-
-import ai.acyclic.prover.commons.tuple.MonoidalProds
-import ai.acyclic.prover.commons.jit.hom
+import ai.acyclic.prover.commons.tuple.Products
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.tuple.backbone.InductiveBackbone
-import zio.Zippable
 
-object Args extends MonoidalProds {
+object Args extends Products.Monoidal {
 
   import Hom.*
 
@@ -77,9 +72,9 @@ object Args extends MonoidalProds {
 //    override type Peer = ConstantFn[X] ><: tail.Peer
 //  }
 
-  override def cons[HEAD <: VBound, TAIL <: Prod](head: HEAD, tail: TAIL): HEAD ><: TAIL = ???
+  override def cons[HEAD <: VBound, TAIL <: Prod](head: Element[HEAD], tail: TAIL): HEAD ><: TAIL = ???
 
-  override def deCons[HEAD <: VBound, TAIL <: Prod](cons: HEAD ><: TAIL): (HEAD, TAIL) = {
+  override def deCons[HEAD <: VBound, TAIL <: Prod](cons: HEAD ><: TAIL): (Element[HEAD], TAIL) = {
 
     cons.head -> cons.tail
   }

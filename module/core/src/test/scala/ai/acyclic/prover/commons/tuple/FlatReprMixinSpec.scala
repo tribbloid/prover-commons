@@ -2,9 +2,6 @@ package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.tuple.backbone.InductiveBackbone
-import shapeless.*
-import shapeless.ops.hlist.Tupler
-import ai.acyclic.prover.commons.tuple.HLists
 
 class FlatReprMixinSpec extends BaseSpec {
   import FlatReprMixinSpec.*

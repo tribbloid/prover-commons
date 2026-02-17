@@ -1,16 +1,10 @@
 package ai.acyclic.prover
 
-import ai.acyclic.prover.commons.multiverse.rewrite.HasCoercion
+package object commons {
 
-package object commons extends HasCoercion {
+  type <:<[A, +B] = Casting.<:<[A, B]
 
-  object UpcastingRules extends HasCoercion {
-
-    // TODO: <:< and >:> should become Coercion in this
-    //  with non-cyclic verification
-  }
-
-  type >:>[+B, -A] = A <:< B
+  type >:>[+B, A] = A <:< B
 
   type ->[+A, +B] = (A, B)
 

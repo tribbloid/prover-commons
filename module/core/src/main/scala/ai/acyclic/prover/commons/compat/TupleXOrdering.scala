@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.compat
 
-import ai.acyclic.prover.commons.compat.TupleX.{*:, T0}
+import ai.acyclic.prover.commons.compat.TupleX.Nil
 
 trait TupleXOrdering {
 
@@ -12,8 +12,8 @@ object TupleXOrdering {
   // from shapeless.ops.hlists
   object Native extends TupleXOrdering {
 
-    implicit object empty extends Impl[T0] {
-      def compare(x: T0, y: T0): Int = 0
+    implicit object empty extends Impl[Nil] {
+      def compare(x: Nil, y: Nil): Int = 0
     }
 
     implicit def others[H, T <: TupleX](

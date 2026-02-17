@@ -16,6 +16,10 @@ This file contains information for AI agents working on the prover-commons proje
 
 All the following links should be resolved using their absolute paths. Some of them are outside the project root.
 
+## Initial Setup (One-time)
+
+generate and validate local settings, see [this](../buildSrc/.agent/init.md)
+
 ## Guardrails (violate only if user explicitly says "ignore AGENTS.md")
 
 see [this](../buildSrc/.agent/guardrails.md)

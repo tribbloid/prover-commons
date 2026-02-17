@@ -61,6 +61,8 @@ foo
 #Doc
 **/.obsidian
 
+.mcp.json
+opencode.jsonc
 .claude/*
 !.claude/skills/
 !.claude/settings.local.json

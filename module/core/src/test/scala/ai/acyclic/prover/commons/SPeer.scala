@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons
 
-object SPeer { // TODO: move to test
+object SPeer {
 
   def hello(): String = "hi from Scala"
   def greetFromJava(): String = JPeer.hello()

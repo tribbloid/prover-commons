@@ -1,11 +1,7 @@
 package ai.acyclic.prover.commons.tuple.backbone
 
-import ai.acyclic.prover.commons.jit.hom.Hom.Poly
-import ai.acyclic.prover.commons.tuple.{HLists, MonoidalProds}
-import ai.acyclic.prover.commons.typesetting.TextBlock
-import shapeless.{::, HList, HNil}
-
-import scala.language.implicitConversions
+import ai.acyclic.prover.commons.tuple.HLists
+import shapeless.HNil
 
 trait SchemaBackbone extends Backbone {
   self: Singleton =>

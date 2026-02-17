@@ -12,8 +12,8 @@ import ai.acyclic.prover.commons.jit.hom.Hom
   */
 trait Converter extends Hom.Poly {
 
-  val from: MonoidalProds
-  val to: MonoidalProds
+  val from: Products.Monoidal
+  val to: Products.Monoidal
 
   def pointwise[T <: from.VBound & to.VBound]: from.Element[T] => to.Element[T]
 

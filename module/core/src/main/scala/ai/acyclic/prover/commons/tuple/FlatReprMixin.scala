@@ -2,12 +2,10 @@ package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
 import shapeless.ops.hlist.Tupler
-import shapeless.{::, Generic, HList, HNil}
+import shapeless.{Generic, HList}
 
 trait FlatReprMixin {
-  self: MonoidalProds =>
-
-  import self.*
+  self: Products.Monoidal =>
 
   trait ToFlatRepr_Imp0 extends Poly {
 
