@@ -127,7 +127,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
       val book =
         "author" *:
           "title" *:
-          _1
+          T0
 
       infer(book)
         .shouldBe(
@@ -153,7 +153,7 @@ class TypeVizSpec extends BaseSpec with TypeViz.TestFixtures {
 
       val book =
         (Key["author"] ->> "Benjamin Pierce") *:
-          _1
+          T0
 
       infer(book)
         .shouldBe(

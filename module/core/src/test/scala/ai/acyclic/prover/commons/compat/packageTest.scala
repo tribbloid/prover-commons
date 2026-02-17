@@ -7,7 +7,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 object packageTest {
 
   val tx = TupleX.of(1, "a")
-  val ntx = (Key["a"] := 1) *: (Key["b"] := "x") *: _1
+  val ntx = (Key["a"] := 1) *: (Key["b"] := "x") *: T0
 }
 
 class packageTest extends BaseSpec {
@@ -16,7 +16,7 @@ class packageTest extends BaseSpec {
 
     it("Tuple") {
 
-      val t0 = 1 *: "a" *: _1
+      val t0 = 1 *: "a" *: T0
       val _ = t0: Int *: String *: T0
 
       val t1 = TupleX.of(1, "a")
@@ -30,7 +30,7 @@ class packageTest extends BaseSpec {
 
     it("NamedTuple") {
 
-      val t0 = (Key["a"] := 1) *: (Key["b"] := "x") *: _1
+      val t0 = (Key["a"] := 1) *: (Key["b"] := "x") *: T0
       val _ = t0: ("a" := Int) *: ("b" := String) *: T0
 
       val t1 = NamedTupleX.of(a = 1, b = "x")

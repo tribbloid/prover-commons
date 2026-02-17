@@ -10,8 +10,9 @@ object Products {
     * (X >< Y) >< Z and X >< (Y >< Z) are different types
     */
   sealed trait Cartesian {
-
-    type VBound // TODO: remove, should be superseded by <:< in Element
+    // TODO: VBound should fold into Element[T]:
+    //  e.g. Element[T <: Int] is equivalent to Element[T] <: { def bound: T <:< Int }
+    type VBound
     type Element[T <: VBound]
 
     type Prod
