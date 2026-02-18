@@ -2,8 +2,6 @@ package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.jit.hom.Hom
 
-// TODO: implement this, don't change definition, report all the required abstract functions at the end of the trait
-//  your implementation should be similar to `Converter`, but more general.
 /**
   * Polymorphic function, each instance can convert from [[from.system.Prod]] to [[to.system.Prod]]
   *
@@ -19,14 +17,30 @@ trait Transformation extends Hom.Poly {
   val from: Schema
   val to: Schema
 
+  implicit def emptyCase: from.system.Eye |- to.system.Eye
+
+  def pointwise[HEAD](v: from.system.Element[from.G[HEAD]]): to.system.Element[to.G[HEAD]]
+
+  implicit def inductiveCase[
+      HEAD,
+      TAIL <: from.system.Prod,
+      TO_TAIL <: to.system.Prod
+  ](
+      implicit
+      tailCase: TAIL |- TO_TAIL
+  ): from.system.><:[from.G[HEAD], TAIL] |- to.system.><:[to.G[HEAD], TO_TAIL] =
+    at[from.system.><:[from.G[HEAD], TAIL]] { v =>
+      val (head, tail) = from.system.deCons(v)
+      val _head = pointwise(head)
+      to.system.cons(_head, tailCase(tail))
+    }
 }
 
 object Transformation {
 
   trait Schema {
 
-    val system: Schemata.Monoidal
+    val system: Products.Monoidal
     type G[T] <: system.VBound
   }
-
 }
