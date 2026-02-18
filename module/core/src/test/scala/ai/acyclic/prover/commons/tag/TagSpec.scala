@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.tag
 
+import ai.acyclic.prover.commons.tag
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class TagSpec extends BaseSpec {
@@ -108,15 +109,16 @@ class TagSpec extends BaseSpec {
       {
         object revoke extends Tag.revoke[T1]
 
-        val revoked = revoke(et12)(revoke.last[Ex <> T2, T1]) // fuck scala
+        val revoked = revoke(et12)
         assert(revoked == et12)
         val _: Ex <> T2 = revoked
         shouldNotCompile("revoked: Ex <> Subject.Cap1")
       }
 
       {
-        val revoke = Tag.revoke[T2]
-        val revoked = revoke(et12)(revoke.last[Ex <> T1, T2]) // fuck scala
+        object revoke extends Tag.revoke[T2]
+
+        val revoked = revoke(et12)
         assert(revoked == et12)
         val _: Ex <> T1 = revoked
         shouldNotCompile("revoked: Ex <> Subject.Cap2")
