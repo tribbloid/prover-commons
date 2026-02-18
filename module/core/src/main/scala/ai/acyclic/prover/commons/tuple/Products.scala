@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX}
+import ai.acyclic.prover.commons.jit.hom.Hom.:=>
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.HNil
 
@@ -98,5 +99,6 @@ object Products {
 
       final val >< = " ><: "
     }
+
   }
 }

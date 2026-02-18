@@ -17,7 +17,7 @@ trait Converter extends Hom.Poly {
 
   implicit def emptyCase: from.Eye :=> to.Eye
 
-  def pointwise[T <: from.VBound & to.VBound]: from.Element[T] :=> to.Element[T]
+  def pointwise[T <: from.VBound & to.VBound]: from.Element[T] => to.Element[T]
 
   implicit def inductiveCase[
       HEAD <: from.VBound & to.VBound,
