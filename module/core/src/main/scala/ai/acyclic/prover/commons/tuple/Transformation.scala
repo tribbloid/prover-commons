@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.tuple
 import ai.acyclic.prover.commons.jit.hom.Hom
 
 // TODO: implement this, don't change definition, report all the required abstract functions at the end of the trait
+//  your implementation should be similar to `Converter`, but more general.
 /**
   * Polymorphic function, each instance can convert from [[from.system.Prod]] to [[to.system.Prod]]
   *
