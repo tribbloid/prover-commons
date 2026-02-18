@@ -18,6 +18,11 @@ trait HasPoly extends HasFunction {
     * the exact case being selected for function application should be determined in compile-time (by the implicit
     * evidence), doing it in runtime is shunned in type theories (it is fine in set theories tho), but we may still
     * allow it (if not obstructed by type erasure)
+    *
+    * due to the lack of path-dependent implicit search, all instances of Poly have to be singleton objects to make
+    * their cases visible
+    *
+    * test cases for
     */
   abstract class Poly(
       implicit
@@ -34,19 +39,27 @@ trait HasPoly extends HasFunction {
     object Lemma {
       type At[I] = Case[Fn[I, ?]]
     }
-    type :=>[-I, +O] = Lemma[I, O]
+
+    /**
+      * Turnstile in Gentzen's notation for priors in deduction rule
+      */
+    type |-[-I, +O] = Lemma[I, O]
 
     type Impl[I, O] = Case[Fn.Impl[I, O]] // consequent, most specific type at logical producing site
     object Impl {
       type At[I] = Case[Fn.Impl[I, ?]]
     }
-    type |-[I, O] = Impl[I, O]
+
+    /**
+      * Horizontal line in Gentzen's notation for posterior in deduction rule
+      */
+    type /=>[I, O] = Impl[I, O]
 
     object asTupleMapper extends TupleX.Mapper {
 
       implicit def rewrite[I, R](
           implicit
-          _case: I |- R // TODO: should be a lemma, but spoiled by Scala's widen to Any problem
+          _case: I /=> R // TODO: should be a lemma, but spoiled by Scala's widen to Any problem
       ): asTupleMapper.this.Case.Aux[I, R] = at[I] { v =>
         _case.apply(v)
       }

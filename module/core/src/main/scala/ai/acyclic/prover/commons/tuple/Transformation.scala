@@ -17,7 +17,7 @@ trait Transformation extends Hom.Poly {
   val from: Schema
   val to: Schema
 
-  implicit def emptyCase: from.system.Eye |- to.system.Eye
+  implicit def emptyCase: from.system.Eye /=> to.system.Eye
 
   def pointwise[HEAD](v: from.system.Element[from.G[HEAD]]): to.system.Element[to.G[HEAD]]
 
@@ -27,8 +27,8 @@ trait Transformation extends Hom.Poly {
       TO_TAIL <: to.system.Prod
   ](
       implicit
-      tailCase: TAIL |- TO_TAIL
-  ): from.system.><:[from.G[HEAD], TAIL] |- to.system.><:[to.G[HEAD], TO_TAIL] =
+      tailCase: TAIL /=> TO_TAIL
+  ): from.system.><:[from.G[HEAD], TAIL] /=> to.system.><:[to.G[HEAD], TO_TAIL] =
     at[from.system.><:[from.G[HEAD], TAIL]] { v =>
       val (head, tail) = from.system.deCons(v)
       val _head = pointwise(head)

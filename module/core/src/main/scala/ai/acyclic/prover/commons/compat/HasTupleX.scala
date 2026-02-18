@@ -99,9 +99,9 @@ trait HasTupleX {
       */
     object ToFlatRepr extends ToFlatRepr_Imp0 {
 
-      implicit lazy val forUnit: Eye |- Unit = at[Eye](_ => ())
+      implicit lazy val forUnit: Eye /=> Unit = at[Eye](_ => ())
 
-      implicit def forValue[V <: VBound]: (V ><: Eye) |- Element[V] = at[V ><: Eye] { v =>
+      implicit def forValue[V <: VBound]: (V ><: Eye) /=> Element[V] = at[V ><: Eye] { v =>
         val (head, _) = deCons(v)
         head
       }
@@ -112,7 +112,7 @@ trait HasTupleX {
       implicit def forTuples[I <: Prod, LN <: HList, O](
           implicit
           hlistToFlat: Tupler.Aux[I, O]
-      ): I |- O = at[I] { i =>
+      ): I /=> O = at[I] { i =>
         hlistToFlat(i)
       }
     }
@@ -122,12 +122,12 @@ trait HasTupleX {
       */
     object FromFlatRepr extends FromFlatRepr_Imp0 {
 
-      implicit val forUnit: Unit |- Eye = at[Unit](_ => Eye)
+      implicit val forUnit: Unit /=> Eye = at[Unit](_ => Eye)
 
       implicit def forProduct[P <: Product, O <: HList](
           implicit
           gen: Generic.Aux[P, O]
-      ): P |- O = at[P] { p =>
+      ): P /=> O = at[P] { p =>
         gen.to(p)
       }
 
@@ -135,7 +135,7 @@ trait HasTupleX {
 
     trait FromFlatRepr_Imp0 extends Poly {
 
-      implicit def forValue[V <: VBound]: Element[V] |- (V ><: Eye) = at[Element[V]] { v =>
+      implicit def forValue[V <: VBound]: Element[V] /=> (V ><: Eye) = at[Element[V]] { v =>
         cons(v, Eye)
       }
     }

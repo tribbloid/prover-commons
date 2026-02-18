@@ -6,7 +6,7 @@ private[tag] trait Tag_Imp0 {
 
   trait revoke_Imp0[CC <: Tag] extends Hom.Poly {
 
-    implicit def last[T, C <: CC]: (T <> C) |- T = at[T <> C].apply { v =>
+    implicit def last[T, C <: CC]: (T <> C) /=> T = at[T <> C].apply { v =>
       v.asInstanceOf[T]
     }
   }
@@ -15,8 +15,8 @@ private[tag] trait Tag_Imp0 {
 
     implicit def chain[T, R, C <: CC](
         implicit
-        lemma: T :=> R
-    ): (T <> C) |- R = at[T <> C] { v =>
+        lemma: T |- R
+    ): (T <> C) /=> R = at[T <> C] { v =>
       lemma.asInstanceOf[Hom.Fn.Impl[T, R]].apply(v: T) // fuck scala
     }
   }

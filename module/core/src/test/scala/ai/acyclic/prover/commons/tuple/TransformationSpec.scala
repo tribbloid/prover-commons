@@ -8,22 +8,29 @@ class TransformationSpec extends BaseSpec {
     type VBound = Any
     type Element[T <: VBound] = T
 
+    override def cons[L <: VBound, TAIL <: Prod](head: L, tail: TAIL): L ><: TAIL = ><:(head, tail)
+    override def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (L, TAIL) = (cons.head, cons.tail)
+
     sealed trait Prod
-    case object Eye extends Prod
-    type Eye = Eye.type
+    case object Atom extends Prod
+    type Eye = Atom.type
+    override val Eye: Eye = Atom
 
     case class ><:[L <: VBound, TAIL <: Prod](head: L, tail: TAIL) extends Prod
   }
 
   object DstSystem extends Products.Monoidal {
     type VBound = Any
-    type Element[T <: VBound] = Option[T]
+    type Element[T <: VBound] = T
+    override def cons[L <: VBound, TAIL <: Prod](head: L, tail: TAIL): L ><: TAIL = ><:(head, tail)
+    override def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (L, TAIL) = (cons.head, cons.tail)
 
     sealed trait Prod
-    case object Eye extends Prod
-    type Eye = Eye.type
+    case object Atom extends Prod
+    type Eye = Atom.type
+    override val Eye: Eye = Atom
 
-    case class ><:[L <: VBound, TAIL <: Prod](head: Option[L], tail: TAIL) extends Prod
+    case class ><:[L <: VBound, TAIL <: Prod](head: L, tail: TAIL) extends Prod
   }
 
   object MyTransformation extends Transformation {
@@ -36,24 +43,24 @@ class TransformationSpec extends BaseSpec {
       override type G[T] = Option[T]
     }
 
-    implicit override def emptyCase: SrcSystem.Eye |- DstSystem.Eye =
+    implicit override def emptyCase: SrcSystem.Eye /=> DstSystem.Eye =
       at(_ => DstSystem.Eye)
 
-    override def pointwise[HEAD](v: from.G[HEAD]): to.G[HEAD] = Option(v)
+    override def pointwise[HEAD](v: from.system.Element[from.G[HEAD]]): to.system.Element[to.G[HEAD]] = Option(v)
   }
 
   describe("Transformation") {
 
     it("should transform empty product") {
       val src = SrcSystem.Eye
-      val dst = MyTransformation.emptyCase(src)
+      val dst = MyTransformation(src)
       assert(dst == DstSystem.Eye)
     }
 
     it("should transform single element product") {
       val src = SrcSystem.><:(1, SrcSystem.Eye)
       // Implicit resolution
-      import MyTransformation._
+      import MyTransformation.*
 
       // We explicitly summon the implicit to verify it can be found
       // Using Impl type alias directly
@@ -66,7 +73,7 @@ class TransformationSpec extends BaseSpec {
 
     it("should transform multi-element product") {
       val src = SrcSystem.><:("a", SrcSystem.><:(1, SrcSystem.Eye))
-      import MyTransformation._
+      import MyTransformation.*
 
       val dst = MyTransformation(src)
 
