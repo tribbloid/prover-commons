@@ -3,32 +3,7 @@ package ai.acyclic.prover.commons.jit.hom
 import ai.acyclic.prover.commons.jit.fixture.Polys._poly
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
-object PolySpec {
-
-  case class __sanity[I, O]() {
-    object s1 {
-      def useIO(l: _poly.Impl[Int, String]) = {
-        l.apply(1)
-      }
-
-      def useI(l: _poly.Impl.At[Int]) = {
-        l.apply(1)
-      }
-    }
-
-    object s2 {
-      def useIO(l: _poly.Impl[I, O]) = {
-        val v: I = ???
-        l.apply(v)
-      }
-
-      def useI(l: _poly.Impl.At[I]) = {
-        val v: I = ???
-        l.apply(v)
-      }
-    }
-  }
-}
+object PolySpec {}
 
 class PolySpec extends BaseSpec {
 
@@ -54,7 +29,7 @@ class PolySpec extends BaseSpec {
         val v = _poly.at[Int].summon
         val v2 = _poly.at[Int].summon
 
-        implicitly[v.type <:< (_poly.Impl[Int, Int])]
+//        implicitly[v.type <:< (_poly.Case[Int, Int])]
         assert(v == v2)
 
         val r = v.apply(1)

@@ -31,29 +31,29 @@ trait HasPoly extends HasFunction {
       with FnBuilder.Root {
     // TODO: construction/inference of Case should be interned
 
-    object CaseTag extends Tag
-
-    type Case[+FF <: Fn[?, ?]] = FF <> CaseTag.type
-
-    type Lemma[-I, +O] = Case[Fn[I, O]] // antecedent, compatibility type at logical consuming site, hence the name
-    object Lemma {
-      type At[I] = Case[Fn[I, ?]]
+    protected[Poly] case class Case[I, O]( // a thin wrapper that prevents apply from being called directly
+        underlying: Fn.Impl[I, O]
+    ) extends Fn.Impl[I, O] {
+      def apply(v: I): O = underlying(v)
     }
-
-    /**
-      * Turnstile in Gentzen's notation for priors in deduction rule
-      */
-    type |-[-I, +O] = Lemma[I, O]
-
-    type Impl[I, O] = Case[Fn.Impl[I, O]] // consequent, most specific type at logical producing site
-    object Impl {
-      type At[I] = Case[Fn.Impl[I, ?]]
+    object Case {
+      type At[I] = Case[I, ?]
     }
 
     /**
       * Horizontal line in Gentzen's notation for posterior in deduction rule
       */
-    type /=>[I, O] = Impl[I, O]
+    type /=>[I, O] = Case[I, O]
+
+    type Lemma[-I, +O] = Case[? >: I, ? <: O]
+    object Lemma {
+      type At[I] = Lemma[I, ?]
+    }
+
+    /**
+      * Turnstile in Gentzen's notation for priors in deduction rule ([[Lemma]])
+      */
+    type |-[-I, +O] = Lemma[I, O]
 
     object asTupleMapper extends TupleX.Mapper {
 
@@ -65,15 +65,14 @@ trait HasPoly extends HasFunction {
       }
     }
 
-    type BuildTarget[I, O] = Impl[I, O]
+    type BuildTarget[I, O] = Case[I, O]
 
     protected def build[I, O](fn: I => O)(
         implicit
         _definedAt: SrcDefinition
     ): BuildTarget[I, O] = {
 
-      val _case = Tag(Fn.at[I](fn)) <> CaseTag
-      _case
+      Case(Fn.at[I](fn))
     }
 
     // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
@@ -88,7 +87,7 @@ trait HasPoly extends HasFunction {
     case class DomainBuilder[I, O]() extends IDomainBuilder[I, O] {
 
       type _Lemma = Lemma[I, O]
-      type _Impl = Impl[I, O]
+      type _Impl = Case[I, O]
       type _Native = (I => O)
 
       def summon(

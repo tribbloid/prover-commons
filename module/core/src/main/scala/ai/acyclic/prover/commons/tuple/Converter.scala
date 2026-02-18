@@ -25,7 +25,7 @@ trait Converter extends Hom.Poly {
       TO_TAIL <: to.Prod
   ](
       implicit
-      tailCase: TAIL /=> TO_TAIL
+      tailCase: TAIL |- TO_TAIL
   ): from.><:[HEAD, TAIL] /=> to.><:[HEAD, TO_TAIL] =
     at[from.><:[HEAD, TAIL]] { v =>
       val (head, tail) = from.deCons(v)

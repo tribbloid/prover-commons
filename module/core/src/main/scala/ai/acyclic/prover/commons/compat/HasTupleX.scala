@@ -70,7 +70,7 @@ trait HasTupleX {
         implicit def getter[S](
             implicit
             _selector: shapeless.ops.hlist.Selector[H, S]
-        ): Impl[S, _selector.Out] = at[S] { _ =>
+        ): Case[S, _selector.Out] = at[S] { _ =>
           _selector(hh)
         }
       }
@@ -81,7 +81,7 @@ trait HasTupleX {
         implicit def getter[S](
             implicit
             _selector: shapeless.ops.record.Selector[H, S]
-        ): Impl[S, FieldType[S, _selector.Out]] = at[S] { _ =>
+        ): Case[S, FieldType[S, _selector.Out]] = at[S] { _ =>
           _selector(hh).asInstanceOf[FieldType[S, _selector.Out]]
         }
       }
