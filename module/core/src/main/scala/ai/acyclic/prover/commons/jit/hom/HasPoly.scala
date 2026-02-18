@@ -36,17 +36,17 @@ trait HasPoly extends HasFunction {
     ) extends Fn.Impl[I, O] {
       def apply(v: I): O = underlying(v)
     }
-    object Case {
+    protected[Poly] object Case {
       type At[I] = Case[I, ?]
     }
 
     /**
       * Horizontal line in Gentzen's notation for posterior in deduction rule
       */
-    type /=>[I, O] = Case[I, O]
+    protected[Poly] type /=>[I, O] = Case[I, O]
 
-    type Lemma[-I, +O] = Case[? >: I, ? <: O]
-    object Lemma {
+    protected[Poly] type Lemma[-I, +O] = Case[? >: I, ? <: O]
+    protected[Poly] object Lemma {
       type At[I] = Lemma[I, ?]
     }
 
