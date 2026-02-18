@@ -13,7 +13,7 @@ object Schemata {
     *
     * (X >< Y) >< Z and X >< (Y >< Z) are different types
     */
-  sealed trait Cartesian {
+  trait Cartesian {
     // TODO: VBound should fold into Element[T]:
     //  e.g. Element[T <: Int] is equivalent to Element[T] <: { def bound: T <:< Int }
     type VBound
@@ -27,7 +27,6 @@ object Schemata {
     type Eye <: Prod
     type T0 = Eye // aliases
     type Nil = Eye
-
   }
 
   trait LeftAssociative extends Cartesian {

@@ -13,7 +13,7 @@ trait HasTupleX {
 
   type *:[+X, +Y <: TupleX] = TupleX.><:[X, Y]
 
-  object TupleX extends Products.Monoidal { // TODO: merge into HList
+  object TupleX extends Products.Monoidal { // TODO: name is weird, also moved to tuple package
 
     override type VBound = Any
     override type Element[T] = T
@@ -29,15 +29,22 @@ trait HasTupleX {
 
     override type Prod = shapeless.HList
 
-    type Eye = shapeless.HNil
-    protected val Eye: shapeless.HNil & OpsMixin = shapeless.HNil.asInstanceOf[shapeless.HNil & OpsMixin]
+    override type Eye = shapeless.HNil
+    val Eye: shapeless.HNil & OpsMixin = shapeless.HNil.asInstanceOf[shapeless.HNil & OpsMixin]
 
-    val T0 = Eye
-
-    type Unital = Nil
-    val Unital: Nil = Eye
+    type Unital = Eye // "Unit" has special meaning in Scala
+    val Unital: Eye = Eye
 
     override infix type ><:[+H, +Tail <: Prod] = shapeless.::[H, Tail]
+
+    override def cons[HEAD <: VBound, TAIL <: HList](head: HEAD, tail: TAIL): HEAD ><: TAIL = {
+
+      head :: tail
+    }
+
+    override def deCons[HEAD <: VBound, TAIL <: HList](cons: HEAD *: TAIL): (HEAD, TAIL) = {
+      cons.head -> cons.tail
+    }
 
     type Builder = shapeless.ProductArgs
     object of extends Builder {
@@ -54,15 +61,6 @@ trait HasTupleX {
     }
 
     type Mapper = shapeless.Poly1
-
-    override def cons[HEAD <: VBound, TAIL <: HList](head: HEAD, tail: TAIL): HEAD ><: TAIL = {
-
-      head :: tail
-    }
-
-    override def deCons[HEAD <: VBound, TAIL <: HList](cons: HEAD *: TAIL): (HEAD, TAIL) = {
-      cons.head -> cons.tail
-    }
 
     implicit class Ops[H <: Prod](hh: H) {
 
@@ -90,16 +88,6 @@ trait HasTupleX {
       object GetField extends GetField
     }
 
-    trait ToFlatRepr_Imp0 extends Poly {
-
-      implicit def forTuples[I <: Prod, LN <: HList, O](
-          implicit
-          hlistToFlat: Tupler.Aux[I, O]
-      ): I |- O = at[I] { i =>
-        hlistToFlat(i)
-      }
-    }
-
     /**
       * can convert a [[Prod]] to a flat Scala tuple or Unit or value and back
       *
@@ -117,13 +105,22 @@ trait HasTupleX {
         val (head, _) = deCons(v)
         head
       }
+    }
 
+    trait ToFlatRepr_Imp0 extends Poly {
+
+      implicit def forTuples[I <: Prod, LN <: HList, O](
+          implicit
+          hlistToFlat: Tupler.Aux[I, O]
+      ): I |- O = at[I] { i =>
+        hlistToFlat(i)
+      }
     }
 
     /**
       * The inverse of [[ToFlatRepr]]
       */
-    object FromFlatRepr extends Poly with FromFlatRepr_LowPriority {
+    object FromFlatRepr extends FromFlatRepr_Imp0 {
 
       implicit val forUnit: Unit |- Eye = at[Unit](_ => Eye)
 
@@ -136,8 +133,7 @@ trait HasTupleX {
 
     }
 
-    trait FromFlatRepr_LowPriority {
-      poly: Poly =>
+    trait FromFlatRepr_Imp0 extends Poly {
 
       implicit def forValue[V <: VBound]: Element[V] |- (V ><: Eye) = at[Element[V]] { v =>
         cons(v, Eye)

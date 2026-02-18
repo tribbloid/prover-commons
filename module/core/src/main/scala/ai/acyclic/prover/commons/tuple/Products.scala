@@ -6,10 +6,33 @@ import shapeless.HNil
 
 object Products {
 
+  trait Cartesian extends Schemata.Cartesian {
+
+    val Eye: Eye
+    val T0: Eye.type = Eye
+    val Nil: Eye.type = Eye
+  }
+
+  /**
+    * cartesian product with a unique identity element.
+    *
+    * technically this applies to any Cartesian product, but in some libraries, Identity type is not a singleton. e.g.
+    * shapeless.HNil type is a supertype of shapeless.HNil.type, despite being sealed.
+    *
+    * this is very annoying, as many operations defined for HNil have no variance
+    */
+  trait Cartesian_UID extends Cartesian {
+
+    val eye: Prod
+    override type Eye = eye.type
+    override val Eye: Eye = eye
+
+  }
+
   /**
     * same as schema, but with data & constructors
     */
-  trait Monoidal extends Schemata.Monoidal {
+  trait Monoidal extends Cartesian with Schemata.Monoidal {
 
     def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL
     def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL)
@@ -59,8 +82,6 @@ object Products {
 
         override type Data = Element[L] *: tail.Data
         override lazy val data: Data = element *: TupleX._ops(tail.data)
-
-        override def runtimeSeq: Seq[Element[? <: VBound]] = tail.runtimeSeq.prepended(element)
 
         override lazy val toString: String = {
           val tailStr = tail match {
