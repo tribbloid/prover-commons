@@ -62,11 +62,7 @@ class TransformationSpec extends BaseSpec {
       // Implicit resolution
       import MyTransformation.*
 
-      // We explicitly summon the implicit to verify it can be found
-      // Using Impl type alias directly
-      val transform =
-        implicitly[MyTransformation.Case[SrcSystem.><:[Int, SrcSystem.Eye], DstSystem.><:[Option[Int], DstSystem.Eye]]]
-      val dst = transform(src)
+      val dst = MyTransformation(src)
 
       assert(dst == DstSystem.><:(Some(1), DstSystem.Eye))
     }

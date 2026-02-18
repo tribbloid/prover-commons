@@ -116,7 +116,7 @@ class TagSpec extends BaseSpec {
 
       {
         val revoke = Tag.revoke[T2]
-        val revoked = revoke(et12)(revoke.last) // fuck scala
+        val revoked = revoke(et12)(revoke.last[Ex <> T1, T2]) // fuck scala
         assert(revoked == et12)
         val _: Ex <> T1 = revoked
         shouldNotCompile("revoked: Ex <> Subject.Cap2")

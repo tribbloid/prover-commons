@@ -45,8 +45,8 @@ trait HasPoly extends HasFunction {
       */
     protected[Poly] type /=>[I, O] = Case[I, O]
 
-    protected[Poly] type Lemma[-I, +O] = Case[? >: I, ? <: O]
-    protected[Poly] object Lemma {
+    type Lemma[-I, +O] = Case[? >: I, ? <: O]
+    object Lemma {
       type At[I] = Lemma[I, ?]
     }
 
