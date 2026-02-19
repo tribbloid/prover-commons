@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX}
+import ai.acyclic.prover.commons.tuple.Products.Monoidal
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.HNil
 
@@ -78,10 +79,10 @@ object Products {
       ] extends SchemaMixin.><:[L, TAIL]
           with Prod {
 
-        def element: Element[L]
+        def head: Element[L]
 
         override type Data = Element[L] *: tail.Data
-        final override lazy val data: Data = element *: TupleX._ops(tail.data)
+        final override lazy val data: Data = head *: TupleX._ops(tail.data)
 
         override lazy val toString: String = {
           val tailStr = tail match {
@@ -89,7 +90,7 @@ object Products {
             case _      => " ><: " + tail.toString
           }
 
-          s"""${TextBlock(element.toString).indent("  ").build}$tailStr
+          s"""${TextBlock(head.toString).indent("  ").build}$tailStr
              | """.stripMargin.trim
         }
       }
@@ -97,5 +98,23 @@ object Products {
       final val EMPTY = "∅"
     }
 
+    /**
+      * type class to zip 2 products together
+      *
+      * e.g. zip((A ><: B ><: Eye), (C ><: D ><: Eye)) = A ><: B ><: C ><: D ><: Eye
+      *
+      * unzip is the inverse operation
+      */
+    trait Zippable[A <: Prod, B <: Prod] {
+
+      type Zipped <: Prod
+
+      def zip(a: A, b: B): Zipped
+
+      def unzip(ab: Zipped): (A, B)
+    }
+
+    object Zippable {}
   }
+
 }

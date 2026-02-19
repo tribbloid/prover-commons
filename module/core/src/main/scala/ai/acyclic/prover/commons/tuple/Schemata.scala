@@ -31,7 +31,7 @@ object Schemata {
     infix type :><[TAIL <: Prod, R <: VBound] <: Prod
     type T1[R <: VBound] = Eye :>< R
 
-    type !><[X <: VBound, Y <: VBound] = Eye :>< X :>< Y
+    type ><[X <: VBound, Y <: VBound] = Eye :>< X :>< Y
   }
 
   /**
@@ -46,7 +46,7 @@ object Schemata {
     infix type ><:[L <: VBound, TAIL <: Prod] <: Prod
     type T1[L <: VBound] = L ><: Eye
 
-    type ><![X <: VBound, Y <: VBound] = X ><: Y ><: Eye
+    type ><[X <: VBound, Y <: VBound] = X ><: Y ><: Eye
   }
 
   /**
