@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.jit.hom
 
-import ai.acyclic.prover.commons.tag.Tag
-import ai.acyclic.prover.commons.tag.<>
 import ai.acyclic.prover.commons.compat.TupleX
 import ai.acyclic.prover.commons.jit.{ComputationGraph, FnBuilder}
 import ai.acyclic.prover.commons.debug.SrcDefinition

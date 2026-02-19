@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.jit.eval
 
-import ai.acyclic.prover.commons.tuple.{Products, Schemata}
+import ai.acyclic.prover.commons.tuple.Products
 import ai.acyclic.prover.commons.jit.hom.Hom
 
 object Args extends Products.Monoidal with Products.Cartesian_UID {

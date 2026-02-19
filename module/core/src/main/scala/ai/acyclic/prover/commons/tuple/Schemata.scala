@@ -1,12 +1,10 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX}
-import ai.acyclic.prover.commons.jit.eval.Args.{><:, Eye}
 import ai.acyclic.prover.commons.util.Phantom
 
 object Schemata {
 
-  import scala.language.implicitConversions
 
   /**
     * Cartesian product on its own (armed with product & left/right projection) is not monoidal:

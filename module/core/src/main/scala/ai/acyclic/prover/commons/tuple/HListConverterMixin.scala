@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.tuple
 
-import shapeless.HNil
 
 trait HListConverterMixin {
   self: Schemata.Monoidal =>

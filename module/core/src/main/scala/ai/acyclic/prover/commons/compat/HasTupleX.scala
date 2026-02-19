@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.compat
 
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
-import ai.acyclic.prover.commons.tuple.{Products, Schemata}
+import ai.acyclic.prover.commons.tuple.Products
 import shapeless.labelled.FieldType
 import shapeless.ops.hlist.Tupler
 import shapeless.{Generic, HList}

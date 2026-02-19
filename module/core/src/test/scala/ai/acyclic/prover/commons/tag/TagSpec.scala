@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.tag
 
-import ai.acyclic.prover.commons.tag
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class TagSpec extends BaseSpec {

@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.jit.hom
 
-import ai.acyclic.prover.commons.jit.fixture.Polys._poly
 import ai.acyclic.prover.commons.testlib.BaseSpec
 
 object PolySpec {}

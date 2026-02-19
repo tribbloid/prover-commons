@@ -34,19 +34,17 @@ class TransformationSpec extends BaseSpec {
   }
 
   object MyTransformation extends Transformation {
-    object from extends Transformation.Schema {
+    object source extends Transformation.Schema {
       override val system: SrcSystem.type = SrcSystem
       override type G[T] = T
     }
-    object to extends Transformation.Schema {
+    object target extends Transformation.Schema {
       override val system: DstSystem.type = DstSystem
       override type G[T] = Option[T]
     }
 
-    implicit override def emptyCase: SrcSystem.Eye /=> DstSystem.Eye =
-      at(_ => DstSystem.Eye)
-
-    override def pointwise[HEAD](v: from.system.Element[from.G[HEAD]]): to.system.Element[to.G[HEAD]] = Option(v)
+    override def pointwise[HEAD](v: source.system.Element[source.G[HEAD]]): target.system.Element[target.G[HEAD]] =
+      Option(v)
   }
 
   describe("Transformation") {
