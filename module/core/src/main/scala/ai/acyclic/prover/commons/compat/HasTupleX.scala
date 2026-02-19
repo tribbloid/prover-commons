@@ -96,6 +96,8 @@ trait HasTupleX {
           ev: Ops.ToFlatTuple.Lemma[H, O]
       ): O = ev(hh)
 
+      // TODO: current Poly definitions have to be singleton which makes it unusable.
+      //  test will be delayed after revision or Scala 3
       // https://stackoverflow.com/questions/66036106/can-shapeless-record-type-be-used-as-a-poly1-part-2
       trait GetValue extends Hom.Poly {
 

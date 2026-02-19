@@ -68,7 +68,7 @@ object Products {
         type Data = HNil
         override val data: HNil.type = HNil
 
-        override def runtimeSeq: Seq[Element[? <: VBound]] = Seq.empty
+        override def runtimeSeq: Vector[Element[? <: VBound]] = Vector.empty
         override lazy val toString: String = EMPTY
       }
 
@@ -81,7 +81,7 @@ object Products {
         def element: Element[L]
 
         override type Data = Element[L] *: tail.Data
-        override lazy val data: Data = element *: TupleX._ops(tail.data)
+        final override lazy val data: Data = element *: TupleX._ops(tail.data)
 
         override lazy val toString: String = {
           val tailStr = tail match {
@@ -95,8 +95,6 @@ object Products {
       }
 
       final val EMPTY = "∅"
-
-      final val >< = " ><: "
     }
 
   }

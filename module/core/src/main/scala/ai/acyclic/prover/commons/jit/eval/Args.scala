@@ -9,7 +9,7 @@ object Args extends Products.Monoidal with Products.Cartesian_UID {
 
   override type VBound = Any
 
-  override type Element[V <: VBound] = ConstantFn[V]
+  override type Element[V] = ConstantFn[V]
 
   /**
     * choose 1 of the 2 options:
@@ -37,10 +37,10 @@ object Args extends Products.Monoidal with Products.Cartesian_UID {
   // Should this defined as a dependent type of Schema (which is a phantom & always available)
   // the only capability it grants is to remove some pending arguments that are guaranteed to be provided
 
-  override def cons[L <: Args.VBound, TAIL <: Prod](head: Hom.ConstantFn[L], tail: TAIL): L ><: TAIL =
+  override def cons[L, TAIL <: Prod](head: Hom.ConstantFn[L], tail: TAIL): L ><: TAIL =
     new ><:(head, tail)
 
-  override def deCons[L <: Args.VBound, TAIL <: Prod](cons: L ><: TAIL): (Hom.ConstantFn[L], TAIL) =
+  override def deCons[L, TAIL <: Prod](cons: L ><: TAIL): (Hom.ConstantFn[L], TAIL) =
     (cons.element, cons.tail)
 
 }
