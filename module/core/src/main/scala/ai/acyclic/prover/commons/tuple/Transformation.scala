@@ -17,7 +17,7 @@ trait Transformation extends Hom.Poly {
   val source: Schema
   val target: Schema
 
-  implicit def shortcut[P <: source.system.Prod](
+  implicit def shortcut[P <: source.system.Prod & target.system.Prod](
       implicit
       ev: source.type =:= target.type
   ): P /=> P = at { v =>

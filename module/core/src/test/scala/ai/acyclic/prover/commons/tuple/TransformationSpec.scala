@@ -4,34 +4,7 @@ import ai.acyclic.prover.commons.testlib.BaseSpec
 
 class TransformationSpec extends BaseSpec {
 
-  object SrcSystem extends Products.Monoidal {
-    type VBound = Any
-    type Element[T <: VBound] = T
-
-    override def cons[L <: VBound, TAIL <: Prod](head: L, tail: TAIL): L ><: TAIL = ><:(head, tail)
-    override def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (L, TAIL) = (cons.head, cons.tail)
-
-    sealed trait Prod
-    case object Atom extends Prod
-    type Eye = Atom.type
-    override val Eye: Eye = Atom
-
-    case class ><:[L <: VBound, TAIL <: Prod](head: L, tail: TAIL) extends Prod
-  }
-
-  object DstSystem extends Products.Monoidal {
-    type VBound = Any
-    type Element[T <: VBound] = T
-    override def cons[L <: VBound, TAIL <: Prod](head: L, tail: TAIL): L ><: TAIL = ><:(head, tail)
-    override def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (L, TAIL) = (cons.head, cons.tail)
-
-    sealed trait Prod
-    case object Atom extends Prod
-    type Eye = Atom.type
-    override val Eye: Eye = Atom
-
-    case class ><:[L <: VBound, TAIL <: Prod](head: L, tail: TAIL) extends Prod
-  }
+  import Fixture.*
 
   object MyTransformation extends Transformation {
     object source extends Transformation.Schema {
@@ -39,7 +12,7 @@ class TransformationSpec extends BaseSpec {
       override type G[T] = T
     }
     object target extends Transformation.Schema {
-      override val system: DstSystem.type = DstSystem
+      override val system: TgtSystem.type = TgtSystem
       override type G[T] = Option[T]
     }
 
@@ -52,7 +25,7 @@ class TransformationSpec extends BaseSpec {
     it("should transform empty product") {
       val src = SrcSystem.Eye
       val dst = MyTransformation(src)
-      assert(dst == DstSystem.Eye)
+      assert(dst == TgtSystem.Eye)
     }
 
     it("should transform single element product") {
@@ -62,7 +35,7 @@ class TransformationSpec extends BaseSpec {
 
       val dst = MyTransformation(src)
 
-      assert(dst == DstSystem.><:(Some(1), DstSystem.Eye))
+      assert(dst == TgtSystem.><:(Some(1), TgtSystem.Eye))
     }
 
     it("should transform multi-element product") {
@@ -71,7 +44,7 @@ class TransformationSpec extends BaseSpec {
 
       val dst = MyTransformation(src)
 
-      assert(dst == DstSystem.><:(Some("a"), DstSystem.><:(Some(1), DstSystem.Eye)))
+      assert(dst == TgtSystem.><:(Some("a"), TgtSystem.><:(Some(1), TgtSystem.Eye)))
     }
   }
 }

@@ -46,26 +46,47 @@ trait HasTupleX {
       cons.head -> cons.tail
     }
 
-    type Builder = shapeless.ProductArgs
-    object of extends Builder {
+    trait VarArgsConstructor {
 
       def applyProduct[L <: TupleX](list: L): L = list
     }
 
-    type Builder_narrow = shapeless.SingletonProductArgs
+    object of extends VarArgsConstructor with shapeless.ProductArgs {}
 
-    object ofNarrow extends Builder_narrow {
+    object ofNarrow extends VarArgsConstructor with shapeless.SingletonProductArgs {}
 
-      def applyProduct[L <: TupleX](list: L): L = list
+    /**
+      * The inverse of [[Ops.ToFlatTuple]]
+      */
+    object FromProductOrValue extends FromProductOrValue_Imp0 {
+
+      implicit val _unit: Unit /=> Eye = at[Unit](_ => Eye)
+
+      implicit def _product[P <: Product, O <: HList](
+          implicit
+          gen: Generic.Aux[P, O]
+      ): P /=> O = at[P] { p =>
+        gen.to(p)
+      }
 
     }
 
+    protected trait FromProductOrValue_Imp0 extends Poly {
+
+      implicit def _value[V]: Element[V] /=> (V ><: Eye) = at[Element[V]] { v =>
+        cons(v, Eye)
+      }
+    }
 //    type Mapper = shapeless.Poly1
 
     implicit class Ops[H <: Prod](hh: H) {
 
+      def flatTuple[O](
+          ev: Ops.ToFlatTuple.Lemma[H, O]
+      ): O = ev(hh)
+
       // https://stackoverflow.com/questions/66036106/can-shapeless-record-type-be-used-as-a-poly1-part-2
-      trait GetV extends Hom.Poly {
+      trait GetValue extends Hom.Poly {
 
         implicit def getter[S](
             implicit
@@ -74,7 +95,7 @@ trait HasTupleX {
           _selector(hh)
         }
       }
-      object GetV extends GetV
+      object GetValue extends GetValue
 
       trait GetField extends Hom.Poly {
 
@@ -88,56 +109,37 @@ trait HasTupleX {
       object GetField extends GetField
     }
 
-    /**
-      * can convert a [[Prod]] to a flat Scala tuple or Unit or value and back
-      *
-      * e.g.
-      *   - (A, B) <-> A ><: B ><: Empty
-      *   - (A) <-> A ><: Empty
-      *   - A -> A ><: Empty
-      *   - Unit -> Empty
-      */
-    object ToFlatRepr extends ToFlatRepr_Imp0 {
+    object Ops {
 
-      implicit lazy val forUnit: Eye /=> Unit = at[Eye](_ => ())
+      /**
+        * can convert a [[Prod]] to a flat Scala tuple or Unit or value and back
+        *
+        * e.g.
+        *   - (A, B) <-> A ><: B ><: Empty
+        *   - (A) <-> A ><: Empty
+        *   - A -> A ><: Empty
+        *   - Unit -> Empty
+        */
+      object ToFlatTuple extends ToFlatTuple_Imp0 { // it should be removed in Scala 3
 
-      implicit def forValue[V <: VBound]: (V ><: Eye) /=> Element[V] = at[V ><: Eye] { v =>
-        val (head, _) = deCons(v)
-        head
+        implicit lazy val forUnit: Eye /=> Unit = at[Eye](_ => ())
+
+        implicit def forValue[V <: VBound]: (V ><: Eye) /=> Element[V] = at[V ><: Eye] { v =>
+          val (head, _) = deCons(v)
+          head
+        }
+      }
+
+      protected trait ToFlatTuple_Imp0 extends Poly {
+
+        implicit def forTuples[I <: Prod, LN <: HList, O](
+            implicit
+            hlistToFlat: Tupler.Aux[I, O]
+        ): I /=> O = at[I] { i =>
+          hlistToFlat(i)
+        }
       }
     }
 
-    trait ToFlatRepr_Imp0 extends Poly {
-
-      implicit def forTuples[I <: Prod, LN <: HList, O](
-          implicit
-          hlistToFlat: Tupler.Aux[I, O]
-      ): I /=> O = at[I] { i =>
-        hlistToFlat(i)
-      }
-    }
-
-    /**
-      * The inverse of [[ToFlatRepr]]
-      */
-    object FromFlatRepr extends FromFlatRepr_Imp0 {
-
-      implicit val forUnit: Unit /=> Eye = at[Unit](_ => Eye)
-
-      implicit def forProduct[P <: Product, O <: HList](
-          implicit
-          gen: Generic.Aux[P, O]
-      ): P /=> O = at[P] { p =>
-        gen.to(p)
-      }
-
-    }
-
-    trait FromFlatRepr_Imp0 extends Poly {
-
-      implicit def forValue[V <: VBound]: Element[V] /=> (V ><: Eye) = at[Element[V]] { v =>
-        cons(v, Eye)
-      }
-    }
   }
 }
