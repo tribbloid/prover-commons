@@ -53,15 +53,15 @@ trait HasPoly extends HasFunction {
       */
     type |-[-I, +O] = Lemma[I, O]
 
-    object asTupleMapper extends TupleX.Mapper {
-
-      implicit def rewrite[I, R](
-          implicit
-          _case: I /=> R // TODO: should be a lemma, but spoiled by Scala's widen to Any problem
-      ): asTupleMapper.this.Case.Aux[I, R] = at[I] { v =>
-        _case.apply(v)
-      }
-    }
+//    object asTupleMapper extends TupleX.Mapper { // Don't know how to do it yet
+//
+//      implicit def rewrite[I, R](
+//          implicit
+//          _case: I /=> R // TODO: should be a lemma, but spoiled by Scala's widen to Any problem
+//      ): asTupleMapper.this.Case.Aux[I, R] = at[I] { v =>
+//        _case.apply(v)
+//      }
+//    }
 
     type BuildTarget[I, O] = Case[I, O]
 

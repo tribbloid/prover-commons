@@ -17,13 +17,18 @@ trait Transformation extends Hom.Poly {
   val source: Schema
   val target: Schema
 
-  // TODO: add a shortcut for case where source == target, in which case no implicit is required
+  implicit def shortcut[P <: source.system.Prod](
+      implicit
+      ev: source.type =:= target.type
+  ): P /=> P = at { v =>
+    v
+  }
 
   implicit def emptyCase: source.system.Eye /=> target.system.Eye = at { _ =>
     target.system.Eye
   }
 
-  def pointwise[HEAD](v: source.system.Element[source.G[HEAD]]): target.system.Element[target.G[HEAD]]
+  def pointwise[HEAD](v: source.E[HEAD]): target.E[HEAD]
 
   implicit def inductiveCase[
       HEAD,
@@ -47,6 +52,6 @@ object Transformation {
     val system: Products.Monoidal
     type G[T] <: system.VBound
 
-    type E[T] = system.Element[G[T]] // TODO: this can be used to simplify this file
+    type E[T] = system.Element[G[T]]
   }
 }

@@ -60,7 +60,7 @@ trait HasTupleX {
 
     }
 
-    type Mapper = shapeless.Poly1
+//    type Mapper = shapeless.Poly1
 
     implicit class Ops[H <: Prod](hh: H) {
 
