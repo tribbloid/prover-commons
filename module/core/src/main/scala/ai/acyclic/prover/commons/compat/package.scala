@@ -11,22 +11,6 @@ package object compat extends HasTupleX {
 
   type Lazy[+T] = shapeless.Lazy[T]
 
-  object NamedTupleX {
-
-    type ->>[K, +V] = FieldType[K, V]
-
-    type :=[K, +V] = (Symbol @@ K) ->> V
-
-    type Builder = shapeless.RecordArgs
-
-    object of extends Builder {
-
-      def applyRecord[L <: TupleX](list: L): L = list
-    }
-
-    // TODO: impl Builder_narrow
-  }
-
   class Key[K] {
 
     def ->>[V](value: V): FieldType[K, V] = field[K](value)

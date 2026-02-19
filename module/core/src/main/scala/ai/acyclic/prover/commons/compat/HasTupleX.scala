@@ -5,6 +5,7 @@ import ai.acyclic.prover.commons.jit.hom.Hom.Poly
 import ai.acyclic.prover.commons.tuple.Products
 import shapeless.labelled.FieldType
 import shapeless.ops.hlist.Tupler
+import shapeless.tag.@@
 import shapeless.{Generic, HList}
 
 trait HasTupleX {
@@ -91,6 +92,7 @@ trait HasTupleX {
         *   - Unit -> Empty
         */
       def flatTuple[O](
+          implicit
           ev: Ops.ToFlatTuple.Lemma[H, O]
       ): O = ev(hh)
 
@@ -141,5 +143,21 @@ trait HasTupleX {
       }
     }
 
+  }
+
+  object NamedTupleX {
+
+    type ->>[K, +V] = FieldType[K, V]
+
+    type :=[K, +V] = (Symbol @@ K) ->> V
+
+    type Builder = shapeless.RecordArgs
+
+    object of extends Builder {
+
+      def applyRecord[L <: TupleX](list: L): L = list
+    }
+
+    // TODO: impl Builder_narrow
   }
 }

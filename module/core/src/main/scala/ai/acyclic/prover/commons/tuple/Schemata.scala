@@ -5,7 +5,6 @@ import ai.acyclic.prover.commons.util.Phantom
 
 object Schemata {
 
-
   /**
     * Cartesian product on its own (armed with product & left/right projection) is not monoidal:
     *

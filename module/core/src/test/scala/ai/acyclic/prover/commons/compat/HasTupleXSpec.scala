@@ -1,0 +1,94 @@
+package ai.acyclic.prover.commons.compat
+
+import ai.acyclic.prover.commons.compat.NamedTupleX.:=
+import ai.acyclic.prover.commons.compat.TupleX._
+import ai.acyclic.prover.commons.testlib.BaseSpec
+import shapeless.HNil
+
+object HasTupleXSpec {
+
+  val tx = TupleX.of(1, "a")
+  val ntx = (Key["a"] := 1) *: (Key["b"] := "x") *: T0
+}
+
+class HasTupleXSpec extends BaseSpec {
+
+  describe("define") {
+
+    it("Tuple") {
+
+      val t0 = 1 *: "a" *: T0
+      val _ = t0: Int *: String *: T0
+
+      val t1 = TupleX.of(1, "a")
+      val _ = t1: Int *: String *: T0
+      val _ = t1: 1 *: "a" *: T0 // TODO: how does this work?
+
+      val t2 = TupleX.ofNarrow(1, "a")
+      val _ = t2: Int *: String *: T0
+      val _ = t2: 1 *: "a" *: T0
+    }
+
+    it("NamedTuple") {
+
+      val t0 = (Key["a"] := 1) *: (Key["b"] := "x") *: T0
+      val _ = t0: ("a" := Int) *: ("b" := String) *: T0
+
+      val t1 = NamedTupleX.of(a = 1, b = "x")
+      val _ = t1.asInstanceOf[("a" := Int) *: ("b" := String) *: T0]
+
+      import shapeless.record.recordOps
+
+      val aa = t1.record.a
+      val _ = aa: Int
+
+      assert(aa == 1)
+    }
+  }
+
+  describe("Ops implicit extension class") {
+
+    it("flatTuple should convert HList to flat tuple") {
+      val t0 = HNil
+      val r0: Unit = t0.flatTuple
+      assert(r0 == ())
+
+      val t1 = TupleX.of(1)
+      val r1: Int = t1.flatTuple
+      assert(r1 == 1)
+
+      val t2 = TupleX.of(1, "a")
+      val r2: (Int, String) = t2.flatTuple
+      assert(r2 == (1, "a"))
+
+      val t3 = TupleX.of(1, "a", true)
+      val r3: (Int, String, Boolean) = t3.flatTuple
+      assert(r3 == (1, "a", true))
+    }
+
+  }
+
+  describe("FromProductOrValue") {
+
+    it("should convert Unit to Eye") {
+      val res = FromProductOrValue(())
+      assert(res == HNil)
+    }
+
+    it("should convert single value to HList") {
+      val res = FromProductOrValue(1)
+      assert(res == TupleX.of(1))
+
+      val resString = FromProductOrValue("a")
+      assert(resString == TupleX.of("a"))
+    }
+
+    it("should convert Product/Tuple to HList") {
+      val res2 = FromProductOrValue((1, "a"))
+      assert(res2 == TupleX.of(1, "a"))
+
+      val res3 = FromProductOrValue((1, "a", true))
+      assert(res3 == TupleX.of(1, "a", true))
+    }
+  }
+}

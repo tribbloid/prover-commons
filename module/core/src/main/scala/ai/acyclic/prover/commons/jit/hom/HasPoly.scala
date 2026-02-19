@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.jit.hom
 
-import ai.acyclic.prover.commons.compat.TupleX
 import ai.acyclic.prover.commons.jit.{ComputationGraph, FnBuilder}
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
