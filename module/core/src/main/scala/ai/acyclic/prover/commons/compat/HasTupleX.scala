@@ -81,6 +81,15 @@ trait HasTupleX {
 
     implicit class Ops[H <: Prod](hh: H) {
 
+      /**
+        * can convert a [[Prod]] to a flat Scala tuple or Unit or value and back
+        *
+        * e.g.
+        *   - (A, B) <-> A ><: B ><: Empty
+        *   - (A) <-> A ><: Empty
+        *   - A -> A ><: Empty
+        *   - Unit -> Empty
+        */
       def flatTuple[O](
           ev: Ops.ToFlatTuple.Lemma[H, O]
       ): O = ev(hh)
@@ -111,15 +120,6 @@ trait HasTupleX {
 
     object Ops {
 
-      /**
-        * can convert a [[Prod]] to a flat Scala tuple or Unit or value and back
-        *
-        * e.g.
-        *   - (A, B) <-> A ><: B ><: Empty
-        *   - (A) <-> A ><: Empty
-        *   - A -> A ><: Empty
-        *   - Unit -> Empty
-        */
       object ToFlatTuple extends ToFlatTuple_Imp0 { // it should be removed in Scala 3
 
         implicit lazy val forUnit: Eye /=> Unit = at[Eye](_ => ())
