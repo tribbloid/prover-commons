@@ -6,20 +6,12 @@ private[tag] trait Tag_Imp0 {
 
   trait revoke_Imp0[CC <: Tag] extends Hom.Poly {
 
-    implicit def last[T, C <: CC]: (T <> C) /=> T = at[T <> C].apply { v =>
+    implicit def exactTag[T]: (T <> CC) /=> T = at[T <> CC].apply { v =>
       v.asInstanceOf[T]
     }
   }
 
-  class revoke[CC <: Tag] extends revoke_Imp0[CC] {
-
-    implicit def chain[T, R, C <: CC](
-        implicit
-        lemma: T |- R
-    ): (T <> C) /=> R = at[T <> C] { v =>
-      lemma.asInstanceOf[Hom.Fn.Impl[T, R]].apply(v: T) // fuck scala
-    }
-  }
+  class revoke[CC <: Tag] extends revoke_Imp0[CC] {}
 
   def revoke[CC <: Tag](
       implicit
@@ -28,7 +20,19 @@ private[tag] trait Tag_Imp0 {
     new revoke[CC]
   }
 
-  object revokeAll extends revoke[Tag] {}
+  object revokeAll extends revoke[Tag] {
+
+//    implicit def subTypeTag[T, CC <: Tag]: (T <> CC) /=> T = at[T <> CC].apply { v =>
+//      v.asInstanceOf[T]
+//    } // TODO: remove, CC will become Nothing
+
+    implicit def chain[T, R, C <: Tag](
+        implicit
+        lemma: T |- R
+    ): (T <> C) /=> R = at[T <> C] { v =>
+      lemma.asInstanceOf[Hom.Fn.Impl[T, R]].apply(v: T) // fuck scala
+    }
+  }
 
   implicit class annotator[V](self: V) {
 
