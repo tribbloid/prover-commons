@@ -42,5 +42,7 @@ object Transformation {
 
     val system: Products.Monoidal
     type G[T] <: system.VBound
+
+    type E[T] = system.Element[G[HEAD]]
   }
 }

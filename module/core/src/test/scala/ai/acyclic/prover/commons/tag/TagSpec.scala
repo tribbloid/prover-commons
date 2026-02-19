@@ -109,9 +109,10 @@ class TagSpec extends BaseSpec {
       {
         object revoke extends Tag.revoke[T1]
 
+        val revoked0 = revoke(et12)(revoke.exactTag)
         val revoked = revoke(et12)
         assert(revoked == et12)
-        val _: Ex <> T2 = revoked
+        val revokedT2: Ex <> T2 = revoked
         shouldNotCompile("revoked: Ex <> Subject.Cap1")
       }
 
@@ -121,7 +122,7 @@ class TagSpec extends BaseSpec {
         val revoked0 = revoke(et12)(revoke.exactTag)
         val revoked = revoke(et12)
         assert(revoked == et12)
-        val _: Ex <> T1 = revoked
+        val revokedT1: Ex <> T1 = revoked
         shouldNotCompile("revoked: Ex <> Subject.Cap2")
       }
     }
