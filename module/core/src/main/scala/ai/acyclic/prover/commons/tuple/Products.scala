@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX}
-import ai.acyclic.prover.commons.tuple.Products.Monoidal
+
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.HNil
 
@@ -114,7 +114,36 @@ object Products {
       def unzip(ab: Zipped): (A, B)
     }
 
-    object Zippable {}
+    object Zippable {
+
+      type Aux[A <: Prod, B <: Prod, O <: Prod] = Zippable[A, B] { type Zipped = O }
+
+      implicit def empty[B <: Prod]: Aux[Eye, B, B] = new Zippable[Eye, B] {
+        type Zipped = B
+
+        def zip(a: Eye, b: B): B = b
+
+        def unzip(ab: B): (Eye, B) = (Eye, ab)
+      }
+
+      implicit def cons[HEAD <: VBound, TAIL <: Prod, B <: Prod, O <: Prod](
+          implicit
+          tailZip: Aux[TAIL, B, O]
+      ): Aux[HEAD ><: TAIL, B, HEAD ><: O] = new Zippable[HEAD ><: TAIL, B] {
+        type Zipped = HEAD ><: O
+
+        def zip(a: HEAD ><: TAIL, b: B): HEAD ><: O = {
+          val (head, tail) = deCons(a)
+          head ><: tailZip.zip(tail, b)
+        }
+
+        def unzip(ab: HEAD ><: O): (HEAD ><: TAIL, B) = {
+          val (head, o) = deCons(ab)
+          val (tail, b) = tailZip.unzip(o)
+          (head ><: tail, b)
+        }
+      }
+    }
   }
 
 }
