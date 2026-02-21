@@ -1,4 +1,4 @@
-package ai.acyclic.prover.commons.jit.bound
+package ai.acyclic.prover.commons.jit
 
 trait DepDomains {
 
