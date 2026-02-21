@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.jit.eval
 
+import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.tuple.Products
 import ai.acyclic.prover.commons.jit.hom.Hom
 
@@ -10,6 +11,7 @@ trait HasArgs {
   object Args extends Products.Monoidal with Products.Cartesian_UID {
 
     import Hom.*
+    import TupleX.*
 
     override type VBound = Any
 
@@ -25,9 +27,23 @@ trait HasArgs {
       * Second option looks more cleaner: only need to summon once as the last step. In the first option, we need to
       * summon repeatedly for recursive partial evaluation/reduction
       */
-    sealed trait Prod extends ElementsMixin.Prod {}
+    sealed trait Prod extends ElementsMixin.Prod {
 
-    override object eye extends Prod with ElementsMixin.Eye
+      type ComputeAll <: TupleX.Prod
+      val computeAll: ComputeAll
+
+      def computeAll_flatTuple[O](
+          implicit
+          ev: TupleX.Ops.ToFlatTuple.Lemma[ComputeAll, O]
+      ): O = computeAll.flatTuple
+    }
+
+    override object eye extends Prod with ElementsMixin.Eye {
+
+      type ComputeAll = TupleXEmpty
+      override lazy val computeAll: ComputeAll = TupleXEmpty
+
+    }
 
     case class ><:[H, T <: Prod](
         head: ConstantFn[H],
@@ -35,11 +51,14 @@ trait HasArgs {
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
-      lazy val headValue: H = head.value
+      type ComputeAll = H *: tail.ComputeAll
+      override lazy val computeAll: ComputeAll = computeHead *: tail.computeAll
+
+      def computeHead: H = head.compute
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
-      lazy val valueSeq: Seq[Any] = runtimeSeq.map(_.value)
+      lazy val valueSeq: Seq[Any] = runtimeSeq.map(_.compute)
     }
 
     implicitly[(Int ><: String ><: Eye) =:= (Int >< String)]

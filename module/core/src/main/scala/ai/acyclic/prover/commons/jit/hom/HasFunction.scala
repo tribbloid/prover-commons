@@ -360,7 +360,7 @@ trait HasFunction {
 
   sealed trait ConstantFn[+O] extends Fn[Any, O] with Fn.CachedPure {
 
-    val value: O
+    val compute: O // should mostly be a lazy val
   }
 
   type Thunk[+O] = Fn[Unit, O]
@@ -373,20 +373,20 @@ trait HasFunction {
     implicitly[Const[Int] <:< ConstantFn[Int]]
 
     sealed trait Impl[O] extends Fn.Impl[Any, O] with ConstantFn[O] { // <- CAUTION: this
-      override def apply(arg: Any): O = value
+      override def apply(arg: Any): O = compute
     }
 
-    final case class Provided[O](value: O) extends Impl[O] {}
+    final case class Provided[O](compute: O) extends Impl[O] {}
 
     final case class Lazy[O](gen: Thunk[O]) extends Impl[O] {
 
       // equivalent to CachedLazy[Unit, O], but much faster
-      @transient lazy val value: O = gen(())
+      @transient lazy val compute: O = gen(())
     }
 
     case object NotProvided extends Impl[Nothing] {
 
-      @transient lazy val value: Nothing = throw new NoSuchElementException("missing, not provided")
+      @transient lazy val compute: Nothing = throw new NoSuchElementException("missing, not provided")
     }
   }
 }

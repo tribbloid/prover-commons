@@ -12,6 +12,9 @@ trait HasTupleX {
 
   type TupleX = TupleX.Prod
 
+  type TupleXEmpty = TupleX.Eye
+  def TupleXEmpty = TupleX.Eye
+
   type *:[+X, +Y <: TupleX] = TupleX.><:[X, Y]
 
   object TupleX extends Products.Monoidal { // TODO: name is weird, also moved to tuple package
@@ -32,6 +35,9 @@ trait HasTupleX {
 
     override type Eye = shapeless.HNil
     val Eye: shapeless.HNil & OpsMixin = shapeless.HNil.asInstanceOf[shapeless.HNil & OpsMixin]
+
+    type Empty = Eye
+    val Empty: Eye = Eye
 
     type Unital = Eye // "Unit" has special meaning in Scala
     val Unital: Eye = Eye
