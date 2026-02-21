@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.bound.TypeBound
+import ai.acyclic.prover.commons.jit.bound.Bound
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.util.PredefKinds
 
@@ -14,7 +14,7 @@ object HasTypeLambda {}
 trait HasTypeLambda extends HasPoly {
 
   // keep it final to use Scala 3 type project to refer to inner classes without initialising it
-  final case class BoundView[D <: TypeBound](bound: D) {
+  final case class BoundView[D <: Bound](bound: D) {
 
     /**
       * the most general form of poly1 in DOT calculus takes a bound and generate a function it should be cast into
@@ -32,7 +32,7 @@ trait HasTypeLambda extends HasPoly {
 
     object BoundLambda {
 
-      type Gt[-B <: TypeBound] = BoundLambda { type Bound >: B }
+      type Gt[-B <: Bound] = BoundLambda { type Bound >: B }
     }
 
     /**
@@ -156,7 +156,7 @@ trait HasTypeLambda extends HasPoly {
 
   object BoundView {
 
-    val top: BoundView[TypeBound.Top] = BoundView[TypeBound.Top](TypeBound.Top)
+    val top: BoundView[Bound.Top] = BoundView[Bound.Top](Bound.Top)
   }
 
   /**
@@ -177,7 +177,7 @@ trait HasTypeLambda extends HasPoly {
     *
     * I[_ >: sub2.Min <: sub2.Max] => O[_ >: sub2.Min <: sub2.Max]
     *
-    * to apply the poly1 to a value of know type, simply refine it to a pinpoint bound [[TypeBound.PointAt[T]]
+    * to apply the poly1 to a value of know type, simply refine it to a pinpoint bound [[Bound.PointAt[T]]
     *
     * this is the most larconic definition of a poly1 I can think of, but there may be more automated ways to figure out
     * refinement rule(s)
