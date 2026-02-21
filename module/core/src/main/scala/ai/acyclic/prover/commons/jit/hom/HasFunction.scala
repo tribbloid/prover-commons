@@ -415,7 +415,9 @@ trait HasFunction {
       override def apply(arg: Args.Prod): O = compute
     }
 
-    final case class Provided[O](compute: O) extends Impl[O] {}
+    final case class Provided[O](compute: O) extends Impl[O] {
+      canEqualProjections += CanEqual.Native.on(compute)
+    }
 
     final case class Lazy[O](gen: Thunk[O]) extends Impl[O] {
 

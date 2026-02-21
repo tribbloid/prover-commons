@@ -1,6 +1,8 @@
 package ai.acyclic.prover.spark.serialization
 
 import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.eval.Args
+import Args.{><:, T0}
 import ai.acyclic.prover.commons.jit.hom.Hom.:|~>
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.util.Caching
@@ -82,7 +84,7 @@ class AssertSerializableSpike extends BaseSpec {
 
         val singleAbstractMethod: Fn[String, Int] = (_: String) => 3 // TODO: cannot handle this
 
-        val circuit: Hom.Fn[String, Int] = Hom.Fn.at { _ =>
+        val circuit: Hom.Fn[String ><: T0, Int] = Hom.Fn.at[String] { _ =>
           3
         }
 
@@ -91,7 +93,7 @@ class AssertSerializableSpike extends BaseSpec {
         val unnaturalTransformation: Seq :|~> Vector =
           new Hom.Impl.UnnaturalTransformation[Seq, Vector] {
 
-            override def refine[T <: Any]: Hom.Fn[Seq[T], Vector[T]] = Hom.Fn.at[Seq[T]](v => v.toVector)
+            override def refine[T <: Any]: Hom.Fn[Seq[T] ><: T0, Vector[T]] = Hom.Fn.at[Seq[T]](v => v.toVector)
           }
 
 //        val dependent: Hom.Dependent[Vector] = new Hom.Impl.Dependent[Vector] {

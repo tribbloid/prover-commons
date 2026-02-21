@@ -1,7 +1,8 @@
 package ai.acyclic.prover.spark.serialization
 
 import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.multiverse.CanEqual
+import ai.acyclic.prover.commons.jit.eval.Args
+import Args.{><:, T0}
 import org.apache.spark.SparkConf
 import org.apache.spark.serializer.{JavaSerializer, KryoSerializer, Serializer, SerializerInstance}
 
@@ -29,11 +30,11 @@ object SerializerEnv {
     @transient lazy val allSerializers: List[Serializer] = List(javaSerializer, kryoSerializer)
   }
 
-  lazy val apply: Hom.Fn.CachedImpl[SparkConf, Ops] = Hom.Fn
+  lazy val apply: Hom.Fn.CachedImpl[SparkConf ><: T0, Ops] = Hom.Fn
     .at { (v: SparkConf) =>
       Ops(v)
     }
-    .cached(CanEqual.ByMemory.Lookup())
+    .cached()
 
   lazy val Default: Ops = apply(new SparkConf())
 }

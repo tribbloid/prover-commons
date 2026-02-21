@@ -1,6 +1,8 @@
 package ai.acyclic.prover.meta2.meta
 
 import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.eval.Args
+import Args.{><:, T0}
 import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 
 import scala.tools.reflect.ToolBox
@@ -336,8 +338,8 @@ private[meta] trait TypeViewMixin extends HasUniverse {
     override def _copy(self: Type): TypeViewMixin.this.TypeView = copy(self)
   }
 
-  lazy val typeViewOf: Hom.Fn.CachedImpl[Type, TypeView] = {
-    Hom.Fn.at[Type](TypeView.apply _).cached(CanEqual.Native.Lookup())
+  lazy val typeViewOf: Hom.Fn.CachedImpl[Type ><: T0, TypeView] = {
+    Hom.Fn.at[Type](TypeView.apply _).cached()
   }
 
 //  val typeCache = mutable.Map.empty[Type, TypeView]
