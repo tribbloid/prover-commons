@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.jit.{CanSimplify, FnBuilder, IntermediateRepresentation, Rule}
-import ai.acyclic.prover.commons.jit.bound.Domains
+import ai.acyclic.prover.commons.jit.Domains
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
 
