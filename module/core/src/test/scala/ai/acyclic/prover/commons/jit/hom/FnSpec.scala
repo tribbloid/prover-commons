@@ -3,6 +3,10 @@ package ai.acyclic.prover.commons.jit.hom
 import ai.acyclic.prover.commons.jit.fixture.*
 import ai.acyclic.prover.commons.jit.hom.Hom.Fn
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Hom.{Const, Fn}
+import ai.acyclic.prover.commons.jit.eval.Args
+import Args.{><:, T0}
 
 object FnSpec {}
 
@@ -14,20 +18,28 @@ class FnSpec extends BaseSpec {
 
     it("subtype") { // disabled, current compiler is janky
 
-      case object cc extends Fn.Impl[Int, String] {
+      case object cc extends Fn.Impl[Int ><: T0, String] {
 
-        def apply(v: Int): String = "" + v
+        def apply(v: Int ><: T0): String = "" + v.head.compute
       }
-      assert((cc.apply(1): String) == "1")
+      assert(
+        (cc.apply(
+          Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+        ): String) == "1"
+      )
     }
 
     it("implicit cast") {
 
-      val cc: Fn[Int, String] = { v =>
+      val cc: Fn[Int ><: T0, String] = { (v: Int) =>
         "" + v
       }
       assert(cc.getClass == classOf[Fn.Blackbox[?, ?]])
-      assert((cc.apply(1): String) == "1")
+      assert(
+        (cc.apply(
+          Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+        ): String) == "1"
+      )
 
 //      assert(useCircuit { _ =>
 //        "1"
@@ -38,7 +50,7 @@ class FnSpec extends BaseSpec {
   describe("copy without SrcPosition change") {
     it("should preserve equality") {
 
-      val cc: Fn[Int, String] = { v =>
+      val cc: Fn[Int ><: T0, String] = { (v: Int) =>
         "" + v
       }
 
@@ -53,7 +65,7 @@ class FnSpec extends BaseSpec {
   it("explain") {
 
     fn0.explain.nodeText.shouldBe(
-      "Blackbox(fn0 <at Circuits.scala:7>)"
+      "Blackbox(fn0 <at Circuits.scala:8>)"
     )
 
     fn0.toString.shouldBe(
@@ -85,7 +97,8 @@ class FnSpec extends BaseSpec {
                 s
               )
 
-            val r1 = fn.apply(1)
+            val in = Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+            val r1 = fn.apply(in)
             assert(r1 == 3)
           }
       }
@@ -106,7 +119,8 @@ class FnSpec extends BaseSpec {
                 s
               )
 
-            val r1 = fn.apply(1)
+            val in = Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+            val r1 = fn.apply(in)
             assert(r1 == "2b")
           }
       }
@@ -137,7 +151,8 @@ class FnSpec extends BaseSpec {
 
             sLeft.shouldBe(s)
 
-            val r1 = fn.apply(1)
+            val in = Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+            val r1 = fn.apply(in)
             assert(r1 == "10b")
           }
       }
@@ -159,7 +174,20 @@ class FnSpec extends BaseSpec {
               s
             )
 
-          val r1 = fn.apply(1 -> 2L)
+          val combinedIn = Args
+            .cons(
+              Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]],
+              Args
+                .cons(
+                  Const.Provided(2L).asInstanceOf[Hom.ConstantFn[Long]],
+                  Args.eye
+                )
+                .asInstanceOf[Long ><: T0]
+            )
+            .asInstanceOf[Int ><: Long ><: T0]
+
+          val fnTraced = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(fn).asInstanceOf[Any => Any]
+          val r1 = fnTraced.apply(combinedIn)
           assert(r1 == List(3.0, 4.1, 5.2))
         }
     }

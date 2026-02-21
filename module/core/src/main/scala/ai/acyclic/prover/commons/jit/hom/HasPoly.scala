@@ -2,6 +2,8 @@ package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.jit.{ComputationGraph, FnBuilder}
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.jit.eval.Args
+import Args.{><:, T0}
 
 trait HasPoly extends HasFunction {
 
@@ -29,9 +31,9 @@ trait HasPoly extends HasFunction {
     // TODO: construction/inference of Case should be interned
 
     protected[Poly] case class Case[I, O]( // a thin wrapper that prevents apply from being called directly
-        underlying: Fn.Impl[I, O]
-    ) extends Fn.Impl[I, O] {
-      def apply(v: I): O = underlying(v)
+        underlying: Fn.Impl[I ><: T0, O]
+    ) extends Fn.Impl[I ><: T0, O] {
+      def apply(v: I ><: T0): O = underlying.apply(v).asInstanceOf[O]
     }
     protected[Poly] object Case {
       type At[I] = Case[I, ?]
@@ -69,7 +71,7 @@ trait HasPoly extends HasFunction {
         _definedAt: SrcDefinition
     ): BuildTarget[I, O] = {
 
-      Case(Fn.at[I](fn))
+      Case(Fn.fromFunction1(fn))
     }
 
     // TODO: all these cases can only be summoned when Poly is path-dependent, is there an API that works otherwise?
@@ -78,7 +80,9 @@ trait HasPoly extends HasFunction {
         implicit
         _case: Lemma.At[I]
     ): _case.Out = {
-      _case.apply(v)
+      _case.underlying
+        .apply(Args.cons(Const.Provided(v).asInstanceOf[Hom.ConstantFn[I]], Args.eye).asInstanceOf[_case.underlying.In])
+        .asInstanceOf[_case.Out]
     }
 
     case class DomainBuilder[I, O]() extends IDomainBuilder[I, O] {

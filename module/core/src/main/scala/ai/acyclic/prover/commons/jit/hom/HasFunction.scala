@@ -5,6 +5,8 @@ import ai.acyclic.prover.commons.jit.{CanSimplify, FnBuilder, IntermediateRepres
 import ai.acyclic.prover.commons.jit.Domains
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.jit.eval.Args
+import Args.{><:, T0}
 
 import scala.language.implicitConversions
 
@@ -15,22 +17,22 @@ object HasFunction {
 
 trait HasFunction {
 
-  trait DepFn[-I] extends IntermediateRepresentation with CanSimplify[DepFn[I]] {
-    type In >: I
+  trait DepFn[-I <: Args.Prod] extends IntermediateRepresentation with CanSimplify[DepFn[I]] {
+    type In >: I <: Args.Prod
   }
   // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
   case object DepFn {
 
-    type K1[-I] = IntermediateRepresentation { type In >: I }
+    type K1[-I <: Args.Prod] = IntermediateRepresentation { type In >: I }
 
     type constraint <: Any
 
     { // sanity
-      implicitly[DepFn[Int] <:< K1[Int]]
+      implicitly[DepFn[Int ><: T0] <:< K1[Int ><: T0]]
     }
   }
 
-  trait Fn[-I, +O] extends CanSimplify[Fn[I, O]] with DepFn[I] with Domains {
+  trait Fn[-I <: Args.Prod, +O] extends CanSimplify[Fn[I, O]] with DepFn[I] with Domains {
 
     type Out <: O
 
@@ -40,7 +42,7 @@ trait HasFunction {
   // TODO: should be K2[I, R] (as refined type), but scala 2 implicit search is too weak fo this
   case object Fn extends FnBuilder.Root {
 
-    implicit class _extFn[I, O](
+    implicit class _extFn[I <: Args.Prod, O](
         self: Fn[I, O]
     ) extends Serializable {
 
@@ -56,7 +58,7 @@ trait HasFunction {
     /**
       * function with computation graph, like a lifted JAXpr
       */
-    type K2[-I, +O] = DepFn.K1[I] { type OutK[T] <: O }
+    type K2[-I <: Args.Prod, +O] = DepFn.K1[I] { type OutK[T] <: O }
 
     // sanity check - disabled because scalafix/semanticdb cannot parse bare blocks
     // implicitly[Fn[Int, String] <:< K2[Int, String]]
@@ -64,7 +66,7 @@ trait HasFunction {
     val Tracing: ai.acyclic.prover.commons.jit.cps.Continuation.type =
       ai.acyclic.prover.commons.jit.cps.Continuation
 
-    abstract class Impl[I, O](
+    abstract class Impl[I <: Args.Prod, O](
         implicit
         override val _definedAt: SrcDefinition
     ) extends Fn[I, O] { // most specific
@@ -75,34 +77,33 @@ trait HasFunction {
 
 //    sealed trait Compositor {} // TODO: this needs to be a supertype of all Impl composed from multiple functions
 
-    def id[I]: Identity[I] = Identity[I]()
+    def id[I <: Args.Prod]: Identity[I] = Identity[I]()
 
-    case class Mapped[I, M, O](
+    case class Mapped[I <: Args.Prod, M, O](
         left: Fn[I, M],
-        right: Fn[M, O]
+        right: Fn[M ><: T0, O]
     ) extends Impl[I, O] {
 
       override type Rules = left.Rules & right.Rules
 
-      override def apply(arg: I): O = right(left(arg))
+      override def apply(arg: I): O =
+        right.apply(Args.cons(Const.Provided(left(arg)).asInstanceOf[Hom.ConstantFn[M]], Args.eye))
 
       override def simplify: Fn[I, O] = {
-        (left, right) match {
-          case (_: Identity[_], rr) => rr.simplify.asInstanceOf[Fn[I, O]]
-          case (ll, _: Identity[_]) => ll.simplify.asInstanceOf[Fn[I, O]]
-          case (ll, rr)             => Mapped(ll.simplify, rr.simplify)
+        (left: Any, right: Any) match {
+          case (ll: Fn[_, _], rr: Fn[_, _]) => Mapped(ll.asInstanceOf[Fn[I, M]], rr.asInstanceOf[Fn[M ><: T0, O]])
         }
       }
     }
 
-    case class Flatten[I, T, O](
+    case class Flatten[I <: Args.Prod, T, O](
         base: Fn[I, T],
         coerce: T => Fn[I, O]
     ) extends Impl[I, O] {
 
       override def apply(arg: I): O = {
 
-        coerce(base(arg)).apply(arg)
+        coerce(base(arg).asInstanceOf[T]).apply(arg)
       }
 
       override def simplify: Fn[I, O] = {
@@ -112,64 +113,69 @@ trait HasFunction {
     }
 
     case class Flipped[I1, I2, O](
-        base: Fn[(I1, I2), O]
-    ) extends Impl[(I2, I1), O] {
+        base: Fn[I1 ><: I2 ><: T0, O]
+    ) extends Impl[I2 ><: I1 ><: T0, O] {
 
       override type Rules = base.Rules
 
-      override def apply(arg: (I2, I1)): O = {
+      override def apply(arg: I2 ><: I1 ><: T0): O = {
 
-        base.apply(arg._2 -> arg._1)
+        val (i2, t1) = Args.deCons(arg)
+        val (i1, _) = Args.deCons(t1)
+        base.apply(Args.cons(i1, Args.cons(i2, Args.eye))).asInstanceOf[O]
       }
     }
 
-    case class Pointwise[I1, O1, I2, O2](
+    case class Pointwise[I1 <: Args.Prod, O1, I2 <: Args.Prod, O2](
         left: Fn[I1, O1],
         right: Fn[I2, O2]
-    ) extends Impl[(I1, I2), (O1, O2)] {
+    ) extends Impl[(I1, I2) ><: T0, (O1, O2)] {
 
       override type Rules = left.Rules & right.Rules
 
-      override def apply(arg: (I1, I2)): (O1, O2) = {
-        val lo = left(arg._1)
-        val ro = right(arg._2)
+      override def apply(arg: (I1, I2) ><: T0): (O1, O2) = {
 
-        lo -> ro
+        val (i1, i2) = arg.head.compute
+
+        val lo = left(i1).asInstanceOf[O1]
+        val ro = right(i2).asInstanceOf[O2]
+
+        (lo -> ro).asInstanceOf[(O1, O2)]
       }
     }
 
-    case class Duplicate[I]() extends Impl[I, (I, I)] {
+    case class Duplicate[I]() extends Impl[I ><: T0, (I, I)] {
 
+      override def apply(arg: I ><: T0): (I, I) = {
+        val v = arg.head.compute
+        v -> v
+      }
+    }
+
+    case class DuplicateArgs[I <: Args.Prod]() extends Impl[I, (I, I)] {
       override def apply(arg: I): (I, I) = arg -> arg
     }
 
-    case class Identity[I]() extends Impl[I, I] { // TOOD: this should be contravariant under DepFn
+    case class Identity[I <: Args.Prod]() extends Impl[I, I] { // TOOD: this should be contravariant under DepFn
 
       override type Rules <: Rule.Linear
 
-      override def apply(arg: I): I & OutK[arg.type] = arg
+      override def apply(arg: I): I & OutK[arg.type] = arg.asInstanceOf[I & OutK[arg.type]]
     }
 
     case class Conditional[I](
-        filter: Fn[I, Boolean]
-    ) extends Impl[I, I] {
+        filter: Fn[I ><: T0, Boolean]
+    ) extends Impl[I ><: T0, I] {
 
-      override def apply(o: I): I = {
-
-        if (filter(o)) o
-        else throw new MatchError(s"condition ${_definedAt} is not applicable on $o")
+      override def apply(o: I ><: T0): I = {
+        val v = o.head.compute
+        if (filter(o).asInstanceOf[Boolean]) v
+        else throw new MatchError(s"condition ${_definedAt} is not applicable on $v")
       }
     }
 
-    case class Blackbox[I, R](
-        final override val _definedAt: SrcDefinition
-    )(fn: I => R)
-        extends Impl[I, R] {
-
-      override def apply(arg: I): R = {
-
-        fn(arg)
-      }
+    trait HasLambdaInfo[F] {
+      def fn: F
 
       /**
         * returns:
@@ -206,7 +212,30 @@ trait HasFunction {
       }
     }
 
-    implicit def _as1View[I, O](v: CanSimplify[Fn[I, O]])(
+    case class Blackbox[I, R](
+        final override val _definedAt: SrcDefinition
+    )(val fn: I => R)
+        extends Impl[I ><: T0, R]
+        with HasLambdaInfo[I => R] {
+
+      override def apply(arg: I ><: T0): R = {
+
+        fn(arg.head.compute)
+      }
+    }
+
+    case class BlackboxArgs[I <: Args.Prod, R](
+        final override val _definedAt: SrcDefinition
+    )(val fn: I => R)
+        extends Impl[I, R]
+        with HasLambdaInfo[I => R] {
+
+      override def apply(arg: I): R = {
+        fn(arg)
+      }
+    }
+
+    implicit def _as1View[I, O](v: CanSimplify[Fn[I ><: T0, O]])(
         implicit
         _definedAt: SrcDefinition
     ): Function1View[I, O] = {
@@ -233,9 +262,9 @@ trait HasFunction {
     implicit def fromFunction1[I, R](fn: I => R)(
         implicit
         _definedAt: SrcDefinition
-    ): Fn.Impl[I, R] = {
+    ): Fn.Impl[I ><: T0, R] = {
       fn match {
-        case Function1View(c, _) => c.asInstanceOf[Fn.Impl[I, R]]
+        case Function1View(c, _) => c.asInstanceOf[Fn.Impl[I ><: T0, R]]
         case _                   =>
           Blackbox[I, R](_definedAt)(fn)
       }
@@ -248,7 +277,15 @@ trait HasFunction {
 
       fn match {
         case Function0View(c, _) => c.asInstanceOf[Const.Impl[R]]
-        case _                   => Const.Lazy(fromFunction1[Unit, R]((_: Unit) => fn()))
+        case _                   =>
+          case class ThunkImpl()(
+              implicit
+              override val _definedAt: SrcDefinition
+          ) extends Impl[T0, R] {
+            override def apply(arg: T0): R = fn()
+          }
+          val thunk = ThunkImpl()
+          Const.Lazy(thunk.asInstanceOf[Thunk[R]])
       }
     }
 
@@ -256,16 +293,16 @@ trait HasFunction {
 
     object Pure {
 
-      case class Is[I, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
+      case class Is[I <: Args.Prod, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
 
-        override def apply(v: I): R & delegate.OutK[v.type] = delegate.apply(v)
+        override def apply(v: I): R & delegate.OutK[v.type] = delegate.apply(v).asInstanceOf[R & delegate.OutK[v.type]]
       }
     }
 
     trait CachedPure extends Pure
 
     // TODO: make a dependent class, also in Thunk
-    final case class CachedImpl[I, R](backbone: Fn[I, R])(
+    final case class CachedImpl[I <: Args.Prod, R](backbone: Fn[I, R])(
         getLookup: () => CacheMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
     ) extends Impl[I, R]
         with CachedPure {
@@ -273,11 +310,13 @@ trait HasFunction {
       lazy val lookup: CacheMagnet[I, R] = getLookup()
 
       def apply(key: I): R = {
-        lookup.getOrElseUpdateOnce(key) {
+        lookup
+          .getOrElseUpdateOnce(key) {
 
-          val value = backbone(key)
-          value
-        }
+            val value = backbone(key)
+            value
+          }
+          .asInstanceOf[R]
       }
 
       def getExisting(arg: I): Option[R] = {
@@ -286,7 +325,7 @@ trait HasFunction {
       }
     }
 
-    override protected type BuildTarget[I, O] = Fn.Impl[I, O]
+    override protected type BuildTarget[I, O] = Fn.Impl[I ><: T0, O]
 
     protected def build[I, O](fn: I => O)(
         implicit
@@ -298,8 +337,8 @@ trait HasFunction {
 
     case class DomainBuilder[I, O]() extends IDomainBuilder[I, O] {
 
-      type _Lemma = Fn[I, O]
-      type _Impl = Fn.Impl[I, O]
+      type _Lemma = Fn[I ><: T0, O]
+      type _Impl = Fn.Impl[I ><: T0, O]
       type _Native = (I => O)
 
       def fn[o <: O](fn: I => o)(
@@ -315,21 +354,21 @@ trait HasFunction {
   }
 
   case class Function1View[I, O] private[hom] (
-      self: Fn[I, O],
+      self: Fn[I ><: T0, O],
       otherFnDefinedAt: SrcDefinition
   ) extends Function[I, O] {
 
     def function1: Function1View[I, O] = this
 
-    final override def apply(v: I): O = self(v)
+    final override def apply(v: I): O = self(Args.cons(Const.Provided(v).asInstanceOf[Hom.ConstantFn[I]], Args.eye))
 
     // TODO: both of these are not narrow enough
     final override def andThen[O2](next: O => O2): Function1View[I, O2] = {
 
-      val _next: Fn[O, O2] = Fn.at[O](next)(otherFnDefinedAt)
+      val _next: Fn[O ><: T0, O2] = Fn.at[O](next)(otherFnDefinedAt)
 
       val result =
-        Fn.Mapped[I, O, O2](self, _next)
+        Fn.Mapped[I ><: T0, O, O2](self, _next)
 
       Function1View(result, otherFnDefinedAt)
     }
@@ -349,7 +388,7 @@ trait HasFunction {
 
     def function0: Function0View[O] = this
 
-    final override def apply(): O = self(())
+    final override def apply(): O = self(Args.eye)
 
     //      override def normalise: Circuit[I, O] = self.normalise
 
@@ -358,22 +397,22 @@ trait HasFunction {
     def asEager: Const.Provided[Thunk[O]] = Const.Provided(self)
   }
 
-  sealed trait ConstantFn[+O] extends Fn[Any, O] with Fn.CachedPure {
+  sealed trait ConstantFn[+O] extends Fn[Args.Prod, O] with Fn.CachedPure {
 
     val compute: O // should mostly be a lazy val
   }
 
-  type Thunk[+O] = Fn[Unit, O]
+  type Thunk[+O] = Fn[T0, O]
   type Const[+O] = Thunk[O] & ConstantFn[O]
 
   object Const {
 
     // sanity (TODO: this may threaten behaviour of ZIO zippable or unzippable, need some test cases)
-    implicitly[Impl[Int] <:< Const[Int]]
+    implicitly[Const.Impl[Int] <:< Const[Int]]
     implicitly[Const[Int] <:< ConstantFn[Int]]
 
-    sealed trait Impl[O] extends Fn.Impl[Any, O] with ConstantFn[O] { // <- CAUTION: this
-      override def apply(arg: Any): O = compute
+    sealed trait Impl[O] extends Fn.Impl[Args.Prod, O] with ConstantFn[O] { // <- CAUTION: this
+      override def apply(arg: Args.Prod): O = compute
     }
 
     final case class Provided[O](compute: O) extends Impl[O] {}
@@ -381,7 +420,7 @@ trait HasFunction {
     final case class Lazy[O](gen: Thunk[O]) extends Impl[O] {
 
       // equivalent to CachedLazy[Unit, O], but much faster
-      @transient lazy val compute: O = gen(())
+      @transient lazy val compute: O = gen(Args.eye)
     }
 
     case object NotProvided extends Impl[Nothing] {

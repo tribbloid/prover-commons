@@ -10,8 +10,8 @@ object Products {
   trait Cartesian extends Schemata.Cartesian {
 
     val Eye: Eye
-    val T0: Eye.type = Eye
-    val Nil: Eye.type = Eye
+    final lazy val T0: Eye.type = Eye
+    final lazy val Nil: Eye.type = Eye
   }
 
   /**
@@ -26,7 +26,7 @@ object Products {
 
     val eye: Prod
     override type Eye = eye.type
-    override val Eye: Eye = eye
+    override lazy val Eye: Eye = eye
 
   }
 

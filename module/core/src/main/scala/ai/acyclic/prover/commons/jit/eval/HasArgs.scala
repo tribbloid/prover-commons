@@ -31,11 +31,6 @@ trait HasArgs {
 
       type ComputeAll <: TupleX.Prod
       val computeAll: ComputeAll
-
-      def computeAll_flatTuple[O](
-          implicit
-          ev: TupleX.Ops.ToFlatTuple.Lemma[ComputeAll, O]
-      ): O = computeAll.flatTuple
     }
 
     override object eye extends Prod with ElementsMixin.Eye {

@@ -5,6 +5,8 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.bound.Bound
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.util.PredefKinds
+import ai.acyclic.prover.commons.jit.eval.Args
+import Args.{><:, T0}
 
 object HasTypeLambda {}
 
@@ -47,9 +49,9 @@ trait HasTypeLambda extends HasPoly {
       type In[T >: bound.Min <: bound.Max]
       type Out[T >: bound.Min <: bound.Max]
 
-      def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Out[T]]
+      def refine[T >: bound.Min <: bound.Max]: Fn[In[T] ><: T0, Out[T]]
 
-      final def apply[T >: bound.Min <: bound.Max](arg: In[T]): Out[T] = refine[T].apply(arg)
+      final def apply[T >: bound.Min <: bound.Max](arg: In[T] ><: T0): Out[T] = refine[T].apply(arg)
 
       def cached(byLookup: => CacheMagnet[Any, Any]): CachedLazy = {
 
@@ -68,13 +70,15 @@ trait HasTypeLambda extends HasPoly {
 
         lazy val lookup: CacheMagnet[Any, Any] = getLookup()
 
-        override def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Out[T]] = {
+        override def refine[T >: bound.Min <: bound.Max]: Fn[In[T] ><: T0, Out[T]] = {
 
           val result = Fn.at[In[T]] { i =>
             lookup
               .getOrElseUpdateOnce(i) {
 
-                backbone.apply[T](i)
+                backbone.apply[T](
+                  Args.cons(Const.Provided(i).asInstanceOf[Hom.ConstantFn[In[T]]], Args.eye).asInstanceOf[In[T] ><: T0]
+                )
 
               }
               .asInstanceOf[Out[T]]
@@ -89,7 +93,7 @@ trait HasTypeLambda extends HasPoly {
 
         object CachedOnly extends UnnaturalTransformation.Impl[In, _OutOpt] {
 
-          override def refine[T >: bound.Min <: bound.Max]: Fn[In[T], Option[_Out[T]]] = {
+          override def refine[T >: bound.Min <: bound.Max]: Fn[In[T] ><: T0, Option[_Out[T]]] = {
 
             val result = Fn.at[In[T]] { i =>
               lookup
@@ -133,14 +137,14 @@ trait HasTypeLambda extends HasPoly {
         override type Out[T >: bound.Min <: bound.Max] = O[T]
       }
 
-      implicit class Is[I, O](backbone: Fn[I, O])
+      implicit class Is[I <: Args.Prod, O](backbone: Fn[I, O])
           extends Impl[PredefKinds.Drop1[_, I], PredefKinds.Drop1[_, O]]()(backbone._definedAt)
           with TypeLambda {
 
         override type In[T >: bound.Min <: bound.Max] = I
         override type Out[T >: bound.Min <: bound.Max] = O
 
-        override def refine[T >: bound.Min <: bound.Max]: Fn[I, O] = backbone
+        override def refine[T >: bound.Min <: bound.Max]: Fn[I ><: T0, O] = backbone.asInstanceOf[Fn[I ><: T0, O]]
       }
       //    implicit def _fnIsPoly1[I, O](fn: Circuit[I, O]): Is[I, O] = Is(fn)
 

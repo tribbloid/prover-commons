@@ -1,6 +1,9 @@
 package ai.acyclic.prover.commons.tag
 
 import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Hom.Const
+import ai.acyclic.prover.commons.jit.eval.Args
+import Args.{><:, T0}
 
 private[tag] trait Tag_Imp0 {
 
@@ -30,7 +33,10 @@ private[tag] trait Tag_Imp0 {
         implicit
         lemma: T |- R
     ): (T <> C) /=> R = at[T <> C] { v =>
-      lemma.asInstanceOf[Hom.Fn.Impl[T, R]].apply(v: T) // fuck scala
+      lemma
+        .asInstanceOf[Hom.Fn.Impl[T ><: T0, R]]
+        .apply(Args.cons(Const.Provided(v).asInstanceOf[Hom.ConstantFn[T]], Args.eye))
+        .asInstanceOf[R] // fuck scala
     }
   }
 

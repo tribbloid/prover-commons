@@ -1,10 +1,12 @@
 package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.TypeTag
+import ai.acyclic.prover.commons.jit.eval.Args
+import Args.{><:, T0}
 
 object Hom extends Hom_Imp0 {
 
-  implicit class _fnExt[I, O](self: Fn[I, O]) extends Serializable {
+  implicit class _fnExt[I <: Args.Prod, O](self: Fn[I, O]) extends Serializable {
 
     def trace(
         implicit
@@ -19,11 +21,11 @@ object Hom extends Hom_Imp0 {
     def trace(
         implicit
         oTag: TypeTag[O]
-    ): ai.acyclic.prover.commons.jit.cps.Continuation[Unit, O] =
-      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify)
+    ): ai.acyclic.prover.commons.jit.cps.Continuation[T0, O] =
+      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify.asInstanceOf[Hom.Fn[T0, O]])
   }
 
-  type :=>[-I, +R] = Fn[I, R]
+  type :=>[-I <: Args.Prod, +R] = Fn[I, R]
   val :=> : Fn.type = Fn
 
   type :|~>[-I[_], +R[_]] = BoundView.top.UnnaturalTransformation[I, R]
@@ -32,12 +34,12 @@ object Hom extends Hom_Imp0 {
 //  type :|->[+R[_]] = BoundView.top.Dependent[R] // TODO: superseded
 //  val :|-> = BoundView.top.Dependent
 
-  type Dependent[+R[_]] = DepFn[Any] { type OutK[T] <: R[T] }
+  type Dependent[+R[_]] = DepFn[Args.Prod] { type OutK[T] <: R[T] }
   type :|->[+R[_]] = Dependent[R]
 
   object Impl {
 
-    type Fn[I, R] = Fn.Impl[I, R]
+    type Fn[I <: Args.Prod, R] = Fn.Impl[I, R]
 
 //    type Poly = Hom.Poly
 

@@ -1,7 +1,9 @@
 package ai.acyclic.prover.commons.jit
 
-trait DepDomains {
+import ai.acyclic.prover.commons.jit.eval.Args
 
-  type In // Domain, Max
+trait DepDomains {
+  type In <: Args.Prod // Domain, Max
+
   type OutK[T <: In] // Codomain, Min
 }

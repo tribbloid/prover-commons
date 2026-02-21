@@ -1,12 +1,13 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.cps.Continuation
+import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 
 object PointwiseAndChain {
 
   import Circuits.*
 
-  private val pointwise: Continuation[(Int, Long), (Seq[Long], Seq[Double])] = fn1.trace <*> fn2.trace
+  private val pointwise = fn1.trace <*> fn2.trace
 
   val s1 = pointwise.map {
     case (o1, o2) =>
@@ -35,14 +36,14 @@ object PointwiseAndChain {
       (
         s1,
         s"""
-           |+ Mapped
-           |!-+ Mapped
-           |: !-- Blackbox( <at <unknown>:0>)
-           |: !-+ Pointwise
-           |:   !-- ${fn1.explain.nodeText}
-           |:   !-- ${fn2.explain.nodeText}
-           |!-- Blackbox(s1 <at PointwiseAndChain.scala:11>)
-           |""".stripMargin
+            |+ Mapped
+            |!-+ Mapped
+            |: !-- BlackboxArgs( <at <unknown>:0>)
+            |: !-+ Pointwise
+            |:   !-- ${fn1.explain.nodeText}
+            |:   !-- ${fn2.explain.nodeText}
+            |!-- Blackbox(s1 <at PointwiseAndChain.scala:12>)
+            |""".stripMargin
       ),
       (
         s2,
@@ -50,12 +51,12 @@ object PointwiseAndChain {
              |+ Mapped
              |!-+ Mapped
              |: !-+ Mapped
-             |: : !-- Blackbox( <at <unknown>:0>)
+             |: : !-- BlackboxArgs( <at <unknown>:0>)
              |: : !-+ Pointwise
              |: :   !-- ${fn1.explain.nodeText}
              |: :   !-- ${fn2.explain.nodeText}
-             |: !-- Blackbox(s2 <at PointwiseAndChain.scala:17>)
-             |!-- Blackbox(s2 <at PointwiseAndChain.scala:17>)
+             |: !-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
+             |!-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
              |""".stripMargin
       ),
       (
@@ -64,12 +65,12 @@ object PointwiseAndChain {
              |+ Mapped
              |!-+ Mapped
              |: !-+ Mapped
-             |: : !-- Blackbox( <at <unknown>:0>)
+             |: : !-- BlackboxArgs( <at <unknown>:0>)
              |: : !-+ Pointwise
-             |: :   !-- Blackbox(fn1 <at Circuits.scala:11>)
-             |: :   !-- Blackbox(fn2 <at Circuits.scala:15>)
-             |: !-- Blackbox(s3 <at PointwiseAndChain.scala:24>)
-             |!-- Blackbox(s3 <at PointwiseAndChain.scala:24>)
+             |: :   !-- Blackbox(fn1 <at Circuits.scala:12>)
+             |: :   !-- Blackbox(fn2 <at Circuits.scala:16>)
+             |: !-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
+             |!-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
              |""".stripMargin
       )
     )

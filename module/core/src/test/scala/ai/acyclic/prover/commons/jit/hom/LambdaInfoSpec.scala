@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 
 class LambdaInfoSpec extends BaseSpec {
 
@@ -31,7 +32,7 @@ class LambdaInfoSpec extends BaseSpec {
 
   it("should be defined for a closure") {
     val captured = 42
-    val fn: Hom.Fn[Int, Int] = { (x: Int) => x + captured }
+    val fn: Hom.Fn[Int ><: T0, Int] = { (x: Int) => x + captured }
 
     fn match {
       case bb: Hom.Fn.Blackbox[_, _] =>
@@ -45,7 +46,7 @@ class LambdaInfoSpec extends BaseSpec {
     class NamedFn extends (Int => Int) {
       def apply(v1: Int): Int = v1
     }
-    val fn: Hom.Fn[Int, Int] = new NamedFn
+    val fn: Hom.Fn[Int ><: T0, Int] = new NamedFn
 
     fn match {
       case bb: Hom.Fn.Blackbox[_, _] =>

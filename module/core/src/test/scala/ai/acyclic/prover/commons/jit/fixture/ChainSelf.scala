@@ -1,16 +1,17 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.hom.Hom.:=>
+import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 
 object ChainSelf {
 
   import Circuits.*
 
-  val s0: Int :=> Int = fn0.andThen(fn0)
+  val s0: (Int ><: T0) :=> Int = fn0.andThen(fn0)
 
   val s1 = fn0.trace.map(fn0)
 
-  val s2 = :=>.id[Int].trace.map(fn0).map(fn0)
+  val s2 = :=>.id[Int ><: T0].trace.map(v => fn0(v)).map(v => fn0(v))
 
   lazy val pairs = {
 
@@ -21,11 +22,20 @@ object ChainSelf {
                  |""".stripMargin
 
     val pairs: Seq[
-      (Int :=> Int, String)
+      ((Int ><: T0) :=> Int, String)
     ] = Seq(
       (s0, str),
       (s1, str),
-      (s2, str)
+      (
+        s2,
+        s"""
+           |+ Mapped
+           |!-+ Mapped
+           |: !-- Identity
+           |: !-- Blackbox(s2 <at ChainSelf.scala:14>)
+           |!-- Blackbox(s2 <at ChainSelf.scala:14>)
+           |""".stripMargin
+      )
     )
 
     pairs
