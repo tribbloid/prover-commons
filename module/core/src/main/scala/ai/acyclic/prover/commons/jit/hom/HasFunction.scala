@@ -423,6 +423,7 @@ trait HasFunction {
   object Const {
 
     // sanity (TODO: this may threaten behaviour of ZIO zippable or unzippable, need some test cases)
+    implicitly[Impl[Int] <:< Fn[T0, Int]] // this principle should be held at all cost
     implicitly[Const.Impl[Int] <:< Const[Int]]
     implicitly[Const[Int] <:< ConstantFn[Int]]
 
@@ -431,8 +432,6 @@ trait HasFunction {
     sealed trait Impl[O] extends Fn.Impl[Args.Prod, O] with ConstantFn[O] {
       override def apply(arg: Args.Prod): O = compute
     }
-
-    implicitly[Impl[Int] <:< Fn[T0, Int]] // TODO: this principle should be held
 
     final case class Provided[O](compute: O) extends Impl[O] {
       canEqualProjections += CanEqual.Native.on(compute)
