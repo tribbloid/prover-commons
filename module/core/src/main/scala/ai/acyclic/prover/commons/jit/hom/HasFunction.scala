@@ -428,9 +428,11 @@ trait HasFunction {
 
     implicitly[Args.Eye =:= Args.T0]
 
-    sealed trait Impl[O] extends Fn.Impl0[O] with ConstantFn[O] {
-      override def apply(arg: Args.Eye): O = compute
+    sealed trait Impl[O] extends Fn.Impl[Args.Prod, O] with ConstantFn[O] {
+      override def apply(arg: Args.Prod): O = compute
     }
+
+    implicitly[Impl[Int] <:< Fn[T0, Int]] // TODO: this principle should be held
 
     final case class Provided[O](compute: O) extends Impl[O] {
       canEqualProjections += CanEqual.Native.on(compute)
