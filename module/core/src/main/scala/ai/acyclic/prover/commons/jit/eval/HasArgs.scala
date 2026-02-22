@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.eval
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.tuple.Products
-import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.HasFunction
 
 trait HasArgs {
 
@@ -10,12 +10,11 @@ trait HasArgs {
 
   object Args extends Products.Monoidal with Products.Cartesian_UID {
 
-    import Hom.*
     import TupleX.*
 
     override type VBound = Any
 
-    override type Element[V] = ConstantFn[V]
+    override type Element[V] = HasFunction#ConstantFn[V]
 
     /**
       * choose 1 of the 2 options:
@@ -41,7 +40,7 @@ trait HasArgs {
     }
 
     case class ><:[H, T <: Prod](
-        head: ConstantFn[H],
+        head: Element[H],
         tail: T
     ) extends Prod
         with ElementsMixin.><:[H, T] {
@@ -62,10 +61,10 @@ trait HasArgs {
     // Should this defined as a dependent type of Schema (which is a phantom & always available)
     // the only capability it grants is to remove some pending arguments that are guaranteed to be provided
 
-    override protected def cons[L, TAIL <: Prod](head: Hom.ConstantFn[L], tail: TAIL): L ><: TAIL =
+    override protected def cons[L, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL =
       ><:(head, tail)
 
-    override def deCons[L, TAIL <: Prod](cons: L ><: TAIL): (Hom.ConstantFn[L], TAIL) =
+    override def deCons[L, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL) =
       (cons.head, cons.tail)
 
   }
