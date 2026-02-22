@@ -14,7 +14,7 @@ class FnSpec extends BaseSpec {
 
   describe("define by") {
 
-    it("subtype") { // disabled, current compiler is janky
+    it("inheriting from Impl") {
 
       case object cc extends Fn.Impl[Int ><: T0, String] {
 

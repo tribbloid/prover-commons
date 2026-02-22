@@ -75,6 +75,9 @@ trait HasFunction {
       type Out = O
     }
 
+    type Impl1[I, O] = Impl[I ><: T0, O]
+    type Impl2[I1, I2] = Impl[I1 ><: I2 ><: T0, I2]
+
 //    sealed trait Compositor {} // TODO: this needs to be a supertype of all Impl composed from multiple functions
 
     def id[I <: Args.Prod]: Identity[I] = Identity[I]()
