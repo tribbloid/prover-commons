@@ -26,8 +26,7 @@ case class Continuation[I <: Args.Prod, +O](
 ) extends Delegating[Hom.Fn[I, O]] {
 
   lazy val higherOrder: Continuation[T0, Hom.Fn[I, O]] = {
-    val definedAt = SrcDefinition.RuntimeCallStack(belowClasses = Seq(this.getClass))
-    Continuation(Hom.Fn.BlackboxArgs[T0, Hom.Fn[I, O]](definedAt)(_ => self))
+    Continuation(Hom.Fn.provided0(self))
   }
 
   def map[O2](right: O => O2)(
@@ -88,13 +87,7 @@ case class Continuation[I <: Args.Prod, +O](
         unzip: Args.Zippable[I, I2]
     ): Continuation[unzip.Zipped, (O, O2)] = {
 
-      val definedAt = SrcDefinition.RuntimeCallStack(belowClasses = Seq(this.getClass))
-      val pointwise = Hom.Fn.BlackboxArgs[unzip.Zipped, (O, O2)](definedAt) { args =>
-        val (leftArgs, rightArgs) = unzip.unzip(args)
-        (self(leftArgs), right.self(rightArgs))
-      }
-
-      Continuation(pointwise)
+      Continuation(Hom.Fn.zipWith(self, right.self))
     }
   }
   def <*> = pointwise
@@ -103,13 +96,7 @@ case class Continuation[I <: Args.Prod, +O](
 
     def apply[I2 <: I, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
 
-      val definedAt = SrcDefinition.RuntimeCallStack(belowClasses = Seq(this.getClass))
-      val left: Hom.Fn[I2, O] = self
-      val zipped = Hom.Fn.BlackboxArgs[I2, (O, O2)](definedAt) { args =>
-        (left(args), right.self(args))
-      }
-
-      Continuation(zipped)
+      Continuation(Hom.Fn.zipShared(self, right.self))
     }
   }
   def -< = zip
