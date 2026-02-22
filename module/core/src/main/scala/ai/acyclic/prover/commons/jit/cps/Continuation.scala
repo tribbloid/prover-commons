@@ -93,9 +93,9 @@ case class Continuation[I <: Args.Prod, +O](
         SrcDefinition.Unknown(java.util.UUID.randomUUID())
       )(unzip.unzip.asInstanceOf[unzip.Zipped => (I, I2)])
       val pointwise = Hom.Fn
-        .Pointwise[I, O, I2, O2](self.asInstanceOf[Hom.Fn[I, O]], right.self.asInstanceOf[Hom.Fn[I2, O2]])
+        .Pointwise[I, O, I2, O2](self.asInstanceOf[Hom.Fn[I ><: T0, O]], right.self.asInstanceOf[Hom.Fn[I2 ><: T0, O2]])
       val result = Hom.Fn
-        .Mapped[unzip.Zipped, (I, I2), (O, O2)](unzipper, pointwise)
+        .Mapped[unzip.Zipped, (I, I2), (O, O2)](unzipper, pointwise.asInstanceOf[Hom.Fn[(I, I2) ><: T0, (O, O2)]])
 
       Continuation(result.simplify.asInstanceOf[Hom.Fn[unzip.Zipped, (O, O2)]])
     }
@@ -108,10 +108,10 @@ case class Continuation[I <: Args.Prod, +O](
 
       val first: Hom.Fn.DuplicateArgs[I2] = Hom.Fn.DuplicateArgs[I2]()
       val second: Hom.Fn.Pointwise[I2, O, I2, O2] =
-        Hom.Fn.Pointwise(self.asInstanceOf[Hom.Fn[I2, O]], right.self.asInstanceOf[Hom.Fn[I2, O2]])
+        Hom.Fn.Pointwise(self.asInstanceOf[Hom.Fn[I2 ><: T0, O]], right.self.asInstanceOf[Hom.Fn[I2 ><: T0, O2]])
 
       val result =
-        Hom.Fn.Mapped[I2, (I2, I2), (O, O2)](first, second)
+        Hom.Fn.Mapped[I2, (I2, I2), (O, O2)](first, second.asInstanceOf[Hom.Fn[(I2, I2) ><: T0, (O, O2)]])
 
       Continuation(result.asInstanceOf[Hom.Fn[I2, (O, O2)]])
     }

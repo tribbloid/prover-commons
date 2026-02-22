@@ -126,21 +126,30 @@ trait HasFunction {
       }
     }
 
-    case class Pointwise[I1 <: Args.Prod, O1, I2 <: Args.Prod, O2](
-        left: Fn[I1, O1],
-        right: Fn[I2, O2]
-    ) extends Impl[(I1, I2) ><: T0, (O1, O2)] {
+    /**
+      * TODO: Pointwise should have be more general. The type signature should become:
+      *
+      * case class Pointwise[I1, O1, IT <: Args, OT, R]( head: Fn[I1 ><: T0, O1], tail: Fn[IT, OT] ) extends Impl[I1 ><:
+      * IT, R] {}
+      *
+      * where R is the output of head and tail zipped together
+      */
+    case class Pointwise[I1, O1, IT, OT](
+        head: Fn[I1 ><: T0, O1],
+        tail: Fn[IT ><: T0, OT]
+    ) extends Impl[I1 ><: IT ><: T0, (O1, OT)] {
 
-      override type Rules = left.Rules & right.Rules
+      override type Rules = head.Rules & tail.Rules
 
-      override def apply(arg: (I1, I2) ><: T0): (O1, O2) = {
+      override def apply(arg: I1 ><: IT ><: T0): (O1, OT) = {
 
-        val (i1, i2) = arg.head.compute
+        val (h1, t1) = Args.deCons(arg)
+        val (h2, _) = Args.deCons(t1)
 
-        val lo = left(i1).asInstanceOf[O1]
-        val ro = right(i2).asInstanceOf[O2]
+        val lo = head(Args.cons(h1, Args.eye)).asInstanceOf[O1]
+        val ro = tail(Args.cons(h2, Args.eye)).asInstanceOf[OT]
 
-        (lo -> ro).asInstanceOf[(O1, O2)]
+        (lo -> ro).asInstanceOf[(O1, OT)]
       }
     }
 
