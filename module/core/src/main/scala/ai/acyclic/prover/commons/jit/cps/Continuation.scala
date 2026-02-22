@@ -144,10 +144,12 @@ object Continuation {
         _definedAt: SrcDefinition // TODO: this should not be required
     ): Continuation[I, O] = {
 
+      val prev: Fn[I, Continuation[I, O]] = continuation.self.asInstanceOf[Hom.Fn[I, Continuation[I, O]]]
+
       val result =
         Hom.Fn.Flatten[I, Continuation[I, O], O](
           // safe by construction: continuation wraps Fn[I, Continuation[I, O]], coerce extracts inner Fn
-          continuation.self.asInstanceOf[Hom.Fn[I, Continuation[I, O]]],
+          prev,
           { v: Continuation[I, O] => v.self.asInstanceOf[Hom.Fn[I, O]] }
         )
 
