@@ -37,11 +37,9 @@ object PointwiseAndChain {
         s1,
         s"""
             |+ Mapped
-            |!-+ Mapped
-            |: !-- BlackboxArgs( <at <unknown>:0>)
-            |: !-+ Pointwise
-            |:   !-- ${fn1.explain.nodeText}
-            |:   !-- ${fn2.explain.nodeText}
+            |!-+ Pointwise
+            |: !-- ${fn1.explain.nodeText}
+            |: !-- ${fn2.explain.nodeText}
             |!-- Blackbox(s1 <at PointwiseAndChain.scala:12>)
             |""".stripMargin
       ),
@@ -50,11 +48,9 @@ object PointwiseAndChain {
         s"""
              |+ Mapped
              |!-+ Mapped
-             |: !-+ Mapped
-             |: : !-- BlackboxArgs( <at <unknown>:0>)
-             |: : !-+ Pointwise
-             |: :   !-- ${fn1.explain.nodeText}
-             |: :   !-- ${fn2.explain.nodeText}
+             |: !-+ Pointwise
+             |: : !-- ${fn1.explain.nodeText}
+             |: : !-- ${fn2.explain.nodeText}
              |: !-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
              |!-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
              |""".stripMargin
@@ -64,11 +60,9 @@ object PointwiseAndChain {
         s"""
              |+ Mapped
              |!-+ Mapped
-             |: !-+ Mapped
-             |: : !-- BlackboxArgs( <at <unknown>:0>)
-             |: : !-+ Pointwise
-             |: :   !-- Blackbox(fn1 <at Circuits.scala:12>)
-             |: :   !-- Blackbox(fn2 <at Circuits.scala:16>)
+             |: !-+ Pointwise
+             |: : !-- Blackbox(fn1 <at Circuits.scala:12>)
+             |: : !-- Blackbox(fn2 <at Circuits.scala:16>)
              |: !-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
              |!-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
              |""".stripMargin

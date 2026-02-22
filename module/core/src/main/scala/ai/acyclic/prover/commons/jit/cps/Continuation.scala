@@ -89,15 +89,13 @@ case class Continuation[I <: Args.Prod, +O](
         unzip: Args.Zippable[I, I2]
     ): Continuation[unzip.Zipped, (O, O2)] = {
 
-      val unzipper: Hom.Fn[unzip.Zipped, (I, I2)] = Hom.Fn.BlackboxArgs[unzip.Zipped, (I, I2)](
-        SrcDefinition.Unknown(java.util.UUID.randomUUID())
-      )(unzip.unzip.asInstanceOf[unzip.Zipped => (I, I2)])
       val pointwise = Hom.Fn
-        .Pointwise[I, O, I2, O2](self.asInstanceOf[Hom.Fn[I ><: T0, O]], right.self.asInstanceOf[Hom.Fn[I2 ><: T0, O2]])
-      val result = Hom.Fn
-        .Mapped[unzip.Zipped, (I, I2), (O, O2)](unzipper, pointwise.asInstanceOf[Hom.Fn[(I, I2) ><: T0, (O, O2)]])
+        .Pointwise[Any, O, I2, O2, (O, O2)](
+          self.asInstanceOf[Hom.Fn[Any ><: T0, O]],
+          right.self.asInstanceOf[Hom.Fn[I2, O2]]
+        )
 
-      Continuation(result.simplify.asInstanceOf[Hom.Fn[unzip.Zipped, (O, O2)]])
+      Continuation(pointwise.asInstanceOf[Hom.Fn[unzip.Zipped, (O, O2)]])
     }
   }
   def <*> = pointwise
@@ -107,8 +105,8 @@ case class Continuation[I <: Args.Prod, +O](
     def apply[I2 <: I, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
 
       val first: Hom.Fn.DuplicateArgs[I2] = Hom.Fn.DuplicateArgs[I2]()
-      val second: Hom.Fn.Pointwise[I2, O, I2, O2] =
-        Hom.Fn.Pointwise(self.asInstanceOf[Hom.Fn[I2 ><: T0, O]], right.self.asInstanceOf[Hom.Fn[I2 ><: T0, O2]])
+      val second: Hom.Fn.Pointwise[Any, O, I2, O2, (O, O2)] =
+        Hom.Fn.Pointwise(self.asInstanceOf[Hom.Fn[Any ><: T0, O]], right.self.asInstanceOf[Hom.Fn[I2, O2]])
 
       val result =
         Hom.Fn.Mapped[I2, (I2, I2), (O, O2)](first, second.asInstanceOf[Hom.Fn[(I2, I2) ><: T0, (O, O2)]])

@@ -191,6 +191,101 @@ class FnSpec extends BaseSpec {
           assert(r1 == List(3.0, 4.1, 5.2))
         }
     }
+
+    describe("direct construction") {
+
+      it("with single-arg tail") {
+
+        val head: Fn[Int ><: T0, String] = { (v: Int) => "h" + v }
+        val tail: Fn[Long ><: T0, Double] = { (v: Long) => v * 0.5 }
+
+        val pw = Fn.Pointwise[Int, String, Long ><: T0, Double, (String, Double)](head, tail)
+
+        val in = Args
+          .cons(
+            Const.Provided(10).asInstanceOf[Hom.ConstantFn[Int]],
+            Args
+              .cons(
+                Const.Provided(4L).asInstanceOf[Hom.ConstantFn[Long]],
+                Args.eye
+              )
+              .asInstanceOf[Long ><: T0]
+          )
+          .asInstanceOf[Int ><: Long ><: T0]
+
+        val result = pw.apply(in)
+        assert(result == ("h10", 2.0))
+      }
+
+      it("with multi-arg tail") {
+
+        val head: Fn[Int ><: T0, String] = { (v: Int) => "v=" + v }
+
+        val tail: Fn[String ><: Long ><: T0, (String, Long)] =
+          Fn.Pointwise[String, String, Long ><: T0, Long, (String, Long)](
+            (s: String) => s.toUpperCase,
+            (l: Long) => l + 100L
+          )
+
+        val pw = Fn.Pointwise[Int, String, String ><: Long ><: T0, (String, Long), (String, (String, Long))](head, tail)
+
+        val in = Args
+          .cons(
+            Const.Provided(42).asInstanceOf[Hom.ConstantFn[Int]],
+            Args
+              .cons(
+                Const.Provided("abc").asInstanceOf[Hom.ConstantFn[String]],
+                Args
+                  .cons(
+                    Const.Provided(7L).asInstanceOf[Hom.ConstantFn[Long]],
+                    Args.eye
+                  )
+                  .asInstanceOf[Long ><: T0]
+              )
+              .asInstanceOf[String ><: Long ><: T0]
+          )
+          .asInstanceOf[Int ><: String ><: Long ><: T0]
+
+        val result = pw.apply(in)
+        assert(result == ("v=42", ("ABC", 107L)))
+      }
+
+      it("tree structure") {
+
+        val head: Fn[Int ><: T0, String] = { (v: Int) => "h" + v }
+        val tail: Fn[Long ><: T0, Double] = { (v: Long) => v * 0.5 }
+
+        val pw = Fn.Pointwise[Int, String, Long ><: T0, Double, (String, Double)](head, tail)
+
+        val tree = pw.explain.text_hierarchy()
+        assert(tree.contains("Pointwise"))
+        assert(tree.contains("Blackbox"))
+      }
+
+      it("simplify preserves function") {
+
+        val head: Fn[Int ><: T0, String] = { (v: Int) => "s" + v }
+        val tail: Fn[Long ><: T0, Double] = { (v: Long) => v.toDouble }
+
+        val pw = Fn.Pointwise[Int, String, Long ><: T0, Double, (String, Double)](head, tail)
+        val simplified = pw.simplify
+
+        val in = Args
+          .cons(
+            Const.Provided(5).asInstanceOf[Hom.ConstantFn[Int]],
+            Args
+              .cons(
+                Const.Provided(3L).asInstanceOf[Hom.ConstantFn[Long]],
+                Args.eye
+              )
+              .asInstanceOf[Long ><: T0]
+          )
+          .asInstanceOf[Int ><: Long ><: T0]
+
+        val result = simplified.apply(in)
+        assert(result == ("s5", 3.0))
+      }
+    }
   }
 
   describe("higher-order") {
