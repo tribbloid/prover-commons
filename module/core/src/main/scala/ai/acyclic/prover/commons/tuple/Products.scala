@@ -35,7 +35,7 @@ object Products {
     */
   trait Monoidal extends Cartesian with Schemata.Monoidal {
 
-    def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL
+    protected def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL
     def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL)
 
     sealed trait _TupleOps[SELF <: Prod] {

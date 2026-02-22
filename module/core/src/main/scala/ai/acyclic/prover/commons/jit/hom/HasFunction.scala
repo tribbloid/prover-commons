@@ -87,9 +87,11 @@ trait HasFunction {
       override type Rules = left.Rules & right.Rules
 
       override def apply(arg: I): O =
-        right.apply(Args.cons(Const.Provided(left(arg)).asInstanceOf[Hom.ConstantFn[M]], Args.eye))
+        // safe by construction: Const.Provided[M] <: ConstantFn[M] across path-dependent Hom
+        right.apply(Args.><:(Const.Provided(left(arg)).asInstanceOf[Hom.ConstantFn[M]], Args.eye))
 
       override def simplify: Fn[I, O] = {
+        // safe by construction: left/right preserve their type params, erased by pattern match
         (left: Any, right: Any) match {
           case (ll: Fn[_, _], rr: Fn[_, _]) => Mapped(ll.asInstanceOf[Fn[I, M]], rr.asInstanceOf[Fn[M ><: T0, O]])
         }
@@ -102,7 +104,7 @@ trait HasFunction {
     ) extends Impl[I, O] {
 
       override def apply(arg: I): O = {
-
+        // safe by construction: base returns T, but Fn's OutK type member obscures the return type
         coerce(base(arg).asInstanceOf[T]).apply(arg)
       }
 
@@ -122,7 +124,8 @@ trait HasFunction {
 
         val (i2, t1) = Args.deCons(arg)
         val (i1, _) = Args.deCons(t1)
-        base.apply(Args.cons(i1, Args.cons(i2, Args.eye))).asInstanceOf[O]
+        // safe by construction: base.apply returns O, but re-packed args type is opaque to compiler
+        base.apply(Args.><:(i1, Args.><:(i2, Args.eye))).asInstanceOf[O]
       }
     }
 
@@ -137,7 +140,9 @@ trait HasFunction {
 
         val (h1, tailArgs) = Args.deCons(arg)
 
-        val lo = head(Args.cons(h1, Args.eye)).asInstanceOf[O1]
+        // safe by construction: head/tail return their declared output types,
+        // and R is structurally (O1, OT) but can't be proven by the compiler
+        val lo = head(Args.><:(h1, Args.eye)).asInstanceOf[O1]
         val ro = tail(tailArgs).asInstanceOf[OT]
 
         (lo -> ro).asInstanceOf[R]
@@ -160,6 +165,7 @@ trait HasFunction {
 
       override type Rules <: Rule.Linear
 
+      // safe by construction: for Identity, OutK[T] = I, so I & OutK[arg.type] = I
       override def apply(arg: I): I & OutK[arg.type] = arg.asInstanceOf[I & OutK[arg.type]]
     }
 
@@ -169,7 +175,8 @@ trait HasFunction {
 
       override def apply(o: I ><: T0): I = {
         val v = o.head.compute
-        if (filter(o).asInstanceOf[Boolean]) v
+        val passes: Boolean = filter(o) // filter returns Boolean directly
+        if (passes) v
         else throw new MatchError(s"condition ${_definedAt} is not applicable on $v")
       }
     }
@@ -240,7 +247,7 @@ trait HasFunction {
         _definedAt: SrcDefinition
     ): Function1View[I, O] = {
       v match {
-
+        // safe by construction: type params erased but Function1View preserves them structurally
         case vv: Function1View[_, _] => vv.asInstanceOf[Function1View[I, O]]
         case _                       =>
           Function1View(v.simplify, _definedAt)
@@ -252,7 +259,7 @@ trait HasFunction {
         _definedAt: SrcDefinition
     ): Function0View[O] = {
       v match {
-
+        // safe by construction: type params erased but Function0View preserves them structurally
         case vv: Function0View[_] => vv.asInstanceOf[Function0View[O]]
         case _                    =>
           Function0View(v.simplify, _definedAt)
@@ -264,6 +271,7 @@ trait HasFunction {
         _definedAt: SrcDefinition
     ): Fn.Impl[I ><: T0, R] = {
       fn match {
+        // safe by construction: Function1View wraps the original Fn.Impl, type params erased by match
         case Function1View(c, _) => c.asInstanceOf[Fn.Impl[I ><: T0, R]]
         case _                   =>
           Blackbox[I, R](_definedAt)(fn)
@@ -276,6 +284,7 @@ trait HasFunction {
     ): Const.Impl[R] = {
 
       fn match {
+        // safe by construction: Function0View wraps the original Const.Impl, type params erased by match
         case Function0View(c, _) => c.asInstanceOf[Const.Impl[R]]
         case _                   =>
           case class ThunkImpl()(
@@ -284,8 +293,8 @@ trait HasFunction {
           ) extends Impl[T0, R] {
             override def apply(arg: T0): R = fn()
           }
-          val thunk = ThunkImpl()
-          Const.Lazy(thunk.asInstanceOf[Thunk[R]])
+          val thunk: Thunk[R] = ThunkImpl() // ThunkImpl <: Impl[T0, R] <: Fn[T0, R] = Thunk[R]
+          Const.Lazy(thunk)
       }
     }
 
@@ -295,6 +304,7 @@ trait HasFunction {
 
       case class Is[I <: Args.Prod, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
 
+        // safe by construction: delegate.OutK[v.type] <: R for Domains where OutK is fixed
         override def apply(v: I): R & delegate.OutK[v.type] = delegate.apply(v).asInstanceOf[R & delegate.OutK[v.type]]
       }
     }
@@ -316,7 +326,7 @@ trait HasFunction {
             val value = backbone(key)
             value
           }
-          .asInstanceOf[R]
+          .asInstanceOf[R] // safe by construction: cache stores R values, type erased by CacheMagnet
       }
 
       def getExisting(arg: I): Option[R] = {
@@ -360,7 +370,8 @@ trait HasFunction {
 
     def function1: Function1View[I, O] = this
 
-    final override def apply(v: I): O = self(Args.cons(Const.Provided(v).asInstanceOf[Hom.ConstantFn[I]], Args.eye))
+    // safe by construction: Const.Provided[I] <: ConstantFn[I] across path-dependent Hom
+    final override def apply(v: I): O = self(Args.><:(Const.Provided(v).asInstanceOf[Hom.ConstantFn[I]], Args.eye))
 
     // TODO: both of these are not narrow enough
     final override def andThen[O2](next: O => O2): Function1View[I, O2] = {

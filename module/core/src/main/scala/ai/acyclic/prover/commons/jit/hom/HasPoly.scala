@@ -33,7 +33,7 @@ trait HasPoly extends HasFunction {
     protected[Poly] case class Case[I, O]( // a thin wrapper that prevents apply from being called directly
         underlying: Fn.Impl[I ><: T0, O]
     ) extends Fn.Impl[I ><: T0, O] {
-      def apply(v: I ><: T0): O = underlying.apply(v).asInstanceOf[O]
+      def apply(v: I ><: T0): O = underlying.apply(v)
     }
     protected[Poly] object Case {
       type At[I] = Case[I, ?]
@@ -80,8 +80,10 @@ trait HasPoly extends HasFunction {
         implicit
         _case: Lemma.At[I]
     ): _case.Out = {
+      // safe by construction: Const.Provided[I] <: ConstantFn[I], and the args type matches _case.underlying.In
+      // casts needed due to path-dependent type _case.underlying.In being opaque to the compiler
       _case.underlying
-        .apply(Args.cons(Const.Provided(v).asInstanceOf[Hom.ConstantFn[I]], Args.eye).asInstanceOf[_case.underlying.In])
+        .apply(Args.><:(Const.Provided(v).asInstanceOf[Hom.ConstantFn[I]], Args.eye).asInstanceOf[_case.underlying.In])
         .asInstanceOf[_case.Out]
     }
 

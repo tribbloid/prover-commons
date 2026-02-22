@@ -1,9 +1,7 @@
 package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.jit.fixture.*
-import ai.acyclic.prover.commons.jit.hom.Hom.Fn
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.jit.hom.Hom.{Const, Fn}
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
@@ -24,7 +22,7 @@ class FnSpec extends BaseSpec {
       }
       assert(
         (cc.apply(
-          Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+          Args.><:(Const.Provided(1), Args.eye)
         ): String) == "1"
       )
     }
@@ -37,7 +35,7 @@ class FnSpec extends BaseSpec {
       assert(cc.getClass == classOf[Fn.Blackbox[?, ?]])
       assert(
         (cc.apply(
-          Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+          Args.><:(Const.Provided(1), Args.eye)
         ): String) == "1"
       )
 
@@ -54,7 +52,10 @@ class FnSpec extends BaseSpec {
         "" + v
       }
 
-      val cc1 = cc.asInstanceOf[Fn.Blackbox[Int, String]]
+      val cc1 = cc match {
+        case bb: Fn.Blackbox[Int @unchecked, String @unchecked] => bb
+        case other => fail(s"Expected Fn.Blackbox but got ${other.getClass}")
+      }
 
       val cc2 = cc1.copy()(fn = { _: Int => "" })
 
@@ -97,7 +98,7 @@ class FnSpec extends BaseSpec {
                 s
               )
 
-            val in = Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+            val in = Args.><:(Const.Provided(1), Args.eye)
             val r1 = fn.apply(in)
             assert(r1 == 3)
           }
@@ -119,7 +120,7 @@ class FnSpec extends BaseSpec {
                 s
               )
 
-            val in = Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+            val in = Args.><:(Const.Provided(1), Args.eye)
             val r1 = fn.apply(in)
             assert(r1 == "2b")
           }
@@ -151,7 +152,7 @@ class FnSpec extends BaseSpec {
 
             sLeft.shouldBe(s)
 
-            val in = Args.cons(Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]], Args.eye).asInstanceOf[Int ><: T0]
+            val in = Args.><:(Const.Provided(1), Args.eye)
             val r1 = fn.apply(in)
             assert(r1 == "10b")
           }
@@ -175,19 +176,17 @@ class FnSpec extends BaseSpec {
             )
 
           val combinedIn = Args
-            .cons(
-              Const.Provided(1).asInstanceOf[Hom.ConstantFn[Int]],
+            .><:(
+              Const.Provided(1),
               Args
-                .cons(
-                  Const.Provided(2L).asInstanceOf[Hom.ConstantFn[Long]],
+                .><:(
+                  Const.Provided(2L),
                   Args.eye
                 )
-                .asInstanceOf[Long ><: T0]
             )
-            .asInstanceOf[Int ><: Long ><: T0]
 
-          val fnTraced = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(fn).asInstanceOf[Any => Any]
-          val r1 = fnTraced.apply(combinedIn)
+          val fnTraced = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(fn)
+          val r1 = fnTraced(combinedIn)
           assert(r1 == List(3.0, 4.1, 5.2))
         }
     }
@@ -202,16 +201,14 @@ class FnSpec extends BaseSpec {
         val pw = Fn.Pointwise[Int, String, Long ><: T0, Double, (String, Double)](head, tail)
 
         val in = Args
-          .cons(
-            Const.Provided(10).asInstanceOf[Hom.ConstantFn[Int]],
+          .><:(
+            Const.Provided(10),
             Args
-              .cons(
-                Const.Provided(4L).asInstanceOf[Hom.ConstantFn[Long]],
+              .><:(
+                Const.Provided(4L),
                 Args.eye
               )
-              .asInstanceOf[Long ><: T0]
           )
-          .asInstanceOf[Int ><: Long ><: T0]
 
         val result = pw.apply(in)
         assert(result == ("h10", 2.0))
@@ -230,21 +227,18 @@ class FnSpec extends BaseSpec {
         val pw = Fn.Pointwise[Int, String, String ><: Long ><: T0, (String, Long), (String, (String, Long))](head, tail)
 
         val in = Args
-          .cons(
-            Const.Provided(42).asInstanceOf[Hom.ConstantFn[Int]],
+          .><:(
+            Const.Provided(42),
             Args
-              .cons(
-                Const.Provided("abc").asInstanceOf[Hom.ConstantFn[String]],
+              .><:(
+                Const.Provided("abc"),
                 Args
-                  .cons(
-                    Const.Provided(7L).asInstanceOf[Hom.ConstantFn[Long]],
+                  .><:(
+                    Const.Provided(7L),
                     Args.eye
                   )
-                  .asInstanceOf[Long ><: T0]
               )
-              .asInstanceOf[String ><: Long ><: T0]
           )
-          .asInstanceOf[Int ><: String ><: Long ><: T0]
 
         val result = pw.apply(in)
         assert(result == ("v=42", ("ABC", 107L)))
@@ -271,16 +265,14 @@ class FnSpec extends BaseSpec {
         val simplified = pw.simplify
 
         val in = Args
-          .cons(
-            Const.Provided(5).asInstanceOf[Hom.ConstantFn[Int]],
+          .><:(
+            Const.Provided(5),
             Args
-              .cons(
-                Const.Provided(3L).asInstanceOf[Hom.ConstantFn[Long]],
+              .><:(
+                Const.Provided(3L),
                 Args.eye
               )
-              .asInstanceOf[Long ><: T0]
           )
-          .asInstanceOf[Int ><: Long ><: T0]
 
         val result = simplified.apply(in)
         assert(result == ("s5", 3.0))

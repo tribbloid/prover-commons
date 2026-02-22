@@ -61,7 +61,7 @@ trait HasArgs {
     // Should this defined as a dependent type of Schema (which is a phantom & always available)
     // the only capability it grants is to remove some pending arguments that are guaranteed to be provided
 
-    override def cons[L, TAIL <: Prod](head: Hom.ConstantFn[L], tail: TAIL): L ><: TAIL =
+    override protected def cons[L, TAIL <: Prod](head: Hom.ConstantFn[L], tail: TAIL): L ><: TAIL =
       ><:(head, tail)
 
     override def deCons[L, TAIL <: Prod](cons: L ><: TAIL): (Hom.ConstantFn[L], TAIL) =

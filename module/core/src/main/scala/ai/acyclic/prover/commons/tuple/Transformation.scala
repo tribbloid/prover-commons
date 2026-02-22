@@ -41,7 +41,7 @@ trait Transformation extends Hom.Poly {
     at[source.system.><:[source.G[HEAD], TAIL]] { v =>
       val (head, tail) = source.system.deCons(v)
       val _head = pointwise(head)
-      target.system.cons(_head, tailCase(tail))
+      target.system.tupleOps(tailCase(tail)).><:(_head)
     }
 }
 

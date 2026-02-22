@@ -76,12 +76,13 @@ trait HasTypeLambda extends HasPoly {
             lookup
               .getOrElseUpdateOnce(i) {
 
+                // safe by construction: Const.Provided <: ConstantFn across path-dependent Hom
                 backbone.apply[T](
-                  Args.cons(Const.Provided(i).asInstanceOf[Hom.ConstantFn[In[T]]], Args.eye).asInstanceOf[In[T] ><: T0]
+                  Args.><:(Const.Provided(i).asInstanceOf[Hom.ConstantFn[In[T]]], Args.eye).asInstanceOf[In[T] ><: T0]
                 )
 
               }
-              .asInstanceOf[Out[T]]
+              .asInstanceOf[Out[T]] // safe by construction: cache stores Out[T] values, type erased by CacheMagnet
           }
 
           result
@@ -99,7 +100,7 @@ trait HasTypeLambda extends HasPoly {
               lookup
                 .get(i)
                 .map { v =>
-                  v.asInstanceOf[_Out[T]]
+                  v.asInstanceOf[_Out[T]] // safe by construction: cache stores _Out[T] values
                 }
             }
 
@@ -144,6 +145,7 @@ trait HasTypeLambda extends HasPoly {
         override type In[T >: bound.Min <: bound.Max] = I
         override type Out[T >: bound.Min <: bound.Max] = O
 
+        // safe by construction: backbone type I may already be _ ><: T0, compiler can't prove after erasure
         override def refine[T >: bound.Min <: bound.Max]: Fn[I ><: T0, O] = backbone.asInstanceOf[Fn[I ><: T0, O]]
       }
       //    implicit def _fnIsPoly1[I, O](fn: Circuit[I, O]): Is[I, O] = Is(fn)

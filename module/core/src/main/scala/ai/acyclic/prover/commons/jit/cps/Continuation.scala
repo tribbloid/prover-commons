@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.cps
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.hom.Hom.{Fn, Function1View}
+import ai.acyclic.prover.commons.jit.hom.Hom.Fn
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.jit.eval.Args
@@ -27,6 +27,7 @@ case class Continuation[I <: Args.Prod, +O](
 ) extends Delegating[Hom.Fn[I, O]] {
 
   lazy val higherOrder: Continuation[T0, Hom.Fn[I, O]] = {
+    // safe by construction: Const.Provided <: Const.Impl <: Fn[Args.Prod, _] <: Fn[T0, _] (by contravariance)
     Continuation(Hom.Const.Provided(self).asInstanceOf[Hom.Fn[T0, Hom.Fn[I, O]]])
   }
 
@@ -42,8 +43,7 @@ case class Continuation[I <: Args.Prod, +O](
     val result =
       Hom.Fn
         .Mapped[I, O, O2](self, _right)
-        .simplify
-        .asInstanceOf[Hom.Fn[I, O2]]
+        .simplify // Mapped[I, O, O2].simplify returns Fn[I, O2]
 
     Continuation(result)
   }
@@ -70,14 +70,14 @@ case class Continuation[I <: Args.Prod, +O](
   ): Continuation[I, O] = {
 
     val _right = Hom.Fn.Blackbox[O, O](_definedAt) { v =>
-      if (right(v.asInstanceOf[O])) v.asInstanceOf[O]
+      if (right(v)) v // v is already O (Blackbox[O, O] receives O)
       else throw new MatchError(s"condition ${_definedAt} is not applicable on $v")
     }
 
     val result =
       Hom.Fn.Mapped[I, O, O](self, _right)
 
-    Continuation(result.simplify.asInstanceOf[Hom.Fn[I, O]])
+    Continuation(result.simplify) // Mapped[I, O, O].simplify returns Fn[I, O]
   }
 
   object pointwise {
@@ -89,6 +89,8 @@ case class Continuation[I <: Args.Prod, +O](
         unzip: Args.Zippable[I, I2]
     ): Continuation[unzip.Zipped, (O, O2)] = {
 
+      // safe by construction: Pointwise constructed with matching types,
+      // but compiler can't prove Zippable relationship at this level
       val pointwise = Hom.Fn
         .Pointwise[Any, O, I2, O2, (O, O2)](
           self.asInstanceOf[Hom.Fn[Any ><: T0, O]],
@@ -105,6 +107,7 @@ case class Continuation[I <: Args.Prod, +O](
     def apply[I2 <: I, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
 
       val first: Hom.Fn.DuplicateArgs[I2] = Hom.Fn.DuplicateArgs[I2]()
+      // safe by construction: Pointwise matches structurally, but compiler can't prove the type relationships
       val second: Hom.Fn.Pointwise[Any, O, I2, O2, (O, O2)] =
         Hom.Fn.Pointwise(self.asInstanceOf[Hom.Fn[Any ><: T0, O]], right.self.asInstanceOf[Hom.Fn[I2, O2]])
 
@@ -143,11 +146,12 @@ object Continuation {
 
       val result =
         Hom.Fn.Flatten[I, Continuation[I, O], O](
+          // safe by construction: continuation wraps Fn[I, Continuation[I, O]], coerce extracts inner Fn
           continuation.self.asInstanceOf[Hom.Fn[I, Continuation[I, O]]],
           { v: Continuation[I, O] => v.self.asInstanceOf[Hom.Fn[I, O]] }
         )
 
-      Continuation(result.simplify.asInstanceOf[Hom.Fn[I, O]])
+      Continuation(result.simplify) // Flatten[I,_,O].simplify returns Fn[I, O]
     }
   }
 }

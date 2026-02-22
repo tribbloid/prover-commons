@@ -9,7 +9,7 @@ trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresen
   type PartialEvalInputs <: Args.Prod
   lazy val noneProvided: PartialEvalInputs = throw new UnsupportedOperationException("PartialEvalInputs not provided")
   def partialEval(env: PartialEvalEnv[PartialEvalInputs]): N = {
-    this.asInstanceOf[N]
+    this.asInstanceOf[N] // safe by construction: concrete subclasses always extend CanSimplify[Self]
   }
 
   def simplify: N = {

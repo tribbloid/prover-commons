@@ -15,14 +15,14 @@ object HigherOrder2 {
     val f = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(p).asInstanceOf[Any => Any]
 
     val proto = Hom.Fn.fromFunction1 { (v: Int) =>
-      val in1 = ai.acyclic.prover.commons.jit.eval.Args.cons(
+      val in1 = ai.acyclic.prover.commons.jit.eval.Args.><:(
         ai.acyclic.prover.commons.jit.hom.Hom.Const.Provided(v).asInstanceOf[Hom.ConstantFn[Int]],
         ai.acyclic.prover.commons.jit.eval.Args.T0
       )
       val in2 = ai.acyclic.prover.commons.jit.eval.Args.T0
       val combinedIn =
         ai.acyclic.prover.commons.jit.hom.Hom.Const.Provided((in1, in2)).asInstanceOf[Hom.ConstantFn[Any]]
-      f.apply(ai.acyclic.prover.commons.jit.eval.Args.cons(combinedIn, ai.acyclic.prover.commons.jit.eval.Args.T0))
+      f.apply(ai.acyclic.prover.commons.jit.eval.Args.><:(combinedIn, ai.acyclic.prover.commons.jit.eval.Args.T0))
         .asInstanceOf[(Seq[Long], Hom.Fn[Long ><: T0, Seq[Double]])]
     }
 

@@ -22,7 +22,7 @@ object Hom extends Hom_Imp0 {
         implicit
         oTag: TypeTag[O]
     ): ai.acyclic.prover.commons.jit.cps.Continuation[T0, O] =
-      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify.asInstanceOf[Hom.Fn[T0, O]])
+      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify)
   }
 
   type :=>[-I <: Args.Prod, +R] = Fn[I, R]
