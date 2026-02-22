@@ -105,20 +105,21 @@ object Products {
       *
       * unzip is the inverse operation
       */
-    trait Zippable[A <: Prod, B <: Prod] {
+    trait Zippable[A <: Prod, B <: Prod, Y <: Prod] {
 
-      type Zipped <: Prod
+      def zip(a: A, b: B): Y
 
-      def zip(a: A, b: B): Zipped
-
-      def unzip(ab: Zipped): (A, B)
+      def unzip(ab: Y): (A, B)
     }
 
     object Zippable {
 
-      type Aux[A <: Prod, B <: Prod, O <: Prod] = Zippable[A, B] { type Zipped = O }
+      type Zip[-A <: Prod, -B <: Prod] = Zippable[? <: A, ? <: B, ?]
+      type Unzip[-Y <: Prod] = Zippable[?, ?, ? <: Y]
 
-      implicit def empty[B <: Prod]: Aux[Eye, B, B] = new Zippable[Eye, B] {
+//      type Aux[A <: Prod, B <: Prod, O <: Prod] = Zippable[A, B] { type Zipped = O }
+//
+      implicit def empty[B <: Prod]: Zippable[Eye, B, B] = new Zippable {
         type Zipped = B
 
         def zip(a: Eye, b: B): B = b

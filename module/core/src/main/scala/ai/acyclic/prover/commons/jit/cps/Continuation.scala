@@ -85,7 +85,7 @@ case class Continuation[I <: Args.Prod, +O](
     )(
         implicit
         unzip: Args.Zippable[I, I2]
-    ): Continuation[unzip.Zipped, (O, O2)] = {
+    ): Continuation[unzip.Y, (O, O2)] = {
 
       Continuation(Hom.Fn.zipWith(self, right.self))
     }
