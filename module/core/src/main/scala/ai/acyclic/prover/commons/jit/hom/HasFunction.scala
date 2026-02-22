@@ -144,15 +144,7 @@ trait HasFunction {
       }
     }
 
-    case class Duplicate[I]() extends Impl1[I, (I, I)] {
-
-      override def apply(arg: I ><: T0): (I, I) = {
-        val v = arg.head.compute
-        v -> v
-      }
-    }
-
-    case class DuplicateArgs[I <: Args.Prod]() extends Impl[I, (I, I)] {
+    case class Duplicate[I <: Args.Prod]() extends Impl[I, (I, I)] {
       override def apply(arg: I): (I, I) = arg -> arg
     }
 
@@ -182,7 +174,7 @@ trait HasFunction {
         right: Fn[I2, O2]
     ): Fn[I2, (O, O2)] = {
 
-      val first: DuplicateArgs[I2] = DuplicateArgs[I2]()
+      val first: Duplicate[I2] = Duplicate[I2]()
       val second: Pointwise[Any, O, I2, O2, (O, O2)] =
         Pointwise(left.asInstanceOf[Fn[Any ><: T0, O]], right)
 
