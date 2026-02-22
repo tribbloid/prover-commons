@@ -275,7 +275,7 @@ trait HasFunction {
     ): Function1View[I, O] = {
       v match {
         case vv: Function1View[I @unchecked, O @unchecked] => vv
-        case _                       =>
+        case _                                             =>
           Function1View(v.simplify, _definedAt)
       }
     }
@@ -286,7 +286,7 @@ trait HasFunction {
     ): Function0View[O] = {
       v match {
         case vv: Function0View[O @unchecked] => vv
-        case _                    =>
+        case _                               =>
           Function0View(v.simplify, _definedAt)
       }
     }
@@ -298,7 +298,7 @@ trait HasFunction {
       fn match {
         case Function1View(c: Fn.Impl[I ><: T0, R] @unchecked, _) =>
           c
-        case _                   =>
+        case _ =>
           Blackbox[I, R](_definedAt)(fn)
       }
     }
@@ -313,7 +313,7 @@ trait HasFunction {
           c
         case Function0View(c: Thunk[R] @unchecked, _) =>
           Const.Lazy(c)
-        case _                   =>
+        case _ =>
           case class ThunkImpl()(
               implicit
               override val _definedAt: SrcDefinition
