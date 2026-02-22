@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.jit.cps
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.hom.Hom.Fn
 import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.jit.eval.Args
@@ -27,8 +26,8 @@ case class Continuation[I <: Args.Prod, +O](
 ) extends Delegating[Hom.Fn[I, O]] {
 
   lazy val higherOrder: Continuation[T0, Hom.Fn[I, O]] = {
-    // safe by construction: Const.Provided <: Const.Impl <: Fn[Args.Prod, _] <: Fn[T0, _] (by contravariance)
-    Continuation(Hom.Const.Provided(self).asInstanceOf[Hom.Fn[T0, Hom.Fn[I, O]]])
+    val definedAt = SrcDefinition.RuntimeCallStack(belowClasses = Seq(this.getClass))
+    Continuation(Hom.Fn.BlackboxArgs[T0, Hom.Fn[I, O]](definedAt)(_ => self))
   }
 
   def map[O2](right: O => O2)(
@@ -89,15 +88,13 @@ case class Continuation[I <: Args.Prod, +O](
         unzip: Args.Zippable[I, I2]
     ): Continuation[unzip.Zipped, (O, O2)] = {
 
-      // safe by construction: Pointwise constructed with matching types,
-      // but compiler can't prove Zippable relationship at this level
-      val pointwise = Hom.Fn
-        .Pointwise[Any, O, I2, O2, (O, O2)](
-          self.asInstanceOf[Hom.Fn[Any ><: T0, O]],
-          right.self.asInstanceOf[Hom.Fn[I2, O2]]
-        )
+      val definedAt = SrcDefinition.RuntimeCallStack(belowClasses = Seq(this.getClass))
+      val pointwise = Hom.Fn.BlackboxArgs[unzip.Zipped, (O, O2)](definedAt) { args =>
+        val (leftArgs, rightArgs) = unzip.unzip(args)
+        (self(leftArgs), right.self(rightArgs))
+      }
 
-      Continuation(pointwise.asInstanceOf[Hom.Fn[unzip.Zipped, (O, O2)]])
+      Continuation(pointwise)
     }
   }
   def <*> = pointwise
@@ -106,15 +103,13 @@ case class Continuation[I <: Args.Prod, +O](
 
     def apply[I2 <: I, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
 
-      val first: Hom.Fn.DuplicateArgs[I2] = Hom.Fn.DuplicateArgs[I2]()
-      // safe by construction: Pointwise matches structurally, but compiler can't prove the type relationships
-      val second: Hom.Fn.Pointwise[Any, O, I2, O2, (O, O2)] =
-        Hom.Fn.Pointwise(self.asInstanceOf[Hom.Fn[Any ><: T0, O]], right.self.asInstanceOf[Hom.Fn[I2, O2]])
+      val definedAt = SrcDefinition.RuntimeCallStack(belowClasses = Seq(this.getClass))
+      val left: Hom.Fn[I2, O] = self
+      val zipped = Hom.Fn.BlackboxArgs[I2, (O, O2)](definedAt) { args =>
+        (left(args), right.self(args))
+      }
 
-      val result =
-        Hom.Fn.Mapped[I2, (I2, I2), (O, O2)](first, second.asInstanceOf[Hom.Fn[(I2, I2) ><: T0, (O, O2)]])
-
-      Continuation(result.asInstanceOf[Hom.Fn[I2, (O, O2)]])
+      Continuation(zipped)
     }
   }
   def -< = zip
@@ -144,13 +139,10 @@ object Continuation {
         _definedAt: SrcDefinition // TODO: this should not be required
     ): Continuation[I, O] = {
 
-      val prev: Fn[I, Continuation[I, O]] = continuation.self.asInstanceOf[Hom.Fn[I, Continuation[I, O]]]
-
       val result =
         Hom.Fn.Flatten[I, Continuation[I, O], O](
-          // safe by construction: continuation wraps Fn[I, Continuation[I, O]], coerce extracts inner Fn
-          prev,
-          { v: Continuation[I, O] => v.self.asInstanceOf[Hom.Fn[I, O]] }
+          continuation.self,
+          { v: Continuation[I, O] => v.self }
         )
 
       Continuation(result.simplify) // Flatten[I,_,O].simplify returns Fn[I, O]
