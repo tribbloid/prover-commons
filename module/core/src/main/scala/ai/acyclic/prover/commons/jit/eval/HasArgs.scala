@@ -56,6 +56,7 @@ trait HasArgs {
       lazy val valueSeq: Seq[Any] = runtimeSeq.map(_.compute)
     }
 
+    implicitly[Eye =:= T0]
     implicitly[(Int ><: String ><: Eye) =:= (Int >< String)]
 
     // Should this defined as a dependent type of Schema (which is a phantom & always available)

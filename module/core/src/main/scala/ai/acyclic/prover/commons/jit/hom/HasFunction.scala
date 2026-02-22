@@ -75,6 +75,7 @@ trait HasFunction {
       type Out = O
     }
 
+    type Impl0[O] = Impl[T0, O]
     type Impl1[I, O] = Impl[I ><: T0, O]
     type Impl2[I1, I2] = Impl[I1 ><: I2 ><: T0, I2]
 
@@ -425,8 +426,10 @@ trait HasFunction {
     implicitly[Const.Impl[Int] <:< Const[Int]]
     implicitly[Const[Int] <:< ConstantFn[Int]]
 
-    sealed trait Impl[O] extends Fn.Impl[Args.Prod, O] with ConstantFn[O] { // <- CAUTION: this
-      override def apply(arg: Args.Prod): O = compute
+    implicitly[Args.Eye =:= Args.T0]
+
+    sealed trait Impl[O] extends Fn.Impl0[O] with ConstantFn[O] {
+      override def apply(arg: Args.Eye): O = compute
     }
 
     final case class Provided[O](compute: O) extends Impl[O] {
