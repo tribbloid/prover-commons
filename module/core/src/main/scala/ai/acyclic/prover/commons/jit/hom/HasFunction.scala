@@ -153,7 +153,7 @@ trait HasFunction {
       }
     }
 
-    case class Duplicate[I]() extends Impl[I ><: T0, (I, I)] {
+    case class Duplicate[I]() extends Impl1[I, (I, I)] {
 
       override def apply(arg: I ><: T0): (I, I) = {
         val v = arg.head.compute
@@ -167,7 +167,7 @@ trait HasFunction {
 
     // typed helpers for CPS/tracing composition to keep structure stable in explain trees
     def provided0[O](value: O): Fn[T0, O] = {
-      Const.Provided(value).asInstanceOf[Fn[T0, O]]
+      Const.Provided(value)
     }
 
     def zipWith[I <: Args.Prod, O, I2 <: Args.Prod, O2](
@@ -210,8 +210,8 @@ trait HasFunction {
     }
 
     case class Conditional[I](
-        filter: Fn[I ><: T0, Boolean]
-    ) extends Impl[I ><: T0, I] {
+        filter: Fn.Impl1[I, Boolean]
+    ) extends Impl1[I, I] {
 
       override def apply(o: I ><: T0): I = {
         val v = o.head.compute
@@ -262,7 +262,7 @@ trait HasFunction {
     case class Blackbox[I, R](
         final override val _definedAt: SrcDefinition
     )(val fn: I => R)
-        extends Impl[I ><: T0, R]
+        extends Impl1[I, R]
         with HasLambdaInfo[I => R] {
 
       override def apply(arg: I ><: T0): R = {
@@ -330,10 +330,10 @@ trait HasFunction {
           case class ThunkImpl()(
               implicit
               override val _definedAt: SrcDefinition
-          ) extends Impl[T0, R] {
+          ) extends Impl0[R] {
             override def apply(arg: T0): R = fn()
           }
-          val thunk: Thunk[R] = ThunkImpl() // ThunkImpl <: Impl[T0, R] <: Fn[T0, R] = Thunk[R]
+          val thunk: Thunk[R] = ThunkImpl() // ThunkImpl <: Impl0[R] <: Fn[T0, R] = Thunk[R]
           Const.Lazy(thunk)
       }
     }
