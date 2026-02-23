@@ -116,8 +116,8 @@ object Products {
 
     object Zippable {
 
-      type Zip[A <: Prod, B <: Prod] = Zippable[? <: A, ? <: B, ?]
-      type Unzip[Y <: Prod] = Zippable[?, ?, ? <: Y]
+      type Zip[-A <: Prod, -B <: Prod] = Zippable[? >: A, ? >: B, ?]
+      type Unzip[-Y <: Prod] = Zippable[?, ?, ? >: Y]
 
       type Aux[A <: Prod, B <: Prod, O <: Prod] = Zippable[A, B, O] { type Zipped = O }
 //

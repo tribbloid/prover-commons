@@ -87,7 +87,7 @@ case class Continuation[I <: Args.Prod, +O](
         unzip: Args.Zippable.Aux[I, I2, Z]
     ): Continuation[Z, (O, O2)] = {
 
-      Continuation(Hom.Fn.zipWith(self, right.self))
+      Continuation(Hom.Fn.pointwise(self, right.self))
     }
   }
   def <*> = pointwise
@@ -96,7 +96,7 @@ case class Continuation[I <: Args.Prod, +O](
 
     def apply[I2 <: I, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
 
-      Continuation(Hom.Fn.zipShared(self, right.self))
+      Continuation(Hom.Fn.zip(self, right.self))
     }
   }
   def -< = zip

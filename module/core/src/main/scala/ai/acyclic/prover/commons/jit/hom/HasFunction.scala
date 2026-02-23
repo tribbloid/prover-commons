@@ -127,17 +127,21 @@ trait HasFunction {
       }
     }
 
-    case class Pointwise[I1, O1, IT <: Args.Prod, OT, R](
+    // TODO: implement this, should be like Pointwise, but left and right function share the same input
+    //  also write some unit tests
+    case class Zippped[I <: Args.Prod, O1, O2](
+        left: Fn[I, O1],
+        right: Fn[I, O2]
+    ) extends Impl[I, (O1, O2)] {}
+
+    case class Pointwise[I1, O1, IT <: Args.Prod, OT](
         head: Fn[I1 ><: T0, O1],
         tail: Fn[IT, OT]
-    )(
-        implicit
-        asTuple: R =:= (O1, OT)
-    ) extends Impl[I1 ><: IT, R] {
+    ) extends Impl[I1 ><: IT, (O1, OT)] {
 
       override type Rules = head.Rules & tail.Rules
 
-      override def apply(arg: I1 ><: IT): R = {
+      override def apply(arg: I1 ><: IT): (O1, OT) = {
 
         val (h1, tailArgs) = Args.deCons(arg)
         asTuple.flip(head(Args.><:(h1, Args.eye)) -> tail(tailArgs))
@@ -153,7 +157,7 @@ trait HasFunction {
       Const.Provided(value)
     }
 
-    def zipWith[I <: Args.Prod, O, I2 <: Args.Prod, O2, Z <: Args.Prod](
+    def pointwise[I <: Args.Prod, O, I2 <: Args.Prod, O2, Z <: Args.Prod](
         left: Fn[I, O],
         right: Fn[I2, O2]
     )(
@@ -169,16 +173,16 @@ trait HasFunction {
       pointwise.asInstanceOf[Fn[Z, (O, O2)]]
     }
 
-    def zipShared[I <: Args.Prod, O, I2 <: I, O2](
+    def zip[I <: Args.Prod, O, O2](
         left: Fn[I, O],
-        right: Fn[I2, O2]
-    ): Fn[I2, (O, O2)] = {
+        right: Fn[I, O2]
+    ): Fn[I, (O, O2)] = {
 
-      val first: Duplicate[I2] = Duplicate[I2]()
-      val second: Pointwise[Any, O, I2, O2, (O, O2)] =
+      val first: Duplicate[I] = Duplicate[I]()
+      val second: Pointwise[Any, O, I, O2, (O, O2)] =
         Pointwise(left.asInstanceOf[Fn[Any ><: T0, O]], right)
 
-      Mapped[I2, (I2, I2), (O, O2)](first, second.asInstanceOf[Fn[(I2, I2) ><: T0, (O, O2)]])
+      Mapped[I, (I, I), (O, O2)](first, second.asInstanceOf[Fn[(I, I) ><: T0, (O, O2)]])
     }
 
     case class Identity[I <: Args.Prod]() extends Impl[I, I] { // TOOD: this should be contravariant under DepFn
