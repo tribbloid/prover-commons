@@ -80,12 +80,12 @@ case class Continuation[I <: Args.Prod, +O](
 
   object pointwise {
 
-    def apply[I2 <: Args.Prod, O2](
+    def apply[I2 <: Args.Prod, O2, Z <: Args.Prod](
         right: Continuation[I2, O2]
     )(
         implicit
-        unzip: Args.Zippable[I, I2]
-    ): Continuation[unzip.Y, (O, O2)] = {
+        unzip: Args.Zippable.Aux[I, I2, Z]
+    ): Continuation[Z, (O, O2)] = {
 
       Continuation(Hom.Fn.zipWith(self, right.self))
     }

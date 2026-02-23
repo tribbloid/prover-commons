@@ -107,6 +107,8 @@ object Products {
       */
     trait Zippable[A <: Prod, B <: Prod, Y <: Prod] {
 
+      type Zipped = Y
+
       def zip(a: A, b: B): Y
 
       def unzip(ab: Y): (A, B)
@@ -114,13 +116,13 @@ object Products {
 
     object Zippable {
 
-      type Zip[-A <: Prod, -B <: Prod] = Zippable[? <: A, ? <: B, ?]
-      type Unzip[-Y <: Prod] = Zippable[?, ?, ? <: Y]
+      type Zip[A <: Prod, B <: Prod] = Zippable[? <: A, ? <: B, ?]
+      type Unzip[Y <: Prod] = Zippable[?, ?, ? <: Y]
 
-//      type Aux[A <: Prod, B <: Prod, O <: Prod] = Zippable[A, B] { type Zipped = O }
+      type Aux[A <: Prod, B <: Prod, O <: Prod] = Zippable[A, B, O] { type Zipped = O }
 //
-      implicit def empty[B <: Prod]: Zippable[Eye, B, B] = new Zippable {
-        type Zipped = B
+      implicit def empty[B <: Prod]: Zippable[Eye, B, B] = new Zippable[Eye, B, B] {
+        override type Zipped = B
 
         def zip(a: Eye, b: B): B = b
 
@@ -130,8 +132,8 @@ object Products {
       implicit def cons[HEAD <: VBound, TAIL <: Prod, B <: Prod, O <: Prod](
           implicit
           tailZip: Aux[TAIL, B, O]
-      ): Aux[HEAD ><: TAIL, B, HEAD ><: O] = new Zippable[HEAD ><: TAIL, B] {
-        type Zipped = HEAD ><: O
+      ): Aux[HEAD ><: TAIL, B, HEAD ><: O] = new Zippable[HEAD ><: TAIL, B, HEAD ><: O] {
+        override type Zipped = HEAD ><: O
 
         def zip(a: HEAD ><: TAIL, b: B): HEAD ><: O = {
           val (head, tail) = deCons(a)

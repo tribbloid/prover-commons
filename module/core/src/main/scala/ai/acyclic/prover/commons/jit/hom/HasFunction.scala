@@ -153,20 +153,20 @@ trait HasFunction {
       Const.Provided(value)
     }
 
-    def zipWith[I <: Args.Prod, O, I2 <: Args.Prod, O2](
+    def zipWith[I <: Args.Prod, O, I2 <: Args.Prod, O2, Z <: Args.Prod](
         left: Fn[I, O],
         right: Fn[I2, O2]
     )(
         implicit
-        unzip: Args.Zippable[I, I2]
-    ): Fn[unzip.Y, (O, O2)] = {
+        unzip: Args.Zippable.Aux[I, I2, Z]
+    ): Fn[Z, (O, O2)] = {
 
       val pointwise = Pointwise[Any, O, I2, O2, (O, O2)](
         left.asInstanceOf[Fn[Any ><: T0, O]],
         right
       )
 
-      pointwise.asInstanceOf[Fn[unzip.Y, (O, O2)]]
+      pointwise.asInstanceOf[Fn[Z, (O, O2)]]
     }
 
     def zipShared[I <: Args.Prod, O, I2 <: I, O2](
