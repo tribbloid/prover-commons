@@ -81,7 +81,7 @@ trait HasFunction {
 
 //    sealed trait Compositor {} // TODO: this needs to be a supertype of all Impl composed from multiple functions
 
-    def id[I <: Args.Prod]: Identity[I] = Identity[I]()
+    def id[I]: Identity[I] = Identity[I]()
 
     case class Mapped[I <: Args.Prod, M, O](
         left: Fn[I, M],

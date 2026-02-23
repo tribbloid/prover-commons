@@ -11,7 +11,7 @@ object ChainSelf {
 
   val s1: (Int ><: T0) :=> Int = fn0.trace.map(fn0).unbox
 
-  val s2: (Int ><: T0) :=> Int = :=>.id[Int ><: T0].trace.map(v => fn0(v)).map(v => fn0(v)).unbox
+  val s2: (Int ><: T0) :=> Int = :=>.id[Int].trace.map(v => fn0(v)).map(v => fn0(v)).unbox
 
   lazy val pairs = {
 
