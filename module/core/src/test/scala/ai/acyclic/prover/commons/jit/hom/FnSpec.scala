@@ -198,7 +198,7 @@ class FnSpec extends BaseSpec {
         val head: Fn[Int ><: T0, String] = { (v: Int) => "h" + v }
         val tail: Fn[Long ><: T0, Double] = { (v: Long) => v * 0.5 }
 
-        val pw = Fn.Pointwise[Int, String, Long ><: T0, Double, (String, Double)](head, tail)
+        val pw = Fn.Pointwise[Int, String, Long ><: T0, Double](head, tail)
 
         val in = Args
           .><:(
@@ -219,12 +219,12 @@ class FnSpec extends BaseSpec {
         val head: Fn[Int ><: T0, String] = { (v: Int) => "v=" + v }
 
         val tail: Fn[String ><: Long ><: T0, (String, Long)] =
-          Fn.Pointwise[String, String, Long ><: T0, Long, (String, Long)](
+          Fn.Pointwise[String, String, Long ><: T0, Long](
             (s: String) => s.toUpperCase,
             (l: Long) => l + 100L
           )
 
-        val pw = Fn.Pointwise[Int, String, String ><: Long ><: T0, (String, Long), (String, (String, Long))](head, tail)
+        val pw = Fn.Pointwise[Int, String, String ><: Long ><: T0, (String, Long)](head, tail)
 
         val in = Args
           .><:(
@@ -249,7 +249,7 @@ class FnSpec extends BaseSpec {
         val head: Fn[Int ><: T0, String] = { (v: Int) => "h" + v }
         val tail: Fn[Long ><: T0, Double] = { (v: Long) => v * 0.5 }
 
-        val pw = Fn.Pointwise[Int, String, Long ><: T0, Double, (String, Double)](head, tail)
+        val pw = Fn.Pointwise[Int, String, Long ><: T0, Double](head, tail)
 
         val tree = pw.explain.text_hierarchy()
         assert(tree.contains("Pointwise"))
@@ -261,7 +261,7 @@ class FnSpec extends BaseSpec {
         val head: Fn[Int ><: T0, String] = { (v: Int) => "s" + v }
         val tail: Fn[Long ><: T0, Double] = { (v: Long) => v.toDouble }
 
-        val pw = Fn.Pointwise[Int, String, Long ><: T0, Double, (String, Double)](head, tail)
+        val pw = Fn.Pointwise[Int, String, Long ><: T0, Double](head, tail)
         val simplified = pw.simplify
 
         val in = Args
@@ -277,6 +277,48 @@ class FnSpec extends BaseSpec {
         val result = simplified.apply(in)
         assert(result == ("s5", 3.0))
       }
+    }
+  }
+
+  describe("zip") {
+
+    it("constructs a Zipped node directly") {
+
+      val left: Fn[Int ><: T0, String] = { (v: Int) => "l" + v }
+      val right: Fn[Int ><: T0, Double] = { (v: Int) => v * 0.5 }
+
+      val zipped = Fn.zip(left, right)
+      assert(zipped.productPrefix == "Zipped")
+
+      val tree = zipped.explain.text_hierarchy()
+      assert(tree.contains("Zipped"))
+      assert(!tree.contains("Duplicate"))
+    }
+
+    it("applies both branches to the same input") {
+
+      val left: Fn[Int ><: T0, String] = { (v: Int) => "v=" + v }
+      val right: Fn[Int ><: T0, Int] = { (v: Int) => v + 10 }
+
+      val zipped = Fn.zip(left, right)
+
+      val in = Args
+        .><:(
+          Const.Provided(5),
+          Args.eye
+        )
+
+      val result = zipped(in)
+      assert(result == ("v=5", 15))
+    }
+
+    it("simplify preserves Zipped shape") {
+
+      val left: Fn[Int ><: T0, Int] = { (v: Int) => v + 1 }
+      val right: Fn[Int ><: T0, Int] = { (v: Int) => v * 2 }
+
+      val simplified = Fn.zip(left, right).simplify
+      assert(simplified.productPrefix == "Zipped")
     }
   }
 

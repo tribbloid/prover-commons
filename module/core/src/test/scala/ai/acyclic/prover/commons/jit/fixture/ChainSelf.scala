@@ -9,9 +9,9 @@ object ChainSelf {
 
   val s0: (Int ><: T0) :=> Int = fn0.andThen(fn0)
 
-  val s1 = fn0.trace.map(fn0)
+  val s1: (Int ><: T0) :=> Int = fn0.trace.map(fn0).unbox
 
-  val s2 = :=>.id[Int ><: T0].trace.map(v => fn0(v)).map(v => fn0(v))
+  val s2: (Int ><: T0) :=> Int = :=>.id[Int ><: T0].trace.map(v => fn0(v)).map(v => fn0(v)).unbox
 
   lazy val pairs = {
 

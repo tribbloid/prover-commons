@@ -127,12 +127,26 @@ trait HasFunction {
       }
     }
 
-    // TODO: implement this, should be like Pointwise, but left and right function share the same input
-    //  also write some unit tests
-    case class Zippped[I <: Args.Prod, O1, O2](
+    case class Zipped[I <: Args.Prod, O1, O2](
         left: Fn[I, O1],
         right: Fn[I, O2]
-    ) extends Impl[I, (O1, O2)] {}
+    ) extends Impl[I, (O1, O2)] {
+
+      override type Rules = left.Rules & right.Rules
+
+      override def apply(arg: I): (O1, O2) = {
+        left(arg) -> right(arg)
+      }
+
+      override def simplify: Fn[I, (O1, O2)] = {
+        copy(left = left.simplify, right = right.simplify)
+      }
+    }
+
+    object Duplicate {
+
+      def apply[I]() = Zipped(Identity[I](), Identity[I]())
+    }
 
     case class Pointwise[I1, O1, IT <: Args.Prod, OT](
         head: Fn[I1 ><: T0, O1],
@@ -144,12 +158,8 @@ trait HasFunction {
       override def apply(arg: I1 ><: IT): (O1, OT) = {
 
         val (h1, tailArgs) = Args.deCons(arg)
-        asTuple.flip(head(Args.><:(h1, Args.eye)) -> tail(tailArgs))
+        head(Args.><:(h1, Args.eye)) -> tail(tailArgs)
       }
-    }
-
-    case class Duplicate[I <: Args.Prod]() extends Impl[I, (I, I)] {
-      override def apply(arg: I): (I, I) = arg -> arg
     }
 
     // typed helpers for CPS/tracing composition to keep structure stable in explain trees
@@ -165,7 +175,7 @@ trait HasFunction {
         unzip: Args.Zippable.Aux[I, I2, Z]
     ): Fn[Z, (O, O2)] = {
 
-      val pointwise = Pointwise[Any, O, I2, O2, (O, O2)](
+      val pointwise = Pointwise[Any, O, I2, O2](
         left.asInstanceOf[Fn[Any ><: T0, O]],
         right
       )
@@ -178,18 +188,15 @@ trait HasFunction {
         right: Fn[I, O2]
     ): Fn[I, (O, O2)] = {
 
-      val first: Duplicate[I] = Duplicate[I]()
-      val second: Pointwise[Any, O, I, O2, (O, O2)] =
-        Pointwise(left.asInstanceOf[Fn[Any ><: T0, O]], right)
-
-      Mapped[I, (I, I), (O, O2)](first, second.asInstanceOf[Fn[(I, I) ><: T0, (O, O2)]])
+      Zipped[I, O, O2](left, right)
     }
 
-    case class Identity[I <: Args.Prod]() extends Impl[I, I] { // TOOD: this should be contravariant under DepFn
+    // TODO: fix this, old type signature is wrong
+    case class Identity[I]() extends Impl1[I, I] {
 
       override type Rules <: Rule.Linear
 
-      override def apply(arg: I): I = arg
+      def apply(arg: I ><: T0): I = arg.head.compute
     }
 
     case class Conditional[I](
