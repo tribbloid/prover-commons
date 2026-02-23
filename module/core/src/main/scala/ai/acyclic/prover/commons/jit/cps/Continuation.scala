@@ -78,7 +78,7 @@ case class Continuation[I <: Args.Prod, +O](
     Continuation(result.simplify) // Mapped[I, O, O].simplify returns Fn[I, O]
   }
 
-  object pointwise {
+  object zip {
 
     def apply[I2 <: Args.Prod, O2, Z <: Args.Prod](
         right: Continuation[I2, O2]
@@ -87,19 +87,19 @@ case class Continuation[I <: Args.Prod, +O](
         unzip: Args.Zippable.Aux[I, I2, Z]
     ): Continuation[Z, (O, O2)] = {
 
-      Continuation(Hom.Fn.pointwise(self, right.self))
-    }
-  }
-  def <*> = pointwise
-
-  object zip {
-
-    def apply[I2 <: I, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
-
       Continuation(Hom.Fn.zip(self, right.self))
     }
   }
-  def -< = zip
+  def <*> = zip
+
+  object fork {
+
+    def apply[I2 <: I, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
+
+      Continuation(Hom.Fn.fork(self, right.self))
+    }
+  }
+  def -< = fork
 
   // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
 

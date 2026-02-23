@@ -127,7 +127,7 @@ trait HasFunction {
       }
     }
 
-    case class Zipped[I <: Args.Prod, O1, O2](
+    case class Fork[I <: Args.Prod, O1, O2](
         left: Fn[I, O1],
         right: Fn[I, O2]
     ) extends Impl[I, (O1, O2)] {
@@ -145,10 +145,10 @@ trait HasFunction {
 
     object Duplicate {
 
-      def apply[I]() = Zipped(Identity[I](), Identity[I]())
+      def apply[I]() = Fork(Identity[I](), Identity[I]())
     }
 
-    case class Pointwise[I1, O1, IT <: Args.Prod, OT](
+    case class PointwiseZip[I1, O1, IT <: Args.Prod, OT](
         head: Fn[I1 ><: T0, O1],
         tail: Fn[IT, OT]
     ) extends Impl[I1 ><: IT, (O1, OT)] {
@@ -167,7 +167,7 @@ trait HasFunction {
       Const.Provided(value)
     }
 
-    def pointwise[I <: Args.Prod, O, I2 <: Args.Prod, O2, Z <: Args.Prod](
+    def zip[I <: Args.Prod, O, I2 <: Args.Prod, O2, Z <: Args.Prod](
         left: Fn[I, O],
         right: Fn[I2, O2]
     )(
@@ -175,7 +175,7 @@ trait HasFunction {
         unzip: Args.Zippable.Aux[I, I2, Z]
     ): Fn[Z, (O, O2)] = {
 
-      val pointwise = Pointwise[Any, O, I2, O2](
+      val pointwise = PointwiseZip[Any, O, I2, O2](
         left.asInstanceOf[Fn[Any ><: T0, O]],
         right
       )
@@ -183,12 +183,12 @@ trait HasFunction {
       pointwise.asInstanceOf[Fn[Z, (O, O2)]]
     }
 
-    def zip[I <: Args.Prod, O, O2](
+    def fork[I <: Args.Prod, O, O2](
         left: Fn[I, O],
         right: Fn[I, O2]
     ): Fn[I, (O, O2)] = {
 
-      Zipped[I, O, O2](left, right)
+      Fork[I, O, O2](left, right)
     }
 
     // TODO: fix this, old type signature is wrong

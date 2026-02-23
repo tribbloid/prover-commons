@@ -26,7 +26,7 @@ object Combinator {
 
   object InteractionNet {
 
-    val Delta = Fn.Pointwise
+    val Delta = Fn.PointwiseZip
     val Gamma = Fn.Duplicate
   }
 }

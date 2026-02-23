@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.jit.fixture
 import ai.acyclic.prover.commons.jit.cps.Continuation
 import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 
-object PointwiseAndChain {
+object PointwiseLike {
 
   import Circuits.*
 
