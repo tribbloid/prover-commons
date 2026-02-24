@@ -20,16 +20,9 @@ trait HasFunction {
   trait DepFn[-I <: Args.Prod] extends IntermediateRepresentation with CanSimplify[DepFn[I]] {
     type In >: I <: Args.Prod
   }
-  // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
   case object DepFn {
 
-//    type K[-I <: Args.Prod] = IntermediateRepresentation { type In >: I }
-
     type constraint <: Any
-
-    { // sanity
-//      implicitly[DepFn[Int ><: T0] <:< K[Int ><: T0]]
-    }
   }
 
   trait Fn[-I <: Args.Prod, +O] extends CanSimplify[Fn[I, O]] with DepFn[I] with Domains {
@@ -39,7 +32,6 @@ trait HasFunction {
     override def simplify: Fn[I, O] = this // bypassing EqSat, always leads to better representation
     // TODO: this should be a special case of specialise/partial-eval
   }
-  // TODO: should be K2[I, R] (as refined type), but scala 2 implicit search is too weak fo this
   case object Fn extends FnBuilder.Root {
 
     implicit class _extFn[I <: Args.Prod, O](

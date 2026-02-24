@@ -6,7 +6,7 @@ object CanSimplify extends CanSimplify_Impl0 {}
 
 trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresentation {
 
-  type PartialEvalInputs <: Args.Prod
+  type PartialEvalInputs <: Args
   lazy val noneProvided: PartialEvalInputs = throw new UnsupportedOperationException("PartialEvalInputs not provided")
   def partialEval(env: PartialEvalEnv[PartialEvalInputs]): N = {
     this.asInstanceOf[N] // safe by construction: concrete subclasses always extend CanSimplify[Self]
