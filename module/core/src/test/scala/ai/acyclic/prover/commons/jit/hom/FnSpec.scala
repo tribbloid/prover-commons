@@ -280,6 +280,61 @@ class FnSpec extends BaseSpec {
     }
   }
 
+  describe("fork") {
+
+    ForkLike.pairs.zipWithIndex.foreach {
+
+      case ((fn, _), i) =>
+        it(i.toString) {
+
+          val normal = fn.simplify
+          val tree = normal.explain.text_hierarchy()
+          assert(tree.contains("PointwiseZip"))
+
+          val combinedIn = Args
+            .><:(
+              Const.Provided(1),
+              Args
+                .><:(
+                  Const.Provided(2L),
+                  Args.eye
+                )
+            )
+
+          val fnTraced = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(fn)
+          val result = fnTraced(combinedIn)
+
+          if (i == 0) {
+            assert(result == (List(1L, 2L, 3L), List(2.0, 2.1, 2.2)))
+          } else {
+            assert(result == List(3.0, 4.1, 5.2))
+          }
+        }
+    }
+
+    it("simplify preserves behavior") {
+
+      val combinedIn = Args
+        .><:(
+          Const.Provided(1),
+          Args
+            .><:(
+              Const.Provided(2L),
+              Args.eye
+            )
+        )
+
+      ForkLike.pairs.foreach {
+        case (fn, _) =>
+          val fnTraced = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(fn)
+          val original = fnTraced(combinedIn)
+          val simplifiedFn = fn.simplify
+          val simplified = simplifiedFn(combinedIn)
+          assert(original == simplified)
+      }
+    }
+  }
+
   describe("higher-order") {
 
     import ai.acyclic.prover.commons.jit.fixture.HigherOrder1
