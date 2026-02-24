@@ -42,7 +42,7 @@ class HasArgsSpec extends BaseSpec {
         val viaOfNarrow = Args.ofNarrow(Const.Provided[1](1), Const.Provided["a"]("a"))
 
         val _: Int ><: String ><: T0 = viaOfNarrow
-        val _: Args.Prod = viaOfNarrow
+        val _: Args = viaOfNarrow
 
         val (head, tail) = Args.deCons(viaOfNarrow)
         val (head2, _) = Args.deCons(tail)
@@ -58,7 +58,7 @@ class HasArgsSpec extends BaseSpec {
         val result = Args.FromProductOrValue(())
 
         val _: T0 = result
-        val _: Args.Prod = result
+        val _: Args = result
 
         assert(result == T0)
       }
@@ -68,7 +68,7 @@ class HasArgsSpec extends BaseSpec {
         val result = Args.FromProductOrValue(value)
 
         val _: Int ><: T0 = result
-        val _: Args.Prod = result
+        val _: Args = result
 
         val (head, tail) = Args.deCons(result)
         assert(head.compute == 1)

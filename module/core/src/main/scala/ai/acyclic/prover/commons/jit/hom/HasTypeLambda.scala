@@ -138,7 +138,7 @@ trait HasTypeLambda extends HasPoly {
         override type Out[T >: bound.Min <: bound.Max] = O[T]
       }
 
-      implicit class Is[I <: Args.Prod, O](backbone: Fn[I, O])
+      implicit class Is[I <: Args, O](backbone: Fn[I, O])
           extends Impl[PredefKinds.Drop1[_, I], PredefKinds.Drop1[_, O]]()(backbone._definedAt)
           with TypeLambda {
 

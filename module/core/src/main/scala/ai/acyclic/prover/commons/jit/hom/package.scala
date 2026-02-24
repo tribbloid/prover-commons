@@ -6,7 +6,7 @@ import Args.T0
 
 package object hom extends Hom_Imp0 {
 
-  implicit class _fnExt[I <: Args.Prod, O](self: Fn[I, O]) extends Serializable {
+  implicit class _fnExt[I <: Args, O](self: Fn[I, O]) extends Serializable {
 
     def trace(
         implicit
@@ -25,7 +25,7 @@ package object hom extends Hom_Imp0 {
       ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify)
   }
 
-  type :=>[-I <: Args.Prod, +R] = Fn[I, R]
+  type :=>[-I <: Args, +R] = Fn[I, R]
   val :=> : Fn.type = Fn
 
   type :|~>[-I[_], +R[_]] = BoundView.top.UnnaturalTransformation[I, R]
@@ -34,12 +34,12 @@ package object hom extends Hom_Imp0 {
   //  type :|->[+R[_]] = BoundView.top.Dependent[R] // TODO: superseded
   //  val :|-> = BoundView.top.Dependent
 
-  type Dependent[+R[_]] = DepFn[Args.Prod] { type OutK[T] <: R[T] }
+  type Dependent[+R[_]] = DepFn[Args] { type OutK[T] <: R[T] }
   type :|->[+R[_]] = Dependent[R]
 
   object Impl {
 
-    type Fn[I <: Args.Prod, R] = Fn.Impl[I, R]
+    type Fn[I <: Args, R] = Fn.Impl[I, R]
 
     //    type Poly = Hom.Poly
 

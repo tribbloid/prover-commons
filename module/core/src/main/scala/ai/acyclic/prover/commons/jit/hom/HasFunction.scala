@@ -17,15 +17,15 @@ object HasFunction {
 
 trait HasFunction {
 
-  trait DepFn[-I <: Args.Prod] extends IntermediateRepresentation with CanSimplify[DepFn[I]] {
-    type In >: I <: Args.Prod
+  trait DepFn[-I <: Args] extends IntermediateRepresentation with CanSimplify[DepFn[I]] {
+    type In >: I <: Args
   }
   case object DepFn {
 
     type constraint <: Any
   }
 
-  trait Fn[-I <: Args.Prod, +O] extends CanSimplify[Fn[I, O]] with DepFn[I] with Domains {
+  trait Fn[-I <: Args, +O] extends CanSimplify[Fn[I, O]] with DepFn[I] with Domains {
 
     type Out <: O
 
@@ -34,7 +34,7 @@ trait HasFunction {
   }
   case object Fn extends FnBuilder.Root {
 
-    implicit class _extFn[I <: Args.Prod, O](
+    implicit class _extFn[I <: Args, O](
         self: Fn[I, O]
     ) extends Serializable {
 
@@ -50,7 +50,7 @@ trait HasFunction {
     /**
       * function with computation graph, like a lifted JAXpr
       */
-//    type K[-I <: Args.Prod, +O] = DepFn.K[I] { type OutK[T] <: O }
+//    type K[-I <: Args, +O] = DepFn.K[I] { type OutK[T] <: O }
 
     // sanity check - disabled because scalafix/semanticdb cannot parse bare blocks
     // implicitly[Fn[Int, String] <:< K2[Int, String]]
@@ -58,7 +58,7 @@ trait HasFunction {
     val Tracing: ai.acyclic.prover.commons.jit.cps.Continuation.type =
       ai.acyclic.prover.commons.jit.cps.Continuation
 
-    abstract class Impl[I <: Args.Prod, O](
+    abstract class Impl[I <: Args, O](
         implicit
         override val _definedAt: SrcDefinition
     ) extends Fn[I, O] { // most specific
@@ -75,7 +75,7 @@ trait HasFunction {
 
     def id[I]: Identity[I] = Identity[I]()
 
-    case class Mapped[I <: Args.Prod, M, O](
+    case class Mapped[I <: Args, M, O](
         left: Fn[I, M],
         right: Fn[M ><: T0, O]
     ) extends Impl[I, O] {
@@ -90,7 +90,7 @@ trait HasFunction {
       }
     }
 
-    case class Flatten[I <: Args.Prod, T, O](
+    case class Flatten[I <: Args, T, O](
         base: Fn[I, T],
         coerce: T => Fn[I, O]
     ) extends Impl[I, O] {
@@ -119,7 +119,7 @@ trait HasFunction {
       }
     }
 
-    case class Fork[I <: Args.Prod, O1, O2](
+    case class Fork[I <: Args, O1, O2](
         left: Fn[I, O1],
         right: Fn[I, O2]
     ) extends Impl[I, (O1, O2)] {
@@ -140,7 +140,7 @@ trait HasFunction {
       def apply[I]() = Fork(Identity[I](), Identity[I]())
     }
 
-    case class PointwiseZip[I1, O1, IT <: Args.Prod, OT](
+    case class PointwiseZip[I1, O1, IT <: Args, OT](
         head: Fn[I1 ><: T0, O1],
         tail: Fn[IT, OT]
     ) extends Impl[I1 ><: IT, (O1, OT)] {
@@ -159,7 +159,7 @@ trait HasFunction {
       Const.Provided(value)
     }
 
-    def zip[I <: Args.Prod, O, I2 <: Args.Prod, O2, Z <: Args.Prod](
+    def zip[I <: Args, O, I2 <: Args, O2, Z <: Args](
         left: Fn[I, O],
         right: Fn[I2, O2]
     )(
@@ -175,7 +175,7 @@ trait HasFunction {
       pointwise.asInstanceOf[Fn[Z, (O, O2)]]
     }
 
-    def fork[I <: Args.Prod, O, O2](
+    def fork[I <: Args, O, O2](
         left: Fn[I, O],
         right: Fn[I, O2]
     ): Fn[I, (O, O2)] = {
@@ -253,7 +253,7 @@ trait HasFunction {
       }
     }
 
-    case class BlackboxArgs[I <: Args.Prod, R](
+    case class BlackboxArgs[I <: Args, R](
         final override val _definedAt: SrcDefinition
     )(val fn: I => R)
         extends Impl[I, R]
@@ -324,7 +324,7 @@ trait HasFunction {
 
     object Pure {
 
-      case class Is[I <: Args.Prod, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
+      case class Is[I <: Args, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
 
         override def apply(v: I): R = delegate.apply(v)
       }
@@ -333,7 +333,7 @@ trait HasFunction {
     trait CachedPure extends Pure
 
     // TODO: make a dependent class, also in Thunk
-    final case class CachedImpl[I <: Args.Prod, R](backbone: Fn[I, R])(
+    final case class CachedImpl[I <: Args, R](backbone: Fn[I, R])(
         getLookup: () => CacheMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
     ) extends Impl[I, R]
         with CachedPure {
@@ -427,7 +427,7 @@ trait HasFunction {
     def asEager: Const.Provided[Thunk[O]] = Const.Provided(self)
   }
 
-  sealed trait ConstantFn[+O] extends Fn[Args.Prod, O] with Fn.CachedPure {
+  sealed trait ConstantFn[+O] extends Fn[Args, O] with Fn.CachedPure {
 
     val compute: O // should mostly be a lazy val
   }
@@ -444,8 +444,8 @@ trait HasFunction {
 
     implicitly[Args.Eye =:= Args.T0]
 
-    sealed trait Impl[O] extends Fn.Impl[Args.Prod, O] with ConstantFn[O] {
-      override def apply(arg: Args.Prod): O = compute
+    sealed trait Impl[O] extends Fn.Impl[Args, O] with ConstantFn[O] {
+      override def apply(arg: Args): O = compute
     }
 
     final case class Provided[O](compute: O) extends Impl[O] {

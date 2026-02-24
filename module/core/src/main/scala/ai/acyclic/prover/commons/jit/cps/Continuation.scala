@@ -21,7 +21,7 @@ import scala.language.implicitConversions
   *   - the old class should be removed at last
   *   - your code outside the main package should be minimal
   */
-case class Continuation[I <: Args.Prod, +O](
+case class Continuation[I <: Args, +O](
     self: Fn[I, O]
 ) extends Delegating[Fn[I, O]] {
 
@@ -80,7 +80,7 @@ case class Continuation[I <: Args.Prod, +O](
 
   object zip {
 
-    def apply[I2 <: Args.Prod, O2, Z <: Args.Prod](
+    def apply[I2 <: Args, O2, Z <: Args](
         right: Continuation[I2, O2]
     )(
         implicit
@@ -94,7 +94,7 @@ case class Continuation[I <: Args.Prod, +O](
 
   object fork {
 
-    def apply[I2 <: Args.Prod, O2, Z <: Args.Prod](
+    def apply[I2 <: Args, O2, Z <: Args](
         right: Continuation[I2, O2]
     )(
         implicit
@@ -115,7 +115,7 @@ object Continuation {
   // Implicit conversions are provided by Delegating.unbox1
 
   // Additional implicit conversion from Tracing to Function1View for function composition
-  implicit def tracingToFunction[I <: Args.Prod, O](v: Continuation[I, O])(
+  implicit def tracingToFunction[I <: Args, O](v: Continuation[I, O])(
       implicit
       _definedAt: SrcDefinition
   ): Function1[I, O] = {
@@ -124,7 +124,7 @@ object Continuation {
     }
   }
 
-  implicit class CanFlatten[I <: Args.Prod, O](continuation: Continuation[I, Continuation[I, O]]) {
+  implicit class CanFlatten[I <: Args, O](continuation: Continuation[I, Continuation[I, O]]) {
 
     def flatten(
         implicit
