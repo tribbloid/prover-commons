@@ -23,12 +23,12 @@ trait HasFunction {
   // TODO: should be K1[I] (as refined type), but scala 2 implicit search is too weak fo this
   case object DepFn {
 
-    type K1[-I <: Args.Prod] = IntermediateRepresentation { type In >: I }
+//    type K[-I <: Args.Prod] = IntermediateRepresentation { type In >: I }
 
     type constraint <: Any
 
     { // sanity
-      implicitly[DepFn[Int ><: T0] <:< K1[Int ><: T0]]
+//      implicitly[DepFn[Int ><: T0] <:< K[Int ><: T0]]
     }
   }
 
@@ -58,7 +58,7 @@ trait HasFunction {
     /**
       * function with computation graph, like a lifted JAXpr
       */
-    type K2[-I <: Args.Prod, +O] = DepFn.K1[I] { type OutK[T] <: O }
+//    type K[-I <: Args.Prod, +O] = DepFn.K[I] { type OutK[T] <: O }
 
     // sanity check - disabled because scalafix/semanticdb cannot parse bare blocks
     // implicitly[Fn[Int, String] <:< K2[Int, String]]
