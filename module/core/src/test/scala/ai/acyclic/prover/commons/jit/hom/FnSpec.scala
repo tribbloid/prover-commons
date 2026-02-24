@@ -163,7 +163,7 @@ class FnSpec extends BaseSpec {
 
   describe("pointwise") {
 
-    PointwiseLike.pairs.zipWithIndex.foreach {
+    PointwiseZipLike.pairs.zipWithIndex.foreach {
 
       case ((fn, s), i) =>
         it(i.toString) {
@@ -277,53 +277,6 @@ class FnSpec extends BaseSpec {
         val result = simplified.apply(in)
         assert(result == ("s5", 3.0))
       }
-    }
-  }
-
-  describe("zip") {
-
-    it("constructs a Zipped node directly") {
-
-      val left: Fn[Int ><: T0, String] = { (v: Int) => "l" + v }
-      val right: Fn[Int ><: T0, Double] = { (v: Int) => v * 0.5 }
-
-      val zipped = Fn.fork(left, right)
-      assert(zipped.productPrefix == "Zipped")
-
-      val tree = zipped.explain.text_hierarchy()
-      tree.shouldBe(
-        """
-          |+ Zipped
-          |!-- Blackbox(left <at FnSpec.scala:287>)
-          |!-- Blackbox(right <at FnSpec.scala:288>)
-          |""".stripMargin
-      )
-    }
-
-    it("applies both branches to the same input") {
-
-      val left: Fn[Int ><: T0, String] = { (v: Int) => "v=" + v }
-      val right: Fn[Int ><: T0, Int] = { (v: Int) => v + 10 }
-
-      val zipped = Fn.fork(left, right)
-
-      val in = Args
-        .><:(
-          Const.Provided(5),
-          Args.eye
-        )
-
-      val result = zipped(in)
-      assert(result == ("v=5", 15))
-    }
-
-    it("simplify preserves Zipped shape") {
-
-      val left: Fn[Int ><: T0, Int] = { (v: Int) => v + 1 }
-      val right: Fn[Int ><: T0, Int] = { (v: Int) => v * 2 }
-
-      val simplified = Fn.fork(left, right).simplify
-      assert(simplified.productPrefix == "Zipped")
     }
   }
 

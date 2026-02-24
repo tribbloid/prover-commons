@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.jit.fixture
 import ai.acyclic.prover.commons.jit.cps.Continuation
 import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 
-object PointwiseLike {
+object PointwiseZipLike {
 
   import Circuits.*
 
@@ -33,18 +33,23 @@ object PointwiseLike {
   lazy val pairs = {
 
     Seq(
-      (
-        s1,
+      pointwise ->
+        s"""
+           |+ Mapped
+           |!-+ Pointwise
+           |: !-- ${fn1.explain.nodeText}
+           |: !-- ${fn2.explain.nodeText}
+           |!-- Blackbox(s1 <at PointwiseAndChain.scala:12>)
+           |""".stripMargin,
+      s1 ->
         s"""
             |+ Mapped
             |!-+ Pointwise
             |: !-- ${fn1.explain.nodeText}
             |: !-- ${fn2.explain.nodeText}
             |!-- Blackbox(s1 <at PointwiseAndChain.scala:12>)
-            |""".stripMargin
-      ),
-      (
-        s2,
+            |""".stripMargin,
+      s2 ->
         s"""
              |+ Mapped
              |!-+ Mapped
@@ -53,10 +58,8 @@ object PointwiseLike {
              |: : !-- ${fn2.explain.nodeText}
              |: !-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
              |!-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
-             |""".stripMargin
-      ),
-      (
-        s3,
+             |""".stripMargin,
+      s3 ->
         s"""
              |+ Mapped
              |!-+ Mapped
@@ -66,7 +69,6 @@ object PointwiseLike {
              |: !-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
              |!-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
              |""".stripMargin
-      )
     )
   }
 }

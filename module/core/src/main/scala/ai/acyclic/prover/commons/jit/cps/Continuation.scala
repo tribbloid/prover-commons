@@ -94,12 +94,12 @@ case class Continuation[I <: Args.Prod, +O](
 
   object fork {
 
-    def apply[I2 <: I, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
+    def apply[I2 >: I <: Args, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
 
-      Continuation(Hom.Fn.fork(self, right.self))
+      Continuation(Hom.Fn.fork[I2, O, O2](self, right.self))
     }
   }
-  def -< = fork
+  def <%> = fork
 
   // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
 
