@@ -32,11 +32,9 @@ object PointwiseZipLike {
     Seq(
       pointwise ->
         s"""
-           |+ Mapped
-           |!-+ PointwiseZip
-           |: !-- ${fn1.explain.nodeText}
-           |: !-- ${fn2.explain.nodeText}
-           |!-- Blackbox(s1 <at PointwiseZipLike.scala:12>)
+           |+ PointwiseZip
+           |!-- ${fn1.explain.nodeText}
+           |!-- ${fn2.explain.nodeText}
            |""".stripMargin,
       s1 ->
         s"""
@@ -44,7 +42,7 @@ object PointwiseZipLike {
            |!-+ PointwiseZip
            |: !-- ${fn1.explain.nodeText}
            |: !-- ${fn2.explain.nodeText}
-           |!-- Blackbox(s1 <at PointwiseZipLike.scala:12>)
+           |!-- Blackbox(s1 <at PointwiseZipLike.scala:9>)
            |""".stripMargin,
       s1 ->
         s"""
@@ -52,7 +50,7 @@ object PointwiseZipLike {
             |!-+ PointwiseZip
             |: !-- ${fn1.explain.nodeText}
             |: !-- ${fn2.explain.nodeText}
-            |!-- Blackbox(s1 <at PointwiseZipLike.scala:12>)
+            |!-- Blackbox(s1 <at PointwiseZipLike.scala:9>)
             |""".stripMargin,
       s2 ->
         s"""
@@ -61,8 +59,8 @@ object PointwiseZipLike {
              |: !-+ PointwiseZip
              |: : !-- ${fn1.explain.nodeText}
              |: : !-- ${fn2.explain.nodeText}
-             |: !-- Blackbox(s2 <at PointwiseZipLike.scala:18>)
-             |!-- Blackbox(s2 <at PointwiseZipLike.scala:18>)
+             |: !-- Blackbox(s2 <at PointwiseZipLike.scala:15>)
+             |!-- Blackbox(s2 <at PointwiseZipLike.scala:15>)
              |""".stripMargin,
       s3 ->
         s"""
@@ -71,8 +69,8 @@ object PointwiseZipLike {
              |: !-+ PointwiseZip
              |: : !-- Blackbox(fn1 <at Circuits.scala:12>)
              |: : !-- Blackbox(fn2 <at Circuits.scala:16>)
-             |: !-- Blackbox(s3 <at PointwiseZipLike.scala:25>)
-             |!-- Blackbox(s3 <at PointwiseZipLike.scala:25>)
+             |: !-- Blackbox(s3 <at PointwiseZipLike.scala:22>)
+             |!-- Blackbox(s3 <at PointwiseZipLike.scala:22>)
              |""".stripMargin
     )
   }

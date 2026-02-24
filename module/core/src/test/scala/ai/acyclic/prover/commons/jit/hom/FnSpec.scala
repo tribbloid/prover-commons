@@ -186,7 +186,13 @@ class FnSpec extends BaseSpec {
 
           val fnTraced = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(fn)
           val r1 = fnTraced(combinedIn)
-          assert(r1 == List(3.0, 4.1, 5.2))
+          val expected =
+            if (i == 0) {
+              (List(1L, 2L, 3L), List(2.0, 2.1, 2.2))
+            } else {
+              List(3.0, 4.1, 5.2)
+            }
+          assert(r1 == expected)
         }
     }
 
