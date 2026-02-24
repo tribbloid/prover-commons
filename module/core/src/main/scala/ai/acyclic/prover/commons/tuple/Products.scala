@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.compat.{*:, TupleX}
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
 
 import ai.acyclic.prover.commons.typesetting.TextBlock
-import shapeless.{<:!<, ::, Generic, HList, HNil}
+import shapeless.{::, <:!<, Generic, HList, HNil}
 
 object Products {
 
@@ -39,29 +39,29 @@ object Products {
     protected def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL
     def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL)
 
-    trait FromVarArgs[L] {
+    trait FromTupleX[L] {
 
       type Out <: Prod
 
       def apply(list: L): Out
     }
 
-    object FromVarArgs extends FromVarArgs_Imp0 {
+    object FromTupleX extends FromTupleX_Imp0 {
 
-      type Aux[L, O <: Prod] = FromVarArgs[L] { type Out = O }
+      type Aux[L, O <: Prod] = FromTupleX[L] { type Out = O }
 
-      implicit def _prod[L <: Prod]: Aux[L, L] = new FromVarArgs[L] {
+      implicit def _prod[L <: Prod]: Aux[L, L] = new FromTupleX[L] {
         override type Out = L
         override def apply(list: L): Out = list
       }
     }
 
-    protected trait FromVarArgs_Imp0 {
+    protected trait FromTupleX_Imp0 {
 
       implicit def _hnil(
           implicit
           notProd: HNil <:!< Prod
-      ): FromVarArgs.Aux[HNil, Eye] = new FromVarArgs[HNil] {
+      ): FromTupleX.Aux[HNil, Eye] = new FromTupleX[HNil] {
         override type Out = Eye
         override def apply(list: HNil): Out = Eye
       }
@@ -70,8 +70,8 @@ object Products {
           implicit
           asElement: HEAD <:< Element[L],
           notProd: (HEAD :: TAIL) <:!< Prod,
-          tailFrom: FromVarArgs.Aux[TAIL, OUT]
-      ): FromVarArgs.Aux[HEAD :: TAIL, L ><: OUT] = new FromVarArgs[HEAD :: TAIL] {
+          tailFrom: FromTupleX.Aux[TAIL, OUT]
+      ): FromTupleX.Aux[HEAD :: TAIL, L ><: OUT] = new FromTupleX[HEAD :: TAIL] {
         override type Out = L ><: OUT
 
         override def apply(list: HEAD :: TAIL): Out =
@@ -81,7 +81,10 @@ object Products {
 
     trait VarArgsConstructor {
 
-      def applyProduct[L](list: L)(implicit fromVarArgs: FromVarArgs[L]): fromVarArgs.Out =
+      def applyProduct[L](list: L)(
+          implicit
+          fromVarArgs: FromTupleX[L]
+      ): fromVarArgs.Out =
         fromVarArgs(list)
     }
 
