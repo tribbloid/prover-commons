@@ -30,6 +30,14 @@ object PointwiseZipLike {
   lazy val pairs = {
 
     Seq(
+      pointwise ->
+        s"""
+           |+ Mapped
+           |!-+ PointwiseZip
+           |: !-- ${fn1.explain.nodeText}
+           |: !-- ${fn2.explain.nodeText}
+           |!-- Blackbox(s1 <at PointwiseZipLike.scala:12>)
+           |""".stripMargin,
       s1 ->
         s"""
            |+ Mapped
