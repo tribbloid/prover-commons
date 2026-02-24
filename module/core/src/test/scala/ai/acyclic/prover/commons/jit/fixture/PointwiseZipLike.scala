@@ -33,41 +33,41 @@ object PointwiseZipLike {
   lazy val pairs = {
 
     Seq(
-      pointwise ->
+      s1 ->
         s"""
            |+ Mapped
-           |!-+ Pointwise
+           |!-+ PointwiseZip
            |: !-- ${fn1.explain.nodeText}
            |: !-- ${fn2.explain.nodeText}
-           |!-- Blackbox(s1 <at PointwiseAndChain.scala:12>)
+           |!-- Blackbox(s1 <at PointwiseZipLike.scala:12>)
            |""".stripMargin,
       s1 ->
         s"""
             |+ Mapped
-            |!-+ Pointwise
+            |!-+ PointwiseZip
             |: !-- ${fn1.explain.nodeText}
             |: !-- ${fn2.explain.nodeText}
-            |!-- Blackbox(s1 <at PointwiseAndChain.scala:12>)
+            |!-- Blackbox(s1 <at PointwiseZipLike.scala:12>)
             |""".stripMargin,
       s2 ->
         s"""
              |+ Mapped
              |!-+ Mapped
-             |: !-+ Pointwise
+             |: !-+ PointwiseZip
              |: : !-- ${fn1.explain.nodeText}
              |: : !-- ${fn2.explain.nodeText}
-             |: !-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
-             |!-- Blackbox(s2 <at PointwiseAndChain.scala:18>)
+             |: !-- Blackbox(s2 <at PointwiseZipLike.scala:18>)
+             |!-- Blackbox(s2 <at PointwiseZipLike.scala:18>)
              |""".stripMargin,
       s3 ->
         s"""
              |+ Mapped
              |!-+ Mapped
-             |: !-+ Pointwise
+             |: !-+ PointwiseZip
              |: : !-- Blackbox(fn1 <at Circuits.scala:12>)
              |: : !-- Blackbox(fn2 <at Circuits.scala:16>)
-             |: !-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
-             |!-- Blackbox(s3 <at PointwiseAndChain.scala:25>)
+             |: !-- Blackbox(s3 <at PointwiseZipLike.scala:25>)
+             |!-- Blackbox(s3 <at PointwiseZipLike.scala:25>)
              |""".stripMargin
     )
   }

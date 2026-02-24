@@ -94,9 +94,14 @@ case class Continuation[I <: Args.Prod, +O](
 
   object fork {
 
-    def apply[I2 >: I <: Args, O2](right: Continuation[I2, O2]): Continuation[I2, (O, O2)] = {
+    def apply[I2 <: Args.Prod, O2, Z <: Args.Prod](
+        right: Continuation[I2, O2]
+    )(
+        implicit
+        unzip: Args.Zippable.Aux[I, I2, Z]
+    ): Continuation[Z, (O, O2)] = {
 
-      Continuation(Hom.Fn.fork[I2, O, O2](self, right.self))
+      Continuation(Hom.Fn.zip(self, right.self))
     }
   }
   def <%> = fork
