@@ -1,9 +1,10 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX}
+import ai.acyclic.prover.commons.jit.hom.Hom.Poly
 
 import ai.acyclic.prover.commons.typesetting.TextBlock
-import shapeless.HNil
+import shapeless.{Generic, HNil}
 
 object Products {
 
@@ -37,6 +38,37 @@ object Products {
 
     protected def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL
     def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL)
+
+    trait VarArgsConstructor {
+
+      def applyProduct[L <: Prod](list: L): L = list
+    }
+
+    object of extends VarArgsConstructor with shapeless.ProductArgs {}
+
+    object ofNarrow extends VarArgsConstructor with shapeless.SingletonProductArgs {}
+
+    /**
+      * The inverse of [[Ops.ToFlatTuple]]
+      */
+    object FromProductOrValue extends FromProductOrValue_Imp0 {
+
+      implicit val _unit: Unit /=> Eye = at[Unit](_ => Eye)
+
+      implicit def _product[P <: Product, O <: Prod](
+          implicit
+          gen: Generic.Aux[P, O]
+      ): P /=> O = at[P] { p =>
+        gen.to(p)
+      }
+    }
+
+    protected trait FromProductOrValue_Imp0 extends Poly {
+
+      implicit def _value[V <: VBound]: Element[V] /=> (V ><: Eye) = at[Element[V]] { v =>
+        cons(v, Eye)
+      }
+    }
 
     sealed trait _TupleOps[SELF <: Prod] {
 

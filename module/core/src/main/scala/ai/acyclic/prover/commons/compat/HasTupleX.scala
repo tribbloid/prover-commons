@@ -6,7 +6,7 @@ import ai.acyclic.prover.commons.tuple.Products
 import shapeless.labelled.FieldType
 import shapeless.ops.hlist.Tupler
 import shapeless.tag.@@
-import shapeless.{Generic, HList}
+import shapeless.HList
 
 trait HasTupleX {
 
@@ -53,37 +53,6 @@ trait HasTupleX {
       cons.head -> cons.tail
     }
 
-    trait VarArgsConstructor {
-
-      def applyProduct[L <: TupleX](list: L): L = list
-    }
-
-    object of extends VarArgsConstructor with shapeless.ProductArgs {}
-
-    object ofNarrow extends VarArgsConstructor with shapeless.SingletonProductArgs {}
-
-    /**
-      * The inverse of [[Ops.ToFlatTuple]]
-      */
-    object FromProductOrValue extends FromProductOrValue_Imp0 {
-
-      implicit val _unit: Unit /=> Eye = at[Unit](_ => Eye)
-
-      implicit def _product[P <: Product, O <: HList](
-          implicit
-          gen: Generic.Aux[P, O]
-      ): P /=> O = at[P] { p =>
-        gen.to(p)
-      }
-
-    }
-
-    protected trait FromProductOrValue_Imp0 extends Poly {
-
-      implicit def _value[V]: Element[V] /=> (V ><: Eye) = at[Element[V]] { v =>
-        cons(v, Eye)
-      }
-    }
 //    type Mapper = shapeless.Poly1
 
     implicit class Ops[H <: Prod](hh: H) {
