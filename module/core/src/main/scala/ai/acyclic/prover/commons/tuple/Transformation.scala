@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.tuple
 
-import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Poly
 
 /**
   * Polymorphic function, each instance can convert from [[source.system.Prod]] to [[target.system.Prod]]
@@ -11,7 +11,7 @@ import ai.acyclic.prover.commons.jit.hom.Hom
   *   - from.G[A] ><: from.G[B] ><: from.system.Empty -> to.G[A] ><: to.G[B]><: to.system.Empty
   *   - ...
   */
-trait Transformation extends Hom.Poly {
+trait Transformation extends Poly {
   import Transformation.*
 
   val source: Schema

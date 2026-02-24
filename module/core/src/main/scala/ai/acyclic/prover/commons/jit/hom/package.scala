@@ -1,10 +1,8 @@
 package ai.acyclic.prover.commons.jit
 
 import ai.acyclic.prover.commons.TypeTag
-import ai.acyclic.prover.commons.jit.hom.Thunk
-import ai.acyclic.prover.commons.TypeTag
 import ai.acyclic.prover.commons.jit.eval.Args
-import Args.{><:, T0}
+import Args.T0
 
 package object hom extends Hom_Imp0 {
 

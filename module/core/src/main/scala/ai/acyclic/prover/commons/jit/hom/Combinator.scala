@@ -2,8 +2,6 @@ package ai.acyclic.prover.commons.jit.hom
 
 object Combinator {
 
-  import Hom.*
-
   // for conversion between extensionally equal types (but cannot be represented in the current type system)
 
   // TODO: not all are defined, will add more in the following order:

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.cps
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.hom.Hom
+import ai.acyclic.prover.commons.jit.hom.Fn
 import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
@@ -22,11 +22,11 @@ import scala.language.implicitConversions
   *   - your code outside the main package should be minimal
   */
 case class Continuation[I <: Args.Prod, +O](
-    self: Hom.Fn[I, O]
-) extends Delegating[Hom.Fn[I, O]] {
+    self: Fn[I, O]
+) extends Delegating[Fn[I, O]] {
 
-  lazy val higherOrder: Continuation[T0, Hom.Fn[I, O]] = {
-    Continuation(Hom.Fn.provided0(self))
+  lazy val higherOrder: Continuation[T0, Fn[I, O]] = {
+    Continuation(Fn.provided0(self))
   }
 
   def map[O2](right: O => O2)(
@@ -34,12 +34,12 @@ case class Continuation[I <: Args.Prod, +O](
       _definedAt: SrcDefinition
   ): Continuation[I, O2] = {
 
-    val _right: Hom.Fn[O ><: T0, O2] = Hom.Fn.at[O](
+    val _right: Fn[O ><: T0, O2] = Fn.at[O](
       right
     )(_definedAt)
 
     val result =
-      Hom.Fn
+      Fn
         .Mapped[I, O, O2](self, _right)
         .simplify // Mapped[I, O, O2].simplify returns Fn[I, O2]
 
@@ -67,13 +67,13 @@ case class Continuation[I <: Args.Prod, +O](
       _definedAt: SrcDefinition
   ): Continuation[I, O] = {
 
-    val _right = Hom.Fn.Blackbox[O, O](_definedAt) { v =>
+    val _right = Fn.Blackbox[O, O](_definedAt) { v =>
       if (right(v)) v // v is already O (Blackbox[O, O] receives O)
       else throw new MatchError(s"condition ${_definedAt} is not applicable on $v")
     }
 
     val result =
-      Hom.Fn.Mapped[I, O, O](self, _right)
+      Fn.Mapped[I, O, O](self, _right)
 
     Continuation(result.simplify) // Mapped[I, O, O].simplify returns Fn[I, O]
   }
@@ -87,7 +87,7 @@ case class Continuation[I <: Args.Prod, +O](
         unzip: Args.Zippable.Aux[I, I2, Z]
     ): Continuation[Z, (O, O2)] = {
 
-      Continuation(Hom.Fn.zip(self, right.self))
+      Continuation(Fn.zip(self, right.self))
     }
   }
   def <*> = zip
@@ -101,14 +101,14 @@ case class Continuation[I <: Args.Prod, +O](
         unzip: Args.Zippable.Aux[I, I2, Z]
     ): Continuation[Z, (O, O2)] = {
 
-      Continuation(Hom.Fn.zip(self, right.self))
+      Continuation(Fn.zip(self, right.self))
     }
   }
   def <%> = fork
 
   // flatMap is undefined, there are several options, see dottyspike ForComprehension spike for details
 
-  override lazy val unbox: Hom.Fn[I, O] = self.simplify
+  override lazy val unbox: Fn[I, O] = self.simplify
 }
 
 object Continuation {
@@ -132,7 +132,7 @@ object Continuation {
     ): Continuation[I, O] = {
 
       val result =
-        Hom.Fn.Flatten[I, Continuation[I, O], O](
+        Fn.Flatten[I, Continuation[I, O], O](
           continuation.self,
           { v: Continuation[I, O] => v.self }
         )

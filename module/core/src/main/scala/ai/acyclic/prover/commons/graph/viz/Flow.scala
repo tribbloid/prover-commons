@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.Arrow
+import ai.acyclic.prover.commons.jit.hom.Fn
 import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii
@@ -125,7 +126,7 @@ abstract class Flow extends Visualisation.Local(Local.AnyGraph) {
 
     lazy val asciiDiagram: org.scalameta.ascii.graph.Graph[NodeWrapper] = {
 
-      val nodeID2Wrapper = Hom.Fn
+      val nodeID2Wrapper = Fn
         .at[Node[?]] { v =>
           NodeWrapper(v)
         }

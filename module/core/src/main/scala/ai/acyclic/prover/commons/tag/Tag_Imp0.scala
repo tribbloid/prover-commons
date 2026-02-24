@@ -1,13 +1,12 @@
 package ai.acyclic.prover.commons.tag
 
-import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.jit.hom.Hom.Const
+import ai.acyclic.prover.commons.jit.hom.{Const, ConstantFn, Fn, Poly}
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
 
 private[tag] trait Tag_Imp0 {
 
-  trait revoke_Imp0[CC <: Tag] extends Hom.Poly {
+  trait revoke_Imp0[CC <: Tag] extends Poly {
 
     implicit def exactTag[T]: (T <> CC) /=> T = at[T <> CC].apply { v =>
       v.asInstanceOf[T]
@@ -34,8 +33,8 @@ private[tag] trait Tag_Imp0 {
         lemma: T |- R
     ): (T <> C) /=> R = at[T <> C] { v =>
       lemma
-        .asInstanceOf[Hom.Fn.Impl[T ><: T0, R]]
-        .apply(Args.><:(Const.Provided(v).asInstanceOf[Hom.ConstantFn[T]], Args.eye))
+        .asInstanceOf[Fn.Impl[T ><: T0, R]]
+        .apply(Args.><:(Const.Provided(v).asInstanceOf[ConstantFn[T]], Args.eye))
         .asInstanceOf[R] // fuck scala
     }
   }

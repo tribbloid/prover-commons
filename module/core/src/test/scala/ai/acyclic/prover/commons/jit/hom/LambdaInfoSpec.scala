@@ -32,10 +32,10 @@ class LambdaInfoSpec extends BaseSpec {
 
   it("should be defined for a closure") {
     val captured = 42
-    val fn: Hom.Fn[Int ><: T0, Int] = { (x: Int) => x + captured }
+    val fn: Fn[Int ><: T0, Int] = { (x: Int) => x + captured }
 
     fn match {
-      case bb: Hom.Fn.Blackbox[_, _] =>
+      case bb: Fn.Blackbox[_, _] =>
         assert(bb.lambdaInfo.isDefined)
         assert(bb.lambdaInfo.get.freeVariables.contains(captured))
       case _ => fail("Required Blackbox")
@@ -46,10 +46,10 @@ class LambdaInfoSpec extends BaseSpec {
     class NamedFn extends (Int => Int) {
       def apply(v1: Int): Int = v1
     }
-    val fn: Hom.Fn[Int ><: T0, Int] = new NamedFn
+    val fn: Fn[Int ><: T0, Int] = new NamedFn
 
     fn match {
-      case bb: Hom.Fn.Blackbox[_, _] =>
+      case bb: Fn.Blackbox[_, _] =>
         assert(bb.lambdaInfo.isEmpty)
       case _ => fail("Required Blackbox")
     }

@@ -1,9 +1,8 @@
 package ai.acyclic.prover.spark.serialization
 
-import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
-import ai.acyclic.prover.commons.jit.hom.Hom.:|~>
+import ai.acyclic.prover.commons.jit.hom.:|~>
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.util.Caching
 
@@ -84,16 +83,18 @@ class AssertSerializableSpike extends BaseSpec {
 
         val singleAbstractMethod: Fn[String, Int] = (_: String) => 3 // TODO: cannot handle this
 
-        val circuit: Hom.Fn[String ><: T0, Int] = Hom.Fn.at[String] { _ =>
-          3
-        }
+        val circuit: ai.acyclic.prover.commons.jit.hom.Fn[String ><: T0, Int] =
+          ai.acyclic.prover.commons.jit.hom.Fn.at[String] { _ =>
+            3
+          }
 
-        val poly: Hom.Poly = new Hom.Poly {}
+        val poly: ai.acyclic.prover.commons.jit.hom.Poly = new ai.acyclic.prover.commons.jit.hom.Poly {}
 
         val unnaturalTransformation: Seq :|~> Vector =
-          new Hom.Impl.UnnaturalTransformation[Seq, Vector] {
+          new ai.acyclic.prover.commons.jit.hom.Impl.UnnaturalTransformation[Seq, Vector] {
 
-            override def refine[T <: Any]: Hom.Fn[Seq[T] ><: T0, Vector[T]] = Hom.Fn.at[Seq[T]](v => v.toVector)
+            override def refine[T <: Any]: ai.acyclic.prover.commons.jit.hom.Fn[Seq[T] ><: T0, Vector[T]] =
+              ai.acyclic.prover.commons.jit.hom.Fn.at[Seq[T]](v => v.toVector)
           }
 
 //        val dependent: Hom.Dependent[Vector] = new Hom.Impl.Dependent[Vector] {
