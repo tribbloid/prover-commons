@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.compat.{*:, TupleX}
 import ai.acyclic.prover.commons.jit.hom.Hom.Poly
 
 import ai.acyclic.prover.commons.typesetting.TextBlock
-import shapeless.{Generic, HNil}
+import shapeless.{<:!<, ::, Generic, HList, HNil}
 
 object Products {
 
@@ -39,9 +39,50 @@ object Products {
     protected def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL
     def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL)
 
+    trait FromVarArgs[L] {
+
+      type Out <: Prod
+
+      def apply(list: L): Out
+    }
+
+    object FromVarArgs extends FromVarArgs_Imp0 {
+
+      type Aux[L, O <: Prod] = FromVarArgs[L] { type Out = O }
+
+      implicit def _prod[L <: Prod]: Aux[L, L] = new FromVarArgs[L] {
+        override type Out = L
+        override def apply(list: L): Out = list
+      }
+    }
+
+    protected trait FromVarArgs_Imp0 {
+
+      implicit def _hnil(
+          implicit
+          notProd: HNil <:!< Prod
+      ): FromVarArgs.Aux[HNil, Eye] = new FromVarArgs[HNil] {
+        override type Out = Eye
+        override def apply(list: HNil): Out = Eye
+      }
+
+      implicit def _hcons[HEAD, L <: VBound, TAIL <: HList, OUT <: Prod](
+          implicit
+          asElement: HEAD <:< Element[L],
+          notProd: (HEAD :: TAIL) <:!< Prod,
+          tailFrom: FromVarArgs.Aux[TAIL, OUT]
+      ): FromVarArgs.Aux[HEAD :: TAIL, L ><: OUT] = new FromVarArgs[HEAD :: TAIL] {
+        override type Out = L ><: OUT
+
+        override def apply(list: HEAD :: TAIL): Out =
+          cons(asElement(list.head), tailFrom(list.tail))
+      }
+    }
+
     trait VarArgsConstructor {
 
-      def applyProduct[L <: Prod](list: L): L = list
+      def applyProduct[L](list: L)(implicit fromVarArgs: FromVarArgs[L]): fromVarArgs.Out =
+        fromVarArgs(list)
     }
 
     object of extends VarArgsConstructor with shapeless.ProductArgs {}
