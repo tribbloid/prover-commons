@@ -40,8 +40,8 @@ class HasArgsSpec extends BaseSpec {
         val _: Args.Prod = result
 
         val (head, tail) = Args.deCons(result)
-        assert(head.compute == 1) E
-          assert(tail == T0)
+        assert(head.compute == 1)
+        assert(tail == T0)
       }
     }
 
