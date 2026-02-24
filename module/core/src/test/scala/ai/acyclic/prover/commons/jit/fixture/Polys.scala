@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.jit.fixture
 
-import ai.acyclic.prover.commons.jit.hom.Poly
+import ai.acyclic.prover.commons.jit.Hom.Poly
 
 object Polys {
 

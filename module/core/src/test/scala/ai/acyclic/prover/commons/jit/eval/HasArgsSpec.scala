@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.jit.eval
 
-import ai.acyclic.prover.commons.jit.hom.Const
+import ai.acyclic.prover.commons.jit.Hom.Const
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import Args.{><:, T0}
 

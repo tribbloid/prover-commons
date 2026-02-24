@@ -1,6 +1,6 @@
 package ai.acyclic.prover.spark.serialization
 
-import ai.acyclic.prover.commons.jit.hom.Fn
+import ai.acyclic.prover.commons.jit.Hom.Fn
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
 import org.apache.spark.SparkConf

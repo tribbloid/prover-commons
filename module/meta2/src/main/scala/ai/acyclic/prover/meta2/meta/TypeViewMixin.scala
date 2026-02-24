@@ -1,6 +1,6 @@
 package ai.acyclic.prover.meta2.meta
 
-import ai.acyclic.prover.commons.jit.hom.Fn
+import ai.acyclic.prover.commons.jit.Hom.Fn
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
 import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}

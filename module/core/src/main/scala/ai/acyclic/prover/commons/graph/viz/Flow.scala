@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.graph.viz
 
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.jit.hom.Fn
+import ai.acyclic.prover.commons.jit.Hom.Fn
 import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import org.scalameta.ascii

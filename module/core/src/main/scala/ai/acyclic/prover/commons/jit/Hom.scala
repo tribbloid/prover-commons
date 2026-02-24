@@ -4,26 +4,7 @@ import ai.acyclic.prover.commons.TypeTag
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.T0
 
-package object hom extends Hom_Imp0 {
-
-  implicit class _fnExt[I <: Args, O](self: Fn[I, O]) extends Serializable {
-
-    def trace(
-        implicit
-        iTag: TypeTag[I],
-        oTag: TypeTag[O]
-    ): ai.acyclic.prover.commons.jit.cps.Continuation[I, O] =
-      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify)
-  }
-
-  implicit class _thunkExt[O](self: Thunk[O]) extends Serializable {
-
-    def trace(
-        implicit
-        oTag: TypeTag[O]
-    ): ai.acyclic.prover.commons.jit.cps.Continuation[T0, O] =
-      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify)
-  }
+object Hom extends hom.Hom_Imp0 {
 
   type :=>[-I <: Args, +R] = Fn[I, R]
   val :=> : Fn.type = Fn

@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.cps
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.hom.Fn
+import ai.acyclic.prover.commons.jit.Hom.Fn
 import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}

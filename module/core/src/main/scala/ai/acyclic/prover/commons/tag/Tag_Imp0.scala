@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.tag
 
-import ai.acyclic.prover.commons.jit.hom.{Const, ConstantFn, Fn, Poly}
+import ai.acyclic.prover.commons.jit.Hom.{Const, ConstantFn, Fn, Poly}
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
 

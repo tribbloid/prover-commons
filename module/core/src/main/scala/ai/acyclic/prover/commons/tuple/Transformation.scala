@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.tuple
 
-import ai.acyclic.prover.commons.jit.hom.Poly
+import ai.acyclic.prover.commons.jit.Hom.Poly
 
 /**
   * Polymorphic function, each instance can convert from [[source.system.Prod]] to [[target.system.Prod]]

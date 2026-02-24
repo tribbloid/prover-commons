@@ -1,12 +1,14 @@
 package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.collection.CacheMagnet
-import ai.acyclic.prover.commons.jit.{CanSimplify, FnBuilder, IntermediateRepresentation, Rule}
-import ai.acyclic.prover.commons.jit.Domains
+import ai.acyclic.prover.commons.jit.Hom
+import ai.acyclic.prover.commons.jit.{CanSimplify, Domains, FnBuilder, IntermediateRepresentation, Rule}
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
+import ai.acyclic.prover.commons.TypeTag
+import ai.acyclic.prover.commons.jit.Hom.Thunk
 
 import scala.language.implicitConversions
 
@@ -16,6 +18,7 @@ object HasFunction {
 }
 
 trait HasFunction {
+  self: Hom.type =>
 
   trait DepFn[-I <: Args] extends IntermediateRepresentation with CanSimplify[DepFn[I]] {
     type In >: I <: Args
@@ -33,19 +36,6 @@ trait HasFunction {
     // TODO: this should be a special case of specialise/partial-eval
   }
   case object Fn extends FnBuilder.Root {
-
-    implicit class _extFn[I <: Args, O](
-        self: Fn[I, O]
-    ) extends Serializable {
-
-      def cached(byLookup: => CacheMagnet[I, O]): Fn.CachedImpl[I, O] = {
-        Fn.CachedImpl[I, O](self)(() => byLookup)
-      }
-
-      def cached(): Fn.CachedImpl[I, O] = {
-        Fn.CachedImpl[I, O](self)()
-      }
-    }
 
     /**
       * function with computation graph, like a lifted JAXpr
@@ -462,5 +452,32 @@ trait HasFunction {
 
       @transient lazy val compute: Nothing = throw new NoSuchElementException("missing, not provided")
     }
+  }
+
+  implicit class _fnExt[I <: Args, O](self: Fn[I, O]) extends Serializable {
+
+    def trace(
+        implicit
+        iTag: TypeTag[I],
+        oTag: TypeTag[O]
+    ): ai.acyclic.prover.commons.jit.cps.Continuation[I, O] =
+      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify)
+
+    def cached(byLookup: => CacheMagnet[I, O]): Fn.CachedImpl[I, O] = {
+      Fn.CachedImpl[I, O](self)(() => byLookup)
+    }
+
+    def cached(): Fn.CachedImpl[I, O] = {
+      Fn.CachedImpl[I, O](self)()
+    }
+  }
+
+  implicit class _thunkExt[O](self: Thunk[O]) extends Serializable {
+
+    def trace(
+        implicit
+        oTag: TypeTag[O]
+    ): ai.acyclic.prover.commons.jit.cps.Continuation[T0, O] =
+      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify)
   }
 }

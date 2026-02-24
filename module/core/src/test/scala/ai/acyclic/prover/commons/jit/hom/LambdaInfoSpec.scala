@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.jit.hom
 
+import ai.acyclic.prover.commons.jit.Hom.Fn
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 

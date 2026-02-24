@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.debug.SrcDefinition
+import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.bound.Bound
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.util.PredefKinds
@@ -14,6 +15,7 @@ object HasTypeLambda {}
   * see https://ncatlab.org/nlab/show/unnatural+transformation
   */
 trait HasTypeLambda extends HasPoly {
+  self: Hom.type =>
 
   // keep it final to use Scala 3 type project to refer to inner classes without initialising it
   final case class BoundView[D <: Bound](bound: D) {

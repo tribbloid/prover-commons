@@ -1,11 +1,13 @@
 package ai.acyclic.prover.commons.jit.hom
 
+import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.{ComputationGraph, FnBuilder}
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
 
 trait HasPoly extends HasFunction {
+  self: Hom.type =>
 
   trait PolyLike extends Serializable with ComputationGraph {}
 

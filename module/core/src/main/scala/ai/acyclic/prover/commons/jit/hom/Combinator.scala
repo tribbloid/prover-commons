@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.jit.hom
 
+import ai.acyclic.prover.commons.jit.Hom.{Const, Fn}
+
 object Combinator {
 
   // for conversion between extensionally equal types (but cannot be represented in the current type system)

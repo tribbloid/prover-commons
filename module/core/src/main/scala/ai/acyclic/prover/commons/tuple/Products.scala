@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX}
-import ai.acyclic.prover.commons.jit.hom.Poly
+import ai.acyclic.prover.commons.jit.Hom.Poly
 
 import ai.acyclic.prover.commons.typesetting.TextBlock
 import shapeless.{::, <:!<, Generic, HList, HNil}

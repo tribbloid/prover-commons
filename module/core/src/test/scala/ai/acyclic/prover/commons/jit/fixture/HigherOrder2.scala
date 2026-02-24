@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.fixture.Circuits.{fn1, fn2}
-import ai.acyclic.prover.commons.jit.hom.{ConstantFn, Fn}
+import ai.acyclic.prover.commons.jit.Hom.{ConstantFn, Fn}
 import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 
 object HigherOrder2 {
@@ -16,12 +16,12 @@ object HigherOrder2 {
 
     val proto = Fn.fromFunction1 { (v: Int) =>
       val in1 = ai.acyclic.prover.commons.jit.eval.Args.><:(
-        ai.acyclic.prover.commons.jit.hom.Const.Provided(v).asInstanceOf[ConstantFn[Int]],
+        ai.acyclic.prover.commons.jit.Hom.Const.Provided(v).asInstanceOf[ConstantFn[Int]],
         ai.acyclic.prover.commons.jit.eval.Args.T0
       )
       val in2 = ai.acyclic.prover.commons.jit.eval.Args.T0
       val combinedIn =
-        ai.acyclic.prover.commons.jit.hom.Const.Provided((in1, in2)).asInstanceOf[ConstantFn[Any]]
+        ai.acyclic.prover.commons.jit.Hom.Const.Provided((in1, in2)).asInstanceOf[ConstantFn[Any]]
       f.apply(ai.acyclic.prover.commons.jit.eval.Args.><:(combinedIn, ai.acyclic.prover.commons.jit.eval.Args.T0))
         .asInstanceOf[(Seq[Long], Fn[Long ><: T0, Seq[Double]])]
     }
