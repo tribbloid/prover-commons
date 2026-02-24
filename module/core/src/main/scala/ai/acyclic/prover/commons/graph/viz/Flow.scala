@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.jit.hom.Hom
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.multiverse.{CanEqual, Projection}

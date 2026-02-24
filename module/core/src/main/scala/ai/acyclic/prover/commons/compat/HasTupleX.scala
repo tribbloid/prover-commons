@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.compat
 
-import ai.acyclic.prover.commons.jit.hom.Hom
-import ai.acyclic.prover.commons.jit.hom.Hom.Poly
+import ai.acyclic.prover.commons.jit.hom.Poly
 import ai.acyclic.prover.commons.tuple.Products
 import shapeless.labelled.FieldType
 import shapeless.ops.hlist.Tupler
@@ -74,7 +73,7 @@ trait HasTupleX {
       // TODO: current Poly definitions have to be singleton which makes it unusable.
       //  test will be delayed after revision or Scala 3
       // https://stackoverflow.com/questions/66036106/can-shapeless-record-type-be-used-as-a-poly1-part-2
-      trait GetValue extends Hom.Poly {
+      trait GetValue extends Poly {
 
         implicit def getter[S](
             implicit
@@ -85,7 +84,7 @@ trait HasTupleX {
       }
       object GetValue extends GetValue
 
-      trait GetField extends Hom.Poly {
+      trait GetField extends Poly {
 
         implicit def getter[S](
             implicit
