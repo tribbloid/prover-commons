@@ -91,7 +91,7 @@ object Schemata {
 
       trait ><:[
           L <: VBound,
-          TAIL <: Prod
+          +TAIL <: Prod
       ] extends Prod {
 
         val tail: TAIL

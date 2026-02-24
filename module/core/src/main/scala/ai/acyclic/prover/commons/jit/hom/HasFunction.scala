@@ -36,6 +36,8 @@ trait HasFunction {
     // TODO: this should be a special case of specialise/partial-eval
   }
   case object Fn extends FnBuilder.Root {
+    type Fn1[-I, +O] = Fn[I ><: T0, O]
+    type Fn2[-I, -J, +O] = Fn[I ><: J ><: T0, O]
 
     /**
       * function with computation graph, like a lifted JAXpr

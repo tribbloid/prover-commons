@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.jit.eval
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
+import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.tuple.Products
 import ai.acyclic.prover.commons.jit.hom.HasFunction
 
@@ -14,7 +15,7 @@ trait HasArgs {
 
     override type VBound = Any
 
-    override type Element[V] = HasFunction#ConstantFn[V]
+    override type Element[V] = Hom.ConstantFn[V]
 
     /**
       * choose 1 of the 2 options:
@@ -39,7 +40,7 @@ trait HasArgs {
 
     }
 
-    case class ><:[H, T <: Prod](
+    case class ><:[H, +T <: Prod](
         head: Element[H],
         tail: T
     ) extends Prod

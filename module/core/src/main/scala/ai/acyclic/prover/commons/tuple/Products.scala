@@ -135,7 +135,7 @@ object Products {
 
       trait ><:[
           L <: VBound,
-          TAIL <: Prod
+          +TAIL <: Prod
       ] extends SchemaMixin.><:[L, TAIL]
           with Prod {
 
