@@ -84,6 +84,45 @@ class ProductsSpec extends BaseSpec {
     }
   }
 
+  describe("Products.FromTupleX") {
+
+    it("converts HNil to Eye for non-HList systems") {
+      val converted = FromTupleX(shapeless.HNil)
+
+      val _: Eye = converted
+      val _: Prod = converted
+      assert(converted == Eye)
+    }
+
+    it("converts HList to Prod for non-HList systems") {
+      val list = 1 :: "a" :: shapeless.HNil
+      val converted = FromTupleX(list)
+
+      val _: Int ><: String ><: Eye = converted
+      val _: Prod = converted
+      assert(converted == 1 ><: "a" ><: Eye)
+    }
+
+    it("keeps existing Prod unchanged for non-HList systems") {
+      val original: Int ><: Eye = 1 ><: Eye
+      val converted = FromTupleX(original)
+
+      val _: Int ><: Eye = converted
+      val _: Prod = converted
+      assert(converted == original)
+    }
+
+    it("keeps HList identity for HList-based systems") {
+      import HListSystem.*
+
+      val original = 1 :: "a" :: shapeless.HNil
+      val converted = FromTupleX(original)
+
+      val _: Int ><: String ><: Eye = converted
+      assert(converted eq original)
+    }
+  }
+
   describe("Products.Zippable") {
 
     it("can zip and unzip empty with empty") {

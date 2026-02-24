@@ -39,52 +39,36 @@ object Products {
     protected def cons[L <: VBound, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL
     def deCons[L <: VBound, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL)
 
-    trait FromTupleX[L] {
-
-      type Out <: Prod
-
-      def apply(list: L): Out
-    }
-
     object FromTupleX extends FromTupleX_Imp0 {
 
-      type Aux[L, O <: Prod] = FromTupleX[L] { type Out = O }
+      type Aux[L, O <: Prod] = L /=> O
 
-      implicit def _prod[L <: Prod]: Aux[L, L] = new FromTupleX[L] {
-        override type Out = L
-        override def apply(list: L): Out = list
-      }
+      implicit def _prod[L <: Prod]: L /=> L = at[L](list => list)
     }
 
-    protected trait FromTupleX_Imp0 {
+    protected trait FromTupleX_Imp0 extends Poly {
 
       implicit def _hnil(
           implicit
           notProd: HNil <:!< Prod
-      ): FromTupleX.Aux[HNil, Eye] = new FromTupleX[HNil] {
-        override type Out = Eye
-        override def apply(list: HNil): Out = Eye
-      }
+      ): HNil /=> Eye = at[HNil](_ => Eye)
 
       implicit def _hcons[HEAD, L <: VBound, TAIL <: HList, OUT <: Prod](
           implicit
           asElement: HEAD <:< Element[L],
           notProd: (HEAD :: TAIL) <:!< Prod,
-          tailFrom: FromTupleX.Aux[TAIL, OUT]
-      ): FromTupleX.Aux[HEAD :: TAIL, L ><: OUT] = new FromTupleX[HEAD :: TAIL] {
-        override type Out = L ><: OUT
-
-        override def apply(list: HEAD :: TAIL): Out =
-          cons(asElement(list.head), tailFrom(list.tail))
+          tailFrom: TAIL /=> OUT
+      ): (HEAD :: TAIL) /=> (L ><: OUT) = at[HEAD :: TAIL] { list =>
+        cons(asElement(list.head), tailFrom(list.tail))
       }
     }
 
     trait VarArgsConstructor {
 
-      def applyProduct[L](list: L)(
+      def applyProduct[L, O <: Prod](list: L)(
           implicit
-          fromVarArgs: FromTupleX[L]
-      ): fromVarArgs.Out =
+          fromVarArgs: FromTupleX.Aux[L, O]
+      ): O =
         fromVarArgs(list)
     }
 
