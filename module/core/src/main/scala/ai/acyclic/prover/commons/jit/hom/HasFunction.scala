@@ -36,8 +36,8 @@ trait HasFunction {
     // TODO: this should be a special case of specialise/partial-eval
   }
   case object Fn extends FnBuilder.Root {
-    type Fn1[-I, +O] = Fn[(? <: I) ><: T0, O]
-    type Fn2[-I, -J, +O] = Fn[(? <: I) ><: (? <: J) ><: T0, O]
+    type Fn1[-I, +O] = Fn[I ><: T0, O]
+    type Fn2[-I, -J, +O] = Fn[I ><: J ><: T0, O]
 
     /**
       * function with computation graph, like a lifted JAXpr
@@ -75,7 +75,7 @@ trait HasFunction {
       override type Rules = left.Rules & right.Rules
 
       override def apply(arg: I): O =
-        right.apply(Args.><:(Const.Provided(left(arg)), Args.eye))
+        right.apply(Const.Provided(left(arg)) ><: Args.eye)
 
       override def simplify: Fn[I, O] = {
         copy(left = left.simplify, right = right.simplify)
@@ -107,7 +107,7 @@ trait HasFunction {
 
         val (i2, t1) = Args.deCons(arg)
         val (i1, _) = Args.deCons(t1)
-        base.apply(Args.><:(i1, Args.><:(i2, Args.eye)))
+        base.apply(i1 ><: (i2 ><: Args.eye))
       }
     }
 
@@ -142,7 +142,7 @@ trait HasFunction {
       override def apply(arg: I1 ><: IT): (O1, OT) = {
 
         val (h1, tailArgs) = Args.deCons(arg)
-        head(Args.><:(h1, Args.eye)) -> tail(tailArgs)
+        head(h1 ><: Args.eye) -> tail(tailArgs)
       }
     }
 
@@ -382,7 +382,7 @@ trait HasFunction {
 
     def function1: Function1View[I, O] = this
 
-    final override def apply(v: I): O = self(Args.><:(Const.Provided(v), Args.eye))
+    final override def apply(v: I): O = self(Const.Provided(v) ><: Args.eye)
 
     // TODO: both of these are not narrow enough
     final override def andThen[O2](next: O => O2): Function1View[I, O2] = {

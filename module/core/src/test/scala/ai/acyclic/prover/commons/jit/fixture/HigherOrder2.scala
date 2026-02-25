@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.fixture
 
 import ai.acyclic.prover.commons.jit.fixture.Circuits.{fn1, fn2}
-import ai.acyclic.prover.commons.jit.Hom.{ConstantFn, Fn}
+import ai.acyclic.prover.commons.jit.Hom.Fn
 import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 
 object HigherOrder2 {
@@ -12,18 +12,11 @@ object HigherOrder2 {
   val s1 = {
 
     val p = fn1.trace <*> fn2.trace.higherOrder
-    val f = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(p).asInstanceOf[Any => Any]
+    val f = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(p)
 
     val proto = Fn.fromFunction1 { (v: Int) =>
-      val in1 = ai.acyclic.prover.commons.jit.eval.Args.><:(
-        ai.acyclic.prover.commons.jit.Hom.Const.Provided(v).asInstanceOf[ConstantFn[Int]],
-        ai.acyclic.prover.commons.jit.eval.Args.T0
-      )
-      val in2 = ai.acyclic.prover.commons.jit.eval.Args.T0
-      val combinedIn =
-        ai.acyclic.prover.commons.jit.Hom.Const.Provided((in1, in2)).asInstanceOf[ConstantFn[Any]]
-      f.apply(ai.acyclic.prover.commons.jit.eval.Args.><:(combinedIn, ai.acyclic.prover.commons.jit.eval.Args.T0))
-        .asInstanceOf[(Seq[Long], Fn[Long ><: T0, Seq[Double]])]
+      val in1 = ai.acyclic.prover.commons.jit.Hom.Const.Provided(v) ><: T0
+      f.apply(in1)
     }
 
     val result =
@@ -68,8 +61,8 @@ object HigherOrder2 {
         |+ Mapped
         |!-+ Mapped
         |: !-- Blackbox(proto <at HigherOrder2.scala:17>)
-        |: !-- Blackbox(result <at HigherOrder2.scala:32>)
-        |!-- Blackbox(result <at HigherOrder2.scala:31>)
+        |: !-- Blackbox(result <at HigherOrder2.scala:25>)
+        |!-- Blackbox(result <at HigherOrder2.scala:24>)
         |""".stripMargin
 //    s2 -> "s2"
 //    s3 -> "s3",

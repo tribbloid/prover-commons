@@ -40,9 +40,9 @@ trait HasArgs {
 
     }
 
-    type ><:[+H, +T <: Prod] = ConsProto[? <: H, T]
+    type ><:[+H, +T <: Prod] = Cons[? <: H, T]
 
-    case class ConsProto[H, +T <: Prod] private (
+    case class Cons[H, +T <: Prod] private[Args] (
         head: Element[H],
         tail: T
     ) extends Prod
@@ -65,7 +65,7 @@ trait HasArgs {
     // the only capability it grants is to remove some pending arguments that are guaranteed to be provided
 
     override protected def cons[L, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL =
-      ConsProto(head, tail)
+      Cons(head, tail)
 
     override def deCons[L, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL) =
       (cons.head, cons.tail)

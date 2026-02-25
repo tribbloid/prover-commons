@@ -80,7 +80,7 @@ trait HasTypeLambda extends HasPoly {
 
                 // safe by construction: Const.Provided <: ConstantFn across path-dependent Hom
                 backbone.apply[T](
-                  Args.><:(Const.Provided(i).asInstanceOf[ConstantFn[In[T]]], Args.eye).asInstanceOf[In[T] ><: T0]
+                  (Const.Provided(i).asInstanceOf[ConstantFn[In[T]]] ><: Args.eye).asInstanceOf[In[T] ><: T0]
                 )
 
               }

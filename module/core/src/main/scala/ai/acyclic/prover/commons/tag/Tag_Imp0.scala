@@ -34,7 +34,7 @@ private[tag] trait Tag_Imp0 {
     ): (T <> C) /=> R = at[T <> C] { v =>
       lemma
         .asInstanceOf[Fn.Impl[T ><: T0, R]]
-        .apply(Args.><:(Const.Provided(v).asInstanceOf[ConstantFn[T]], Args.eye))
+        .apply(Const.Provided(v).asInstanceOf[ConstantFn[T]] ><: Args.eye)
         .asInstanceOf[R] // fuck scala
     }
   }

@@ -13,7 +13,7 @@ class HasArgsSpec extends BaseSpec {
     describe("construct via applyProduct") {
 
       it("unary") {
-        val original: 1 ><: T0 = Args.><:(Const.Provided(1), T0)
+        val original: 1 ><: T0 = Const.Provided[1](1) ><: T0
 
         val viaOf = Args.of(Const.Provided(1))
 
@@ -23,7 +23,7 @@ class HasArgsSpec extends BaseSpec {
       }
 
       it("binary and keep order") {
-        val original: Int ><: String ><: T0 = Args.><:(Const.Provided(1), Args.><:(Const.Provided("a"), T0))
+        val original: Int ><: String ><: T0 = Const.Provided(1) ><: (Const.Provided("a") ><: T0)
 
         val viaOf = Args.of(Const.Provided(1), Const.Provided("a"))
 

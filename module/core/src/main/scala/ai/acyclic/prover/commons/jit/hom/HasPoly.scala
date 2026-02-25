@@ -85,7 +85,7 @@ trait HasPoly extends HasFunction {
       // safe by construction: Const.Provided[I] <: ConstantFn[I], and the args type matches _case.underlying.In
       // casts needed due to path-dependent type _case.underlying.In being opaque to the compiler
       _case.underlying
-        .apply(Args.><:(Const.Provided(v).asInstanceOf[ConstantFn[I]], Args.eye).asInstanceOf[_case.underlying.In])
+        .apply((Const.Provided(v).asInstanceOf[ConstantFn[I]] ><: Args.eye).asInstanceOf[_case.underlying.In])
         .asInstanceOf[_case.Out]
     }
 

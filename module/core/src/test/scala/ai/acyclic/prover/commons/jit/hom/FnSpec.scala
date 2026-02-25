@@ -22,7 +22,7 @@ class FnSpec extends BaseSpec {
       }
       assert(
         (cc.apply(
-          Args.><:(Const.Provided(1), Args.eye)
+          Const.Provided(1) ><: Args.eye
         ): String) == "1"
       )
     }
@@ -35,7 +35,7 @@ class FnSpec extends BaseSpec {
       assert(cc.getClass == classOf[Fn.Blackbox[?, ?]])
       assert(
         (cc.apply(
-          Args.><:(Const.Provided(1), Args.eye)
+          Const.Provided(1) ><: Args.eye
         ): String) == "1"
       )
 
@@ -98,7 +98,7 @@ class FnSpec extends BaseSpec {
                 s
               )
 
-            val in = Args.><:(Const.Provided(1), Args.eye)
+            val in = Const.Provided(1) ><: Args.eye
             val r1 = fn.apply(in)
             assert(r1 == 3)
           }
@@ -120,7 +120,7 @@ class FnSpec extends BaseSpec {
                 s
               )
 
-            val in = Args.><:(Const.Provided(1), Args.eye)
+            val in = Const.Provided(1) ><: Args.eye
             val r1 = fn.apply(in)
             assert(r1 == "2b")
           }
@@ -152,7 +152,7 @@ class FnSpec extends BaseSpec {
 
             sLeft.shouldBe(s)
 
-            val in = Args.><:(Const.Provided(1), Args.eye)
+            val in = Const.Provided(1) ><: Args.eye
             val r1 = fn.apply(in)
             assert(r1 == "10b")
           }
@@ -175,15 +175,7 @@ class FnSpec extends BaseSpec {
               s
             )
 
-          val combinedIn = Args
-            .><:(
-              Const.Provided(1),
-              Args
-                .><:(
-                  Const.Provided(2L),
-                  Args.eye
-                )
-            )
+          val combinedIn = Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye)
 
           val fnTraced = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(fn)
           val r1 = fnTraced(combinedIn)
@@ -206,15 +198,7 @@ class FnSpec extends BaseSpec {
 
         val pw = Fn.PointwiseZip[Int, String, Long ><: T0, Double](head, tail)
 
-        val in = Args
-          .><:(
-            Const.Provided(10),
-            Args
-              .><:(
-                Const.Provided(4L),
-                Args.eye
-              )
-          )
+        val in = Const.Provided(10) ><: (Const.Provided(4L) ><: Args.eye)
 
         val result = pw.apply(in)
         assert(result == ("h10", 2.0))
@@ -232,19 +216,7 @@ class FnSpec extends BaseSpec {
 
         val pw = Fn.PointwiseZip[Int, String, String ><: Long ><: T0, (String, Long)](head, tail)
 
-        val in = Args
-          .><:(
-            Const.Provided(42),
-            Args
-              .><:(
-                Const.Provided("abc"),
-                Args
-                  .><:(
-                    Const.Provided(7L),
-                    Args.eye
-                  )
-              )
-          )
+        val in = Const.Provided(42) ><: (Const.Provided("abc") ><: (Const.Provided(7L) ><: Args.eye))
 
         val result = pw.apply(in)
         assert(result == ("v=42", ("ABC", 107L)))
@@ -270,15 +242,7 @@ class FnSpec extends BaseSpec {
         val pw = Fn.PointwiseZip[Int, String, Long ><: T0, Double](head, tail)
         val simplified = pw.simplify
 
-        val in = Args
-          .><:(
-            Const.Provided(5),
-            Args
-              .><:(
-                Const.Provided(3L),
-                Args.eye
-              )
-          )
+        val in = Const.Provided(5) ><: (Const.Provided(3L) ><: Args.eye)
 
         val result = simplified.apply(in)
         assert(result == ("s5", 3.0))
@@ -297,15 +261,7 @@ class FnSpec extends BaseSpec {
           val tree = normal.explain.text_hierarchy()
           assert(tree.contains("PointwiseZip"))
 
-          val combinedIn = Args
-            .><:(
-              Const.Provided(1),
-              Args
-                .><:(
-                  Const.Provided(2L),
-                  Args.eye
-                )
-            )
+          val combinedIn = Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye)
 
           val fnTraced = ai.acyclic.prover.commons.jit.cps.Continuation.tracingToFunction(fn)
           val result = fnTraced(combinedIn)
@@ -320,15 +276,7 @@ class FnSpec extends BaseSpec {
 
     it("simplify preserves behavior") {
 
-      val combinedIn = Args
-        .><:(
-          Const.Provided(1),
-          Args
-            .><:(
-              Const.Provided(2L),
-              Args.eye
-            )
-        )
+      val combinedIn = Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye)
 
       ForkLike.pairs.foreach {
         case (fn, _) =>
