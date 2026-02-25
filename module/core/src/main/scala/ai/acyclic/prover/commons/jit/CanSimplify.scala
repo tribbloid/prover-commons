@@ -6,17 +6,24 @@ object CanSimplify extends CanSimplify_Impl0 {}
 
 trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresentation {
 
-  type PartialEvalInputs <: Args
-  lazy val noneProvided: PartialEvalInputs = throw new UnsupportedOperationException("PartialEvalInputs not provided")
-  def partialEval(env: PartialEvalEnv[PartialEvalInputs]): N = {
-    this.asInstanceOf[N] // safe by construction: concrete subclasses always extend CanSimplify[Self]
-  }
+  // TODO: the following 2 functons should be implemented in all subclasses
+  //  given incmplete input "partialEval" should
 
-  def simplify: N = {
+  /**
+    * given complete or incmplete input, it should return a simplified/partially evaluated version of itself with best
+    * effort.
+    */
+  def partialEval(env: PartialEvalEnv[In]): N
 
-//    val env = PartialEvalEnv(noneProvided, failFast = false, onlyPure = true)
-    ////
-    ////    partialEval(env)
-    ???
+  /**
+    * simplifying is equivalent to partial evaluation with all inputs missing
+    */
+  val noneProvided: In
+  final lazy val noneProvidedEnvironment: PartialEvalEnv[In] =
+    PartialEvalEnv(noneProvided, failFast = false, onlyPure = true)
+
+  final lazy val simplify: N = {
+
+    partialEval(noneProvidedEnvironment)
   }
 }

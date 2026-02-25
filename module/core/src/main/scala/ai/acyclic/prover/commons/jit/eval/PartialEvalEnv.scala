@@ -1,18 +1,28 @@
 package ai.acyclic.prover.commons.jit.eval
 
 /**
-  * Partial evaluation environment
+  * Partial evaluation environment. Stateful and should only be used once. Intermediate result should be cached by
+  * function HashID and input
   *
-  * @tparam PartialEvalInputs
-  *   partial input type (Const[T]) or a tuple of several of them
+  * @param inputs
+  *   The "computeAll" value of it may contain both [[Const.Provided]] and [[Const.NotProvided]] part. They can be *
+  *   used to partially evaluate [[ai.acyclic.prover.commons.jit.CanSimplify]] to make it simpler and faster.
+  * @param failFast
+  *   if false, will evaluate the graph with best effort
+  *   - if true, will fail fast if any sub-function cannot be evaluated
+  * @param onlyPure
+  *   will avoid evaluating non-pure function components
   */
 case class PartialEvalEnv[
     I <: Args
 ](
     inputs: I,
-    failFast: Boolean, // used in function.apply, if false, will evaluate the graph with best effort
-    onlyPure: Boolean // will not evaluate non-pure sub-functions
-) {}
+    failFast: Boolean,
+    onlyPure: Boolean
+) {
+
+  // TODO: implement the evaluation cachet
+}
 
 object PartialEvalEnv {
 
