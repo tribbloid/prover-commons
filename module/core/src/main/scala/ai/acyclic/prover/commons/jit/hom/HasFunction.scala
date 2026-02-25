@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.{CanSimplify, Domains, FnBuilder, IntermediateRepresentation, Rule}
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.eval.Args
+import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
 import Args.{><:, T0}
 import ai.acyclic.prover.commons.TypeTag
 import ai.acyclic.prover.commons.jit.Hom.Thunk
@@ -22,6 +22,9 @@ trait HasFunction {
 
   trait DepFn[-I <: Args] extends IntermediateRepresentation with CanSimplify[DepFn[I]] {
     type In >: I <: Args
+
+    override def partialEval(env: PartialEvalEnv[In]): DepFn[I] = this
+    override lazy val noneProvided: In = null.asInstanceOf[In]
   }
   case object DepFn {
 
@@ -32,7 +35,8 @@ trait HasFunction {
 
     type Out <: O
 
-    override def simplify: Fn[I, O] = this // bypassing EqSat, always leads to better representation
+    override def partialEval(env: PartialEvalEnv[In]): Fn[I, O] = this
+
     // TODO: this should be a special case of specialise/partial-eval
   }
   case object Fn extends FnBuilder.Root {
@@ -77,8 +81,11 @@ trait HasFunction {
       override def apply(arg: I): O =
         right.apply(Const.Provided(left(arg)) ><: Args.eye)
 
-      override def simplify: Fn[I, O] = {
-        copy(left = left.simplify, right = right.simplify)
+      override def partialEval(env: PartialEvalEnv[In]): Fn[I, O] = {
+        copy(
+          left = left.partialEval(env.asInstanceOf[PartialEvalEnv[left.In]]).asInstanceOf[Fn[I, M]],
+          right = right.simplify
+        )
       }
     }
 
@@ -91,8 +98,8 @@ trait HasFunction {
         coerce(base(arg)).apply(arg)
       }
 
-      override def simplify: Fn[I, O] = {
-        copy(base.simplify)
+      override def partialEval(env: PartialEvalEnv[In]): Fn[I, O] = {
+        copy(base = base.partialEval(env.asInstanceOf[PartialEvalEnv[base.In]]).asInstanceOf[Fn[I, T]])
       }
 
     }
@@ -122,8 +129,11 @@ trait HasFunction {
         left(arg) -> right(arg)
       }
 
-      override def simplify: Fn[I, (O1, O2)] = {
-        copy(left = left.simplify, right = right.simplify)
+      override def partialEval(env: PartialEvalEnv[In]): Fn[I, (O1, O2)] = {
+        copy(
+          left = left.partialEval(env.asInstanceOf[PartialEvalEnv[left.In]]).asInstanceOf[Fn[I, O1]],
+          right = right.partialEval(env.asInstanceOf[PartialEvalEnv[right.In]]).asInstanceOf[Fn[I, O2]]
+        )
       }
     }
 
