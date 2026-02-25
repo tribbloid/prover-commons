@@ -289,6 +289,35 @@ class FnSpec extends BaseSpec {
     }
   }
 
+  describe("flatten") {
+
+    it("basic usage") {
+      val baseFn: Fn[Int ><: T0, Int] = { (v: Int) => v * 2 }
+      val coerceFn: Int => Fn[Int ><: T0, String] = { (t: Int) =>
+        { (v: Int) => s"v=$v, t=$t" }
+      }
+
+      val flatten = Fn.Flatten(baseFn, coerceFn)
+
+      val arg = Const.Provided(3) ><: Args.eye
+      val result = flatten.apply(arg)
+      assert(result == "v=3, t=6")
+    }
+
+    it("simplify preserves behavior") {
+      val baseFn: Fn[Int ><: T0, Int] = { (v: Int) => v * 2 }
+      val coerceFn: Int => Fn[Int ><: T0, String] = { (t: Int) =>
+        { (v: Int) => s"v=$v, t=$t" }
+      }
+
+      val flatten = Fn.Flatten(baseFn, coerceFn)
+      val simplified = flatten.simplify
+
+      val arg = Const.Provided(4) ><: Args.eye
+      assert(flatten.apply(arg) == simplified.apply(arg))
+    }
+  }
+
   describe("higher-order") {
 
     import ai.acyclic.prover.commons.jit.fixture.HigherOrder1
