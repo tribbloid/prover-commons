@@ -61,7 +61,7 @@ trait HasFunction {
 
     type Impl0[O] = Impl[T0, O]
     type Impl1[I, O] = Impl[I ><: T0, O]
-    type Impl2[I1, I2] = Impl[I1 ><: I2 ><: T0, I2]
+    type Impl2[I1, I2, O] = Impl[I1 ><: I2 ><: T0, O]
 
 //    sealed trait Compositor {} // TODO: this needs to be a supertype of all Impl composed from multiple functions
 
@@ -98,8 +98,8 @@ trait HasFunction {
     }
 
     case class Flipped[I1, I2, O](
-        base: Fn[I1 ><: I2 ><: T0, O]
-    ) extends Impl[I2 ><: I1 ><: T0, O] {
+        base: Fn2[I1, I2, O]
+    ) extends Impl2[I2, I1, O] {
 
       override type Rules = base.Rules
 
@@ -245,16 +245,16 @@ trait HasFunction {
       }
     }
 
-    case class BlackboxArgs[I <: Args, R](
-        final override val _definedAt: SrcDefinition
-    )(val fn: I => R)
-        extends Impl[I, R]
-        with HasLambdaInfo[I => R] {
-
-      override def apply(arg: I): R = {
-        fn(arg)
-      }
-    }
+//    case class BlackboxArgs[I <: Args, R](
+//        final override val _definedAt: SrcDefinition
+//    )(val fn: I => R)
+//        extends Impl[I, R]
+//        with HasLambdaInfo[I => R] {
+//
+//      override def apply(arg: I): R = {
+//        fn(arg)
+//      }
+//    }
 
     implicit def _as1View[I, O](v: CanSimplify[Fn[I ><: T0, O]])(
         implicit
