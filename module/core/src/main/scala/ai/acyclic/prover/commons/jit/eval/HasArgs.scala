@@ -3,11 +3,15 @@ package ai.acyclic.prover.commons.jit.eval
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.tuple.Products
-import ai.acyclic.prover.commons.jit.hom.HasFunction
 
 trait HasArgs {
 
+  import Args.><:
+
   type Args = Args.Prod
+  type Arg0 = Args.Eye
+  type Arg1[X] = X ><: Args.Eye
+  type Args2[X, Y] = X ><: Y ><: Args.Eye
 
   object Args extends Products.Monoidal with Products.Cartesian_UID {
 

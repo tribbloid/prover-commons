@@ -14,7 +14,7 @@ package ai.acyclic.prover.commons.jit.eval
   *   will avoid evaluating non-pure function components
   */
 case class PartialEvalEnv[
-    I <: Args
+    +I <: Args
 ](
     inputs: I,
     failFast: Boolean,
