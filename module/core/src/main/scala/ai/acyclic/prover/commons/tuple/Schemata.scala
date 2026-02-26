@@ -1,6 +1,7 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX}
+import ai.acyclic.prover.commons.tuple.Products.Cartesian
 import ai.acyclic.prover.commons.util.Phantom
 
 object Schemata {
@@ -22,6 +23,7 @@ object Schemata {
       * Identity element of the product (MATLAB terminology)
       */
     type Eye <: Prod
+    val Eye: Eye
     type T0 = Eye // aliases
     type Nil = Eye
   }
@@ -88,6 +90,7 @@ object Schemata {
 
         override type Header = TupleX.Eye
       }
+      object Eye extends Eye
 
       trait ><:[
           L <: VBound,
@@ -101,4 +104,18 @@ object Schemata {
     }
   }
 
+  /**
+    * cartesian product with a unique identity element.
+    *
+    * technically this applies to any Cartesian product, but in some libraries, Identity type is not a singleton. e.g.
+    * shapeless.HNil type is a supertype of shapeless.HNil.type, despite being sealed.
+    *
+    * this is very annoying, as many operations defined for HNil have no variance
+    */
+  trait Cartesian_UID extends Cartesian {
+
+    val eye: Prod
+    override type Eye = eye.type
+    override lazy val Eye: Eye = eye
+  }
 }

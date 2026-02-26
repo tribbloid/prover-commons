@@ -10,25 +10,8 @@ object Products {
 
   trait Cartesian extends Schemata.Cartesian {
 
-    val Eye: Eye
     final lazy val T0: Eye.type = Eye
     final lazy val Nil: Eye.type = Eye
-  }
-
-  /**
-    * cartesian product with a unique identity element.
-    *
-    * technically this applies to any Cartesian product, but in some libraries, Identity type is not a singleton. e.g.
-    * shapeless.HNil type is a supertype of shapeless.HNil.type, despite being sealed.
-    *
-    * this is very annoying, as many operations defined for HNil have no variance
-    */
-  trait Cartesian_UID extends Cartesian {
-
-    val eye: Prod
-    override type Eye = eye.type
-    override lazy val Eye: Eye = eye
-
   }
 
   /**
@@ -132,6 +115,7 @@ object Products {
         override def runtimeSeq: Vector[Element[? <: VBound]] = Vector.empty
         override lazy val toString: String = EMPTY
       }
+      object Eye extends Eye
 
       trait ><:[
           L <: VBound,
