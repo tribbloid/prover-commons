@@ -36,7 +36,6 @@ trait HasArgSchema {
     sealed trait Prod extends SchemaMixin.Prod {
 
       type Peer >: this.type <: Prod
-      val peer: Peer = this
 
       type Top >: Peer <: Prod
       type Bottom <: Peer
@@ -47,7 +46,7 @@ trait HasArgSchema {
       type _Payload <: Payload[Peer]
     }
 
-    abstract class Payload[S <: Prod](schema: S) {}
+    abstract class Payload[+S <: Prod](schema: S) {}
 
     override object eye extends Prod with SchemaMixin.Eye {
 
@@ -61,9 +60,9 @@ trait HasArgSchema {
       class _Payload extends Payload(this)
     }
 
-    type ><:[+H, +T <: Prod] = Cons[? <: H, T]
+    infix type ><:[+H, +T <: Prod] = Cons[? <: H, T]
 
-    case class Cons[H, +T <: Prod] private[Args] (
+    infix case class Cons[H, +T <: Prod] private[Args] (
         tail: T
     ) extends Prod
         with SchemaMixin.><:[H, T] {
@@ -77,8 +76,11 @@ trait HasArgSchema {
         Cons(tail.Bottom)
       }
 
-      class _Payload extends Payload[Peer](peer)
+      class _Payload(head: H, _tail: tail._Payload) extends Payload[Peer](this)
     }
+
+    val v1: Int Cons T0 = ???
+    implicitly[v1.Peer =:= (Int ><: T0)]
 
     implicitly[Eye =:= T0]
     implicitly[(Int ><: String ><: Eye) =:= (Int >< String)]
