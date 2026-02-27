@@ -41,7 +41,7 @@ trait HasArgSchema {
 
       type Top >: Peer <: Prod
       type Bottom <: Peer
-      def Bottom: Bottom
+      val Bottom: Bottom
 
       type ComputeAll <: TupleX.Prod
 
@@ -51,7 +51,7 @@ trait HasArgSchema {
         * payload with all elements reduced to [[Const.NotProvided]]
         * @return
         */
-      def payloadMissing: Payload[Bottom]
+      def payloadMissing: Bottom.PayloadImpl
     }
 
     abstract class Payload[+S <: Prod](schema: S) {}
