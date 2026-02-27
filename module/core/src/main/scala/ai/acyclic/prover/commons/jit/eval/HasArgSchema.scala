@@ -93,7 +93,7 @@ trait HasArgSchema {
 
       override def noneProvidedPayload: Bottom.PayloadImpl = {
 
-        // payload with all elements = [[Const.NotProvided]]
+        null.asInstanceOf[Bottom.PayloadImpl]
       }
     }
 
