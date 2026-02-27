@@ -5,6 +5,7 @@ import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
 import ai.acyclic.prover.commons.tuple.{Products, Schemata}
+import ai.acyclic.prover.commons.util.Phantom
 
 trait HasArgSchema {
 
@@ -33,17 +34,24 @@ trait HasArgSchema {
       * Second option looks more cleaner: only need to summon once as the last step. In the first option, we need to
       * summon repeatedly for recursive partial evaluation/reduction
       */
-    sealed trait Prod extends SchemaMixin.Prod {
+    sealed trait Prod extends SchemaMixin.Prod with Phantom {
 
       type Peer >: this.type <: Prod
+      def peer: Peer
 
       type Top >: Peer <: Prod
       type Bottom <: Peer
-      val Bottom: Bottom
+      def Bottom: Bottom
 
       type ComputeAll <: TupleX.Prod
 
-      type _Payload <: Payload[Peer]
+      type PayloadImpl <: Payload[Peer]
+
+      /**
+        * payload with all elements reduced to [[Const.NotProvided]]
+        * @return
+        */
+      def payloadMissing: Payload[Bottom]
     }
 
     abstract class Payload[+S <: Prod](schema: S) {}
@@ -53,30 +61,39 @@ trait HasArgSchema {
       type ComputeAll = TupleXEmpty
 
       override type Peer = this.type
+      override def peer: Peer = this
+
       override type Top = this.type
       override type Bottom = this.type
-      override val Bottom = this
+      @transient override lazy val Bottom = this
 
-      class _Payload extends Payload(this)
+      class PayloadImpl extends Payload(this)
     }
 
-    infix type ><:[+H, +T <: Prod] = Cons[? <: H, T]
+    infix type ><:[+H, T <: Prod] = Cons[? <: H, T]
 
-    infix case class Cons[H, +T <: Prod] private[Args] (
-        tail: T
+    final infix class Cons[H, T <: Prod] private[Args] (
+        val tail: T
     ) extends Prod
         with SchemaMixin.><:[H, T] {
 
       type ComputeAll = H *: tail.ComputeAll
 
-      override type Peer = H ><: tail.Peer
-      override type Top = Any ><: tail.Top
-      override type Bottom = Nothing ><: tail.Bottom
-      override lazy val Bottom: Bottom = {
-        Cons(tail.Bottom)
+      override type Peer = H ><: T
+      override def peer: Peer = this
+
+      override type Top = Any ><: T
+      override type Bottom = Nothing ><: T
+      @transient override lazy val Bottom: Bottom = {
+        Cons[Nothing, T](tail)
       }
 
-      class _Payload(head: H, _tail: tail._Payload) extends Payload[Peer](this)
+      class PayloadImpl(head: H, _tail: tail.PayloadImpl) extends Payload[Peer](peer)
+    }
+
+    object Cons {
+
+      def apply[H, T <: Prod](tail: T): Cons[H, T] = new Cons[H, T](tail)
     }
 
     val v1: Int Cons T0 = ???
