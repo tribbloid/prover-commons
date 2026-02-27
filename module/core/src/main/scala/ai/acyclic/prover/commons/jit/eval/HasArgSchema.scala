@@ -48,10 +48,9 @@ trait HasArgSchema {
       type PayloadImpl <: Payload[Peer]
 
       /**
-        * payload with all elements reduced to [[Const.NotProvided]]
-        * @return
+        * payload with all elements = [[Const.NotProvided]]
         */
-      def payloadMissing: Bottom.PayloadImpl
+      def noneProvidedPayload: Bottom.PayloadImpl
     }
 
     abstract class Payload[+S <: Prod](schema: S) {}
@@ -68,6 +67,8 @@ trait HasArgSchema {
       @transient override lazy val Bottom = this
 
       class PayloadImpl extends Payload(this)
+
+      override def noneProvidedPayload: Bottom.PayloadImpl = new PayloadImpl()
     }
 
     infix type ><:[+H, T <: Prod] = Cons[? <: H, T]
@@ -89,6 +90,11 @@ trait HasArgSchema {
       }
 
       class PayloadImpl(head: H, _tail: tail.PayloadImpl) extends Payload[Peer](peer)
+
+      override def noneProvidedPayload: Bottom.PayloadImpl = {
+
+        // payload with all elements = [[Const.NotProvided]]
+      }
     }
 
     object Cons {
