@@ -22,6 +22,9 @@ class HasPhantomSpec extends BaseSpec {
         "App.Phantom.get[App.NotPhantom]"
       )
       Verify.typeError(
+        "val a: App.NotPhantom = App.Phantom.get()"
+      )
+      Verify.typeError(
         "val a: App.NotPhantom = App.Phantom()"
       )
     }
