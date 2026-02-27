@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.jit.eval
 
+import ai.acyclic.prover.commons.>:>
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
@@ -34,7 +35,9 @@ trait HasArgSchema {
       */
     sealed trait Prod extends SchemaMixin.Prod {
 
-      type Peer <: Prod
+      type Peer >: this.type <: Prod
+      val peer: Peer = this
+
       type Top >: Peer <: Prod
       type Bottom <: Peer
       val Bottom: Bottom
@@ -67,14 +70,14 @@ trait HasArgSchema {
 
       type ComputeAll = H *: tail.ComputeAll
 
-      override type Peer = H ><: T
+      override type Peer = H ><: tail.Peer
       override type Top = Any ><: tail.Top
       override type Bottom = Nothing ><: tail.Bottom
       override lazy val Bottom: Bottom = {
         Cons(tail.Bottom)
       }
 
-      class _Payload extends Payload[Peer](this)
+      class _Payload extends Payload[Peer](peer)
     }
 
     implicitly[Eye =:= T0]
