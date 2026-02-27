@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX}
 import ai.acyclic.prover.commons.tuple.Products.Cartesian
-import ai.acyclic.prover.commons.util.Phantom
 
 object Schemata {
 
@@ -81,7 +80,7 @@ object Schemata {
 
       override type Element[V <: VBound] = Unit
 
-      trait Prod extends Serializable with Phantom {
+      trait Prod extends Serializable {
 
         type Header <: TupleX.Prod
       }
