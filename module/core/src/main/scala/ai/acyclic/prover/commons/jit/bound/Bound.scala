@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.bound
 
 import ai.acyclic.prover.commons.util.Phantom
 
-trait Bound extends Phantom {
+abstract class Bound extends Phantom() {
 
   /**
     * used like a type argument with lower & upper bound
@@ -35,7 +35,7 @@ object Bound {
   }
   type <~>[_Min, _Max >: _Min] = Lt[_Min, _Max]
 
-  trait Impl[_Min, _Max >: _Min] extends Bound {
+  abstract class Impl[_Min, _Max >: _Min] extends Bound {
     final type Min = _Min
     final type Max = _Max
   }
@@ -45,7 +45,7 @@ object Bound {
     type Max >: _Max
   }
   type >~<[_Min, _Max >: _Min] = Gt[_Min, _Max]
-  trait Gt_[_Min, _Max >: _Min] extends Bound {
+  abstract class Gt_[_Min, _Max >: _Min] extends Bound {
     type Min <: _Min
     type Max >: _Max
   }

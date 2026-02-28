@@ -7,7 +7,7 @@ import ai.acyclic.prover.commons.util.Phantom
 /**
   * a container of graph constraints
   */
-trait Axiom extends Phantom {
+class Axiom extends Phantom() {
 
   type _Arrow <: Arrow
 

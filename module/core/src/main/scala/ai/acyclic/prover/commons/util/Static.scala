@@ -14,9 +14,9 @@ sealed trait Static
 
 object Static {
 
-  trait Def {
+  trait Group {
 
-    trait Impl extends Static {}
+    type Impl <: Static {}
 
     def get[T <: Impl]: T
 
