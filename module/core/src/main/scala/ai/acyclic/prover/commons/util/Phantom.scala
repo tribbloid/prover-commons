@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.util
 
-trait HasPhantom {}
-
 abstract class Phantom(val v: Unit = ()) extends AnyVal
 
 object Phantom extends Static.Group {

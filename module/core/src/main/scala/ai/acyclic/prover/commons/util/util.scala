@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons
 
-package object util extends HasPhantom {
+package object util {
 
 //  val INDENT = "  "
 //
