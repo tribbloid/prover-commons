@@ -1,11 +1,20 @@
 package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.testlib.BaseSpec
+
 import ai.acyclic.prover.commons.verification.Verify
 
-object AnyValSpec {}
+object AnyValSpec {
+
+  class MyVal(val i: Int) extends AnyVal {
+
+    def customMethod: String = i.toString
+  }
+}
 
 class AnyValSpec extends BaseSpec {
+
+  import ai.acyclic.prover.commons.util.AnyValSpec.MyVal
 
   describe("AnyVal limitations") {
 
@@ -50,18 +59,18 @@ class AnyValSpec extends BaseSpec {
       )
     }
 
-    it(
-      "even with an explicit value class, it cannot simply fulfill a structural refinement seamlessly without boxing"
-    ) {
-      """
-        |class MyVal(val i: Int) extends AnyVal {
-        |  def customMethod: String = i.toString
-        |}
-        |""".stripMargin // compiles on its own
-
-      // Try to assign it to a refined AnyVal
+    it("subclass of AnyVal can be refined in type definition, but value cannot be defined anonymously") {
+      // Trying to instantiate an anonymous subclass of MyVal
       Verify.typeError(
-        "class MyVal(val i: Int) extends AnyVal { def customMethod: String = i.toString }; type Ref = AnyVal { def customMethod: String }; val y: Ref = new MyVal(5)"
+        "new MyVal(5) {}"
+      )
+
+      // Refining the type definition compiles just fine
+      type Ref = MyVal { def customMethod: String }
+      val y: Ref = new MyVal(5)
+
+      Verify.typeError(
+        "type Ref2 = MyVal { def customMethod: String }; val y: Ref2 = new MyVal(5) { override def customMethod: String = \"\" }"
       )
     }
 
