@@ -1,7 +1,6 @@
 package ai.acyclic.prover.commons.tuple
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX}
-import ai.acyclic.prover.commons.tuple.Products.Cartesian
 
 object Schemata {
 

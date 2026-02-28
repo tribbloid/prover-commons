@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.jit
 
-import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
+import ai.acyclic.prover.commons.jit.eval.PartialEvalEnv
 
 object CanSimplify extends CanSimplify_Impl0 {}
 

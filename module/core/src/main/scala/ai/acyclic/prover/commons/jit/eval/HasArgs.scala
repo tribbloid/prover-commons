@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.jit.eval
 
-import ai.acyclic.prover.commons.>:>
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const

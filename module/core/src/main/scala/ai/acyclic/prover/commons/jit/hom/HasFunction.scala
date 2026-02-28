@@ -8,7 +8,6 @@ import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
 import Args.{><:, T0}
 import ai.acyclic.prover.commons.TypeTag
-import ai.acyclic.prover.commons.jit.Hom.Thunk
 
 import scala.language.implicitConversions
 

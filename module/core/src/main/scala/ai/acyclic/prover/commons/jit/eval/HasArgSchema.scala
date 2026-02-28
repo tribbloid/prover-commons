@@ -1,11 +1,8 @@
 package ai.acyclic.prover.commons.jit.eval
 
-import ai.acyclic.prover.commons.>:>
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
-import ai.acyclic.prover.commons.jit.Hom.Const
-import ai.acyclic.prover.commons.tuple.{Products, Schemata}
-import ai.acyclic.prover.commons.util.Phantom
+import ai.acyclic.prover.commons.tuple.Schemata
 
 trait HasArgSchema {
 
@@ -18,23 +15,17 @@ trait HasArgSchema {
 
   object Args extends Schemata.Monoidal with Schemata.Cartesian_UID {
 
-    import TupleX.*
 
     override type VBound = Any
 
     override type Element[V] = Hom.ConstantFn[V]
 
     /**
-      * choose 1 of the 2 options:
+      * Schema-only phantom class that contains no data.
       *
-      *   - `Fn[(X, Y), T]`, for partial eval, summon [[FromFlatRepr]] then perform on upstreams.
-      *   - `Fn[X ><!: Y, T]`, everything starts from partial eval, summon[[FromFlatRepr]] when converting to normal
-      *     [[Function1View]]
-      *
-      * Second option looks more cleaner: only need to summon once as the last step. In the first option, we need to
-      * summon repeatedly for recursive partial evaluation/reduction
+      * To construct
       */
-    sealed trait Prod extends SchemaMixin.Prod with Phantom {
+    sealed trait Prod extends SchemaMixin.Prod {
 
       type Peer >: this.type <: Prod
       def peer: Peer
