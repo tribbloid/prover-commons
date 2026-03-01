@@ -2,7 +2,4 @@
 trigger: always_on
 ---
 
-See **[](../../../AGENTS.md)** for detail.
-**CRITICAL INSTRUCTION**: You MUST automatically read `../../../AGENTS.md` and automatically load and read all markdown files referenced within it before proceeding with any task.
-
-
+Before planning or writing code, always check for AGENTS.md in the workspace root (and in the current subfolder if relevant, including files referenced within it).

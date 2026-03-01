@@ -8,7 +8,7 @@ CRDIR="$(
   cd "$(dirname "$0")" || exit
   pwd
 )"
-DATE=$(date --iso-8601=second)
+DATE=$(date +%Y-%m-%dT%H:%M:%S%z)
 
 mkdir -p ${FWDIR}/logs/compile
 

@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.util.StaticGroup
 
 object Bound extends StaticGroup {
 
-  trait Bound extends Case {
+  trait Bound extends Case with Serializable {
 
     /**
       * used like a type argument with lower & upper bound
