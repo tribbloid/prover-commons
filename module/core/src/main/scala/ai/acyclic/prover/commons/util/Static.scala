@@ -1,5 +1,7 @@
 package ai.acyclic.prover.commons.util
 
+import ai.acyclic.prover.commons.TypeTag
+
 /**
   * similar to Singleton, but all instances that hs the same type signature should be the same object, not necessarily
   * globally unique
@@ -12,14 +14,42 @@ package ai.acyclic.prover.commons.util
 
 sealed trait Static
 
-object Static {
+//object Static {
+//
+//  trait Group {
+//
+//    trait Impl extends Static {}
+//
+//    def get[T <: Impl]: T
+//
+//    final def apply[T <: Impl](): T = get[T]
+//  }
+//}
 
-  trait Group {
+trait StaticGroup {
 
-    type Impl <: Static {}
+  trait Case
 
-    def get[T <: Impl]: T
+  val cache: Caching.Strong._Cache[TypeTag[?], Case & Static] = Caching.Strong.build()
 
-    final def apply[T <: Impl](): T = get[T]
+  private def get_noCache[T <: Case](
+      implicit
+      ev: Case
+  ): Case = ev
+
+  object get {
+
+    def get[T <: Case](
+        implicit
+        tag: TypeTag[T],
+        ev: Case
+    ): Case & Static = {
+
+      cache.getOrElseUpdateOnce(tag)(ev.asInstanceOf[Case & Static])
+    }
   }
+
+  final def assume = get
+
+  final def apply = get
 }

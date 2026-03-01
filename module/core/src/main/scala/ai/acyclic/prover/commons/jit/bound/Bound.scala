@@ -1,33 +1,34 @@
 package ai.acyclic.prover.commons.jit.bound
 
-import ai.acyclic.prover.commons.util.Phantom
+import ai.acyclic.prover.commons.util.StaticGroup
 
-abstract class Bound extends Phantom() {
+object Bound extends StaticGroup {
 
-  /**
-    * used like a type argument with lower & upper bound
-    *
-    * e.g. [[fn[T >: Min <: Max](t: T): Unit]] is equivalent to:
-    *
-    * [[fn[B <: TypeBound.K[Min, Max](implicit bound: B = Erased())(t: bound.Range): Unit]]
-    *
-    * OR (with type projection)
-    *
-    * [[fn[B <: TypeBound.K[Min, Max](t: B#Range): Unit]]
-    *
-    * but it has the extra benefit of making Min & Max accessible, which is not possible in before
-    */
-  type Max
-  type Min <: Max
+  trait Bound extends Case {
 
-//  type T >: Min <: Max
+    /**
+      * used like a type argument with lower & upper bound
+      *
+      * e.g. [[fn[T >: Min <: Max](t: T): Unit]] is equivalent to:
+      *
+      * [[fn[B <: TypeBound.K[Min, Max](implicit bound: B = Erased())(t: bound.Range): Unit]]
+      *
+      * OR (with type projection)
+      *
+      * [[fn[B <: TypeBound.K[Min, Max](t: B#Range): Unit]]
+      *
+      * but it has the extra benefit of making Min & Max accessible, which is not possible in before
+      */
+    type Max
+    type Min <: Max
 
-  type Bound = Bound.Lt[this.Min, this.Max]
+    //  type T >: Min <: Max
 
-  type Less = Bound.Lt[this.Min, this.Max]
-}
+    type Bound = Bound.Lt[this.Min, this.Max]
 
-object Bound {
+    type Less = Bound.Lt[this.Min, this.Max]
+
+  }
 
   type Lt[-_Min <: _Max, +_Max] = Bound {
     type Min >: _Min
@@ -51,10 +52,10 @@ object Bound {
   }
 
   type Top = Lt[Nothing, Any]
-  val Top: Top = Phantom()
+  val Top: Top = new Impl[Nothing, Any] {}
 
   type Point[T] = Lt[T, T]
-  def Point[T]: Point[T] = Phantom()
+  def Point[T]: Point[T] = new Impl[T, T] {}
 
   type |[T] = Point[T]
 }

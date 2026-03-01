@@ -2,7 +2,6 @@ package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
 import ai.acyclic.prover.commons.graph.topology.Axiom.ExtractArrow
-import ai.acyclic.prover.commons.util.Phantom
 
 abstract class Topology extends Foundation.Lawful {
   self: Singleton =>
@@ -12,7 +11,10 @@ abstract class Topology extends Foundation.Lawful {
   implicit def reifyAxiom(
       implicit
       extractArrow: ExtractArrow.Gt[_Axiom] // TODO: how to remove this crap?
-  ): Axiom.Reify[extractArrow._Arrow] & _Axiom = Phantom.apply[Axiom.Reify[extractArrow._Arrow] & _Axiom]()
+  ): Axiom.Reify[extractArrow._Arrow] = {
+
+    new Axiom.Reify[extractArrow._Arrow]
+  }
 
   def reify(
       implicit
