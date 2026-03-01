@@ -11,15 +11,9 @@ object AnyValSpec {
     def customMethod: String = i.toString
   }
 
-  // Refining the type definition compiles just fine
-  type Ref = MyVal { def customMethod: String }
-  val y: Ref = new MyVal(5)
+  trait TF { self: AnyVal => }
+  class T2(val v: Int) extends AnyVal with TF
 
-  trait MustBeVal {
-    self: AnyVal =>
-  }
-
-  class MyVal2(val u: Unit) extends AnyVal with MustBeVal
 }
 
 class AnyValSpec extends BaseSpec {
@@ -63,6 +57,16 @@ class AnyValSpec extends BaseSpec {
 
       Verify.typeError(
         "type Ref2 = MyVal { def customMethod: String }; val y: Ref2 = new MyVal(5) { override def customMethod: String = \"\" }"
+      )
+    }
+
+    it("refining the type definition actually does not compile") {
+      Verify.typeError(
+        "type Ref = MyVal { def customMethod: String }; val y: Ref = new MyVal(5)"
+      )
+
+      Verify.typeError(
+        "type Ref = MyVal { type TT <: String }; val y: Ref = new MyVal(5) { type TT = String }"
       )
     }
 
