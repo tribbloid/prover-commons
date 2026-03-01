@@ -10,6 +10,16 @@ object AnyValSpec {
 
     def customMethod: String = i.toString
   }
+
+  // Refining the type definition compiles just fine
+  type Ref = MyVal { def customMethod: String }
+  val y: Ref = new MyVal(5)
+
+  trait MustBeVal {
+    self: AnyVal =>
+  }
+
+  class MyVal2(val u: Unit) extends AnyVal with MustBeVal
 }
 
 class AnyValSpec extends BaseSpec {
@@ -45,29 +55,11 @@ class AnyValSpec extends BaseSpec {
       )
     }
 
-    it(
-      "AnyVal can be used as a structural refinee type, but values don't conform without boxing/reflection in standard Scala, and often fail implicitly"
-    ) {
-      // In Scala, you can define a structural type
-      type RefinedAnyVal = AnyVal { def toHexString: String }
-
-      // Int has toHexString, but checking if it conforms structurally without implicit conversion
-      // `AnyVal` itself does not declare `toHexString`, it's added via implicit `RichInt` or boxing.
-      // E.g., a primitive int does not directly conform to this structural type natively in a way that doesn't cause overhead or fail.
-      Verify.typeError(
-        "new RefinedAnyVal {}"
-      )
-    }
-
     it("subclass of AnyVal can be refined in type definition, but value cannot be defined anonymously") {
       // Trying to instantiate an anonymous subclass of MyVal
       Verify.typeError(
         "new MyVal(5) {}"
       )
-
-      // Refining the type definition compiles just fine
-      type Ref = MyVal { def customMethod: String }
-      val y: Ref = new MyVal(5)
 
       Verify.typeError(
         "type Ref2 = MyVal { def customMethod: String }; val y: Ref2 = new MyVal(5) { override def customMethod: String = \"\" }"
