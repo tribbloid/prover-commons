@@ -8,19 +8,19 @@ abstract class Topology extends Foundation.Lawful {
 
   type _Graph[v] = Foundation.Graph.Lt[_Axiom, v]
 
-//  implicit def reifyAxiom(
-//      implicit
-//      extractArrow: ExtractArrow.Gt[_Axiom] // TODO: how to remove this crap?
-//  ): Axiom.Reify[extractArrow._Arrow] = {
-//
-//    new Axiom.Reify[extractArrow._Arrow]
-//  }
-//
-//  def reify(
-//      implicit
-//      extractArrow: ExtractArrow.Gt[_Axiom]
-//  ): Topology.Impls[_Axiom, extractArrow._Arrow] =
-//    Topology.Impls[_Axiom, extractArrow._Arrow](this)(reifyAxiom)
+  implicit def reifyAxiom(
+      implicit
+      extractArrow: ExtractArrow.Gt[_Axiom] // TODO: how to remove this crap?
+  ): Axiom.Reify[extractArrow._Arrow] & _Axiom = {
+
+    null.asInstanceOf[Axiom.Reify[extractArrow._Arrow] & _Axiom]
+  }
+
+  def reify(
+      implicit
+      extractArrow: ExtractArrow.Gt[_Axiom]
+  ): Topology.Impls[_Axiom, extractArrow._Arrow] =
+    Topology.Impls[_Axiom, extractArrow._Arrow](this)(reifyAxiom)
 }
 
 object Topology {
