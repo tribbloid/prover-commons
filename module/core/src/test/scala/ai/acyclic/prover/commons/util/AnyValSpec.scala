@@ -11,8 +11,11 @@ object AnyValSpec {
     def customMethod: String = i.toString
   }
 
-  trait TF { self: AnyVal => }
-  class T2(val v: Int) extends AnyVal with TF
+  {
+    // Refining the type definition compiles just fine
+    type Ref = MyVal { def customMethod: String }
+    val y: Ref = new MyVal(5)
+  }
 
 }
 
@@ -60,13 +63,15 @@ class AnyValSpec extends BaseSpec {
       )
     }
 
-    it("refining the type definition actually does not compile") {
-      Verify.typeError(
-        "type Ref = MyVal { def customMethod: String }; val y: Ref = new MyVal(5)"
-      )
-
+    it("refining the type definition with anonymous class does not compile") {
       Verify.typeError(
         "type Ref = MyVal { type TT <: String }; val y: Ref = new MyVal(5) { type TT = String }"
+      )
+    }
+
+    it("cannot mix in traits that do not extend Any into value classes") {
+      Verify.typeError(
+        "trait TF { self: AnyVal => }; class T2(val v: Int) extends AnyVal with TF"
       )
     }
 
