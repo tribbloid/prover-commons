@@ -4,6 +4,8 @@ import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.tuple.Schemata
 
+import scala.util.Try
+
 trait HasArgSchema {
 
   import Args.><:
@@ -14,7 +16,6 @@ trait HasArgSchema {
   type Args2[X, Y] = X ><: Y ><: Args.Eye
 
   object Args extends Schemata.Monoidal with Schemata.Cartesian_UID {
-
 
     override type VBound = Any
 
@@ -34,9 +35,15 @@ trait HasArgSchema {
       type Bottom <: Peer
       val Bottom: Bottom
 
+      type TryComputeAll <: TupleX.Prod
       type ComputeAll <: TupleX.Prod
 
-      type PayloadImpl <: Payload[Peer]
+      abstract class _Payload extends Payload(Prod.this) {
+
+        val tryComputeAll: TryComputeAll
+        val computeAll: ComputeAll
+      }
+      type PayloadImpl <: _Payload
 
       /**
         * payload with all elements = [[Const.NotProvided]]
@@ -48,6 +55,7 @@ trait HasArgSchema {
 
     override object eye extends Prod with SchemaMixin.Eye {
 
+      type TryComputeAll = TupleXEmpty
       type ComputeAll = TupleXEmpty
 
       override type Peer = this.type
@@ -57,7 +65,7 @@ trait HasArgSchema {
       override type Bottom = this.type
       @transient override lazy val Bottom = this
 
-      class PayloadImpl extends Payload(this)
+      class PayloadImpl extends _Payload
 
       override def noneProvidedPayload: Bottom.PayloadImpl = new PayloadImpl()
     }
@@ -69,6 +77,7 @@ trait HasArgSchema {
     ) extends Prod
         with SchemaMixin.><:[H, T] {
 
+      type TryComputeAll = Try[H] *: tail.TryComputeAll
       type ComputeAll = H *: tail.ComputeAll
 
       override type Peer = H ><: T
@@ -80,7 +89,7 @@ trait HasArgSchema {
         Cons[Nothing, T](tail)
       }
 
-      class PayloadImpl(head: H, _tail: tail.PayloadImpl) extends Payload[Peer](peer)
+      class PayloadImpl(head: H, _tail: tail.PayloadImpl) extends _Payload
 
       override def noneProvidedPayload: Bottom.PayloadImpl = {
 
