@@ -16,11 +16,6 @@ trait HasAxiom {
     trait Instance extends Case {
 
       type _Arrow <: Arrow
-
-      def verify[X >: this.type <: Axiom.Top, V](graph: Foundation.Graph[X, V]): Unit = {
-        // by default, do nothing
-        // TODO: may have diamond subtyping problem
-      }
     }
 
     type Top = Topology.AnyGraph._Axiom

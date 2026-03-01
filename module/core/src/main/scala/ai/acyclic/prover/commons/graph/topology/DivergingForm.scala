@@ -20,12 +20,7 @@ object DivergingForm {
 
   object UpperSemilattice extends Topology {
 
-    trait _Axiom extends Poset._Axiom {
-
-      override def verify[X >: this.type <: Axiom.Top, V](graph: Foundation.Graph[X, V]): Unit = {
-        require(graph.entries.collect.size <= 1, "not a upper semilattice")
-      }
-    }
+    trait _Axiom extends Poset._Axiom {}
 
   }
 
