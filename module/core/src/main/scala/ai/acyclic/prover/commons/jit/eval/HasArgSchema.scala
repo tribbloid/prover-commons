@@ -2,6 +2,7 @@ package ai.acyclic.prover.commons.jit.eval
 
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
+import ai.acyclic.prover.commons.jit.Hom.Const
 import ai.acyclic.prover.commons.tuple.Schemata
 
 import scala.util.Try
@@ -16,6 +17,8 @@ trait HasArgSchema {
   type Args2[X, Y] = X ><: Y ><: Args.Eye
 
   object Args extends Schemata.Monoidal with Schemata.Cartesian_UID {
+
+    import TupleX.*
 
     override type VBound = Any
 
@@ -48,7 +51,7 @@ trait HasArgSchema {
       /**
         * payload with all elements = [[Const.NotProvided]]
         */
-      def noneProvidedPayload: Bottom.PayloadImpl
+      def noneProvidedPayload: PayloadImpl
     }
 
     abstract class Payload[+S <: Prod](schema: S) {}
@@ -65,9 +68,13 @@ trait HasArgSchema {
       override type Bottom = this.type
       @transient override lazy val Bottom = this
 
-      class PayloadImpl extends _Payload
+      class PayloadImpl extends _Payload {
 
-      override def noneProvidedPayload: Bottom.PayloadImpl = new PayloadImpl()
+        override val tryComputeAll: TryComputeAll = TupleXEmpty
+        override val computeAll: ComputeAll = TupleXEmpty
+      }
+
+      override def noneProvidedPayload: PayloadImpl = new PayloadImpl()
     }
 
     infix type ><:[+H, T <: Prod] = Cons[? <: H, T]
@@ -89,12 +96,14 @@ trait HasArgSchema {
         Cons[Nothing, T](tail)
       }
 
-      class PayloadImpl(head: H, _tail: tail.PayloadImpl) extends _Payload
+      class PayloadImpl(head: Element[H], _tail: tail.PayloadImpl) extends _Payload {
 
-      override def noneProvidedPayload: Bottom.PayloadImpl = {
-
-        null.asInstanceOf[Bottom.PayloadImpl]
+        override lazy val tryComputeAll: TryComputeAll = Try(head.compute) *: _tail.tryComputeAll
+        override lazy val computeAll: ComputeAll = head.compute *: _tail.computeAll
       }
+
+      override def noneProvidedPayload: PayloadImpl =
+        new PayloadImpl(Const.NotProvided, tail.noneProvidedPayload)
     }
 
     object Cons {
@@ -102,7 +111,7 @@ trait HasArgSchema {
       def apply[H, T <: Prod](tail: T): Cons[H, T] = new Cons[H, T](tail)
     }
 
-    val v1: Int Cons T0 = ???
+    val v1: Int Cons T0 = Cons[Int, T0](eye)
     implicitly[v1.Peer =:= (Int ><: T0)]
 
     implicitly[Eye =:= T0]
