@@ -12,9 +12,7 @@ abstract class Topology extends Foundation.Lawful {
 
   trait Structure_[V] extends Foundation.Structure[_Axiom, V] {
 
-    override type _Axiom = Topology.this._Axiom
-    override type _Arrow = Topology.this._Arrow
-    override val topology: Topology.Lt[_Axiom, _Arrow] = Topology.this
+    override val topology: Topology.this.type = Topology.this
   }
 
   trait Node_[V] extends Foundation.Node[_Axiom, V] with Structure_[V] {}

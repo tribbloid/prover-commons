@@ -56,18 +56,13 @@ trait Engine extends Priors.HasBatch {
         entries: Batch[Foundation.Node[X, V]]
     )(
         override val topology: Topology.Lt[X, Arrow]
-    ) extends K[X, V] {
-      override type _Axiom = X
-      override type _Arrow = Arrow
-    }
+    ) extends K[X, V]
 
     case class Transforming[X <: Axiom.Top, V](
         delegate: K[X, V],
         maxRecursionDepth: Int
     ) extends K[X, V] {
-      override type _Axiom = delegate._Axiom
-      override type _Arrow = delegate._Arrow
-      override val topology: Topology.Lt[_Axiom, _Arrow] = delegate.topology
+      override val topology: delegate.topology.type = delegate.topology
       override def entries: engine.Batch[Node[X, V]] = {
         delegate.entries
       }
@@ -104,9 +99,7 @@ trait Engine extends Priors.HasBatch {
 
     abstract class Plan[V] extends Graph[V] {
 
-      override type _Axiom = GraphType.this._Axiom
-      override type _Arrow = GraphType.this._Arrow
-      override val topology: Topology.Lt[_Axiom, _Arrow] = GraphType.this.topology
+      override val topology: GraphType.this.topology.type = GraphType.this.topology
     }
 
     def buildExact[V](
@@ -188,9 +181,7 @@ trait Engine extends Priors.HasBatch {
 
       abstract class Plan[VV] extends Graph[X, VV] {
 
-        override type _Axiom = arg._Axiom
-        override type _Arrow = arg._Arrow
-        override val topology: Topology.Lt[_Axiom, _Arrow] = arg.topology
+        override val topology: arg.topology.type = arg.topology
       }
     }
 

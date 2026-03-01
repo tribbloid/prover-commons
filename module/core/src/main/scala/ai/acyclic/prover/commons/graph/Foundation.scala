@@ -24,9 +24,9 @@ object Foundation {
       +V // fixed-point bound: type of values of this node and all its descendants, NOT the type of node value
   ] {
 
-    type _Axiom <: X
-    type _Arrow <: Arrow
-    val topology: Topology.Lt[_Axiom, _Arrow]
+    val topology: Topology.Lt[X, Arrow]
+    type _Axiom = topology._Axiom
+    type _Arrow = topology._Arrow
   }
 
   trait NodeOrGraph[+X <: Axiom.Top, +V] extends Foundation.Structure[X, V] {}
@@ -61,9 +61,7 @@ object Foundation {
         fn: V => V2
     ) extends Node[X, V2] {
 
-      override type _Axiom = original._Axiom
-      override type _Arrow = original._Arrow
-      override val topology: Topology.Lt[_Axiom, _Arrow] = original.topology
+      override val topology: original.topology.type = original.topology
 
       override def value: V2 = fn(original.value)
 
@@ -106,9 +104,7 @@ object Foundation {
 
       object Verified extends K[X, V] {
 
-        override type _Axiom = K.this._Axiom
-        override type _Arrow = K.this._Arrow
-        override val topology: Topology.Lt[_Axiom, _Arrow] = K.this.topology
+        override val topology: Topology.Lt[X, Arrow] = K.this.topology
 
         override def update(src: _Node)(newInduction: Seq[_Node]): _Node = {
 
@@ -135,9 +131,6 @@ object Foundation {
     case class DoNotRewrite[X <: Axiom.Top, V](
         override val topology: Topology.Lt[X, Arrow]
     ) extends K[X, V] {
-
-      override type _Axiom = X
-      override type _Arrow = Arrow
 
       override def update(src: Node[X, V])(
           newInduction: Seq[Node[X, V]]
