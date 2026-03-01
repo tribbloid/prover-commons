@@ -1,61 +1,52 @@
 package ai.acyclic.prover.commons.graph.topology
 
+import ai.acyclic.prover.commons.graph.Foundation.Structure
 import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
 import ai.acyclic.prover.commons.graph.topology.Axiom.ExtractArrow
+import ai.acyclic.prover.commons.graph.topology.Topology.{Impls, Lt}
 
 abstract class Topology extends Foundation.Lawful {
   self: Singleton =>
 
   type _Graph[v] = Foundation.Graph.Lt[_Axiom, v]
 
-  implicit def reifyAxiom(
-      implicit
-      extractArrow: ExtractArrow.Gt[_Axiom] // TODO: how to remove this crap?
-  ): Axiom.Reify[extractArrow._Arrow] & _Axiom = {
+  abstract class TopologicalMixin[T <: Topology, +V] extends Structure[_Axiom, V] {
 
-    null.asInstanceOf[Axiom.Reify[extractArrow._Arrow] & _Axiom]
+    override val topology = Topology.this
   }
 
-  def reify(
-      implicit
-      extractArrow: ExtractArrow.Gt[_Axiom]
-  ): Topology.Impls[_Axiom, extractArrow._Arrow] =
-    Topology.Impls[_Axiom, extractArrow._Arrow](this)(reifyAxiom)
+  trait Structure_[V] extends Foundation.Structure[_Axiom, V] {
+
+    override val topology = Topology.this
+  }
+
+  trait Node_[V] extends Foundation.Node[_Axiom, V] with Structure_[V] {}
+
+  trait Setter_[V] extends Foundation.Updater[_Axiom, V] with Structure_[V] {}
+
+  /**
+    * 2nd API, all [[node]] under the same group can be connected to other [[node]]
+    */
+  trait Codomain {
+
+    trait Node_ extends Topology.this.Node_[node] {
+      self: Codomain.this.node =>
+
+      def value: node = this
+    }
+
+    type node <: Node_ // TODO: should be "FixedPoint"
+  }
+
+  trait Inspection[V] extends ai.acyclic.prover.commons.multiverse.CanInspect[V, Node_[V]] {}
 }
 
 object Topology {
 
-  case class Impls[
-      X <: Axiom.Top,
-      A <: Arrow
-  ](topology: Topology { type _Axiom = X })(
-      val concreteAxiom: Axiom.Reify[A] & X
-  ) {
+  type Lt[+X <: Axiom.Top, +A <: Arrow] = Topology {
 
-    trait _Structure[V] extends Foundation.Structure[Axiom.Reify[A] & X, V] {
-
-      override val axiom: Axiom.Reify[A] & X = Impls.this.concreteAxiom
-    }
-
-    trait Node_[V] extends Foundation.Node[X, V] with _Structure[V] {}
-
-    trait Setter_[V] extends Foundation.Updater[X, V] with _Structure[V] {}
-
-    /**
-      * 2nd API, all [[node]] under the same group can be connected to other [[node]]
-      */
-    trait Codomain {
-
-      trait Node_ extends Impls.this.Node_[node] {
-        self: Codomain.this.node =>
-
-        def value: node = this
-      }
-
-      type node <: Node_ // TODO: should be "FixedPoint"
-    }
-
-    trait Inspection[V] extends ai.acyclic.prover.commons.multiverse.CanInspect[V, Node_[V]] {}
+    type _Axiom <: X
+    type _Arrow <: A
   }
 
   object AnyGraph extends Topology {

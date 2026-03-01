@@ -3,15 +3,20 @@ package ai.acyclic.prover.commons.graph
 import ai.acyclic.prover.commons.graph.Foundation.Graph.K
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.graph.local.VisualOps
-import ai.acyclic.prover.commons.graph.topology.Axiom
+import ai.acyclic.prover.commons.graph.topology.{Axiom, Topology}
 
 object Foundation {
 
-  trait Lawful extends Foundation0.Lawful {
+  trait Lawful {
+
+    type _Axiom <: Axiom.Top
+
+    type _Arrow <: Arrow
 
     type Node[+v] = Foundation.Node.K[_Axiom, v]
 
     type Setter[v] = Foundation.Updater[_Axiom, v]
+
   }
 
   trait Structure[
@@ -19,12 +24,8 @@ object Foundation {
       +V // fixed-point bound: type of values of this node and all its descendants, NOT the type of node value
   ] {
 
-    val axiom: X
-    final type _Arrow = axiom._Arrow
-
-//    private type _Node = Node[X, V] TODO: how to compile them?
-//    private type _Setter = Setter[X, V]
-//    private type _Graph = Graph[X, V]
+    val topology: Topology.Lt[X, ?]
+    final type _Arrow = topology._Arrow
   }
 
   trait NodeOrGraph[+X <: Axiom.Top, +V] extends Foundation.Structure[X, V] {}

@@ -4,6 +4,26 @@ import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
 import ai.acyclic.prover.commons.implicits.summon
 import ai.acyclic.prover.commons.util.StaticGroup
 
+//trait HasAxiomUniverse {
+//
+//  type AxiomUniverse[A] = AxiomUniverse.Aux[Axiom.Instance]
+//
+//  object AxiomUniverse extends StaticGroup {
+//
+//    trait Inst extends Case {
+//
+//      type Axiom
+//
+//      type _Arrow <: Arrow
+//    }
+//
+//    type Aux[A <: Axiom] = Inst { type Axiom = A }
+//  }
+//
+//
+//
+//}
+
 trait HasAxiom {
 
   /**
@@ -13,18 +33,15 @@ trait HasAxiom {
 
   object Axiom extends StaticGroup {
 
-    trait Instance extends Case {
-
-      type _Arrow <: Arrow
-    }
+    trait Instance extends Case {}
 
     type Top = Topology.AnyGraph._Axiom
 
-    class Reify[X <: Arrow]() extends Axiom {
-      type _Arrow = X
-    }
+//    class Reify[X <: Arrow]() extends Axiom {
+//      type _Arrow = X
+//    }
 
-    trait Lt_[+A <: Arrow] extends Axiom { type _Arrow <: A }
+    trait Lt_[+A <: Arrow] extends Axiom {} // TODO: type arg is useless, remove
 
     trait ExtractArrow[X <: Axiom] { type _Arrow <: Arrow }
 

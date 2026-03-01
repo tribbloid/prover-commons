@@ -76,26 +76,26 @@ trait Engine extends Priors.HasBatch {
   ): Graph.K[XX, V] =
     Graph.Unchecked[XX, V](nodes)(assuming)
 
-  abstract class GraphType[X <: Axiom.Top](
-      val axiom: X // this is a phantom object only used to infer type parameters
+  abstract class GraphType[TT <: Topology](
+      val topology: TT // this is a phantom object only used to infer type parameters
   ) extends Foundation.Lawful {
 
-    type _Axiom = X
-    type Graph[+V] = Engine.this.Graph[X, V]
+    type _Axiom = TT
+    type Graph[+V] = Engine.this.Graph[topology._Axiom, V]
 
     abstract class Plan[V] extends Graph[V] {
 
-      override val axiom: GraphType.this.axiom.type = axiom
+      override val topology = topology
     }
 
     def buildExact[V](
-        nodes: Batch[Foundation.Node[X, V]]
+        nodes: Batch[Foundation.Node[TT, V]]
     ): Graph[V] =
-      buildFromAxioms[X, V](nodes)(GraphType.this.axiom)
+      buildFromAxioms[TT, V](nodes)(GraphType.this.topology)
 
     object buildTightest {
 
-      def apply[XX <: X, V](
+      def apply[XX <: TT, V](
           nodes: Batch[Foundation.Node[XX, V]]
       )(
           implicit
@@ -107,13 +107,13 @@ trait Engine extends Priors.HasBatch {
     def empty[V]: Graph[V] = makeExact[V]()
 
     def makeExact[V](
-        nodes: Foundation.Node[X, V]*
+        nodes: Foundation.Node[TT, V]*
     ): Graph[V] =
       buildExact[V](parallelize(nodes))
 
     object makeTightest {
 
-      def apply[XX <: X, V](
+      def apply[XX <: TT, V](
           nodes: Foundation.Node[XX, V]*
       )(
           implicit
@@ -125,9 +125,9 @@ trait Engine extends Priors.HasBatch {
 
   implicit def graphTypeAsMake(v: GraphType[?]): v.makeTightest.type = v.makeTightest
 
-  sealed abstract class GraphImpls[X <: Axiom.Top, A <: Arrow](
-      val topologyImpls: Topology.Impls[X, A] // this is a phantom object only used to infer type parameters
-  ) extends GraphType[X](topologyImpls.concreteAxiom) {
+  sealed abstract class GraphImpls[TT <: Topology](
+      val topologyImpls: TT // this is a phantom object only used to infer type parameters
+  ) extends GraphType[TT](topologyImpls) {
 
     type Node_[V] = topologyImpls.Node_[V]
     type Setter_[V] = topologyImpls.Setter_[V]
@@ -192,24 +192,24 @@ trait Engine extends Priors.HasBatch {
     }
   }
 
-  object AnyGraph extends GraphImpls(Topology.AnyGraph.reify) {}
+  object AnyGraph extends GraphImpls(Topology.AnyGraph) {}
   type AnyGraph[V] = AnyGraph.Graph[V]
 
-  object Poset extends GraphImpls(Topology.Poset.reify) {}
+  object Poset extends GraphImpls(Topology.Poset) {}
   type Poset[V] = Poset.Graph[V]
 
   object Diverging {
 
-    object Graph extends GraphImpls(DivergingForm.Graph.reify) {}
+    object Graph extends GraphImpls(DivergingForm.Graph) {}
     type Graph[V] = Graph.Graph[V]
 
-    object Poset extends GraphImpls(DivergingForm.Poset.reify) {}
+    object Poset extends GraphImpls(DivergingForm.Poset) {}
     type Poset[V] = Poset.Graph[V]
 
-    object UpperSemilattice extends GraphImpls(DivergingForm.UpperSemilattice.reify) {}
+    object UpperSemilattice extends GraphImpls(DivergingForm.UpperSemilattice) {}
     type UpperSemilattice[V] = UpperSemilattice.Graph[V]
 
-    object Tree extends GraphImpls(DivergingForm.Tree.reify) {
+    object Tree extends GraphImpls(DivergingForm.Tree) {
 
       case class Singleton[V](value: V) extends topologyImpls.Node_[V] {
 
