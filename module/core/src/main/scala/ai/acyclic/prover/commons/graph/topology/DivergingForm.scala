@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
+import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.topology.Topology.AnyGraph
 
 object DivergingForm {
@@ -11,22 +11,58 @@ object DivergingForm {
   object Graph extends Topology {
 
     trait _Axiom extends AnyGraph._Axiom with Axiom.Lt_[Arrow.Outbound]
+
+    type _Arrow = Arrow.Outbound
+
+    override def mkArrow(text: Option[String]): _Arrow = {
+      text match {
+        case Some(tt) => Arrow.Outbound.OfText(Some(tt))
+        case None     => Arrow.Outbound
+      }
+    }
   }
 
   object Poset extends Topology {
 
     trait _Axiom extends Topology.Poset._Axiom with Graph._Axiom
+
+    type _Arrow = Arrow.Outbound
+
+    override def mkArrow(text: Option[String]): _Arrow = {
+      text match {
+        case Some(tt) => Arrow.Outbound.OfText(Some(tt))
+        case None     => Arrow.Outbound
+      }
+    }
   }
 
   object UpperSemilattice extends Topology {
 
     trait _Axiom extends Poset._Axiom {}
 
+    type _Arrow = Arrow.Outbound
+
+    override def mkArrow(text: Option[String]): _Arrow = {
+      text match {
+        case Some(tt) => Arrow.Outbound.OfText(Some(tt))
+        case None     => Arrow.Outbound
+      }
+    }
+
   }
 
   object Tree extends Topology {
 
     trait _Axiom extends UpperSemilattice._Axiom
+
+    type _Arrow = Arrow.Outbound
+
+    override def mkArrow(text: Option[String]): _Arrow = {
+      text match {
+        case Some(tt) => Arrow.Outbound.OfText(Some(tt))
+        case None     => Arrow.Outbound
+      }
+    }
   }
 }
 

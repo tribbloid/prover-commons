@@ -2,22 +2,19 @@ package ai.acyclic.prover.commons.graph.topology
 
 import ai.acyclic.prover.commons.graph.Foundation.Structure
 import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
-import ai.acyclic.prover.commons.graph.topology.Axiom.ExtractArrow
-import ai.acyclic.prover.commons.graph.topology.Topology.{Impls, Lt}
 
 abstract class Topology extends Foundation.Lawful {
   self: Singleton =>
 
   type _Graph[v] = Foundation.Graph.Lt[_Axiom, v]
 
-  abstract class TopologicalMixin[T <: Topology, +V] extends Structure[_Axiom, V] {
-
-    override val topology = Topology.this
-  }
+  def mkArrow(text: Option[String] = None): _Arrow
 
   trait Structure_[V] extends Foundation.Structure[_Axiom, V] {
 
-    override val topology = Topology.this
+    override type _Axiom = Topology.this._Axiom
+    override type _Arrow = Topology.this._Arrow
+    override val topology: Topology.Lt[_Axiom, _Arrow] = Topology.this
   }
 
   trait Node_[V] extends Foundation.Node[_Axiom, V] with Structure_[V] {}
@@ -52,11 +49,29 @@ object Topology {
   object AnyGraph extends Topology {
 
     trait _Axiom extends Axiom.Lt_[Arrow]
+
+    type _Arrow = Arrow
+
+    override def mkArrow(text: Option[String]): _Arrow = {
+      text match {
+        case Some(tt) => Arrow.Outbound.OfText(Some(tt))
+        case None     => Arrow.Outbound
+      }
+    }
   }
 
   object Poset extends Topology {
 
     trait _Axiom extends AnyGraph._Axiom
+
+    type _Arrow = Arrow
+
+    override def mkArrow(text: Option[String]): _Arrow = {
+      text match {
+        case Some(tt) => Arrow.Outbound.OfText(Some(tt))
+        case None     => Arrow.Outbound
+      }
+    }
 
     implicit class NodeOps[V](n: Node[V]) {
 

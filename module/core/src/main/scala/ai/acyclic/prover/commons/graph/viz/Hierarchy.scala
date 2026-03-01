@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.Arrow.Outbound
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.{Padding, TextBlock}
 
@@ -68,7 +67,7 @@ abstract class Hierarchy extends Visualisation.Local(Local.Diverging.Poset) {
 
           val selfT = wText.pad.left(FORK)
 
-          val arrows_targets: Seq[(Outbound, Local.Diverging.Poset.Node[?])] = head.inductions
+          val arrows_targets = head.inductions
 
           // TODO: if mutliple arrows in a induction are all pointing to the same target
           //  they will be displayed separately which is verbose

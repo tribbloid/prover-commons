@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.graph.viz
 
-import ai.acyclic.prover.commons.graph.Arrow
 import ai.acyclic.prover.commons.graph.local.Local
 import ai.acyclic.prover.commons.typesetting.TextBlock
 
@@ -152,14 +151,13 @@ abstract class LinkedHierarchy extends Visualisation.Local(Local.Diverging.Graph
           }
         }
 
-        override lazy val inductions: Seq[(Arrow.OutboundT.^, RefBindings.node)] = {
+        override lazy val inductions: Seq[(_Arrow, RefBindings.node)] = {
 
           val result = if (!shouldExpand) {
             Nil
           } else {
-
             original.inductions.map { tuple =>
-              val arrow = tuple._1: Arrow.Outbound
+              val arrow: _Arrow = topology.mkArrow(tuple._1.arrowText)
 
               val target: RefBindings.node = RefBindings.node(tuple._2)
 

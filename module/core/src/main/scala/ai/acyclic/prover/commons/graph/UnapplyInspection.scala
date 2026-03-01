@@ -36,7 +36,8 @@ trait UnapplyInspection extends Local.Diverging.UpperSemilattice.topologyImpls.I
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
         val result: Seq[(_Arrow, Node_[Any])] = inductions.map { kv =>
-          Arrow.`~>` -> inspect(kv._2)
+          val arrow: _Arrow = topology.mkArrow()
+          arrow -> inspect(kv._2)
         }
 
         result
@@ -50,7 +51,8 @@ trait UnapplyInspection extends Local.Diverging.UpperSemilattice.topologyImpls.I
         val inductions = primaryFormOpt.map(_.kvPairs).getOrElse(Nil)
 
         val result: Seq[(_Arrow, Node_[Any])] = inductions.map { kv =>
-          Arrow.`~>`.OfText(kv._1) -> inspect(kv._2)
+          val arrow: _Arrow = topology.mkArrow(kv._1)
+          arrow -> inspect(kv._2)
         }
 
         result

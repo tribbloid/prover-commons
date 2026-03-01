@@ -3,13 +3,13 @@ package ai.acyclic.prover.commons.graph.viz
 import ai.acyclic.prover.commons.HasInner
 import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.graph.local.Local
-import ai.acyclic.prover.commons.graph.topology.Axiom.Top
+import ai.acyclic.prover.commons.graph.topology.Topology
 import ai.acyclic.prover.commons.graph.Engine.HasMaxRecursionDepth
 import ai.acyclic.prover.commons.graph.local.Local.Graph
 
 object Visualisation extends HasInner { // TODO: should be a mixin
 
-  abstract class Local[X <: Top](
+  abstract class Local[X <: Topology](
       val applicableToType: Local.GraphType[X]
   ) extends Visualisation {
 

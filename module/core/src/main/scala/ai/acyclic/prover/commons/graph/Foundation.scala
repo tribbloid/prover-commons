@@ -24,8 +24,9 @@ object Foundation {
       +V // fixed-point bound: type of values of this node and all its descendants, NOT the type of node value
   ] {
 
-    val topology: Topology.Lt[X, ?]
-    final type _Arrow = topology._Arrow
+    type _Axiom <: X
+    type _Arrow <: Arrow
+    val topology: Topology.Lt[_Axiom, _Arrow]
   }
 
   trait NodeOrGraph[+X <: Axiom.Top, +V] extends Foundation.Structure[X, V] {}
@@ -60,9 +61,11 @@ object Foundation {
         fn: V => V2
     ) extends Node[X, V2] {
 
-      override val axiom: original.axiom.type = original.axiom
+      override type _Axiom = original._Axiom
+      override type _Arrow = original._Arrow
+      override val topology: Topology.Lt[_Axiom, _Arrow] = original.topology
 
-      override def value: V2 = fn(original.value.asInstanceOf)
+      override def value: V2 = fn(original.value)
 
       override def nodeText: String = original.nodeText
 
@@ -103,7 +106,9 @@ object Foundation {
 
       object Verified extends K[X, V] {
 
-        val axiom: K.this.axiom.type = K.this.axiom
+        override type _Axiom = K.this._Axiom
+        override type _Arrow = K.this._Arrow
+        override val topology: Topology.Lt[_Axiom, _Arrow] = K.this.topology
 
         override def update(src: _Node)(newInduction: Seq[_Node]): _Node = {
 
@@ -128,8 +133,11 @@ object Foundation {
     }
 
     case class DoNotRewrite[X <: Axiom.Top, V](
-        override val axiom: X
+        override val topology: Topology.Lt[X, Arrow]
     ) extends K[X, V] {
+
+      override type _Axiom = X
+      override type _Arrow = Arrow
 
       override def update(src: Node[X, V])(
           newInduction: Seq[Node[X, V]]
@@ -140,10 +148,8 @@ object Foundation {
 
   implicit class showGraph[X <: Axiom.Top, V](graph: Local.Graph[X, V]) extends VisualOps[X, V](graph) {}
 
-  implicit class showNode[X <: Axiom.Top, V](node: Foundation.this.Node[X, V])(
-      implicit
-      assuming: X
-  ) extends VisualOps[X, V](
-        Local[X, V](node)
+  implicit class showNode[X <: Axiom.Top, V](node: Foundation.this.Node[X, V])
+      extends VisualOps[X, V](
+        Local.Graph.Unchecked(Local.parallelize(Seq(node)))(node.topology)
       ) {}
 }

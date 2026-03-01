@@ -55,71 +55,86 @@ trait Engine extends Priors.HasBatch {
     case class Unchecked[X <: Axiom.Top, V](
         entries: Batch[Foundation.Node[X, V]]
     )(
-        override val axiom: X
-    ) extends K[X, V] {}
+        override val topology: Topology.Lt[X, Arrow]
+    ) extends K[X, V] {
+      override type _Axiom = X
+      override type _Arrow = Arrow
+    }
 
     case class Transforming[X <: Axiom.Top, V](
         delegate: K[X, V],
         maxRecursionDepth: Int
     ) extends K[X, V] {
-      override val axiom: X = delegate.axiom
+      override type _Axiom = delegate._Axiom
+      override type _Arrow = delegate._Arrow
+      override val topology: Topology.Lt[_Axiom, _Arrow] = delegate.topology
       override def entries: engine.Batch[Node[X, V]] = {
         delegate.entries
       }
     }
   }
 
-  private def buildFromAxioms[XX <: Axiom.Top, V](
+  private def buildFromTopology[XX <: Axiom.Top, V](
       nodes: Batch[Foundation.Node[XX, V]]
   )(
-      assuming: XX
+      topology: Topology.Lt[XX, Arrow]
   ): Graph.K[XX, V] =
-    Graph.Unchecked[XX, V](nodes)(assuming)
+    Graph.Unchecked[XX, V](nodes)(topology)
+
+  private def buildFromNodes[XX <: Axiom.Top, V](
+      nodes: Batch[Foundation.Node[XX, V]]
+  ): Graph.K[XX, V] = {
+    val topology = nodes.collect.headOption
+      .map(_.topology)
+      .getOrElse(
+        throw new IllegalArgumentException(
+          "Cannot infer topology from empty node list; use makeExact/buildExact instead."
+        )
+      )
+    buildFromTopology[XX, V](nodes)(topology)
+  }
 
   abstract class GraphType[TT <: Topology](
       val topology: TT // this is a phantom object only used to infer type parameters
   ) extends Foundation.Lawful {
 
-    type _Axiom = TT
+    type _Axiom = topology._Axiom
+    type _Arrow = topology._Arrow
     type Graph[+V] = Engine.this.Graph[topology._Axiom, V]
 
     abstract class Plan[V] extends Graph[V] {
 
-      override val topology = topology
+      override type _Axiom = GraphType.this._Axiom
+      override type _Arrow = GraphType.this._Arrow
+      override val topology: Topology.Lt[_Axiom, _Arrow] = GraphType.this.topology
     }
 
     def buildExact[V](
-        nodes: Batch[Foundation.Node[TT, V]]
+        nodes: Batch[Foundation.Node[_Axiom, V]]
     ): Graph[V] =
-      buildFromAxioms[TT, V](nodes)(GraphType.this.topology)
+      buildFromTopology[_Axiom, V](nodes)(GraphType.this.topology)
 
     object buildTightest {
 
-      def apply[XX <: TT, V](
+      def apply[XX <: _Axiom, V](
           nodes: Batch[Foundation.Node[XX, V]]
-      )(
-          implicit
-          assuming: XX
       ): Graph.K[XX, V] =
-        buildFromAxioms[XX, V](nodes)(assuming)
+        buildFromNodes[XX, V](nodes)
     }
 
     def empty[V]: Graph[V] = makeExact[V]()
 
     def makeExact[V](
-        nodes: Foundation.Node[TT, V]*
+        nodes: Foundation.Node[_Axiom, V]*
     ): Graph[V] =
       buildExact[V](parallelize(nodes))
 
     object makeTightest {
 
-      def apply[XX <: TT, V](
+      def apply[XX <: _Axiom, V](
           nodes: Foundation.Node[XX, V]*
-      )(
-          implicit
-          assuming: XX
       ): Graph.K[XX, V] =
-        buildTightest.apply[XX, V](parallelize(nodes))(assuming)
+        buildTightest.apply[XX, V](parallelize(nodes))
     }
   }
 
@@ -173,7 +188,9 @@ trait Engine extends Priors.HasBatch {
 
       abstract class Plan[VV] extends Graph[X, VV] {
 
-        override val axiom: arg.axiom.type = arg.axiom
+        override type _Axiom = arg._Axiom
+        override type _Arrow = arg._Arrow
+        override val topology: Topology.Lt[_Axiom, _Arrow] = arg.topology
       }
     }
 
@@ -192,24 +209,25 @@ trait Engine extends Priors.HasBatch {
     }
   }
 
-  object AnyGraph extends GraphImpls(Topology.AnyGraph) {}
+  object AnyGraph extends GraphImpls[Topology.AnyGraph.type](Topology.AnyGraph) {}
   type AnyGraph[V] = AnyGraph.Graph[V]
 
-  object Poset extends GraphImpls(Topology.Poset) {}
+  object Poset extends GraphImpls[Topology.Poset.type](Topology.Poset) {}
   type Poset[V] = Poset.Graph[V]
 
   object Diverging {
 
-    object Graph extends GraphImpls(DivergingForm.Graph) {}
+    object Graph extends GraphImpls[DivergingForm.Graph.type](DivergingForm.Graph) {}
     type Graph[V] = Graph.Graph[V]
 
-    object Poset extends GraphImpls(DivergingForm.Poset) {}
+    object Poset extends GraphImpls[DivergingForm.Poset.type](DivergingForm.Poset) {}
     type Poset[V] = Poset.Graph[V]
 
-    object UpperSemilattice extends GraphImpls(DivergingForm.UpperSemilattice) {}
+    object UpperSemilattice
+        extends GraphImpls[DivergingForm.UpperSemilattice.type](DivergingForm.UpperSemilattice) {}
     type UpperSemilattice[V] = UpperSemilattice.Graph[V]
 
-    object Tree extends GraphImpls(DivergingForm.Tree) {
+    object Tree extends GraphImpls[DivergingForm.Tree.type](DivergingForm.Tree) {
 
       case class Singleton[V](value: V) extends topologyImpls.Node_[V] {
 

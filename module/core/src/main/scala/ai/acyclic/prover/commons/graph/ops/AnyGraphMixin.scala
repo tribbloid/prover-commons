@@ -16,10 +16,6 @@ trait AnyGraphMixin {
       override val arg: Graph[X, V]
   ) extends Ops.Unary[X, V](arg) {
 
-    {
-      implicitly[arg.axiom.type <:< AnyGraph._Axiom]
-    }
-
     import AnyGraphOps1.*
 
     //  lazy val asLazyList: LazyList[inputG.Value] = asIterable.to(LazyList)
@@ -196,7 +192,7 @@ trait AnyGraphMixin {
     ) {
 
       private val delegate = Transform(
-        setter = Foundation.Updater.DoNotRewrite(arg.axiom),
+        setter = Foundation.Updater.DoNotRewrite(arg.topology),
         down = { v =>
           down(v); Seq(v)
         },
