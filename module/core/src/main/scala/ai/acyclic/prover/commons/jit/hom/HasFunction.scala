@@ -82,10 +82,20 @@ trait HasFunction {
         right.apply(Const.Provided(left(arg)) ><: Args.eye)
 
       override def partialEval(env: PartialEvalEnv[In]): Fn[I, O] = {
-        copy(
-          left = left.partialEval(env),
-          right = right.simplify
-        )
+        val simplifiedLeft = left.partialEval(env)
+        val simplifiedRight = right.simplify
+
+        (simplifiedLeft, simplifiedRight) match {
+          case (_: Identity[M @unchecked], rightNoOp) =>
+            rightNoOp.asInstanceOf[Fn[I, O]] // safe: left identity implies I = M ><: T0
+          case (leftNoOp, _: Identity[O @unchecked]) =>
+            leftNoOp.asInstanceOf[Fn[I, O]] // safe: right identity implies M = O
+          case _ =>
+            copy(
+              left = simplifiedLeft,
+              right = simplifiedRight
+            )
+        }
       }
     }
 
