@@ -23,7 +23,7 @@ trait HasFunction {
     type In >: I <: Args
 
     override def partialEval(env: PartialEvalEnv[In]): DepFn[I] = this
-    override lazy val noneProvided: In = null.asInstanceOf[In]
+    override lazy val inputSchema: In = null.asInstanceOf[In]
   }
   case object DepFn {
 
