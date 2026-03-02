@@ -19,7 +19,7 @@ object HasFunction {
 trait HasFunction {
   self: Hom.type =>
 
-  trait DepFn[-I <: Args] extends IntermediateRepresentation with CanSimplify[DepFn[I]] {
+  trait DepFn[-I <: Args] extends CanSimplify[DepFn[I]] {
     type In >: I <: Args
 
     override def partialEval(env: PartialEvalEnv[In]): DepFn[I] = this

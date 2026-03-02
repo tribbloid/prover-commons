@@ -5,7 +5,7 @@ import ai.acyclic.prover.commons.jit.eval.Args
 trait DepDomains {
 
   type In <: Args // Domain, Max
-  val inputSchema: In
+  val inputSchema: Args { type Peer <: In }
 
-  type OutK[T <: inputSchema.Peer] // Codomain, Min
+  type OutK[T <: In] // Codomain, Min
 }
