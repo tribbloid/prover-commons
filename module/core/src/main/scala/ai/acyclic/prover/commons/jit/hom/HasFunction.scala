@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.collection.CacheMagnet
 import ai.acyclic.prover.commons.jit.Hom
-import ai.acyclic.prover.commons.jit.{CanSimplify, Domains, FnBuilder, IntermediateRepresentation, Rule}
+import ai.acyclic.prover.commons.jit.{CanSimplify, Domains, FnBuilder, Rule}
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
 import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
@@ -23,7 +23,8 @@ trait HasFunction {
     type In >: I <: Args
 
     override def partialEval(env: PartialEvalEnv[In]): DepFn[I] = this
-    override lazy val inputSchema: In = null.asInstanceOf[In]
+    override lazy val inputSchema: Args { type Peer <: In } =
+      throw new UnsupportedOperationException("inputSchema is unavailable for generic DepFn")
   }
   case object DepFn {
 
@@ -82,7 +83,7 @@ trait HasFunction {
 
       override def partialEval(env: PartialEvalEnv[In]): Fn[I, O] = {
         copy(
-          left = left.partialEval(env.asInstanceOf[PartialEvalEnv[left.In]]).asInstanceOf[Fn[I, M]],
+          left = left.partialEval(env),
           right = right.simplify
         )
       }
@@ -98,7 +99,7 @@ trait HasFunction {
       }
 
       override def partialEval(env: PartialEvalEnv[In]): Fn[I, O] = {
-        copy(base = base.partialEval(env.asInstanceOf[PartialEvalEnv[base.In]]).asInstanceOf[Fn[I, T]])
+        copy(base = base.partialEval(env))
       }
 
     }
@@ -130,8 +131,8 @@ trait HasFunction {
 
       override def partialEval(env: PartialEvalEnv[In]): Fn[I, (O1, O2)] = {
         copy(
-          left = left.partialEval(env.asInstanceOf[PartialEvalEnv[left.In]]).asInstanceOf[Fn[I, O1]],
-          right = right.partialEval(env.asInstanceOf[PartialEvalEnv[right.In]]).asInstanceOf[Fn[I, O2]]
+          left = left.partialEval(env),
+          right = right.partialEval(env)
         )
       }
     }
@@ -155,6 +156,20 @@ trait HasFunction {
       }
     }
 
+    case class Zipped[I <: Args, O, I2 <: Args, O2, Z <: Args](
+        left: Fn[I, O],
+        right: Fn[I2, O2],
+        unzip: Args.Zippable.Aux[I, I2, Z]
+    ) extends Impl[Z, (O, O2)] {
+
+      override type Rules = left.Rules & right.Rules
+
+      override def apply(arg: Z): (O, O2) = {
+        val (leftArg, rightArg) = unzip.unzip(arg)
+        left(leftArg) -> right(rightArg)
+      }
+    }
+
     // typed helpers for CPS/tracing composition to keep structure stable in explain trees
     def provided0[O](value: O): Fn[T0, O] = {
       Const.Provided(value)
@@ -168,12 +183,7 @@ trait HasFunction {
         unzip: Args.Zippable.Aux[I, I2, Z]
     ): Fn[Z, (O, O2)] = {
 
-      val pointwise = PointwiseZip[Any, O, I2, O2](
-        left.asInstanceOf[Fn[Any ><: T0, O]],
-        right
-      )
-
-      pointwise.asInstanceOf[Fn[Z, (O, O2)]]
+      Zipped(left, right, unzip)
     }
 
     def fork[I <: Args, O, O2](
@@ -269,34 +279,21 @@ trait HasFunction {
         implicit
         _definedAt: SrcDefinition
     ): Function1View[I, O] = {
-      v match {
-        case vv: Function1View[I @unchecked, O @unchecked] => vv
-        case _                                             =>
-          Function1View(v.simplify, _definedAt)
-      }
+      Function1View(v.simplify, _definedAt)
     }
 
     implicit def _as0View[O](v: CanSimplify[Thunk[O]])(
         implicit
         _definedAt: SrcDefinition
     ): Function0View[O] = {
-      v match {
-        case vv: Function0View[O @unchecked] => vv
-        case _                               =>
-          Function0View(v.simplify, _definedAt)
-      }
+      Function0View(v.simplify, _definedAt)
     }
 
     implicit def fromFunction1[I, R](fn: I => R)(
         implicit
         _definedAt: SrcDefinition
     ): Fn.Impl[I ><: T0, R] = {
-      fn match {
-        case Function1View(c: Fn.Impl[I ><: T0, R] @unchecked, _) =>
-          c
-        case _ =>
-          Blackbox[I, R](_definedAt)(fn)
-      }
+      Blackbox[I, R](_definedAt)(fn)
     }
 
     implicit def fromFunction0[R](fn: () => R)(
@@ -304,21 +301,13 @@ trait HasFunction {
         _definedAt: SrcDefinition
     ): Const.Impl[R] = {
 
-      fn match {
-        case Function0View(c: Const.Impl[R] @unchecked, _) =>
-          c
-        case Function0View(c: Thunk[R] @unchecked, _) =>
-          Const.Lazy(c)
-        case _ =>
-          case class ThunkImpl()(
-              implicit
-              override val _definedAt: SrcDefinition
-          ) extends Impl0[R] {
-            override def apply(arg: T0): R = fn()
-          }
-          val thunk: Thunk[R] = ThunkImpl() // ThunkImpl <: Impl0[R] <: Fn[T0, R] = Thunk[R]
-          Const.Lazy(thunk)
+      case class ThunkImpl()(
+          implicit
+          override val _definedAt: SrcDefinition
+      ) extends Impl0[R] {
+        override def apply(arg: T0): R = fn()
       }
+      Const.Lazy(ThunkImpl())
     }
 
     trait Pure {}
@@ -471,8 +460,10 @@ trait HasFunction {
         implicit
         iTag: TypeTag[I],
         oTag: TypeTag[O]
-    ): ai.acyclic.prover.commons.jit.cps.Continuation[I, O] =
-      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify)
+    ) = {
+      val exact: Fn.Impl[I, O] = Fn.Pure.Is(self)
+      ai.acyclic.prover.commons.jit.cps.Continuation(exact)
+    }
 
     def cached(byLookup: => CacheMagnet[I, O]): Fn.CachedImpl[I, O] = {
       Fn.CachedImpl[I, O](self)(() => byLookup)
@@ -488,7 +479,9 @@ trait HasFunction {
     def trace(
         implicit
         oTag: TypeTag[O]
-    ): ai.acyclic.prover.commons.jit.cps.Continuation[T0, O] =
-      ai.acyclic.prover.commons.jit.cps.Continuation(self.simplify)
+    ) = {
+      val exact: Fn.Impl[T0, O] = Fn.Pure.Is(self)
+      ai.acyclic.prover.commons.jit.cps.Continuation(exact)
+    }
   }
 }
