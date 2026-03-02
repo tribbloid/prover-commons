@@ -163,7 +163,7 @@ class FnSpec extends BaseSpec {
 
   describe("pointwise") {
 
-    PointwiseZipLike.pairs.zipWithIndex.foreach {
+    ZippedLike.pairs.zipWithIndex.foreach {
 
       case ((fn, s), i) =>
         it(i.toString) {
@@ -196,7 +196,7 @@ class FnSpec extends BaseSpec {
         val head: Fn[Int ><: T0, String] = { (v: Int) => "h" + v }
         val tail: Fn[Long ><: T0, Double] = { (v: Long) => v * 0.5 }
 
-        val pw = Fn.PointwiseZip[Int, String, Long ><: T0, Double](head, tail)
+        val pw = Fn.zip(head, tail)
 
         val in = Const.Provided(10) ><: (Const.Provided(4L) ><: Args.eye)
 
@@ -209,12 +209,12 @@ class FnSpec extends BaseSpec {
         val head: Fn[Int ><: T0, String] = { (v: Int) => "v=" + v }
 
         val tail: Fn[String ><: Long ><: T0, (String, Long)] =
-          Fn.PointwiseZip[String, String, Long ><: T0, Long](
+          Fn.zip(
             (s: String) => s.toUpperCase,
             (l: Long) => l + 100L
           )
 
-        val pw = Fn.PointwiseZip[Int, String, String ><: Long ><: T0, (String, Long)](head, tail)
+        val pw = Fn.zip(head, tail)
 
         val in = Const.Provided(42) ><: (Const.Provided("abc") ><: (Const.Provided(7L) ><: Args.eye))
 
@@ -227,10 +227,10 @@ class FnSpec extends BaseSpec {
         val head: Fn[Int ><: T0, String] = { (v: Int) => "h" + v }
         val tail: Fn[Long ><: T0, Double] = { (v: Long) => v * 0.5 }
 
-        val pw = Fn.PointwiseZip[Int, String, Long ><: T0, Double](head, tail)
+        val pw = Fn.zip(head, tail)
 
         val tree = pw.explain.text_hierarchy()
-        assert(tree.contains("Pointwise"))
+        assert(tree.contains("Zipped"))
         assert(tree.contains("Blackbox"))
       }
 
@@ -239,7 +239,7 @@ class FnSpec extends BaseSpec {
         val head: Fn[Int ><: T0, String] = { (v: Int) => "s" + v }
         val tail: Fn[Long ><: T0, Double] = { (v: Long) => v.toDouble }
 
-        val pw = Fn.PointwiseZip[Int, String, Long ><: T0, Double](head, tail)
+        val pw = Fn.zip(head, tail)
         val simplified = pw.simplify
 
         val in = Const.Provided(5) ><: (Const.Provided(3L) ><: Args.eye)
@@ -259,7 +259,7 @@ class FnSpec extends BaseSpec {
 
           val normal = fn.simplify
           val tree = normal.explain.text_hierarchy()
-          assert(tree.contains("PointwiseZip"))
+          assert(tree.contains("Zipped"))
 
           val combinedIn = Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye)
 

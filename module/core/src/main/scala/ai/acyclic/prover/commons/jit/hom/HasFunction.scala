@@ -142,20 +142,6 @@ trait HasFunction {
       def apply[I]() = Fork(Identity[I](), Identity[I]())
     }
 
-    case class PointwiseZip[I1, O1, IT <: Args, OT](
-        head: Fn[I1 ><: T0, O1],
-        tail: Fn[IT, OT]
-    ) extends Impl[I1 ><: IT, (O1, OT)] {
-
-      override type Rules = head.Rules & tail.Rules
-
-      override def apply(arg: I1 ><: IT): (O1, OT) = {
-
-        val (h1, tailArgs) = Args.deCons(arg)
-        head(h1 ><: Args.eye) -> tail(tailArgs)
-      }
-    }
-
     case class Zipped[I <: Args, O, I2 <: Args, O2, Z <: Args](
         left: Fn[I, O],
         right: Fn[I2, O2],

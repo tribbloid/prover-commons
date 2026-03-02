@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.jit.fixture
 
-object PointwiseZipLike {
+object ZippedLike {
 
   import Circuits.*
 
@@ -32,45 +32,45 @@ object PointwiseZipLike {
     Seq(
       pointwise ->
         s"""
-           |+ PointwiseZip
+           |+ Zipped
            |!-- ${fn1.explain.nodeText}
            |!-- ${fn2.explain.nodeText}
            |""".stripMargin,
       s1 ->
         s"""
            |+ Mapped
-           |!-+ PointwiseZip
+           |!-+ Zipped
            |: !-- ${fn1.explain.nodeText}
            |: !-- ${fn2.explain.nodeText}
-           |!-- Blackbox(s1 <at PointwiseZipLike.scala:9>)
+           |!-- Blackbox(s1 <at ZippedLike.scala:9>)
            |""".stripMargin,
       s1 ->
         s"""
             |+ Mapped
-            |!-+ PointwiseZip
+            |!-+ Zipped
             |: !-- ${fn1.explain.nodeText}
             |: !-- ${fn2.explain.nodeText}
-            |!-- Blackbox(s1 <at PointwiseZipLike.scala:9>)
+            |!-- Blackbox(s1 <at ZippedLike.scala:9>)
             |""".stripMargin,
       s2 ->
         s"""
              |+ Mapped
              |!-+ Mapped
-             |: !-+ PointwiseZip
+             |: !-+ Zipped
              |: : !-- ${fn1.explain.nodeText}
              |: : !-- ${fn2.explain.nodeText}
-             |: !-- Blackbox(s2 <at PointwiseZipLike.scala:15>)
-             |!-- Blackbox(s2 <at PointwiseZipLike.scala:15>)
+             |: !-- Blackbox(s2 <at ZippedLike.scala:15>)
+             |!-- Blackbox(s2 <at ZippedLike.scala:15>)
              |""".stripMargin,
       s3 ->
         s"""
              |+ Mapped
              |!-+ Mapped
-             |: !-+ PointwiseZip
+             |: !-+ Zipped
              |: : !-- Blackbox(fn1 <at Circuits.scala:12>)
              |: : !-- Blackbox(fn2 <at Circuits.scala:16>)
-             |: !-- Blackbox(s3 <at PointwiseZipLike.scala:22>)
-             |!-- Blackbox(s3 <at PointwiseZipLike.scala:22>)
+             |: !-- Blackbox(s3 <at ZippedLike.scala:22>)
+             |!-- Blackbox(s3 <at ZippedLike.scala:22>)
              |""".stripMargin
     )
   }
