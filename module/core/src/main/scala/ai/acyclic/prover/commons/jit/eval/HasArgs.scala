@@ -81,6 +81,8 @@ trait HasArgs {
       }
     }
 
+    def consNotProvided[H, T](tail: T) = Cons(Const.NotProvided, tail)
+
     implicitly[Eye =:= T0]
     implicitly[(Int ><: String ><: Eye) =:= (Int >< String)]
 
