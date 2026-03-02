@@ -122,9 +122,11 @@ trait HasFunction {
 
       override def apply(arg: I2 ><: I1 ><: T0): O = {
 
-        val (i2, t1) = Args.deCons(arg)
-        val (i1, _) = Args.deCons(t1)
-        base.apply(i1 ><: (i2 ><: Args.eye))
+        val (i2: Args.Element[I2], t1) = Args.deCons(arg)
+        val (i1: Args.Element[I1], _) = Args.deCons(t1)
+        val t2: I2 ><: T0 = i2 ><: T0
+        val swapped: I1 ><: I2 ><: T0 = i1 ><: t2
+        base.apply(swapped)
       }
     }
 
