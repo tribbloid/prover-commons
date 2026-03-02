@@ -34,13 +34,20 @@ trait HasArgs {
       */
     sealed trait Prod extends ElementsMixin.Prod {
 
-      type Peer <: Prod
+      type ComputeAll <: TupleX.Prod
+      val computeAll: ComputeAll
+
+      type Peer >: this.type <: Prod
+      def peer: Peer
+
       type Top >: Peer <: Prod
       type Bottom <: Peer
       val Bottom: Bottom
+    }
 
-      type ComputeAll <: TupleX.Prod
-      val computeAll: ComputeAll
+    implicit class ProdOps[T <: Prod](self: T) {
+
+      def consBottom: Nothing ><: T = Cons(Const.NotProvided, self)
     }
 
     override object eye extends Prod with ElementsMixin.Eye {
@@ -49,14 +56,16 @@ trait HasArgs {
       override lazy val computeAll: ComputeAll = TupleXEmpty
 
       override type Peer = this.type
+      override def peer: Peer = this
+
       override type Top = this.type
       override type Bottom = this.type
-      override val Bottom = this
+      @transient override lazy val Bottom = this
     }
 
-    type ><:[+H, +T <: Prod] = Cons[? <: H, T]
+    type ><:[+H, T <: Prod] = Cons[? <: H, T]
 
-    case class Cons[H, +T <: Prod] private[Args] (
+    protected case class Cons[H, T <: Prod] private[Args] (
         head: Element[H],
         tail: T
     ) extends Prod
@@ -71,17 +80,15 @@ trait HasArgs {
 
       lazy val valueSeq: Seq[Any] = runtimeSeq.map(_.compute)
 
-      override type Peer = H ><: tail.Peer
-      override type Top = Any ><: tail.Top
-      override type Bottom = Nothing ><: tail.Bottom
-      override lazy val Bottom: Bottom = {
+      override type Peer = H ><: T
+      override def peer: Peer = this
 
-        val head: Element[Nothing] = Const.NotProvided
-        head ><: tail.Bottom
+      override type Top = Any ><: T
+      override type Bottom = Nothing ><: T
+      @transient override lazy val Bottom: Bottom = {
+        tail.consBottom
       }
     }
-
-    def consNotProvided[H, T](tail: T) = Cons(Const.NotProvided, tail)
 
     implicitly[Eye =:= T0]
     implicitly[(Int ><: String ><: Eye) =:= (Int >< String)]
