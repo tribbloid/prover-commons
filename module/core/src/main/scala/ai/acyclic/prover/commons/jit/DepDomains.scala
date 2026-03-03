@@ -12,5 +12,5 @@ trait DepDomains {
 
   val inputSchema: _In
 
-  type OutK[T <: _In] // Codomain, Min
+  type OutK[T <: In] // Codomain, Min
 }
