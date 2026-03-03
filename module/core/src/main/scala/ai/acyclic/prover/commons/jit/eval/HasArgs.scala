@@ -44,6 +44,8 @@ trait HasArgs {
       type Bottom <: Peer
       val Bottom: Bottom
 
+      def proofOfBottom[TSub <: Peer]: Peer <:< Bottom
+
       def getBottom[R >: Bottom <: Peer]: R = Bottom
     }
 
@@ -67,7 +69,7 @@ trait HasArgs {
 
     type ><:[+H, +T <: Prod] = Cons[? <: H, ? <: T]
 
-    protected case class Cons[H, T <: Prod] private[Args] (
+    final protected case class Cons[H, T <: Prod] private[Args] (
         head: Element[H],
         tail: T
     ) extends Prod
@@ -115,11 +117,6 @@ trait HasArgs {
 //
 //    def getBottom[R >: Bottom <: I]: R
 //  }
-
-  type ArgSchema[-I <: Args] = Args {
-
-    type Peer >: I <: Args
-  }
 
   trait NoneGenerator[-T <: (Option[String], Option[Int])] {
 

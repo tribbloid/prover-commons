@@ -17,11 +17,11 @@ trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresen
   /**
     * simplifying is equivalent to partial evaluation with all inputs missing
     */
-  final lazy val noneProvidedEnvironment =
+  final lazy val bottomEnvironment =
     PartialEvalEnv[inputSchema.Bottom](inputs = inputSchema.Bottom, failFast = false, onlyPure = true)
 
   final lazy val simplify: N = {
 
-    partialEval(noneProvidedEnvironment)
+    partialEval(bottomEnvironment)
   }
 }
