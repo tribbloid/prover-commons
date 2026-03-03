@@ -44,7 +44,7 @@ trait HasArgs {
       type Bottom <: Peer
       val Bottom: Bottom
 
-      def proofOfBottom[TSub <: Peer]
+      def proofOfBottom[TSub <: Peer]: Bottom <:< TSub
 
       def getBottom[R >: Bottom <: Peer]: R = Bottom
     }
