@@ -6,7 +6,7 @@ object CanSimplify extends CanSimplify_Impl0 {}
 
 trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresentation {
 
-  def apply(arg: In): OutK[arg.type]
+  def apply(arg: In): OutK[arg.type] // TODO: rename to eval
 
   /**
     * given complete or incmplete input, it should return a simplified/partially evaluated version of itself with best
@@ -17,8 +17,8 @@ trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresen
   /**
     * simplifying is equivalent to partial evaluation with all inputs missing
     */
-  final lazy val noneProvidedEnvironment: PartialEvalEnv[In] =
-    PartialEvalEnv(inputs = inputSchema.Bottom: In, failFast = false, onlyPure = true)
+  final lazy val noneProvidedEnvironment =
+    PartialEvalEnv[inputSchema.Bottom](inputs = inputSchema.Bottom, failFast = false, onlyPure = true)
 
   final lazy val simplify: N = {
 

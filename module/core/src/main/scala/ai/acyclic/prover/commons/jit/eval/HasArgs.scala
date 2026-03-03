@@ -43,6 +43,8 @@ trait HasArgs {
       type Top >: Peer <: Prod
       type Bottom <: Peer
       val Bottom: Bottom
+
+      def getBottom[R >: Bottom <: Peer]: R = Bottom
     }
 
     implicit class ProdOps[T <: Prod](self: T) {
@@ -102,6 +104,29 @@ trait HasArgs {
     override def deCons[L, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL) =
       (cons.head, cons.tail)
 
+  }
+
+//  trait ArgSchema[-I <: Args] {
+//
+//    type Peer >: I <: Args
+//
+//    type Bottom <: Peer
+//    val Bottom: Bottom
+//
+//    def getBottom[R >: Bottom <: I]: R
+//  }
+
+  type ArgSchema[-I <: Args] = Args {
+
+    type Peer >: I <: Args
+  }
+
+  trait NoneGenerator[-T <: (Option[String], Option[Int])] {
+
+    val bottom = (None, None)
+
+    def gen[R >: (Option[Nothing], Option[Nothing]) <: T]: R =
+      bottom // it is possbile to output value with contravariant bound
   }
 
 }
