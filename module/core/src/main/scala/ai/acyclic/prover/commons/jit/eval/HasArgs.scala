@@ -63,7 +63,7 @@ trait HasArgs {
       @transient override lazy val Bottom = this
     }
 
-    type ><:[+H, T <: Prod] = Cons[? <: H, T]
+    type ><:[+H, +T <: Prod] = Cons[? <: H, ? <: T]
 
     protected case class Cons[H, T <: Prod] private[Args] (
         head: Element[H],
