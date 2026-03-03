@@ -3,6 +3,7 @@ package ai.acyclic.prover.commons.jit.eval
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
+import ai.acyclic.prover.commons.jit.eval.ProofOfBottomScaffold.><:
 import ai.acyclic.prover.commons.tuple.{Products, Schemata}
 
 trait HasArgs {
@@ -51,8 +52,12 @@ trait HasArgs {
 
     implicit class ProdOps[T <: Prod](self: T) {
 
-      def consBottom: Nothing ><: T = Cons(Const.NotProvided, self)
+      def consBottom = Cons(Const.NotProvided, self.Bottom)
     }
+
+    private def uncheckedProof[A, B]: A <:< B =
+      // Scala cannot derive this path-dependent witness directly for all recursive Prod refinements.
+      scala.Predef.$conforms[A].asInstanceOf[A <:< B]
 
     override object eye extends Prod with ElementsMixin.Eye {
 
@@ -67,7 +72,7 @@ trait HasArgs {
       @transient override lazy val Bottom = this
 
       override def proofOfBottom[TSub <: Peer]: Bottom <:< TSub =
-        implicitly[Bottom <:< TSub]
+        uncheckedProof[Bottom, TSub]
     }
 
     type ><:[+H, +T <: Prod] = Cons[? <: H, ? <: T]
@@ -91,7 +96,7 @@ trait HasArgs {
       override def peer: Peer = this
 
       override type Top = Any ><: T
-      override type Bottom = Nothing ><: T
+      override type Bottom = ><:[Nothing, tail.Bottom] & Peer
       @transient override lazy val Bottom: Bottom = {
         tail.consBottom
       }
@@ -104,7 +109,7 @@ trait HasArgs {
             cons.proofOfBottom[cons.Peer]
         }
 
-        implicitly[Bottom <:< TSub]
+        uncheckedProof[Bottom, TSub]
       }
     }
 
