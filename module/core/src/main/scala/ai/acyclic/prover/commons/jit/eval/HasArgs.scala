@@ -65,6 +65,9 @@ trait HasArgs {
       override type Top = this.type
       override type Bottom = this.type
       @transient override lazy val Bottom = this
+
+      override def proofOfBottom[TSub <: Peer]: Bottom <:< TSub =
+        implicitly[Bottom <:< TSub]
     }
 
     type ><:[+H, +T <: Prod] = Cons[? <: H, ? <: T]
@@ -91,6 +94,17 @@ trait HasArgs {
       override type Bottom = Nothing ><: T
       @transient override lazy val Bottom: Bottom = {
         tail.consBottom
+      }
+
+      override def proofOfBottom[TSub <: Peer]: Bottom <:< TSub = {
+        tail match {
+          case _: eye.type =>
+            ()
+          case cons: Cons[_, _] =>
+            cons.proofOfBottom[cons.Peer]
+        }
+
+        implicitly[Bottom <:< TSub]
       }
     }
 
