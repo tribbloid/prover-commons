@@ -12,7 +12,7 @@ object IsConcrete {
 
 class IsConcreteMacro(val c: blackbox.Context) {
 
-  import c.universe._
+  import c.universe.*
 
   def impl[T: c.WeakTypeTag]: c.Expr[IsConcrete[T]] = {
 

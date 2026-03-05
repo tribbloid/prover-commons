@@ -3,8 +3,10 @@ package ai.acyclic.prover.commons.jit.eval
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
-import ai.acyclic.prover.commons.jit.eval.ProofOfBottomScaffold.><:
 import ai.acyclic.prover.commons.tuple.{Products, Schemata}
+import ai.acyclic.prover.commons.util.Phantom
+
+import scala.util.Try
 
 trait HasArgs {
 
@@ -24,6 +26,44 @@ trait HasArgs {
     override type Element[V] = Hom.ConstantFn[V]
 
     /**
+      * Schema-only phantom
+      */
+    trait Schema[Peer <: Args] extends Phantom {
+
+      type Top >: Peer <: Args
+      type Bottom <: Peer
+
+      type TryComputeAll <: TupleX.Prod
+      type ComputeAll <: TupleX.Prod
+    }
+
+    object Schema {
+
+      type Gt[-T >: Args] = Schema[? >: T]
+
+      object Eye extends Schema[Args.T0] {
+
+        type TryComputeAll = TupleXEmpty
+        type ComputeAll = TupleXEmpty
+
+        override type Top = Args.T0
+        override type Bottom = Args.T0
+      }
+      type Eye = Eye.type
+
+      final infix class SchemaCons[H, T <: Args] private[Schema] () extends Schema[Args.><:[H, T]] {
+
+        lazy val tail: Schema[T] = Phantom.apply()
+
+        type TryComputeAll = Try[H] *: tail.TryComputeAll
+        type ComputeAll = H *: tail.ComputeAll
+
+        override type Top = Any ><: T
+        override type Bottom = Nothing ><: T
+      }
+    }
+
+    /**
       * choose 1 of the 2 options:
       *
       *   - `Fn[(X, Y), T]`, for partial eval, summon [[FromFlatRepr]] then perform on upstreams.
@@ -35,44 +75,26 @@ trait HasArgs {
       */
     sealed trait Prod extends ElementsMixin.Prod {
 
-      type ComputeAll <: TupleX.Prod
-      val computeAll: ComputeAll
+      val schema: Schema.Gt[this.type]
 
-      type Peer >: this.type <: Prod
-      def peer: Peer
+      val computeAll: schema.ComputeAll
 
-      type Top >: Peer <: Prod
-      type Bottom <: Peer
-      val Bottom: Bottom
-
-      def proofOfBottom[TSub <: Peer]: Bottom <:< TSub
-
-      def getBottom[R >: Bottom <: Peer]: R = Bottom
+      val Bottom: schema.Bottom
     }
 
-    implicit class ProdOps[T <: Prod](self: T) {
-
-      def consBottom = Cons(Const.NotProvided, self.Bottom)
-    }
-
-    private def uncheckedProof[A, B]: A <:< B =
-      // Scala cannot derive this path-dependent witness directly for all recursive Prod refinements.
-      scala.Predef.$conforms[A].asInstanceOf[A <:< B]
+//    implicit class ProdOps[T <: Prod](val self: T) {
+//
+//      def consBottom: Nothing ><: self.Bottom = Cons(Const.NotProvided, self.Bottom)
+//    }
 
     override object eye extends Prod with ElementsMixin.Eye {
 
-      type ComputeAll = TupleXEmpty
-      override lazy val computeAll: ComputeAll = TupleXEmpty
+      lazy val schema: Schema.Eye = Schema.Eye
 
-      override type Peer = this.type
-      override def peer: Peer = this
+      override lazy val computeAll = TupleXEmpty
 
-      override type Top = this.type
-      override type Bottom = this.type
       @transient override lazy val Bottom = this
 
-      override def proofOfBottom[TSub <: Peer]: Bottom <:< TSub =
-        uncheckedProof[Bottom, TSub]
     }
 
     type ><:[+H, +T <: Prod] = Cons[? <: H, ? <: T]
@@ -83,34 +105,20 @@ trait HasArgs {
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
-      type ComputeAll = H *: tail.ComputeAll
-      override lazy val computeAll: ComputeAll = computeHead *: tail.computeAll
+      import Schema.SchemaCons
+
+      lazy val schema = Phantom.apply.apply[H SchemaCons T]()
 
       def computeHead: H = head.compute
+
+      override lazy val computeAll = computeHead *: tail.computeAll
+
+      @transient override lazy val Bottom = cons(Const.NotProvided, tail.Bottom)
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
       lazy val valueSeq: Seq[Any] = runtimeSeq.map(_.compute)
 
-      override type Peer = H ><: T
-      override def peer: Peer = this
-
-      override type Top = Any ><: T
-      override type Bottom = ><:[Nothing, tail.Bottom] & Peer
-      @transient override lazy val Bottom: Bottom = {
-        tail.consBottom
-      }
-
-      override def proofOfBottom[TSub <: Peer]: Bottom <:< TSub = {
-        tail match {
-          case _: eye.type =>
-            ()
-          case cons: Cons[_, _] =>
-            cons.proofOfBottom[cons.Peer]
-        }
-
-        uncheckedProof[Bottom, TSub]
-      }
     }
 
     implicitly[Eye =:= T0]
@@ -124,7 +132,6 @@ trait HasArgs {
 
     override def deCons[L, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL) =
       (cons.head, cons.tail)
-
   }
 
 //  trait ArgSchema[-I <: Args] {
