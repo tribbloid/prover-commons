@@ -7,14 +7,6 @@ object CanSimplify extends CanSimplify_Impl0 {}
 trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresentation {
   self: N =>
 
-  final private val MissingInputSchemaMessage = "inputSchema is unavailable for generic DepFn"
-
-  private lazy val unavailableInputs: In =
-    throw new UnsupportedOperationException("bottom inputs are unavailable for generic DepFn")
-
-  private lazy val fallbackEnvironment: PartialEvalEnv[In] =
-    PartialEvalEnv[In](inputs = unavailableInputs, failFast = false, onlyPure = true)
-
   def apply(arg: In): OutK[arg.type] // TODO: rename to eval
 
   /**
@@ -31,16 +23,6 @@ trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresen
 
   final lazy val simplify: N = {
 
-    try {
-      partialEval(bottomEnvironment)
-    } catch {
-      case ex: UnsupportedOperationException if ex.getMessage == MissingInputSchemaMessage =>
-        try {
-          partialEval(fallbackEnvironment)
-        } catch {
-          case _: UnsupportedOperationException =>
-            this
-        }
-    }
+    partialEval(bottomEnvironment)
   }
 }

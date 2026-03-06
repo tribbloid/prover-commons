@@ -23,8 +23,6 @@ trait HasFunction {
     type In >: I <: Args
 
     override def partialEval(env: PartialEvalEnv[In]): DepFn[I] = this
-    override lazy val inputSchema =
-      throw new UnsupportedOperationException("inputSchema is unavailable for generic DepFn")
   }
   case object DepFn {
 
