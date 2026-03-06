@@ -137,23 +137,17 @@ trait HasArgs {
         with ElementsMixin.><:[H, T] {
 
       lazy val schema: Schema[Args.><:[H, T]] { type ComputeAll = H *: tail.schema.ComputeAll } =
-        Phantom.apply.apply[Schema[Args.><:[H, T]] { type ComputeAll = H *: tail.schema.ComputeAll }]()
+        Phantom.apply.apply()
 
-      def computeHead: H = head.compute
-
-      override lazy val computeAll: schema.ComputeAll = computeHead *: tail.computeAll
+      override lazy val computeAll: schema.ComputeAll = head.compute *: tail.computeAll
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
       lazy val valueSeq: Seq[Any] = runtimeSeq.map(_.compute)
-
     }
 
     implicitly[Eye =:= T0]
     implicitly[(Int ><: String ><: Eye) =:= (Int >< String)]
-
-    // Should this defined as a dependent type of Schema (which is a phantom & always available)
-    // the only capability it grants is to remove some pending arguments that are guaranteed to be provided
 
     override protected def cons[L, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL =
       Cons(head, tail)
