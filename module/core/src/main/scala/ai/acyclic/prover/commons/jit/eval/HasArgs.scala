@@ -91,6 +91,22 @@ trait HasArgs {
       ): Schema[H ><: T] = {
         cons[H, T](tailSchema)
       }
+
+      object WildCard extends Schema[Args] {
+
+        type TryComputeAll = TupleX
+        type ComputeAll = TupleX
+
+        override type Top = Args
+        override type Bottom = Nothing
+
+        override def computeAll(from: Args.Prod): ComputeAll = from.computeAll
+
+        override def bottom: Bottom = ???
+      }
+
+      implicit lazy val _wildCard: Schema[Args.Prod] = WildCard
+
     }
 
     /**
