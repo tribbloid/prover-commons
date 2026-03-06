@@ -156,7 +156,8 @@ trait HasFunction {
 
     case class Zipped[I <: Args, O, I2 <: Args, O2, Z <: Args](
         left: Fn[I, O],
-        right: Fn[I2, O2],
+        right: Fn[I2, O2]
+    )(
         unzip: Args.Zippable.Aux[I, I2, Z]
     ) extends Impl[Z, (O, O2)] {
 
@@ -181,7 +182,7 @@ trait HasFunction {
         unzip: Args.Zippable.Aux[I, I2, Z]
     ): Fn[Z, (O, O2)] = {
 
-      Zipped(left, right, unzip)
+      Zipped(left, right)(unzip)
     }
 
     def fork[I <: Args, O, O2](
@@ -290,8 +291,16 @@ trait HasFunction {
     implicit def fromFunction1[I, R](fn: I => R)(
         implicit
         _definedAt: SrcDefinition
-    ): Fn.Impl[I ><: T0, R] = {
-      Blackbox[I, R](_definedAt)(fn)
+    ): Fn[I ><: T0, R] = {
+      fn match {
+        case vv: Function1View[I @unchecked, R @unchecked] =>
+          vv.self match {
+            case impl: Fn[I ><: T0, R @unchecked] =>
+              impl
+          }
+        case _ =>
+          Blackbox[I, R](_definedAt)(fn)
+      }
     }
 
     implicit def fromFunction0[R](fn: () => R)(
@@ -343,7 +352,7 @@ trait HasFunction {
       }
     }
 
-    override protected type BuildTarget[I, O] = Fn.Impl[I ><: T0, O]
+    override protected type BuildTarget[I, O] = Fn[I ><: T0, O]
 
     protected def build[I, O](fn: I => O)(
         implicit

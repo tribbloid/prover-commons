@@ -33,7 +33,7 @@ trait HasPoly extends HasFunction {
     // TODO: construction/inference of Case should be interned
 
     protected[Poly] case class Case[I, O]( // a thin wrapper that prevents apply from being called directly
-        underlying: Fn.Impl[I ><: T0, O]
+        underlying: Fn[I ><: T0, O]
     ) extends Fn.Impl[I ><: T0, O] {
       def apply(v: I ><: T0): O = underlying.apply(v)
     }
