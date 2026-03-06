@@ -54,9 +54,11 @@ trait HasFunction {
 
     abstract class Impl[I <: Args, O](
         implicit
-        override val _definedAt: SrcDefinition
+        override val _definedAt: SrcDefinition,
+        @transient _inputSchema: Args.Schema[I]
     ) extends Fn[I, O] { // most specific
 
+      @transient override lazy val inputSchema: Args.Schema[I] = _inputSchema
       type In = I
       type Out = O
     }
@@ -72,6 +74,9 @@ trait HasFunction {
     case class Mapped[I <: Args, M, O](
         left: Fn[I, M],
         right: Fn[M ><: T0, O]
+    )(
+        implicit
+        inputSchema0: Args.Schema[I]
     ) extends Impl[I, O] {
 
       override type Rules = left.Rules & right.Rules
@@ -83,23 +88,19 @@ trait HasFunction {
         val simplifiedLeft = left.partialEval(env)
         val simplifiedRight = right.simplify
 
-        (simplifiedLeft, simplifiedRight) match {
-          case (_: Identity[M @unchecked], rightNoOp) =>
-            rightNoOp.asInstanceOf[Fn[I, O]] // safe: left identity implies I = M ><: T0
-          case (leftNoOp, _: Identity[O @unchecked]) =>
-            leftNoOp.asInstanceOf[Fn[I, O]] // safe: right identity implies M = O
-          case _ =>
-            copy(
-              left = simplifiedLeft,
-              right = simplifiedRight
-            )
-        }
+        copy(
+          left = simplifiedLeft,
+          right = simplifiedRight
+        )
       }
     }
 
     case class Flatten[I <: Args, T, O](
         base: Fn[I, T],
         coerce: T => Fn[I, O]
+    )(
+        implicit
+        inputSchema0: Args.Schema[I]
     ) extends Impl[I, O] {
 
       override def apply(arg: I): O = {
@@ -116,6 +117,12 @@ trait HasFunction {
         base: Fn2[I1, I2, O]
     ) extends Impl2[I2, I1, O] {
 
+      override type In = I2 ><: I1 ><: T0
+      override lazy val inputSchema: Args.Schema[In] =
+        Args.Schema.cons[I2, I1 ><: T0](
+          Args.Schema.cons[I1, T0](Args.Schema.Eye)
+        )
+
       override type Rules = base.Rules
 
       override def apply(arg: I2 ><: I1 ><: T0): O = {
@@ -131,6 +138,9 @@ trait HasFunction {
     case class Fork[I <: Args, O1, O2](
         left: Fn[I, O1],
         right: Fn[I, O2]
+    )(
+        implicit
+        inputSchema0: Args.Schema[I]
     ) extends Impl[I, (O1, O2)] {
 
       override type Rules = left.Rules & right.Rules
@@ -157,8 +167,12 @@ trait HasFunction {
         right: Fn[I2, O2]
     )(
         unzip: Args.Zippable.Aux[I, I2, Z]
+    )(
+        implicit
+        inputSchema0: Args.Schema[Z]
     ) extends Impl[Z, (O, O2)] {
 
+      override type In = Z
       override type Rules = left.Rules & right.Rules
 
       override def apply(arg: Z): (O, O2) = {
@@ -177,22 +191,29 @@ trait HasFunction {
         right: Fn[I2, O2]
     )(
         implicit
-        unzip: Args.Zippable.Aux[I, I2, Z]
+        unzip: Args.Zippable.Aux[I, I2, Z],
+        inputSchema: Args.Schema[Z]
     ): Fn[Z, (O, O2)] = {
 
-      Zipped(left, right)(unzip)
+      Zipped(left, right)(unzip)(inputSchema)
     }
 
     def fork[I <: Args, O, O2](
         left: Fn[I, O],
         right: Fn[I, O2]
+    )(
+        implicit
+        inputSchema: Args.Schema[I]
     ): Fn[I, (O, O2)] = {
 
-      Fork[I, O, O2](left, right)
+      Fork[I, O, O2](left, right)(inputSchema)
     }
 
     // TODO: fix this, old type signature is wrong
     case class Identity[I]() extends Impl1[I, I] {
+
+      override type In = I ><: T0
+      override lazy val inputSchema: Args.Schema[In] = Args.Schema.cons[I, T0](Args.Schema.Eye)
 
       override type Rules <: Rule.Linear
 
@@ -202,6 +223,8 @@ trait HasFunction {
     case class Conditional[I](
         filter: Fn.Impl1[I, Boolean]
     ) extends Impl1[I, I] {
+
+      override lazy val inputSchema: Args.Schema[In] = filter.inputSchema
 
       override def apply(o: I ><: T0): I = {
         val v = o.head.compute
@@ -254,6 +277,9 @@ trait HasFunction {
     )(val fn: I => R)
         extends Impl1[I, R]
         with HasLambdaInfo[I => R] {
+
+      override type In = I ><: T0
+      override lazy val inputSchema: Args.Schema[In] = Args.Schema.cons[I, T0](Args.Schema.Eye)
 
       override def apply(arg: I ><: T0): R = {
 
@@ -310,6 +336,9 @@ trait HasFunction {
           implicit
           override val _definedAt: SrcDefinition
       ) extends Impl0[R] {
+        override type In = T0
+        override lazy val inputSchema: Args.Schema[In] = Args.Schema.Eye
+
         override def apply(arg: T0): R = fn()
       }
       Const.Lazy(ThunkImpl())
@@ -319,7 +348,11 @@ trait HasFunction {
 
     object Pure {
 
-      case class Is[I <: Args, R](delegate: Fn[I, R]) extends Impl[I, R] with Pure {
+      case class Is[I <: Args, R](delegate: Fn[I, R])(
+          implicit
+          inputSchema0: Args.Schema[I]
+      ) extends Impl[I, R]
+          with Pure {
 
         override def apply(v: I): R = delegate.apply(v)
       }
@@ -330,6 +363,9 @@ trait HasFunction {
     // TODO: make a dependent class, also in Thunk
     final case class CachedImpl[I <: Args, R](backbone: Fn[I, R])(
         getLookup: () => CacheMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
+    )(
+        implicit
+        inputSchema0: Args.Schema[I]
     ) extends Impl[I, R]
         with CachedPure {
 
@@ -440,6 +476,8 @@ trait HasFunction {
     implicitly[Args.Eye =:= Args.T0]
 
     sealed trait Impl[O] extends Fn.Impl[Args, O] with ConstantFn[O] {
+      override type In = Args
+
       override def apply(arg: Args): O = compute
     }
 
@@ -464,17 +502,24 @@ trait HasFunction {
     def trace(
         implicit
         iTag: TypeTag[I],
-        oTag: TypeTag[O]
+        oTag: TypeTag[O],
+        inputSchema: Args.Schema[I]
     ) = {
       ai.acyclic.prover.commons.jit.cps.Continuation(self)
     }
 
-    def cached(byLookup: => CacheMagnet[I, O]): Fn.CachedImpl[I, O] = {
-      Fn.CachedImpl[I, O](self)(() => byLookup)
+    def cached(byLookup: => CacheMagnet[I, O])(
+        implicit
+        inputSchema: Args.Schema[I]
+    ): Fn.CachedImpl[I, O] = {
+      Fn.CachedImpl[I, O](self)(() => byLookup)(inputSchema)
     }
 
-    def cached(): Fn.CachedImpl[I, O] = {
-      Fn.CachedImpl[I, O](self)()
+    def cached()(
+        implicit
+        inputSchema: Args.Schema[I]
+    ): Fn.CachedImpl[I, O] = {
+      Fn.CachedImpl[I, O](self)()(inputSchema)
     }
   }
 

@@ -28,7 +28,7 @@ trait HasArgs {
     /**
       * Schema-only phantom
       */
-    trait Schema[Peer <: Args] extends Phantom {
+    trait Schema[Peer <: Args] extends Phantom with Serializable {
 
       type Top >: Peer <: Args
       type Bottom <: Peer
@@ -58,9 +58,11 @@ trait HasArgs {
       }
       type Eye = Eye.type
 
-      final infix class SchemaCons[H, T <: Args] private[Schema] () extends Schema[Args.><:[H, T]] {
+      final infix class SchemaCons[H, T <: Args] private[Schema] (
+          getTail: () => Schema[T] = () => Phantom.apply.apply[Schema[T]]()
+      ) extends Schema[Args.><:[H, T]] {
 
-        lazy val tail: Schema[T] = Phantom.apply()
+        lazy val tail: Schema[T] = getTail()
 
         type TryComputeAll = Try[H] *: tail.TryComputeAll
         type ComputeAll = H *: tail.ComputeAll
@@ -76,6 +78,34 @@ trait HasArgs {
 
         override def bottom: Bottom = Const.NotProvided ><: tail.bottom
       }
+
+      final def cons[H, T <: Args](tailSchema: Schema[T]): Schema[H ><: T] = {
+        new SchemaCons[H, T](() => tailSchema)
+      }
+
+      implicit lazy val _eye: Schema[Args.T0] = Eye
+
+      implicit def _cons[H, T <: Args](
+          implicit
+          tailSchema: Schema[T]
+      ): Schema[H ><: T] = {
+        cons[H, T](tailSchema)
+      }
+//
+//      object AnyProd extends Schema[Args.Prod] {
+//
+//        type TryComputeAll = TupleX.Prod
+//        type ComputeAll = TupleX.Prod
+//
+//        override type Top = Args.Prod
+//        override type Bottom = Args.T0
+//
+//        override def computeAll(from: Args.Prod): ComputeAll = from.computeAll
+//
+//        override def bottom: Bottom = Args.eye
+//      }
+//
+//      implicit lazy val _anyProd: Schema[Args.Prod] = AnyProd
     }
 
     /**
