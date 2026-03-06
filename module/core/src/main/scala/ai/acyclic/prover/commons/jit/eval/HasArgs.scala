@@ -59,7 +59,7 @@ trait HasArgs {
       type Eye = Eye.type
 
       final infix class SchemaCons[H, T <: Args] private[Schema] (
-          getTail: () => Schema[T] = () => Phantom.apply.apply[Schema[T]]()
+          getTail: () => Schema[T]
       ) extends Schema[Args.><:[H, T]] {
 
         lazy val tail: Schema[T] = getTail()
@@ -91,21 +91,6 @@ trait HasArgs {
       ): Schema[H ><: T] = {
         cons[H, T](tailSchema)
       }
-//
-//      object AnyProd extends Schema[Args.Prod] {
-//
-//        type TryComputeAll = TupleX.Prod
-//        type ComputeAll = TupleX.Prod
-//
-//        override type Top = Args.Prod
-//        override type Bottom = Args.T0
-//
-//        override def computeAll(from: Args.Prod): ComputeAll = from.computeAll
-//
-//        override def bottom: Bottom = Args.eye
-//      }
-//
-//      implicit lazy val _anyProd: Schema[Args.Prod] = AnyProd
     }
 
     /**
@@ -122,7 +107,8 @@ trait HasArgs {
 
       val schema: Schema.Gt[this.type]
 
-      val computeAll: schema.ComputeAll
+      type ComputeAll <: TupleX.Prod
+      val computeAll: ComputeAll
     }
 
 //    implicit class ProdOps[T <: Prod](val self: T) {
@@ -134,7 +120,8 @@ trait HasArgs {
 
       lazy val schema: Schema.Eye = Schema.Eye
 
-      override lazy val computeAll = TupleXEmpty
+      override type ComputeAll = TupleXEmpty
+      override lazy val computeAll: ComputeAll = TupleXEmpty
 
     }
 
@@ -152,7 +139,8 @@ trait HasArgs {
 
       def computeHead: H = head.compute
 
-      override lazy val computeAll = schema.computeAll(this)
+      override type ComputeAll = H *: tail.ComputeAll
+      override lazy val computeAll: ComputeAll = computeHead *: tail.computeAll
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
