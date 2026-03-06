@@ -1,6 +1,6 @@
 package ai.acyclic.prover.meta2.congr
 
-import ai.acyclic.prover.commons.util.StaticTag
+import ai.acyclic.prover.commons.util.Static
 
 trait CongruentSupport { // TODO: merge into Congruent
 
@@ -26,6 +26,6 @@ object CongruentSupport {
 
     implicit def isSingleton[T <: Singleton]: IsSingletonOrStatic[T] = null
 
-    implicit def isStatic[T <: StaticTag]: IsSingletonOrStatic[T] = null
+    implicit def isStatic[T <: Static]: IsSingletonOrStatic[T] = null
   }
 }

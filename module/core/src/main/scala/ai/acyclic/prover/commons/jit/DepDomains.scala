@@ -6,11 +6,9 @@ trait DepDomains {
 
   type In <: Args // Domain, Max
 
-  type _In = In { type Peer <: In }
-
 //  type Schema = In { type Peer <: In }
 
-  val inputSchema: _In
+  val inputSchema: Args.Schema[In]
 
   type OutK[T <: In] // Codomain, Min
 }

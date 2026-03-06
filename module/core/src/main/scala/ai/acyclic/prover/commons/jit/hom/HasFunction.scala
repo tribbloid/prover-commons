@@ -459,8 +459,7 @@ trait HasFunction {
         iTag: TypeTag[I],
         oTag: TypeTag[O]
     ) = {
-      val exact: Fn.Impl[I, O] = Fn.Pure.Is(self)
-      ai.acyclic.prover.commons.jit.cps.Continuation(exact)
+      ai.acyclic.prover.commons.jit.cps.Continuation(self)
     }
 
     def cached(byLookup: => CacheMagnet[I, O]): Fn.CachedImpl[I, O] = {
@@ -478,8 +477,7 @@ trait HasFunction {
         implicit
         oTag: TypeTag[O]
     ) = {
-      val exact: Fn.Impl[T0, O] = Fn.Pure.Is(self)
-      ai.acyclic.prover.commons.jit.cps.Continuation(exact)
+      ai.acyclic.prover.commons.jit.cps.Continuation(self)
     }
   }
 }
