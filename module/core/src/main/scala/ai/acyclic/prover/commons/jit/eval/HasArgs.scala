@@ -36,7 +36,6 @@ trait HasArgs {
       type TryComputeAll <: TupleX.Prod
       type ComputeAll <: TupleX.Prod
 
-      def computeAll(from: Peer): ComputeAll
       def bottom: Bottom
     }
 
@@ -51,8 +50,6 @@ trait HasArgs {
 
         override type Top = Args.T0
         override type Bottom = Args.T0
-
-        override def computeAll(from: Args.T0): ComputeAll = TupleXEmpty
 
         override def bottom: Bottom = Args.T0
       }
@@ -69,12 +66,6 @@ trait HasArgs {
 
         override type Top = Any ><: T
         override type Bottom = Nothing ><: T
-
-        override def computeAll(from: Args.><:[H, T]): ComputeAll = {
-
-          val (head, _tail) = deCons(from)
-          head.compute *: tail.computeAll(_tail)
-        }
 
         override def bottom: Bottom = Const.NotProvided ><: tail.bottom
       }
@@ -100,8 +91,6 @@ trait HasArgs {
         override type Top = Args
         override type Bottom = Nothing
 
-        override def computeAll(from: Args.Prod): ComputeAll = from.computeAll
-
         override def bottom: Bottom = ???
       }
 
@@ -123,8 +112,7 @@ trait HasArgs {
 
       val schema: Schema.Gt[this.type]
 
-      type ComputeAll <: TupleX.Prod
-      val computeAll: ComputeAll
+      val computeAll: schema.ComputeAll
     }
 
 //    implicit class ProdOps[T <: Prod](val self: T) {
@@ -136,8 +124,7 @@ trait HasArgs {
 
       lazy val schema: Schema.Eye = Schema.Eye
 
-      override type ComputeAll = TupleXEmpty
-      override lazy val computeAll: ComputeAll = TupleXEmpty
+      override lazy val computeAll: schema.ComputeAll = TupleXEmpty
 
     }
 
@@ -149,14 +136,12 @@ trait HasArgs {
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
-      import Schema.SchemaCons
-
-      lazy val schema = Phantom.apply.apply[H SchemaCons T]()
+      lazy val schema: Schema[Args.><:[H, T]] { type ComputeAll = H *: tail.schema.ComputeAll } =
+        Phantom.apply.apply[Schema[Args.><:[H, T]] { type ComputeAll = H *: tail.schema.ComputeAll }]()
 
       def computeHead: H = head.compute
 
-      override type ComputeAll = H *: tail.ComputeAll
-      override lazy val computeAll: ComputeAll = computeHead *: tail.computeAll
+      override lazy val computeAll: schema.ComputeAll = computeHead *: tail.computeAll
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
