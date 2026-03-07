@@ -4,7 +4,6 @@ import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
 import ai.acyclic.prover.commons.tuple.{Products, Schemata}
-import ai.acyclic.prover.commons.util.Phantom
 
 import scala.util.Try
 
