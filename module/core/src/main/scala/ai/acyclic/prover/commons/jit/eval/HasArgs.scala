@@ -91,7 +91,7 @@ trait HasArgs {
         override type Top = Args
         override type Bottom = Nothing
 
-        override def bottom: Bottom = ???
+        override def bottom: Bottom = throw new IllegalAccessError("WildCard doesn't have a bottom element")
       }
 
       implicit lazy val _wildCard: Schema[Args.Prod] = WildCard
