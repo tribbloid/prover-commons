@@ -214,8 +214,7 @@ trait Engine extends Priors.HasBatch {
     object Poset extends GraphImpls[DivergingForm.Poset.type](DivergingForm.Poset) {}
     type Poset[V] = Poset.Graph[V]
 
-    object UpperSemilattice
-        extends GraphImpls[DivergingForm.UpperSemilattice.type](DivergingForm.UpperSemilattice) {}
+    object UpperSemilattice extends GraphImpls[DivergingForm.UpperSemilattice.type](DivergingForm.UpperSemilattice) {}
     type UpperSemilattice[V] = UpperSemilattice.Graph[V]
 
     object Tree extends GraphImpls[DivergingForm.Tree.type](DivergingForm.Tree) {

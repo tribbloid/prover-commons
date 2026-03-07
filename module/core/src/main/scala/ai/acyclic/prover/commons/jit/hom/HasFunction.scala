@@ -54,11 +54,9 @@ trait HasFunction {
 
     abstract class Impl[I <: Args, O](
         implicit
-        override val _definedAt: SrcDefinition,
-        @transient _inputSchema: Args.Schema[I]
+        override val _definedAt: SrcDefinition
     ) extends Fn[I, O] { // most specific
 
-      @transient override lazy val inputSchema: Args.Schema[I] = _inputSchema
       type In = I
       type Out = O
     }
@@ -74,9 +72,6 @@ trait HasFunction {
     case class Mapped[I <: Args, M, O](
         left: Fn[I, M],
         right: Fn[M ><: T0, O]
-    )(
-        implicit
-        inputSchema0: Args.Schema[I]
     ) extends Impl[I, O] {
 
       override type Rules = left.Rules & right.Rules
@@ -98,9 +93,6 @@ trait HasFunction {
     case class Flatten[I <: Args, T, O](
         base: Fn[I, T],
         coerce: T => Fn[I, O]
-    )(
-        implicit
-        inputSchema0: Args.Schema[I]
     ) extends Impl[I, O] {
 
       override def apply(arg: I): O = {
@@ -138,9 +130,6 @@ trait HasFunction {
     case class Fork[I <: Args, O1, O2](
         left: Fn[I, O1],
         right: Fn[I, O2]
-    )(
-        implicit
-        inputSchema0: Args.Schema[I]
     ) extends Impl[I, (O1, O2)] {
 
       override type Rules = left.Rules & right.Rules
@@ -167,9 +156,6 @@ trait HasFunction {
         right: Fn[I2, O2]
     )(
         unzip: Args.Zippable.Aux[I, I2, Z]
-    )(
-        implicit
-        inputSchema0: Args.Schema[Z]
     ) extends Impl[Z, (O, O2)] {
 
       override type In = Z
@@ -191,22 +177,18 @@ trait HasFunction {
         right: Fn[I2, O2]
     )(
         implicit
-        unzip: Args.Zippable.Aux[I, I2, Z],
-        inputSchema: Args.Schema[Z]
+        unzip: Args.Zippable.Aux[I, I2, Z]
     ): Fn[Z, (O, O2)] = {
 
-      Zipped(left, right)(unzip)(inputSchema)
+      Zipped(left, right)(unzip)
     }
 
     def fork[I <: Args, O, O2](
         left: Fn[I, O],
         right: Fn[I, O2]
-    )(
-        implicit
-        inputSchema: Args.Schema[I]
     ): Fn[I, (O, O2)] = {
 
-      Fork[I, O, O2](left, right)(inputSchema)
+      Fork[I, O, O2](left, right)
     }
 
     // TODO: fix this, old type signature is wrong
@@ -363,9 +345,6 @@ trait HasFunction {
     // TODO: make a dependent class, also in Thunk
     final case class CachedImpl[I <: Args, R](backbone: Fn[I, R])(
         getLookup: () => CacheMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
-    )(
-        implicit
-        inputSchema0: Args.Schema[I]
     ) extends Impl[I, R]
         with CachedPure {
 
@@ -502,24 +481,17 @@ trait HasFunction {
     def trace(
         implicit
         iTag: TypeTag[I],
-        oTag: TypeTag[O],
-        inputSchema: Args.Schema[I]
+        oTag: TypeTag[O]
     ) = {
       ai.acyclic.prover.commons.jit.cps.Continuation(self)
     }
 
-    def cached(byLookup: => CacheMagnet[I, O])(
-        implicit
-        inputSchema: Args.Schema[I]
-    ): Fn.CachedImpl[I, O] = {
-      Fn.CachedImpl[I, O](self)(() => byLookup)(inputSchema)
+    def cached(byLookup: => CacheMagnet[I, O]): Fn.CachedImpl[I, O] = {
+      Fn.CachedImpl[I, O](self)(() => byLookup)
     }
 
-    def cached()(
-        implicit
-        inputSchema: Args.Schema[I]
-    ): Fn.CachedImpl[I, O] = {
-      Fn.CachedImpl[I, O](self)()(inputSchema)
+    def cached(): Fn.CachedImpl[I, O] = {
+      Fn.CachedImpl[I, O](self)()
     }
   }
 

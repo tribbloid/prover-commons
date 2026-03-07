@@ -23,8 +23,7 @@ import scala.language.implicitConversions
   */
 case class Continuation[I <: Args, +O](
     self: Fn[I, O]
-)(implicit val inputSchema: Args.Schema[I])
-    extends Delegating[Fn[I, O]] {
+) extends Delegating[Fn[I, O]] {
 
   lazy val higherOrder: Continuation[T0, Fn[I, O]] = {
     Continuation(Fn.provided0(self))
@@ -85,8 +84,7 @@ case class Continuation[I <: Args, +O](
         right: Continuation[I2, O2]
     )(
         implicit
-        unzip: Args.Zippable.Aux[I, I2, Z],
-        zipInputSchema: Args.Schema[Z]
+        unzip: Args.Zippable.Aux[I, I2, Z]
     ): Continuation[Z, (O, O2)] = {
 
       Continuation(Fn.zip(self, right.self))
@@ -100,8 +98,7 @@ case class Continuation[I <: Args, +O](
         right: Continuation[I2, O2]
     )(
         implicit
-        unzip: Args.Zippable.Aux[I, I2, Z],
-        zipInputSchema: Args.Schema[Z]
+        unzip: Args.Zippable.Aux[I, I2, Z]
     ): Continuation[Z, (O, O2)] = {
 
       Continuation(Fn.zip(self, right.self))
@@ -133,7 +130,6 @@ object Continuation {
         implicit
         _definedAt: SrcDefinition // TODO: this should not be required
     ): Continuation[I, O] = {
-      implicit val inputSchema: Args.Schema[I] = continuation.inputSchema
 
       val result =
         Fn.Flatten[I, Continuation[I, O], O](

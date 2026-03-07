@@ -11,6 +11,12 @@ trait HasArgs {
 
   import Args.><:
 
+  /**
+    * any number of function arguments, always right-associative.
+    *
+    *   - element/tryCompute method for partial eval
+    *   - compute for direct eval
+    */
   type Args = Args.Prod
   type Arg0 = Args.Eye
   type Arg1[X] = X ><: Args.Eye
@@ -27,23 +33,29 @@ trait HasArgs {
     /**
       * Schema-only phantom
       */
-    trait Schema[Peer <: Args] extends Serializable {
-
-      type Top >: Peer <: Args
-      type Bottom <: Peer
-
-      type TryComputeAll <: TupleX.Prod
-      type ComputeAll <: TupleX.Prod
-
-      def bottom: Bottom
-    }
+    type Schema[P <: Args] = Schema.KK { type Peer = P }
 
     object Schema {
 
-      type Gt[T <: Args] = Schema[? >: T <: Args]
+      trait KK extends Serializable {
 
-      object Eye extends Schema[Args.T0] {
+        type Peer <: Args
+        type Top >: Peer <: Args
+        type Bottom <: Peer
 
+        type TryComputeAll <: TupleX.Prod
+        type ComputeAll <: TupleX.Prod
+
+        def bottom: Bottom
+
+        final def cons[H] = new SchemaCons[H, this.type](this)
+      }
+
+      type Gt[T <: Args] = KK { type Peer >: T <: Args }
+
+      object Eye extends KK {
+
+        type Peer = Args.T0
         type TryComputeAll = TupleXEmpty
         type ComputeAll = TupleXEmpty
 
@@ -54,34 +66,36 @@ trait HasArgs {
       }
       type Eye = Eye.type
 
-      final infix case class SchemaCons[H, T <: Args] private[Schema] (
-          tail: Schema[T]
-      ) extends Schema[Args.><:[H, T]] {
+      final infix case class SchemaCons[H, T <: KK] private[Schema] (
+          tail: T
+      ) extends KK {
 
+        type Peer = H ><: tail.Peer
         type TryComputeAll = Try[H] *: tail.TryComputeAll
         type ComputeAll = H *: tail.ComputeAll
 
-        override type Top = Any ><: T
-        override type Bottom = Nothing ><: T
+        override type Top = Any ><: tail.Top
+        override type Bottom = Nothing ><: tail.Bottom
 
         override def bottom: Bottom = Const.NotProvided ><: tail.bottom
       }
+//
+//      final def cons[H, T <: Args](tailSchema: T): Schema[H ><: T] = {
+//        new SchemaCons[H, T](tailSchema)
+//      }
 
-      final def cons[H, T <: Args](tailSchema: Schema[T]): Schema[H ><: T] = {
-        new SchemaCons[H, T](tailSchema)
-      }
+//      implicit lazy val _eye: Schema[Args.T0] = Eye
 
-      implicit lazy val _eye: Schema[Args.T0] = Eye
+//      implicit def _cons[H, T <: Args](
+//          implicit
+//          tailSchema: Schema[T]
+//      ): Schema[H ><: T] = {
+//        cons[H, T](tailSchema)
+//      }
 
-      implicit def _cons[H, T <: Args](
-          implicit
-          tailSchema: Schema[T]
-      ): Schema[H ><: T] = {
-        cons[H, T](tailSchema)
-      }
+      object WildCard extends KK {
 
-      object WildCard extends Schema[Args] {
-
+        type Peer = Args
         type TryComputeAll = TupleX
         type ComputeAll = TupleX
 
@@ -90,32 +104,14 @@ trait HasArgs {
 
         override def bottom: Bottom = throw new IllegalAccessError("WildCard doesn't have a bottom element")
       }
-
-      implicit lazy val _wildCard: Schema[Args.Prod] = WildCard
-
     }
 
-    /**
-      * choose 1 of the 2 options:
-      *
-      *   - `Fn[(X, Y), T]`, for partial eval, summon [[FromFlatRepr]] then perform on upstreams.
-      *   - `Fn[X ><!: Y, T]`, everything starts from partial eval, summon[[FromFlatRepr]] when converting to normal
-      *     [[Function1View]]
-      *
-      * Second option looks more cleaner: only need to summon once as the last step. In the first option, we need to
-      * summon repeatedly for recursive partial evaluation/reduction
-      */
     sealed trait Prod extends ElementsMixin.Prod {
 
       val schema: Schema[?]
 
       val computeAll: schema.ComputeAll
     }
-
-//    implicit class ProdOps[T <: Prod](val self: T) {
-//
-//      def consBottom: Nothing ><: self.Bottom = Cons(Const.NotProvided, self.Bottom)
-//    }
 
     override object eye extends Prod with ElementsMixin.Eye {
 
@@ -133,14 +129,14 @@ trait HasArgs {
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
-      lazy val schema: Schema.SchemaCons[H, T] = ???
+      lazy val schema = tail.schema.cons[H]
 
       override lazy val computeAll: schema.ComputeAll = {
 
         val result = head.compute *: tail.computeAll
         val result2: H *: tail.schema.ComputeAll = result
 
-        result2
+        result
       }
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
