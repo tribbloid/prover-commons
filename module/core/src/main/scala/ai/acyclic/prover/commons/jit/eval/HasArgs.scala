@@ -28,7 +28,7 @@ trait HasArgs {
     /**
       * Schema-only phantom
       */
-    trait Schema[Peer <: Args] extends Phantom with Serializable {
+    trait Schema[Peer <: Args] extends Serializable {
 
       type Top >: Peer <: Args
       type Bottom <: Peer
