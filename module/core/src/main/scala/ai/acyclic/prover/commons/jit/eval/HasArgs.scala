@@ -54,11 +54,9 @@ trait HasArgs {
       }
       type Eye = Eye.type
 
-      final infix class SchemaCons[H, T <: Args] private[Schema] (
-          getTail: () => Schema[T]
+      final infix case class SchemaCons[H, T <: Args] private[Schema] (
+          tail: Schema[T]
       ) extends Schema[Args.><:[H, T]] {
-
-        lazy val tail: Schema[T] = getTail()
 
         type TryComputeAll = Try[H] *: tail.TryComputeAll
         type ComputeAll = H *: tail.ComputeAll
@@ -70,7 +68,7 @@ trait HasArgs {
       }
 
       final def cons[H, T <: Args](tailSchema: Schema[T]): Schema[H ><: T] = {
-        new SchemaCons[H, T](() => tailSchema)
+        new SchemaCons[H, T](tailSchema)
       }
 
       implicit lazy val _eye: Schema[Args.T0] = Eye
@@ -109,7 +107,7 @@ trait HasArgs {
       */
     sealed trait Prod extends ElementsMixin.Prod {
 
-      val schema: Schema.Gt[this.type]
+      val schema: Schema[?]
 
       val computeAll: schema.ComputeAll
     }
@@ -129,15 +127,21 @@ trait HasArgs {
 
     type ><:[+H, +T <: Prod] = Cons[? <: H, ? <: T]
 
-    final protected case class Cons[H, T <: Prod] private[Args] (
+    final protected case class Cons[H, T <: Args] private[Args] (
         head: Element[H],
         tail: T
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
-      lazy val schema: Schema[Args.><:[H, T]] { type ComputeAll = H *: tail.schema.ComputeAll } = ???
+      lazy val schema: Schema.SchemaCons[H, T] = ???
 
-      override lazy val computeAll: schema.ComputeAll = head.compute *: tail.computeAll
+      override lazy val computeAll: schema.ComputeAll = {
+
+        val result = head.compute *: tail.computeAll
+        val result2: H *: tail.schema.ComputeAll = result
+
+        result2
+      }
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
