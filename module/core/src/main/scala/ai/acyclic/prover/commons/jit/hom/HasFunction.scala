@@ -74,6 +74,8 @@ trait HasFunction {
         right: Fn[M ><: T0, O]
     ) extends Impl[I, O] {
 
+      override lazy val inputSchema: Args.Schema[I] = left.inputSchema.asInstanceOf[Args.Schema[I]]
+
       override type Rules = left.Rules & right.Rules
 
       override def apply(arg: I): O =
@@ -94,6 +96,8 @@ trait HasFunction {
         base: Fn[I, T],
         coerce: T => Fn[I, O]
     ) extends Impl[I, O] {
+
+      override lazy val inputSchema: Args.Schema[I] = base.inputSchema.asInstanceOf[Args.Schema[I]]
 
       override def apply(arg: I): O = {
         coerce(base(arg)).apply(arg)
@@ -132,6 +136,8 @@ trait HasFunction {
         right: Fn[I, O2]
     ) extends Impl[I, (O1, O2)] {
 
+      override lazy val inputSchema: Args.Schema[I] = left.inputSchema.asInstanceOf[Args.Schema[I]]
+
       override type Rules = left.Rules & right.Rules
 
       override def apply(arg: I): (O1, O2) = {
@@ -159,6 +165,8 @@ trait HasFunction {
     ) extends Impl[Z, (O, O2)] {
 
       override type In = Z
+      override lazy val inputSchema: Args.Schema[Z] = Args.Schema.WildCard.asInstanceOf[Args.Schema[Z]]
+
       override type Rules = left.Rules & right.Rules
 
       override def apply(arg: Z): (O, O2) = {
@@ -336,6 +344,8 @@ trait HasFunction {
       ) extends Impl[I, R]
           with Pure {
 
+        override lazy val inputSchema: Args.Schema[I] = delegate.inputSchema.asInstanceOf[Args.Schema[I]]
+
         override def apply(v: I): R = delegate.apply(v)
       }
     }
@@ -347,6 +357,8 @@ trait HasFunction {
         getLookup: () => CacheMagnet[I, R] = () => CanEqual.Native.Lookup[I, R]()
     ) extends Impl[I, R]
         with CachedPure {
+
+      override lazy val inputSchema: Args.Schema[I] = backbone.inputSchema.asInstanceOf[Args.Schema[I]]
 
       lazy val lookup: CacheMagnet[I, R] = getLookup()
 
@@ -456,6 +468,7 @@ trait HasFunction {
 
     sealed trait Impl[O] extends Fn.Impl[Args, O] with ConstantFn[O] {
       override type In = Args
+      override lazy val inputSchema: Args.Schema[Args] = Args.Schema.WildCard
 
       override def apply(arg: Args): O = compute
     }

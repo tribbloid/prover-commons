@@ -79,10 +79,9 @@ trait HasArgs {
 
         override def bottom: Bottom = Const.NotProvided ><: tail.bottom
       }
-//
-//      final def cons[H, T <: Args](tailSchema: T): Schema[H ><: T] = {
-//        new SchemaCons[H, T](tailSchema)
-//      }
+      final def cons[H, T <: Args](tailSchema: Schema[T]): Schema[H ><: T] = {
+        tailSchema.cons[H]
+      }
 
 //      implicit lazy val _eye: Schema[Args.T0] = Eye
 
@@ -129,7 +128,7 @@ trait HasArgs {
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
-      lazy val schema = tail.schema.cons[H]
+      lazy val schema: Schema.SchemaCons[H, tail.schema.type] = tail.schema.cons[H]
 
       override lazy val computeAll: schema.ComputeAll = {
 
