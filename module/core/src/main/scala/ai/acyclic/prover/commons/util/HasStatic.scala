@@ -32,7 +32,7 @@ trait HasStatic {
 
     object get {
 
-      def apply[T <: Case]()(
+      def apply[T <: Case](
           implicit
           tag: TypeTag[T],
           ev: T
