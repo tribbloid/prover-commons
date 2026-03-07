@@ -136,8 +136,7 @@ trait HasArgs {
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
-      lazy val schema: Schema[Args.><:[H, T]] { type ComputeAll = H *: tail.schema.ComputeAll } =
-        Phantom.apply.apply()
+      lazy val schema: Schema[Args.><:[H, T]] { type ComputeAll = H *: tail.schema.ComputeAll } = ???
 
       override lazy val computeAll: schema.ComputeAll = head.compute *: tail.computeAll
 
