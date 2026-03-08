@@ -115,9 +115,7 @@ trait HasFunction {
 
       override type In = I2 ><: I1 ><: T0
       override lazy val inputSchema: Args.Schema[In] =
-        Args.Schema.cons[I2, I1 ><: T0](
-          Args.Schema.cons[I1, T0](Args.Schema.Eye)
-        )
+        Args.Schema.Eye.cons[I1].cons[I2]
 
       override type Rules = base.Rules
 
@@ -203,7 +201,7 @@ trait HasFunction {
     case class Identity[I]() extends Impl1[I, I] {
 
       override type In = I ><: T0
-      override lazy val inputSchema: Args.Schema[In] = Args.Schema.cons[I, T0](Args.Schema.Eye)
+      override lazy val inputSchema: Args.Schema[In] = Args.Schema.Eye.cons[I]
 
       override type Rules <: Rule.Linear
 
@@ -269,7 +267,7 @@ trait HasFunction {
         with HasLambdaInfo[I => R] {
 
       override type In = I ><: T0
-      override lazy val inputSchema: Args.Schema[In] = Args.Schema.cons[I, T0](Args.Schema.Eye)
+      override lazy val inputSchema: Args.Schema[In] = Args.Schema.Eye.cons[I]
 
       override def apply(arg: I ><: T0): R = {
 

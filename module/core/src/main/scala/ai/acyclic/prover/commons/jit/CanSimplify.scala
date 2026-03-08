@@ -13,7 +13,7 @@ trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresen
     * given complete or incmplete input, it should return a simplified/partially evaluated version of itself with best
     * effort.
     */
-  def partialEval(env: PartialEvalEnv[In]): N
+  def partialEval(env: () => PartialEvalEnv[In]): N
 
   /**
     * simplifying is equivalent to partial evaluation with all inputs missing
@@ -23,6 +23,6 @@ trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresen
 
   final lazy val simplify: N = {
 
-    partialEval(bottomEnvironment)
+    partialEval(() => bottomEnvironment)
   }
 }
