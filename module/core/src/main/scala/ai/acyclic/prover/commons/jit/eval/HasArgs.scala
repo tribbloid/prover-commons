@@ -37,6 +37,10 @@ trait HasArgs {
 
     object Schema {
 
+      type T0 = Eye
+      type T1[X] = Cons[X, T0]
+      type T2[Y, X] = Cons[Y, Cons[X, T0]]
+
       trait KK extends Serializable {
 
         type Peer <: Args
@@ -48,7 +52,7 @@ trait HasArgs {
 
         def bottom: Bottom
 
-        final def cons[H] = new SchemaCons[H, this.type](this)
+        final def cons[H] = new Cons[H, this.type](this)
       }
 
       type Gt[T <: Args] = KK { type Peer >: T <: Args }
@@ -66,7 +70,7 @@ trait HasArgs {
       }
       type Eye = Eye.type
 
-      final infix case class SchemaCons[H, T <: KK] private[Schema] (
+      final infix case class Cons[H, T <: KK] private[Schema] (
           tail: T
       ) extends KK {
 
@@ -79,15 +83,6 @@ trait HasArgs {
 
         override def bottom: Bottom = Const.NotProvided ><: tail.bottom
       }
-
-//      implicit lazy val _eye: Schema[Args.T0] = Eye
-
-//      implicit def _cons[H, T <: Args](
-//          implicit
-//          tailSchema: Schema[T]
-//      ): Schema[H ><: T] = {
-//        cons[H, T](tailSchema)
-//      }
 
       object WildCard extends KK {
 
@@ -125,7 +120,7 @@ trait HasArgs {
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
-      lazy val schema: Schema.SchemaCons[H, tail.schema.type] = tail.schema.cons[H]
+      lazy val schema: Schema.Cons[H, tail.schema.type] = tail.schema.cons[H]
 
       override lazy val computeAll: schema.ComputeAll = {
 
