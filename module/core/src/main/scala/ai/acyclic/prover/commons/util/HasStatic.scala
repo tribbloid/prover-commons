@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.TypeTag
 
 trait HasStatic {
 
-  sealed trait Static
+  sealed trait Static extends Serializable
 
   /**
     * similar to Singleton, but all [[Case]] that has the same final type signature (including type arguments) are

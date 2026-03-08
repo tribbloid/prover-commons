@@ -45,7 +45,7 @@ object Topology {
 
   object AnyGraph extends Topology {
 
-    trait _Axiom extends Axiom.Lt_[Arrow]
+    type _Axiom = Axiom
 
     type _Arrow = Arrow
 

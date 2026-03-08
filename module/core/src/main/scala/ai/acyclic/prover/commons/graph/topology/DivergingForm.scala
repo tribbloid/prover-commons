@@ -10,7 +10,7 @@ object DivergingForm {
 
   object Graph extends Topology {
 
-    trait _Axiom extends AnyGraph._Axiom with Axiom.Lt_[Arrow.Outbound]
+    trait _Axiom extends AnyGraph._Axiom
 
     type _Arrow = Arrow.Outbound
 

@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons
 
-package object util extends HasStatic {
+package object util extends HasStatic with HasPhantom {
 
 //  val INDENT = "  "
 //

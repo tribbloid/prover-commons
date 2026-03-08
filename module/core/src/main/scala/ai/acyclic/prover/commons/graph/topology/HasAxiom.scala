@@ -37,30 +37,6 @@ trait HasAxiom {
 
     type Top = Topology.AnyGraph._Axiom
 
-//    class Reify[X <: Arrow]() extends Axiom {
-//      type _Arrow = X
-//    }
-
-    trait Lt_[+A <: Arrow] extends Axiom {} // TODO: type arg is useless, remove
-
-    trait ExtractArrow[X <: Axiom] { type _Arrow <: Arrow }
-
-    object ExtractArrow {
-
-      type Gt[L <: Axiom] = ExtractArrow[? >: L]
-
-      implicit def onlyCase[A <: Arrow]: ExtractArrow[Lt_[A]] { type _Arrow = A } =
-        new ExtractArrow[Lt_[A]] {
-          override type _Arrow = A
-        }
-    }
-
-    { // sanity
-      val bounds = summon.apply[ExtractArrow.Gt[Lt_[Arrow.Outbound]]]
-
-      implicitly[bounds._Arrow =:= Arrow.Outbound]
-    }
-
   }
 
 }
