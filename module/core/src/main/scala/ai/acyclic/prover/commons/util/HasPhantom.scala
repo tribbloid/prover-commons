@@ -36,8 +36,10 @@ trait HasPhantom extends HasStatic {
       *
       * always does the following:
       *
-      *   - first identify the nullary constructor of the class, throw a runtime exception if not found
-      *   - instantiate it
+      *   - identify if [[T]] is a class or an object type
+      *     - if a class: find the nullary constructor of the class and use it to create a new instance, throw a runtime
+      *       exception if not found
+      *     - if an object: return the object itself
       *   - cast it into [[T]]
       */
     def summonConcrete[T <: Phantom](

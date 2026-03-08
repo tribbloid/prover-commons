@@ -59,6 +59,19 @@ class HasPhantomSpec extends BaseSpec {
       assert(phantom.value == 7)
     }
 
+    it("instantiates the documented Args.Schema phantom and preserves its runtime methods") {
+      val schema =
+        ai.acyclic.prover.commons.util.Phantom.summonConcrete[Args.Schema.Eye.type](classTag[Args.Schema.Eye.type])
+
+      val _: Args.Schema.Eye.type = schema
+      val bottom: schema.Bottom = schema.bottom
+      val _: Args.T0 = bottom
+      val computeAll: TupleXEmpty = bottom.computeAll
+
+      assert(bottom == Args.T0)
+      assert(computeAll == TupleXEmpty)
+    }
+
     it("rejects non-phantom types at compile time") {
       Verify.typeError(
         "ai.acyclic.prover.commons.util.HasPhantomSpec.App.Phantom.summonConcrete[ai.acyclic.prover.commons.util.HasPhantomSpec.App.NotPhantom](scala.reflect.classTag[ai.acyclic.prover.commons.util.HasPhantomSpec.App.NotPhantom])"
