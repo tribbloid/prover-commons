@@ -150,16 +150,6 @@ trait HasArgs {
       (cons.head, cons.tail)
   }
 
-//  trait ArgSchema[-I <: Args] {
-//
-//    type Peer >: I <: Args
-//
-//    type Bottom <: Peer
-//    val Bottom: Bottom
-//
-//    def getBottom[R >: Bottom <: I]: R
-//  }
-
   trait NoneGenerator[-T <: (Option[String], Option[Int])] {
 
     val bottom = (None, None)
