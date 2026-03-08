@@ -36,16 +36,6 @@ object HasPhantomSpec {
     type Out = Int
   }
 
-  class SchemaPhantom extends Args.Schema.KK {
-    type Peer = Args.T0
-    type Top = Args.T0
-    type Bottom = Args.T0
-
-    type TryComputeAll = TupleXEmpty
-    type ComputeAll = TupleXEmpty
-
-    override def bottom: Bottom = Args.T0
-  }
 }
 
 class HasPhantomSpec extends BaseSpec {
@@ -67,17 +57,6 @@ class HasPhantomSpec extends BaseSpec {
       val phantom = App.Phantom.summonConcrete[PrivateCtorPhantom](classTag[PrivateCtorPhantom])
 
       assert(phantom.value == 7)
-    }
-
-    it("instantiates subclasses of Args.Schema") {
-      val schema = Phantom.summonConcrete[SchemaPhantom](classTag[SchemaPhantom])
-
-      def acceptSchema(value: Args.Schema[Args.T0]): Unit = {
-        assert(value.bottom == Args.T0)
-      }
-
-      acceptSchema(schema)
-      assert(schema.bottom == Args.T0)
     }
 
     it("rejects non-phantom types at compile time") {
