@@ -2,7 +2,7 @@ package ai.acyclic.prover.commons.util
 
 import scala.reflect.ClassTag
 
-trait HasPhantom {
+trait HasPhantom extends HasStatic {
 
   /**
     * static object that should never be instantiated
@@ -31,8 +31,8 @@ trait HasPhantom {
     /**
       * create a concrete instance of [[T]] using JVM reflection and the given [[ClassTag]]
       *
-      * This can be used instantiate [[Phantom]] that defined methods & properties apart from dependent types. E.g.
-      * [[jit.eval.Args.Schema]], which defined "bottom" method. // TODO: fix all links
+      * This can be used to instantiate [[Phantom]] values that define methods and properties apart from dependent
+      * types. For example, `ai.acyclic.prover.commons.jit.eval.HasArgs.Args.Schema` defines a `bottom` method.
       *
       * always does the following:
       *
@@ -43,7 +43,37 @@ trait HasPhantom {
     def summonConcrete[T <: Phantom](
         ev: ClassTag[T]
     ): T = {
-      ???
+      val runtimeClass = ev.runtimeClass
+
+      val constructor =
+        try {
+          runtimeClass.getDeclaredConstructor()
+        } catch {
+          case err: NoSuchMethodException =>
+            throw new IllegalArgumentException(
+              s"Cannot instantiate phantom ${runtimeClass.getName}: nullary constructor not found",
+              err
+            )
+        }
+
+      constructor.setAccessible(true)
+
+      val instance =
+        try {
+          constructor.newInstance()
+        } catch {
+          case err: ReflectiveOperationException =>
+            throw new IllegalStateException(
+              s"Cannot instantiate phantom ${runtimeClass.getName}",
+              err
+            )
+        }
+
+      ev.unapply(instance).getOrElse {
+        throw new ClassCastException(
+          s"Instantiated ${instance.getClass.getName} is not compatible with ${runtimeClass.getName}"
+        )
+      }
     }
   }
 

@@ -39,8 +39,6 @@ trait HasStatic {
     }
 
     final def assume = get
-
-    final def apply = get
   }
 
 }

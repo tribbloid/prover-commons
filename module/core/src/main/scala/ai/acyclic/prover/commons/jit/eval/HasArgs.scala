@@ -4,6 +4,7 @@ import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
 import ai.acyclic.prover.commons.tuple.{Products, Schemata}
+import ai.acyclic.prover.commons.util.Phantom
 
 import scala.util.Try
 
@@ -41,7 +42,7 @@ trait HasArgs {
       type T1[X] = Cons[X, T0]
       type T2[Y, X] = Cons[Y, Cons[X, T0]]
 
-      trait KK extends Serializable {
+      sealed trait KK extends Phantom with Serializable {
 
         type Peer <: Args
         type Top >: Peer <: Args

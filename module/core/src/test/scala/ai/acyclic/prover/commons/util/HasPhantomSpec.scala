@@ -1,38 +1,110 @@
-//package ai.acyclic.prover.commons.util
-//
-//import ai.acyclic.prover.commons.testlib.BaseSpec
-//import ai.acyclic.prover.commons.verification.Verify
-//
-//class HasPhantomSpec extends BaseSpec {
-//
-//  object App extends HasPhantom {
-//    trait SubPhantom extends Phantom.Impl
-//    trait NotPhantom
-//  }
-//
-//  describe("HasPhantom") {
-//
-//    it("should allow getting a subtype of Phantom.Impl") {
-//      val res = App.Phantom.get[App.SubPhantom]
-//      assert(res == null)
-//    }
-//
-//    it("should cause a compilation error if type is not a subtype of Phantom.Impl") {
-//      Verify.typeError(
-//        "App.Phantom.get[App.NotPhantom]"
-//      )
-//      Verify.typeError(
-//        "val a: App.NotPhantom = App.Phantom.get()"
-//      )
-//      Verify.typeError(
-//        "val a: App.NotPhantom = App.Phantom()"
-//      )
-//    }
-//
-//    it("should cause a compilation error if type is Int") {
-//      Verify.typeError(
-//        "App.Phantom.get[Int]"
-//      )
-//    }
-//  }
-//}
+package ai.acyclic.prover.commons.util
+
+import ai.acyclic.prover.commons.compat.TupleXEmpty
+import ai.acyclic.prover.commons.jit.eval.Args
+import ai.acyclic.prover.commons.testlib.BaseSpec
+import ai.acyclic.prover.commons.verification.Verify
+
+import scala.reflect.classTag
+
+object HasPhantomSpec {
+
+  object App extends HasPhantom {
+    trait NotPhantom
+  }
+
+  class ConcretePhantom extends App.Phantom {
+    type Out = String
+    val value: Int = 42
+  }
+
+  class PrivateCtorPhantom private () extends App.Phantom {
+    type Out = Int
+    val value: Int = 7
+  }
+
+  object PrivateCtorPhantom {
+    val compileTimeUse: PrivateCtorPhantom = new PrivateCtorPhantom()
+  }
+
+  abstract class AbstractPhantom extends App.Phantom {
+    type Out = String
+    def value: Int
+  }
+
+  class NoNullaryCtorPhantom(val value: Int) extends App.Phantom {
+    type Out = Int
+  }
+
+  class SchemaPhantom extends Args.Schema.KK {
+    type Peer = Args.T0
+    type Top = Args.T0
+    type Bottom = Args.T0
+
+    type TryComputeAll = TupleXEmpty
+    type ComputeAll = TupleXEmpty
+
+    override def bottom: Bottom = Args.T0
+  }
+}
+
+class HasPhantomSpec extends BaseSpec {
+
+  import HasPhantomSpec.*
+
+  describe("HasPhantom.Phantom.summonConcrete") {
+
+    it("instantiates a concrete phantom with a nullary constructor") {
+      val phantom = App.Phantom.summonConcrete[ConcretePhantom](classTag[ConcretePhantom])
+
+      assert(phantom.value == 42)
+
+      val out: phantom.Out = "ok"
+      assert(out == "ok")
+    }
+
+    it("can instantiate a phantom through a private nullary constructor") {
+      val phantom = App.Phantom.summonConcrete[PrivateCtorPhantom](classTag[PrivateCtorPhantom])
+
+      assert(phantom.value == 7)
+    }
+
+    it("instantiates subclasses of Args.Schema") {
+      val schema = Phantom.summonConcrete[SchemaPhantom](classTag[SchemaPhantom])
+
+      def acceptSchema(value: Args.Schema[Args.T0]): Unit = {
+        assert(value.bottom == Args.T0)
+      }
+
+      acceptSchema(schema)
+      assert(schema.bottom == Args.T0)
+    }
+
+    it("rejects non-phantom types at compile time") {
+      Verify.typeError(
+        "ai.acyclic.prover.commons.util.HasPhantomSpec.App.Phantom.summonConcrete[ai.acyclic.prover.commons.util.HasPhantomSpec.App.NotPhantom](scala.reflect.classTag[ai.acyclic.prover.commons.util.HasPhantomSpec.App.NotPhantom])"
+      )
+
+      Verify.typeError(
+        "ai.acyclic.prover.commons.util.HasPhantomSpec.App.Phantom.summonConcrete[Int](scala.reflect.classTag[Int])"
+      )
+    }
+
+    it("fails when no nullary constructor exists") {
+      val err = intercept[IllegalArgumentException] {
+        App.Phantom.summonConcrete[NoNullaryCtorPhantom](classTag[NoNullaryCtorPhantom])
+      }
+
+      assert(err.getMessage.contains("nullary constructor"))
+      assert(err.getMessage.contains(classOf[NoNullaryCtorPhantom].getName))
+    }
+
+    it("fails when the phantom subtype is abstract") {
+      val err = intercept[IllegalStateException] {
+        App.Phantom.summonConcrete[AbstractPhantom](classTag[AbstractPhantom])
+      }
+
+      assert(err.getMessage.contains(classOf[AbstractPhantom].getName))
+    }
+  }
+}
