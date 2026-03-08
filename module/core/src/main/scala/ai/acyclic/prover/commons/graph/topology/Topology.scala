@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.graph.Foundation.Structure
 import ai.acyclic.prover.commons.graph.{Arrow, Foundation}
 
 abstract class Topology extends Foundation.Lawful {

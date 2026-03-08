@@ -22,7 +22,7 @@ trait HasFunction {
   trait DepFn[-I <: Args] extends CanSimplify[DepFn[I]] {
     type In >: I <: Args
 
-    override def partialEval(env: PartialEvalEnv[In]): DepFn[I] = this
+    override def partialEval(env: () => PartialEvalEnv[In]): DepFn[I] = this
   }
   case object DepFn {
 
@@ -33,7 +33,7 @@ trait HasFunction {
 
     type Out <: O
 
-    override def partialEval(env: PartialEvalEnv[In]): Fn[I, O] = this
+    override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = this
 
     // TODO: this should be a special case of specialise/partial-eval
   }
@@ -81,7 +81,7 @@ trait HasFunction {
       override def apply(arg: I): O =
         right.apply(Const.Provided(left(arg)) ><: Args.eye)
 
-      override def partialEval(env: PartialEvalEnv[In]): Fn[I, O] = {
+      override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = {
         val simplifiedLeft = left.partialEval(env)
         val simplifiedRight = right.simplify
 
@@ -103,7 +103,7 @@ trait HasFunction {
         coerce(base(arg)).apply(arg)
       }
 
-      override def partialEval(env: PartialEvalEnv[In]): Fn[I, O] = {
+      override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = {
         copy(base = base.partialEval(env))
       }
 
@@ -142,7 +142,7 @@ trait HasFunction {
         left(arg) -> right(arg)
       }
 
-      override def partialEval(env: PartialEvalEnv[In]): Fn[I, (O1, O2)] = {
+      override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, (O1, O2)] = {
         copy(
           left = left.partialEval(env),
           right = right.partialEval(env)

@@ -25,11 +25,6 @@ trait HasStatic {
 
     @transient final lazy val cache: Caching.Strong._Cache[TypeTag[?], Case] = Caching.Strong.build()
 
-    final private def get_noCache[T <: Case](
-        implicit
-        ev: T
-    ): T = ev
-
     object get {
 
       def apply[T <: Case](
