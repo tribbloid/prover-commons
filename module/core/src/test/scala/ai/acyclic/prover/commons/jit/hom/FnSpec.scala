@@ -17,7 +17,7 @@ class FnSpec extends BaseSpec {
     it("inheriting from Impl") {
 
       case object cc extends Fn.Impl[Int ><: T0, String] {
-        override lazy val inputSchema: Args.Schema[In] = Args.Schema.Eye.cons[Int]
+        override lazy val noInput: Args.Schema[In] = Args.Schema.Eye.cons[Int]
 
         def apply(v: Int ><: T0): String = "" + v.head.compute
       }

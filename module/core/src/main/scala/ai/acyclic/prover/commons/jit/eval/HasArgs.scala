@@ -4,11 +4,10 @@ import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
 import ai.acyclic.prover.commons.tuple.{Products, Schemata}
-import ai.acyclic.prover.commons.util.Phantom
-
-import scala.util.Try
 
 trait HasArgs {
+
+  trait Contra[-T]
 
   import Args.><:
 
@@ -32,126 +31,96 @@ trait HasArgs {
     override type Element[V] = Hom.ConstantFn[V]
 
     /**
-      * Schema-only phantom
+      * choose 1 of the 2 options:
+      *
+      *   - `Fn[(X, Y), T]`, for partial eval, summon [[FromFlatRepr]] then perform on upstreams.
+      *   - `Fn[X ><!: Y, T]`, everything starts from partial eval, summon[[FromFlatRepr]] when converting to normal
+      *     [[Function1View]]
+      *
+      * Second option looks more cleaner: only need to summon once as the last step. In the first option, we need to
+      * summon repeatedly for recursive partial evaluation/reduction
       */
-    type Schema[P <: Args] = Schema.KK { type Peer = P }
-
-    object Schema {
-
-      type T0 = Eye
-      type T1[X] = Cons[X, T0]
-      type T2[Y, X] = Cons[Y, Cons[X, T0]]
-
-      sealed trait KK extends Phantom with Serializable {
-
-        type Peer <: Args
-        type Top >: Peer <: Args
-        type Bottom <: Peer
-
-        type TryComputeAll <: TupleX.Prod
-        type ComputeAll <: TupleX.Prod
-
-        def bottom: Bottom
-
-        final def cons[H] = new Cons[H, this.type](this)
-      }
-
-      type Gt[T <: Args] = KK { type Peer >: T <: Args }
-
-      object Eye extends KK {
-
-        type Peer = Args.T0
-        type TryComputeAll = TupleXEmpty
-        type ComputeAll = TupleXEmpty
-
-        override type Top = Args.T0
-        override type Bottom = Args.T0
-
-        override def bottom: Bottom = Args.T0
-      }
-      type Eye = Eye.type
-
-      final infix case class Cons[H, T <: KK] private[Schema] (
-          tail: T
-      ) extends KK {
-
-        type Peer = H ><: tail.Peer
-        type TryComputeAll = Try[H] *: tail.TryComputeAll
-        type ComputeAll = H *: tail.ComputeAll
-
-        override type Top = Any ><: tail.Top
-        override type Bottom = Nothing ><: tail.Bottom
-
-        override def bottom: Bottom = Const.NotProvided ><: tail.bottom
-      }
-
-      object WildCard extends KK {
-
-        type Peer = Args
-        type TryComputeAll = TupleX
-        type ComputeAll = TupleX
-
-        override type Top = Args
-        override type Bottom = Nothing
-
-        override def bottom: Bottom = throw new IllegalAccessError("WildCard doesn't have a bottom element")
-      }
-    }
-
     sealed trait Prod extends ElementsMixin.Prod {
 
-      val schema: Schema[?]
+      type ComputeAll <: TupleX.Prod
+      val computeAll: ComputeAll
 
-      val computeAll: schema.ComputeAll
+      type Union <: Contra[?]
+
+      type Peer >: this.type <: Prod
+      def peer: Peer
+
+      type Top >: Peer <: Prod
+      type NoInput <: Peer & Args.NoInput
+    }
+
+    implicit class ProdExt[T <: Prod](self: T) {
+
+      def consNoInput: Nothing ><: T = Const.NotProvided ><: self
     }
 
     override object eye extends Prod with ElementsMixin.Eye {
 
-      lazy val schema: Schema.Eye = Schema.Eye
+      type ComputeAll = TupleXEmpty
+      override lazy val computeAll: ComputeAll = TupleXEmpty
 
-      override lazy val computeAll: schema.ComputeAll = TupleXEmpty
+      type Union = Contra[Nothing]
+
+      override type Peer = this.type
+      override def peer: Peer = this
+
+      override type Top = this.type
+      override type NoInput = this.type
 
     }
 
     type ><:[+H, +T <: Prod] = Cons[? <: H, ? <: T]
 
-    final protected case class Cons[H, T <: Args] private[Args] (
+    final protected case class Cons[H, T <: Prod] private[Args] (
         head: Element[H],
         tail: T
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
-      lazy val schema: Schema.Cons[H, tail.schema.type] = tail.schema.cons[H]
+      type ComputeAll = H *: tail.ComputeAll
+      override lazy val computeAll: ComputeAll = computeHead *: tail.computeAll
 
-      override lazy val computeAll: schema.ComputeAll = {
+      def computeHead: H = head.compute
 
-        val result = head.compute *: tail.computeAll
-        val result2: H *: tail.schema.ComputeAll = result
-
-        result
-      }
+      type Union = Contra[H] & tail.Union // equivalent to Contra[H | TU] where tail.Union = Contra[TU]
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
       lazy val valueSeq: Seq[Any] = runtimeSeq.map(_.compute)
+
+      override type Peer = H ><: T
+      override def peer: Peer = this
+
+      override type Top = Any ><: T
+      override type NoInput = ><:[Nothing, tail.NoInput] & Peer
+
     }
 
     implicitly[Eye =:= T0]
     implicitly[(Int ><: String ><: Eye) =:= (Int >< String)]
+
+    // Should this defined as a dependent type of Schema (which is a phantom & always available)
+    // the only capability it grants is to remove some pending arguments that are guaranteed to be provided
 
     override protected def cons[L, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL =
       Cons(head, tail)
 
     override def deCons[L, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL) =
       (cons.head, cons.tail)
-  }
 
-  trait NoneGenerator[-T <: (Option[String], Option[Int])] {
+    type NoInput = Args { type Union >: Contra[Nothing] }
 
-    val bottom = (None, None)
+    object NoInput {
 
-    def gen[R >: (Option[Nothing], Option[Nothing]) <: T]: R =
-      bottom // it is possbile to output value with contravariant bound
+      def T0 = Args.Eye
+      def T1 = Const.NotProvided ><: Args.Eye
+      def T2 = Const.NotProvided ><: Const.NotProvided ><: Args.Eye
+    }
   }
 
 }

@@ -74,7 +74,7 @@ trait HasFunction {
         right: Fn[M ><: T0, O]
     ) extends Impl[I, O] {
 
-      override lazy val inputSchema: Args.Schema[I] = left.inputSchema.asInstanceOf[Args.Schema[I]]
+      override lazy val noInput: I = left.noInput.asInstanceOf[I]
 
       override type Rules = left.Rules & right.Rules
 
@@ -97,7 +97,7 @@ trait HasFunction {
         coerce: T => Fn[I, O]
     ) extends Impl[I, O] {
 
-      override lazy val inputSchema: Args.Schema[I] = base.inputSchema.asInstanceOf[Args.Schema[I]]
+      override lazy val noInput: I = base.noInput.asInstanceOf[I]
 
       override def apply(arg: I): O = {
         coerce(base(arg)).apply(arg)
@@ -114,8 +114,7 @@ trait HasFunction {
     ) extends Impl2[I2, I1, O] {
 
       override type In = I2 ><: I1 ><: T0
-      override lazy val inputSchema: Args.Schema[In] =
-        Args.Schema.Eye.cons[I1].cons[I2]
+      override lazy val noInput: In = Args.NoInput.T2
 
       override type Rules = base.Rules
 
@@ -134,7 +133,7 @@ trait HasFunction {
         right: Fn[I, O2]
     ) extends Impl[I, (O1, O2)] {
 
-      override lazy val inputSchema: Args.Schema[I] = left.inputSchema.asInstanceOf[Args.Schema[I]]
+      override lazy val noInput: I = left.noInput.asInstanceOf[I]
 
       override type Rules = left.Rules & right.Rules
 
@@ -163,7 +162,7 @@ trait HasFunction {
     ) extends Impl[Z, (O, O2)] {
 
       override type In = Z
-      override lazy val inputSchema: Args.Schema[Z] = Args.Schema.WildCard.asInstanceOf[Args.Schema[Z]]
+      override lazy val noInput = ???
 
       override type Rules = left.Rules & right.Rules
 
@@ -201,7 +200,7 @@ trait HasFunction {
     case class Identity[I]() extends Impl1[I, I] {
 
       override type In = I ><: T0
-      override lazy val inputSchema: Args.Schema[In] = Args.Schema.Eye.cons[I]
+      override lazy val noInput: In = Args.NoInput.T1
 
       override type Rules <: Rule.Linear
 
@@ -212,7 +211,7 @@ trait HasFunction {
         filter: Fn.Impl1[I, Boolean]
     ) extends Impl1[I, I] {
 
-      override lazy val inputSchema: Args.Schema[In] = filter.inputSchema
+      override lazy val noInput: In = filter.noInput
 
       override def apply(o: I ><: T0): I = {
         val v = o.head.compute
@@ -267,7 +266,7 @@ trait HasFunction {
         with HasLambdaInfo[I => R] {
 
       override type In = I ><: T0
-      override lazy val inputSchema: Args.Schema[In] = Args.Schema.Eye.cons[I]
+      override lazy val noInput: In = Args.NoInput.T1
 
       override def apply(arg: I ><: T0): R = {
 
@@ -325,7 +324,7 @@ trait HasFunction {
           override val _definedAt: SrcDefinition
       ) extends Impl0[R] {
         override type In = T0
-        override lazy val inputSchema: Args.Schema[In] = Args.Schema.Eye
+        override lazy val noInput: In = Args.Eye
 
         override def apply(arg: T0): R = fn()
       }
@@ -338,11 +337,11 @@ trait HasFunction {
 
       case class Is[I <: Args, R](delegate: Fn[I, R])(
           implicit
-          inputSchema0: Args.Schema[I]
+          inputSchema0: I
       ) extends Impl[I, R]
           with Pure {
 
-        override lazy val inputSchema: Args.Schema[I] = delegate.inputSchema.asInstanceOf[Args.Schema[I]]
+        override lazy val noInput: I = delegate.noInput.asInstanceOf[I]
 
         override def apply(v: I): R = delegate.apply(v)
       }
@@ -356,7 +355,7 @@ trait HasFunction {
     ) extends Impl[I, R]
         with CachedPure {
 
-      override lazy val inputSchema: Args.Schema[I] = backbone.inputSchema.asInstanceOf[Args.Schema[I]]
+      override lazy val noInput: I = backbone.noInput.asInstanceOf[I]
 
       lazy val lookup: CacheMagnet[I, R] = getLookup()
 
@@ -466,7 +465,7 @@ trait HasFunction {
 
     sealed trait Impl[O] extends Fn.Impl[Args, O] with ConstantFn[O] {
       override type In = Args
-      override lazy val inputSchema: Args.Schema[Args] = Args.Schema.WildCard
+      override lazy val noInput = ???
 
       override def apply(arg: Args): O = compute
     }

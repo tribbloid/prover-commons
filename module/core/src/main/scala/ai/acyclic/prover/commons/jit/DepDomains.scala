@@ -6,7 +6,7 @@ trait DepDomains {
 
   type In <: Args // Domain, Max
 
-  val inputSchema: Args.Schema[In]
+  val noInput: In
 
   type OutK[T <: In] // Codomain, Min
 }
