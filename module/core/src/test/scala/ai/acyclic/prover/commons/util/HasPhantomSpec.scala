@@ -59,7 +59,7 @@ class HasPhantomSpec extends BaseSpec {
       assert(phantom.value == 7)
     }
 
-    it("instantiates the documented Args.Schema phantom and preserves its runtime methods") {
+    it("instantiates Args.Eye phantom and preserves its runtime methods") {
       val schema =
         ai.acyclic.prover.commons.util.Phantom.summonConcrete[Args.Schema.Eye.type](classTag[Args.Schema.Eye.type])
 

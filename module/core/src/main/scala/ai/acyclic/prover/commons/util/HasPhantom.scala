@@ -47,22 +47,90 @@ trait HasPhantom extends HasStatic {
     ): T = {
       val runtimeClass = ev.runtimeClass
 
-      val constructor =
-        try {
-          runtimeClass.getDeclaredConstructor()
-        } catch {
-          case err: NoSuchMethodException =>
-            throw new IllegalArgumentException(
-              s"Cannot instantiate phantom ${runtimeClass.getName}: nullary constructor not found",
-              err
-            )
+      val instance =
+        summonObject(runtimeClass).getOrElse {
+          val constructor =
+            try {
+              runtimeClass.getDeclaredConstructor()
+            } catch {
+              case err: NoSuchMethodException =>
+                throw new IllegalArgumentException(
+                  s"Cannot instantiate phantom ${runtimeClass.getName}: nullary constructor not found",
+                  err
+                )
+            }
+
+          constructor.setAccessible(true)
+
+          try {
+            constructor.newInstance()
+          } catch {
+            case err: ReflectiveOperationException =>
+              throw new IllegalStateException(
+                s"Cannot instantiate phantom ${runtimeClass.getName}",
+                err
+              )
+          }
         }
 
-      constructor.setAccessible(true)
+      ev.unapply(instance).getOrElse {
+        throw new ClassCastException(
+          s"Instantiated ${instance.getClass.getName} is not compatible with ${runtimeClass.getName}"
+        )
+      }
+    }
 
-      val instance =
+    private def summonObject(runtimeClass: Class[?]): Option[Object] = {
+      summonStaticObject(runtimeClass).orElse {
+        val accessorName = runtimeClass.getSimpleName.stripSuffix("$")
+
+        Option(runtimeClass.getEnclosingClass).flatMap { enclosingClass =>
+          summonObject(enclosingClass).flatMap { outerInstance =>
+            val accessor =
+              try {
+                Some(enclosingClass.getDeclaredMethod(accessorName))
+              } catch {
+                case _: NoSuchMethodException => None
+              }
+
+            accessor.map { method =>
+              method.setAccessible(true)
+
+              try {
+                method.invoke(outerInstance)
+              } catch {
+                case err: ReflectiveOperationException =>
+                  throw new IllegalStateException(
+                    s"Cannot instantiate phantom ${runtimeClass.getName}",
+                    err
+                  )
+              }
+            }
+          }
+        }
+      }.orElse {
+        summonPackageObject(runtimeClass)
+      }
+    }
+
+    private def summonStaticObject(runtimeClass: Class[?]): Option[Object] = {
+      val moduleField =
         try {
-          constructor.newInstance()
+          Some(runtimeClass.getField("MODULE$"))
+        } catch {
+          case _: NoSuchFieldException =>
+            try {
+              Some(runtimeClass.getDeclaredField("MODULE$"))
+            } catch {
+              case _: NoSuchFieldException => None
+            }
+        }
+
+      moduleField.map { field =>
+        field.setAccessible(true)
+
+        try {
+          field.get(null)
         } catch {
           case err: ReflectiveOperationException =>
             throw new IllegalStateException(
@@ -70,11 +138,103 @@ trait HasPhantom extends HasStatic {
               err
             )
         }
+      }
+    }
 
-      ev.unapply(instance).getOrElse {
-        throw new ClassCastException(
-          s"Instantiated ${instance.getClass.getName} is not compatible with ${runtimeClass.getName}"
-        )
+    private def summonPackageObject(runtimeClass: Class[?]): Option[Object] = {
+      val accessors = moduleAccessorPath(runtimeClass)
+
+      accessors.headOption.flatMap { firstAccessor =>
+        val packageClass =
+          try {
+            Some(Class.forName(s"${runtimeClass.getPackageName}.package"))
+          } catch {
+            case _: ClassNotFoundException => None
+          }
+
+        packageClass
+          .flatMap(invokeStaticAccessor(_, firstAccessor, runtimeClass))
+          .flatMap { outerInstance =>
+            accessors.tail.foldLeft(Option(outerInstance)) { (current, accessor) =>
+              current.flatMap(invokeInstanceAccessor(_, accessor, runtimeClass))
+            }
+          }
+          .filter(runtimeClass.isInstance)
+      }
+    }
+
+    private def moduleAccessorPath(runtimeClass: Class[?]): List[String] = {
+      @annotation.tailrec
+      def loop(current: Class[?], acc: List[String]): List[String] = {
+        val name = current.getSimpleName
+
+        if (!name.endsWith("$")) {
+          acc
+        } else {
+          val updated = name.stripSuffix("$") :: acc
+
+          Option(current.getEnclosingClass) match {
+            case Some(enclosingClass) if enclosingClass.getSimpleName.endsWith("$") =>
+              loop(enclosingClass, updated)
+            case _ =>
+              updated
+          }
+        }
+      }
+
+      loop(runtimeClass, Nil)
+    }
+
+    private def invokeStaticAccessor(
+        ownerClass: Class[?],
+        accessorName: String,
+        runtimeClass: Class[?]
+    ): Option[Object] = {
+      findAccessor(ownerClass, accessorName).map { method =>
+        method.setAccessible(true)
+
+        try {
+          method.invoke(null)
+        } catch {
+          case err: ReflectiveOperationException =>
+            throw new IllegalStateException(
+              s"Cannot instantiate phantom ${runtimeClass.getName}",
+              err
+            )
+        }
+      }
+    }
+
+    private def invokeInstanceAccessor(
+        ownerInstance: Object,
+        accessorName: String,
+        runtimeClass: Class[?]
+    ): Option[Object] = {
+      findAccessor(ownerInstance.getClass, accessorName).map { method =>
+        method.setAccessible(true)
+
+        try {
+          method.invoke(ownerInstance)
+        } catch {
+          case err: ReflectiveOperationException =>
+            throw new IllegalStateException(
+              s"Cannot instantiate phantom ${runtimeClass.getName}",
+              err
+            )
+        }
+      }
+    }
+
+    private def findAccessor(ownerClass: Class[?], accessorName: String) = {
+      try {
+        Some(ownerClass.getMethod(accessorName))
+      } catch {
+        case _: NoSuchMethodException =>
+          try {
+            Some(ownerClass.getDeclaredMethod(accessorName))
+          } catch {
+            case _: NoSuchMethodException => None
+          }
       }
     }
   }
