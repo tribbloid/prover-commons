@@ -34,9 +34,7 @@ trait HasPoly extends HasFunction {
 
     protected[Poly] case class Case[I, O]( // a thin wrapper that prevents apply from being called directly
         underlying: Fn[I ><: T0, O]
-    ) extends Fn.Impl[I ><: T0, O] {
-
-      override lazy val noInput = Args.NoInput.T1
+    ) extends Fn.Impl1[I, O] {
 
       def apply(v: I ><: T0): O = underlying.apply(v)
     }

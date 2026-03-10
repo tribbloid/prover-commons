@@ -1,11 +1,16 @@
 package ai.acyclic.prover.commons.jit
 
-import ai.acyclic.prover.commons.jit.eval.PartialEvalEnv
+import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
 
-object CanSimplify extends CanSimplify_Impl0 {}
-
-trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresentation {
-  self: N =>
+/**
+  * FP stands for "Fixed-point", as in "F-bound"
+  *
+  * this is not the only way to represent inductive types:
+  *   - Can be a type member but won't support variance
+  *   - Can be a type member of outer type, but outer type has to be instantiated with all type arguments, not always
+  *     practical if FP is generic
+  */
+trait CanSimplify[+FP <: CanSimplify[FP]] extends IntermediateRepresentation {
 
   def apply(arg: In): OutK[arg.type] // TODO: rename to eval
 
@@ -13,16 +18,23 @@ trait CanSimplify[+N <: IntermediateRepresentation] extends IntermediateRepresen
     * given complete or incmplete input, it should return a simplified/partially evaluated version of itself with best
     * effort.
     */
-  def partialEval(env: () => PartialEvalEnv[In]): N
+  def partialEval(env: () => PartialEvalEnv[In]): FP
 
-  /**
-    * simplifying is equivalent to partial evaluation with all inputs missing
-    */
-  final lazy val bottomEnvironment =
-    PartialEvalEnv[In](inputs = noInput, failFast = false, onlyPure = true)
+  val simplify: FP
+}
 
-  final lazy val simplify: N = {
+object CanSimplify {
 
-    partialEval(() => bottomEnvironment)
+  trait Elementary[+FP <: Elementary[FP]] extends CanSimplify[FP & Elementary[FP]] {
+
+    val noInput: In
+
+    /**
+      * simplifying is equivalent to partial evaluation with all inputs missing
+      */
+    private lazy val bottomEnvironment =
+      PartialEvalEnv[In](inputs = noInput, failFast = false, onlyPure = true)
+
+    @transient final lazy val simplify: FP & Elementary[FP] = partialEval(() => bottomEnvironment)
   }
 }

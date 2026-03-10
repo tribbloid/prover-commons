@@ -5,9 +5,9 @@ import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.{CanSimplify, Domains, FnBuilder, Rule}
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
+import ai.acyclic.prover.commons.jit.eval.{Args, Conformal, PartialEvalEnv}
 import Args.{><:, T0}
-import ai.acyclic.prover.commons.TypeTag
+import ai.acyclic.prover.commons.{>:>, TypeTag}
 
 import scala.language.implicitConversions
 
@@ -19,6 +19,12 @@ object HasFunction {
 trait HasFunction {
   self: Hom.type =>
 
+  /**
+    * Monomorphic dependent function type, (AKA Dependent Sigma-type OR /forall quantifier), where output type is
+    * derived from input type
+    *
+    * Doesn't cover polymorphic case, see [[PolyLike]]
+    */
   trait DepFn[-I <: Args] extends CanSimplify[DepFn[I]] {
     type In >: I <: Args
 
@@ -29,6 +35,9 @@ trait HasFunction {
     type constraint <: Any
   }
 
+  /**
+    * function base with computation graph, like lifted JAXpr
+    */
   trait Fn[-I <: Args, +O] extends CanSimplify[Fn[I, O]] with DepFn[I] with Domains {
 
     type Out <: O
@@ -41,14 +50,6 @@ trait HasFunction {
     type Fn1[-I, +O] = Fn[I ><: T0, O]
     type Fn2[-I, -J, +O] = Fn[I ><: J ><: T0, O]
 
-    /**
-      * function with computation graph, like a lifted JAXpr
-      */
-//    type K[-I <: Args, +O] = DepFn.K[I] { type OutK[T] <: O }
-
-    // sanity check - disabled because scalafix/semanticdb cannot parse bare blocks
-    // implicitly[Fn[Int, String] <:< K2[Int, String]]
-
     val Tracing: ai.acyclic.prover.commons.jit.cps.Continuation.type =
       ai.acyclic.prover.commons.jit.cps.Continuation
 
@@ -57,13 +58,25 @@ trait HasFunction {
         override val _definedAt: SrcDefinition
     ) extends Fn[I, O] { // most specific
 
-      type In = I
+      final type In = I
       type Out = O
     }
 
-    type Impl0[O] = Impl[T0, O]
-    type Impl1[I, O] = Impl[I ><: T0, O]
-    type Impl2[I1, I2, O] = Impl[I1 ><: I2 ><: T0, O]
+    trait Elementary extends CanSimplify.Elementary[Impl[?, ?] & Elementary] {
+      self: Impl[?, ?] =>
+    }
+
+    trait Impl0[O] extends Impl[T0, O] with Elementary {
+
+      final override lazy val noInput: In = Args.Eye
+    }
+    trait Impl1[I, O] extends Impl[I ><: T0, O] with Elementary {
+
+      final override lazy val noInput: In = Args.NoInput.T1
+    }
+    trait Impl2[I1, I2, O] extends Impl[I1 ><: I2 ><: T0, O] with Elementary {
+      final override lazy val noInput: In = Args.NoInput.T2
+    }
 
 //    sealed trait Compositor {} // TODO: this needs to be a supertype of all Impl composed from multiple functions
 
@@ -73,8 +86,6 @@ trait HasFunction {
         left: Fn[I, M],
         right: Fn[M ><: T0, O]
     ) extends Impl[I, O] {
-
-      override lazy val noInput: I = left.noInput.asInstanceOf[I]
 
       override type Rules = left.Rules & right.Rules
 
@@ -96,8 +107,6 @@ trait HasFunction {
         base: Fn[I, T],
         coerce: T => Fn[I, O]
     ) extends Impl[I, O] {
-
-      override lazy val noInput: I = base.noInput.asInstanceOf[I]
 
       override def apply(arg: I): O = {
         coerce(base(arg)).apply(arg)
@@ -158,16 +167,21 @@ trait HasFunction {
         left: Fn[I, O],
         right: Fn[I2, O2]
     )(
-        unzip: Args.Zippable.Aux[I, I2, Z]
+        zip: Args.Zippable.Aux[I, I2, Z]
     ) extends Impl[Z, (O, O2)] {
 
-      override type In = Z
-      override lazy val noInput = ???
+      override lazy val noInput = {
+        val ni1: I = left.noInput.getNoInput[I]
+        val ni2: I2 = right.noInput.getNoInput[I2]
+
+        val result = zip.zip(ni1, ni2)
+        result.noInput
+      }
 
       override type Rules = left.Rules & right.Rules
 
       override def apply(arg: Z): (O, O2) = {
-        val (leftArg, rightArg) = unzip.unzip(arg)
+        val (leftArg, rightArg) = zip.unzip(arg)
         left(leftArg) -> right(rightArg)
       }
     }
@@ -211,7 +225,7 @@ trait HasFunction {
         filter: Fn.Impl1[I, Boolean]
     ) extends Impl1[I, I] {
 
-      override lazy val noInput: In = filter.noInput
+      override lazy val noInput = filter.noInput
 
       override def apply(o: I ><: T0): I = {
         val v = o.head.compute

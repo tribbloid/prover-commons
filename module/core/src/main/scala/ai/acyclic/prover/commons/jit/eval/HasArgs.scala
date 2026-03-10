@@ -1,5 +1,6 @@
 package ai.acyclic.prover.commons.jit.eval
 
+import ai.acyclic.prover.commons.>:>
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
@@ -51,15 +52,42 @@ trait HasArgs {
       def peer: Peer
 
       type Top >: Peer <: Prod
-      type NoInput <: Peer & Args.NoInput
+      type _NoInput <: Peer & Args.NoInputK[?]
+      def noInput: _NoInput = ???
     }
 
-    implicit class ProdExt[T <: Prod](self: T) {
+    implicit class ProdExt[T <: Prod & NoInputK[T]](self: T) {
 
-      def consNoInput: Nothing ><: T = Const.NotProvided ><: self
+      def consNoInput = new ConsNoInput(self)
     }
 
-    override object eye extends Prod with ElementsMixin.Eye {
+    type NoInput = NoInputK[?]
+
+    object NoInput {
+
+      type T0 = Eye
+      def T0 = Args.Eye
+
+      type T1 = ConsNoInput[Eye]
+      def T1 = Const.NotProvided ><: Args.Eye
+
+      type T2 = ConsNoInput[ConsNoInput[Eye]]
+      def T2 = Const.NotProvided ><: Const.NotProvided ><: Args.Eye
+
+      implicitly[T0 <:< NoInput]
+      implicitly[T1 <:< NoInput]
+      implicitly[T2 <:< NoInput]
+    }
+
+    trait NoInputK[-F <: NoInputK[F]] extends Args {
+      // TODO: what if the F-bound is not required
+
+      type Union = Contra[Nothing]
+
+      def getNoInput[I1 <: F]: I1 = ???
+    }
+
+    sealed trait eyeLike extends Prod with ElementsMixin.Eye with NoInputK[eyeLike] {
 
       type ComputeAll = TupleXEmpty
       override lazy val computeAll: ComputeAll = TupleXEmpty
@@ -70,15 +98,18 @@ trait HasArgs {
       override def peer: Peer = this
 
       override type Top = this.type
-      override type NoInput = this.type
+      override type _NoInput = this.type
 
+      type BA = Eye
     }
+
+    override object eye extends eyeLike
 
     type ><:[+H, +T <: Prod] = Cons[? <: H, ? <: T]
 
-    final protected case class Cons[H, T <: Prod] private[Args] (
-        head: Element[H],
-        tail: T
+    protected infix class Cons[H, T <: Prod] private[Args] (
+        val head: Element[H],
+        val tail: T
     ) extends Prod
         with ElementsMixin.><:[H, T] {
 
@@ -97,9 +128,12 @@ trait HasArgs {
       override def peer: Peer = this
 
       override type Top = Any ><: T
-      override type NoInput = ><:[Nothing, tail.NoInput] & Peer
-
+      override type _NoInput = Cons[Nothing, tail._NoInput] & Peer
     }
+
+    class ConsNoInput[T <: NoInput](tail: T)
+        extends Cons[Nothing, T](Const.NotProvided, tail)
+        with NoInputK[Nothing ><: T] {}
 
     implicitly[Eye =:= T0]
     implicitly[(Int ><: String ><: Eye) =:= (Int >< String)]
@@ -108,19 +142,11 @@ trait HasArgs {
     // the only capability it grants is to remove some pending arguments that are guaranteed to be provided
 
     override protected def cons[L, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL =
-      Cons(head, tail)
+      new Cons(head, tail)
 
     override def deCons[L, TAIL <: Prod](cons: L ><: TAIL): (Element[L], TAIL) =
       (cons.head, cons.tail)
 
-    type NoInput = Args { type Union >: Contra[Nothing] }
-
-    object NoInput {
-
-      def T0 = Args.Eye
-      def T1 = Const.NotProvided ><: Args.Eye
-      def T2 = Const.NotProvided ><: Const.NotProvided ><: Args.Eye
-    }
   }
 
 }
