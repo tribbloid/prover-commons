@@ -62,8 +62,7 @@ trait HasFunction {
       type Out = O
     }
 
-    trait Elementary[I <: Args, O]
-        extends CanSimplify.Elementary[Fn[I, O] & Elementary[I, O]] {
+    trait Elementary[I <: Args, O] extends CanSimplify.Elementary[Impl[I, O] & Elementary[I, O]] {
       self: Impl[I, O] =>
     }
 

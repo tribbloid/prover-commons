@@ -35,6 +35,8 @@ object CanSimplify {
     private lazy val bottomEnvironment =
       PartialEvalEnv[In](inputs = noInput, failFast = false, onlyPure = true)
 
-    @transient final lazy val simplify: FP & Elementary[FP] = partialEval(() => bottomEnvironment)
+//    def partialEval(env: () => PartialEvalEnv[In]): FP & Elementary[FP]
+
+    @transient final lazy val simplify = partialEval(() => bottomEnvironment)
   }
 }
