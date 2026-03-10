@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.compat.TupleXEmpty
-import ai.acyclic.prover.commons.jit.eval.Args
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.verification.Verify
 
@@ -36,6 +34,12 @@ object HasPhantomSpec {
     type Out = Int
   }
 
+  object ConcreteObjectPhantom extends App.Phantom {
+    type Out = String
+
+    val value: Int = 99
+  }
+
 }
 
 class HasPhantomSpec extends BaseSpec {
@@ -59,17 +63,17 @@ class HasPhantomSpec extends BaseSpec {
       assert(phantom.value == 7)
     }
 
-    it("instantiates Args.Eye phantom and preserves its runtime methods") {
-      val schema =
-        ai.acyclic.prover.commons.util.Phantom.summonConcrete[Args.Schema.Eye.type](classTag[Args.Schema.Eye.type])
+    it("instantiates a phantom object and preserves its runtime members") {
+      val phantom =
+        App.Phantom.summonConcrete[ConcreteObjectPhantom.type](
+          classTag[ConcreteObjectPhantom.type]
+        )
 
-      val _: Args.Schema.Eye.type = schema
-      val bottom: schema.Bottom = schema.bottom
-      val _: Args.T0 = bottom
-      val computeAll: TupleXEmpty = bottom.computeAll
+      val _: ConcreteObjectPhantom.type = phantom
+      val out: phantom.Out = "ok"
 
-      assert(bottom == Args.T0)
-      assert(computeAll == TupleXEmpty)
+      assert(phantom.value == 99)
+      assert(out == "ok")
     }
 
     it("rejects non-phantom types at compile time") {

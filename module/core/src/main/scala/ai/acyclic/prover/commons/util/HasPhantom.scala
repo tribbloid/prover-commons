@@ -32,7 +32,7 @@ trait HasPhantom extends HasStatic {
       * create a concrete instance of [[T]] using JVM reflection and the given [[ClassTag]]
       *
       * This can be used to instantiate [[Phantom]] values that define methods and properties apart from dependent
-      * types. For example, `ai.acyclic.prover.commons.jit.eval.HasArgs.Args.Schema` defines a `bottom` method.
+      * types.
       *
       * always does the following:
       *

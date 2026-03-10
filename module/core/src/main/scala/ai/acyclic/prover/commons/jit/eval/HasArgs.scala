@@ -1,6 +1,5 @@
 package ai.acyclic.prover.commons.jit.eval
 
-import ai.acyclic.prover.commons.>:>
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
@@ -53,7 +52,6 @@ trait HasArgs {
 
       type Top >: Peer <: Prod
       type _NoInput <: Peer & Args.NoInputK[?]
-      def noInput: _NoInput = ???
     }
 
     implicit class ProdExt[T <: Prod & NoInputK[T]](self: T) {
@@ -61,7 +59,7 @@ trait HasArgs {
       def consNoInput = new ConsNoInput(self)
     }
 
-    type NoInput = NoInputK[?]
+    type NoInput = Prod & NoInputK[?]
 
     object NoInput {
 
@@ -79,12 +77,10 @@ trait HasArgs {
       implicitly[T2 <:< NoInput]
     }
 
-    trait NoInputK[-F <: NoInputK[F]] extends Args {
+    trait NoInputK[-F <: Args] extends Args {
       // TODO: what if the F-bound is not required
 
-      type Union = Contra[Nothing]
-
-      def getNoInput[I1 <: F]: I1 = ???
+      type Union >: Contra[Nothing] <: Contra[?] // AKA type Union = Contra[? <: Nothing]
     }
 
     sealed trait eyeLike extends Prod with ElementsMixin.Eye with NoInputK[eyeLike] {
@@ -92,7 +88,7 @@ trait HasArgs {
       type ComputeAll = TupleXEmpty
       override lazy val computeAll: ComputeAll = TupleXEmpty
 
-      type Union = Contra[Nothing]
+      override type Union = Contra[Nothing]
 
       override type Peer = this.type
       override def peer: Peer = this
@@ -107,7 +103,7 @@ trait HasArgs {
 
     type ><:[+H, +T <: Prod] = Cons[? <: H, ? <: T]
 
-    protected infix class Cons[H, T <: Prod] private[Args] (
+    protected case class Cons[H, T <: Prod] private[Args] (
         val head: Element[H],
         val tail: T
     ) extends Prod
@@ -128,18 +124,15 @@ trait HasArgs {
       override def peer: Peer = this
 
       override type Top = Any ><: T
-      override type _NoInput = Cons[Nothing, tail._NoInput] & Peer
+      override type _NoInput = ConsNoInput[tail._NoInput] & Peer
     }
 
     class ConsNoInput[T <: NoInput](tail: T)
         extends Cons[Nothing, T](Const.NotProvided, tail)
-        with NoInputK[Nothing ><: T] {}
+        with NoInputK[Nothing ><: T]
 
     implicitly[Eye =:= T0]
     implicitly[(Int ><: String ><: Eye) =:= (Int >< String)]
-
-    // Should this defined as a dependent type of Schema (which is a phantom & always available)
-    // the only capability it grants is to remove some pending arguments that are guaranteed to be provided
 
     override protected def cons[L, TAIL <: Prod](head: Element[L], tail: TAIL): L ><: TAIL =
       new Cons(head, tail)

@@ -5,9 +5,9 @@ import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.{CanSimplify, Domains, FnBuilder, Rule}
 import ai.acyclic.prover.commons.multiverse.CanEqual
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.eval.{Args, Conformal, PartialEvalEnv}
+import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
 import Args.{><:, T0}
-import ai.acyclic.prover.commons.{>:>, TypeTag}
+import ai.acyclic.prover.commons.TypeTag
 
 import scala.language.implicitConversions
 
@@ -62,19 +62,20 @@ trait HasFunction {
       type Out = O
     }
 
-    trait Elementary extends CanSimplify.Elementary[Impl[?, ?] & Elementary] {
-      self: Impl[?, ?] =>
+    trait Elementary[I <: Args, O]
+        extends CanSimplify.Elementary[Fn[I, O] & Elementary[I, O]] {
+      self: Impl[I, O] =>
     }
 
-    trait Impl0[O] extends Impl[T0, O] with Elementary {
+    trait Impl0[O] extends Impl[T0, O] with Elementary[T0, O] {
 
       final override lazy val noInput: In = Args.Eye
     }
-    trait Impl1[I, O] extends Impl[I ><: T0, O] with Elementary {
+    trait Impl1[I, O] extends Impl[I ><: T0, O] with Elementary[I ><: T0, O] {
 
       final override lazy val noInput: In = Args.NoInput.T1
     }
-    trait Impl2[I1, I2, O] extends Impl[I1 ><: I2 ><: T0, O] with Elementary {
+    trait Impl2[I1, I2, O] extends Impl[I1 ><: I2 ><: T0, O] with Elementary[I1 ><: I2 ><: T0, O] {
       final override lazy val noInput: In = Args.NoInput.T2
     }
 
@@ -88,6 +89,13 @@ trait HasFunction {
     ) extends Impl[I, O] {
 
       override type Rules = left.Rules & right.Rules
+
+      override lazy val simplify: Fn[I, O] = {
+        copy(
+          left = left.simplify,
+          right = right.simplify
+        )
+      }
 
       override def apply(arg: I): O =
         right.apply(Const.Provided(left(arg)) ><: Args.eye)
@@ -108,6 +116,10 @@ trait HasFunction {
         coerce: T => Fn[I, O]
     ) extends Impl[I, O] {
 
+      override lazy val simplify: Fn[I, O] = {
+        copy(base = base.simplify)
+      }
+
       override def apply(arg: I): O = {
         coerce(base(arg)).apply(arg)
       }
@@ -121,9 +133,6 @@ trait HasFunction {
     case class Flipped[I1, I2, O](
         base: Fn2[I1, I2, O]
     ) extends Impl2[I2, I1, O] {
-
-      override type In = I2 ><: I1 ><: T0
-      override lazy val noInput: In = Args.NoInput.T2
 
       override type Rules = base.Rules
 
@@ -142,9 +151,14 @@ trait HasFunction {
         right: Fn[I, O2]
     ) extends Impl[I, (O1, O2)] {
 
-      override lazy val noInput: I = left.noInput.asInstanceOf[I]
-
       override type Rules = left.Rules & right.Rules
+
+      override lazy val simplify: Fn[I, (O1, O2)] = {
+        copy(
+          left = left.simplify,
+          right = right.simplify
+        )
+      }
 
       override def apply(arg: I): (O1, O2) = {
         left(arg) -> right(arg)
@@ -170,15 +184,14 @@ trait HasFunction {
         zip: Args.Zippable.Aux[I, I2, Z]
     ) extends Impl[Z, (O, O2)] {
 
-      override lazy val noInput = {
-        val ni1: I = left.noInput.getNoInput[I]
-        val ni2: I2 = right.noInput.getNoInput[I2]
-
-        val result = zip.zip(ni1, ni2)
-        result.noInput
-      }
-
       override type Rules = left.Rules & right.Rules
+
+      override lazy val simplify: Fn[Z, (O, O2)] = {
+        copy(
+          left = left.simplify,
+          right = right.simplify
+        )(zip)
+      }
 
       override def apply(arg: Z): (O, O2) = {
         val (leftArg, rightArg) = zip.unzip(arg)
@@ -213,9 +226,6 @@ trait HasFunction {
     // TODO: fix this, old type signature is wrong
     case class Identity[I]() extends Impl1[I, I] {
 
-      override type In = I ><: T0
-      override lazy val noInput: In = Args.NoInput.T1
-
       override type Rules <: Rule.Linear
 
       def apply(arg: I ><: T0): I = arg.head.compute
@@ -224,8 +234,6 @@ trait HasFunction {
     case class Conditional[I](
         filter: Fn.Impl1[I, Boolean]
     ) extends Impl1[I, I] {
-
-      override lazy val noInput = filter.noInput
 
       override def apply(o: I ><: T0): I = {
         val v = o.head.compute
@@ -278,9 +286,6 @@ trait HasFunction {
     )(val fn: I => R)
         extends Impl1[I, R]
         with HasLambdaInfo[I => R] {
-
-      override type In = I ><: T0
-      override lazy val noInput: In = Args.NoInput.T1
 
       override def apply(arg: I ><: T0): R = {
 
@@ -337,9 +342,6 @@ trait HasFunction {
           implicit
           override val _definedAt: SrcDefinition
       ) extends Impl0[R] {
-        override type In = T0
-        override lazy val noInput: In = Args.Eye
-
         override def apply(arg: T0): R = fn()
       }
       Const.Lazy(ThunkImpl())
@@ -355,7 +357,9 @@ trait HasFunction {
       ) extends Impl[I, R]
           with Pure {
 
-        override lazy val noInput: I = delegate.noInput.asInstanceOf[I]
+        override lazy val simplify: Fn[I, R] = {
+          copy(delegate = delegate.simplify)(inputSchema0)
+        }
 
         override def apply(v: I): R = delegate.apply(v)
       }
@@ -369,9 +373,11 @@ trait HasFunction {
     ) extends Impl[I, R]
         with CachedPure {
 
-      override lazy val noInput: I = backbone.noInput.asInstanceOf[I]
-
       lazy val lookup: CacheMagnet[I, R] = getLookup()
+
+      override lazy val simplify: Fn[I, R] = {
+        copy(backbone = backbone.simplify)(getLookup)
+      }
 
       def apply(key: I): R = {
         lookup
@@ -478,8 +484,7 @@ trait HasFunction {
     implicitly[Args.Eye =:= Args.T0]
 
     sealed trait Impl[O] extends Fn.Impl[Args, O] with ConstantFn[O] {
-      override type In = Args
-      override lazy val noInput = ???
+      override lazy val simplify: Const[O] = this
 
       override def apply(arg: Args): O = compute
     }
