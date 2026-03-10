@@ -64,6 +64,8 @@ trait HasFunction {
 
     trait Elementary[I <: Args, O] extends CanSimplify.Elementary[Impl[I, O] & Elementary[I, O]] {
       self: Impl[I, O] =>
+
+      override def partialEval(env: () => PartialEvalEnv[In]): Impl[I, O] & Elementary[I, O] = self
     }
 
     trait Impl0[O] extends Impl[T0, O] with Elementary[T0, O] {
