@@ -126,7 +126,7 @@ trait HasFunction {
             val simplifiedRight = right.partialEval(envRight)
             simplifiedRight match {
               case rp: (Const.Provided[_] @unchecked) => rp
-              case _                                =>
+              case _                                  =>
                 copy(
                   left = p,
                   right = simplifiedRight

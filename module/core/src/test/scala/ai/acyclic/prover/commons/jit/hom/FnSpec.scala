@@ -279,15 +279,17 @@ class FnSpec extends BaseSpec {
         val envRightProvided = () =>
           PartialEvalEnv(Const.NotProvided ><: (Const.Provided(2L) ><: Args.eye), failFast = false, onlyPure = false)
         val partial = s1.partialEval(envRightProvided)
-        partial.explain.text_hierarchy().shouldBe(
-          """
+        partial.explain
+          .text_hierarchy()
+          .shouldBe(
+            """
             |+ Mapped
             |!-+ Zipped
             |: !-- Blackbox(fn1 <at Circuits.scala:12>)
             |: !-- Provided(List(2.0, 2.1, 2.2))
             |!-- Blackbox(s1 <at ZippedLike.scala:9>)
             |""".stripMargin
-        )
+          )
         assert(partial.apply(arg) == expected)
       }
 
@@ -297,15 +299,17 @@ class FnSpec extends BaseSpec {
           () =>
             PartialEvalEnv(Const.Provided(1) ><: (Const.NotProvided ><: Args.eye), failFast = false, onlyPure = false)
         val partial = s1.partialEval(envLeftProvided)
-        partial.explain.text_hierarchy().shouldBe(
-          """
+        partial.explain
+          .text_hierarchy()
+          .shouldBe(
+            """
             |+ Mapped
             |!-+ Zipped
             |: !-- Provided(List(1, 2, 3))
             |: !-- Blackbox(fn2 <at Circuits.scala:16>)
             |!-- Blackbox(s1 <at ZippedLike.scala:9>)
             |""".stripMargin
-        )
+          )
         assert(partial.apply(arg) == expected)
       }
 

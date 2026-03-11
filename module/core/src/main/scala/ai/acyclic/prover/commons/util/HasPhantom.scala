@@ -81,36 +81,38 @@ trait HasPhantom extends HasStatic {
     }
 
     private def summonObject(runtimeClass: Class[?]): Option[Object] = {
-      summonStaticObject(runtimeClass).orElse {
-        val accessorName = runtimeClass.getSimpleName.stripSuffix("$")
+      summonStaticObject(runtimeClass)
+        .orElse {
+          val accessorName = runtimeClass.getSimpleName.stripSuffix("$")
 
-        Option(runtimeClass.getEnclosingClass).flatMap { enclosingClass =>
-          summonObject(enclosingClass).flatMap { outerInstance =>
-            val accessor =
-              try {
-                Some(enclosingClass.getDeclaredMethod(accessorName))
-              } catch {
-                case _: NoSuchMethodException => None
-              }
+          Option(runtimeClass.getEnclosingClass).flatMap { enclosingClass =>
+            summonObject(enclosingClass).flatMap { outerInstance =>
+              val accessor =
+                try {
+                  Some(enclosingClass.getDeclaredMethod(accessorName))
+                } catch {
+                  case _: NoSuchMethodException => None
+                }
 
-            accessor.map { method =>
-              method.setAccessible(true)
+              accessor.map { method =>
+                method.setAccessible(true)
 
-              try {
-                method.invoke(outerInstance)
-              } catch {
-                case err: ReflectiveOperationException =>
-                  throw new IllegalStateException(
-                    s"Cannot instantiate phantom ${runtimeClass.getName}",
-                    err
-                  )
+                try {
+                  method.invoke(outerInstance)
+                } catch {
+                  case err: ReflectiveOperationException =>
+                    throw new IllegalStateException(
+                      s"Cannot instantiate phantom ${runtimeClass.getName}",
+                      err
+                    )
+                }
               }
             }
           }
         }
-      }.orElse {
-        summonPackageObject(runtimeClass)
-      }
+        .orElse {
+          summonPackageObject(runtimeClass)
+        }
     }
 
     private def summonStaticObject(runtimeClass: Class[?]): Option[Object] = {

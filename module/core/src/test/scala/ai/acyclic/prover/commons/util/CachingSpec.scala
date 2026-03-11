@@ -108,7 +108,7 @@ object CachingSpec {
     assert(count == expected)
   }
 
-  private final class CleanupAction(generation: Int) extends Runnable {
+  final private class CleanupAction(generation: Int) extends Runnable {
     override def run(): Unit = {
       generationCounter(generation).incrementAndGet()
     }
