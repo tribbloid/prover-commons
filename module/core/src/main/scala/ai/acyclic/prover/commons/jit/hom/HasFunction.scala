@@ -378,7 +378,7 @@ trait HasFunction {
       lazy val lookup: CacheMagnet[I, R] = getLookup()
 
       override lazy val simplify: Fn[I, R] = {
-        copy(backbone = backbone.simplify)(getLookup)
+        copy(backbone = backbone.simplify)(() => lookup)
       }
 
       def apply(key: I): R = {

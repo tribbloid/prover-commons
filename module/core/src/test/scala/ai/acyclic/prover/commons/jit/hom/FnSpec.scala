@@ -374,7 +374,7 @@ class FnSpec extends BaseSpec {
       assert(cachedFn.apply(argOther) == "value:99")
       assert(counter.get() == 2) // Counter increases for new input
     }
-    
+
     it("getExisting returns only evaluated results (like CachedOnly)") {
       val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.CachedFixture.createCachedFn()
 
@@ -387,12 +387,26 @@ class FnSpec extends BaseSpec {
 
       // Evaluate arg1
       assert(cachedFn.apply(arg1) == "value:42")
-      
+
       // Now getExisting should return Some for arg1, None for argOther
       assert(cachedFn.getExisting(arg1) == Some("value:42"))
       assert(cachedFn.getExisting(argOther) == None)
-      
+
       // Counter should be 1
+      assert(counter.get() == 1)
+    }
+
+    it("shares the same cache when invoked through Function1View") {
+      val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.CachedFixture.createCachedFn()
+
+      val naturalView: Int => String = cachedFn
+      val arg = Const.Provided(42) ><: Args.eye
+
+      assert(naturalView(42) == "value:42")
+      assert(counter.get() == 1)
+      assert(cachedFn.getExisting(arg) == Some("value:42"))
+
+      assert(cachedFn.apply(arg) == "value:42")
       assert(counter.get() == 1)
     }
   }
