@@ -16,11 +16,11 @@ object __TheDualityOfBoundAndEvidence {
 
   // we should allow them to override each other:
 
-  {
+  locally {
     def fn1[T <: T1](t: T): T & T1 = fn2[T](t) // trivial
   }
 
-  {
+  locally {
     def fn2[T](t: T)(
         implicit
         ev: T <:< T1

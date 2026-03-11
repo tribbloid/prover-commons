@@ -3,6 +3,8 @@ package ai.acyclic.prover.commons.graph.ops
 import ai.acyclic.prover.commons.graph.Engine
 import ai.acyclic.prover.commons.graph.topology.DivergingForm
 
+import scala.language.implicitConversions
+
 trait UpperSemilatticeMixin {
   self: Engine & PosetMixin =>
 

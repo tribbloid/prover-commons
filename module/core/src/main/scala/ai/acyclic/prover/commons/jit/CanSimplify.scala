@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.jit
 
-import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
+import ai.acyclic.prover.commons.jit.eval.PartialEvalEnv
 
 /**
   * FP stands for "Fixed-point", as in "F-bound"

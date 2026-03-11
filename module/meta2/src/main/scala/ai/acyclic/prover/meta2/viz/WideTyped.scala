@@ -1,6 +1,7 @@
 package ai.acyclic.prover.meta2.viz
 
 import ai.acyclic.prover.meta2.refl.Reflection
+import scala.language.implicitConversions
 
 /**
   * @param value

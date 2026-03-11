@@ -18,7 +18,8 @@ trait HasTypeLambda extends HasPoly {
   self: Hom.type =>
 
   // keep it final to use Scala 3 type project to refer to inner classes without initialising it
-  final case class BoundView[D <: Bound](bound: D) {
+  trait BoundView[D <: Bound] extends Serializable {
+    val bound: D
 
     /**
       * the most general form of poly1 in DOT calculus takes a bound and generate a function it should be cast into
@@ -164,7 +165,9 @@ trait HasTypeLambda extends HasPoly {
 
   object BoundView {
 
-    val top: BoundView[Bound.Top] = BoundView[Bound.Top](Bound.Top)
+    val top: BoundView[Bound.Top] = new BoundView[Bound.Top] {
+      val bound: Bound.Top = Bound.Top
+    }
   }
 
   /**

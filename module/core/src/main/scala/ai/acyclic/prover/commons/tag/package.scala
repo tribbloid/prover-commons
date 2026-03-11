@@ -24,7 +24,7 @@ package object tag {
 
   infix type TaggedBy[+T, +C <: Tag] = T & Tagged[C]
 
-  val _ = {
+  locally {
     // sanity, wow it actually works on Scala 2
     type K = Int TaggedBy Tag
   }

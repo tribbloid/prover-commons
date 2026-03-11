@@ -64,7 +64,7 @@ object AssertSerializable {
     assert(v1.hashCode() == v2.hashCode(), s"hash code after deserialization is different: $v1 != $v2")
     assert(v1.toString == v2.toString, s"value.toString after deserialization is different: $v1 != $v2")
     assert(
-      (v1: T) equals (v2: T),
+      (v1: T) == (v2: T),
       s"value after deserialization is different: $v1 != $v2"
     )
     //    (v1, v2) match {

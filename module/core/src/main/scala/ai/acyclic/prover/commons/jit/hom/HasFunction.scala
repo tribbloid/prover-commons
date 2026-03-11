@@ -118,14 +118,14 @@ trait HasFunction {
         val simplifiedLeft = left.partialEval(env)
 
         simplifiedLeft match {
-          case p: Const.Provided[M @unchecked] =>
+          case p: (Const.Provided[_] @unchecked) =>
             val envRight = () => {
               val e = env()
-              PartialEvalEnv[M ><: T0](Const.Provided(p.compute) ><: Args.eye, e.failFast, e.onlyPure)
+              PartialEvalEnv(Const.Provided(p.compute) ><: Args.eye, e.failFast, e.onlyPure)
             }
             val simplifiedRight = right.partialEval(envRight)
             simplifiedRight match {
-              case rp: Const.Provided[O @unchecked] => rp
+              case rp: (Const.Provided[_] @unchecked) => rp
               case _                                =>
                 copy(
                   left = p,
@@ -157,7 +157,7 @@ trait HasFunction {
 
       override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = {
         base.partialEval(env) match {
-          case p: Const.Provided[T @unchecked] =>
+          case p: (Const.Provided[_] @unchecked) =>
             val dynamicFn = coerce(p.compute)
             dynamicFn.partialEval(env)
           case nonConst =>
@@ -206,7 +206,7 @@ trait HasFunction {
         val simplifiedRight = right.partialEval(env)
 
         (simplifiedLeft, simplifiedRight) match {
-          case (l: Const.Provided[O1 @unchecked], r: Const.Provided[O2 @unchecked]) =>
+          case (l: (Const.Provided[_] @unchecked), r: (Const.Provided[_] @unchecked)) =>
             Const.Provided((l.compute, r.compute))
           case _ =>
             copy(
@@ -256,7 +256,7 @@ trait HasFunction {
         }
 
         (simplifiedLeft, simplifiedRight) match {
-          case (l: Const.Provided[O @unchecked], r: Const.Provided[O2 @unchecked]) =>
+          case (l: (Const.Provided[_] @unchecked), r: (Const.Provided[_] @unchecked)) =>
             Const.Provided((l.compute, r.compute))
           case _ =>
             copy(

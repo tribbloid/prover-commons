@@ -56,7 +56,7 @@ trait AnyGraphMixin {
 
       object DepthFirst extends TransformPlan {
 
-        private def transformInternal(node: ArgNode, depth: Int = arg.maxRecursionDepth): Seq[ArgNode] = {
+        private def transformInternal(node: ArgNode, depth: Int): Seq[ArgNode] = {
           if (depth > 0) {
 
             def doTransform(n: ArgNode): Seq[ArgNode] = {

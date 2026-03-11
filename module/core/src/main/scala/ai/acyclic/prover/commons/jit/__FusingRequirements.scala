@@ -138,12 +138,12 @@ object __FusingRequirements {
     }
 
     val url1: Const[String] = r1.a
-    val d1: Unit ~> Discovery = url1.flatMapAndSimplify(GoTo)
+    val d1: Unit ~> Discovery = url1.flatMapAndSimplify(GoTo.apply)
 
     {
       // equivalent to:
       url1
-        .map(GoTo)
+        .map(GoTo.apply)
         .simplify // <-- best effort simplify will succeed, yielding an Const[GoTo] that can be fused
         .flatMap(identity)
     }
@@ -163,7 +163,7 @@ object __FusingRequirements {
       * AvocADO) can optimise into this as an IR
       */
 
-    val d2: Task[Discovery] = url2.flatMapAndSimplify(GoTo) // <-- ditto
+    val d2: Task[Discovery] = url2.flatMapAndSimplify(GoTo.apply) // <-- ditto
 
     val result: Unit ~> (Discovery, Discovery) = d1.zip(d2)
 
@@ -199,14 +199,14 @@ object __FusingRequirements {
       }
 
       val d1: Unit ~> Discovery = AlwaysSimplify(r1.a)
-        .flatMap(GoTo)
+        .flatMap(GoTo.apply)
 
       val d2: Unit ~> Discovery = d1
         .zip(r1.b)
         .map {
           decideNext
         }
-        .flatMap(GoTo)
+        .flatMap(GoTo.apply)
 
       val result: Unit ~> (Discovery, Discovery) = {
         d1.zip(d2) // <-- d1 is used twice, this makes it fundamentally incompatible with sequent for-comprehension

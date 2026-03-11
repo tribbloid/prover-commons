@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.graph.Arrow
-import ai.acyclic.prover.commons.implicits.summon
 import ai.acyclic.prover.commons.util.StaticGroup
 
 //trait HasAxiomUniverse {
