@@ -28,7 +28,7 @@ trait HasFunction {
   trait DepFn[-I <: Args] extends CanSimplify[DepFn[I]] {
     type In >: I <: Args
 
-    override def partialEval(env: () => PartialEvalEnv[In]): DepFn[I] = this
+//    override def partialEval(env: () => PartialEvalEnv[In]): DepFn[I] = this
   }
   case object DepFn {
 
@@ -42,7 +42,7 @@ trait HasFunction {
 
     type Out <: O
 
-    override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = this
+//    override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = this
 
     // TODO: this should be a special case of specialise/partial-eval
   }
@@ -489,6 +489,8 @@ trait HasFunction {
       override lazy val simplify: Const[O] = this
 
       override def apply(arg: Args): O = compute
+
+      override def partialEval(env: () => PartialEvalEnv[Args]) = this
     }
 
     final case class Provided[O](compute: O) extends Impl[O] {
