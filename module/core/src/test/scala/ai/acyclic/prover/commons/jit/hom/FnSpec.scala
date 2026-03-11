@@ -353,4 +353,48 @@ class FnSpec extends BaseSpec {
     }
   }
 
+  describe("Cached") {
+
+    it("evaluates only once for identical inputs") {
+      val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.CachedFixture.createCachedFn()
+
+      val arg1 = Const.Provided(42) ><: Args.eye
+      val arg2 = Const.Provided(42) ><: Args.eye
+      val argOther = Const.Provided(99) ><: Args.eye
+
+      // First evaluation
+      assert(cachedFn.apply(arg1) == "value:42")
+      assert(counter.get() == 1)
+
+      // Second evaluation with identical input
+      assert(cachedFn.apply(arg2) == "value:42")
+      assert(counter.get() == 1) // Counter should not increase
+
+      // Evaluation with different input
+      assert(cachedFn.apply(argOther) == "value:99")
+      assert(counter.get() == 2) // Counter increases for new input
+    }
+    
+    it("getExisting returns only evaluated results (like CachedOnly)") {
+      val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.CachedFixture.createCachedFn()
+
+      val arg1 = Const.Provided(42) ><: Args.eye
+      val argOther = Const.Provided(99) ><: Args.eye
+
+      // Initially empty
+      assert(cachedFn.getExisting(arg1) == None)
+      assert(cachedFn.getExisting(argOther) == None)
+
+      // Evaluate arg1
+      assert(cachedFn.apply(arg1) == "value:42")
+      
+      // Now getExisting should return Some for arg1, None for argOther
+      assert(cachedFn.getExisting(arg1) == Some("value:42"))
+      assert(cachedFn.getExisting(argOther) == None)
+      
+      // Counter should be 1
+      assert(counter.get() == 1)
+    }
+  }
+
 }
