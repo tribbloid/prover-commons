@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.jit.fixture
 
-import ai.acyclic.prover.commons.jit.Hom.{Const, Fn, Fn1, Fn2}
+import ai.acyclic.prover.commons.jit.Hom.{Fn, Fn1}
 import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 import java.util.concurrent.atomic.AtomicInteger
 

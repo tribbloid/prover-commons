@@ -35,8 +35,6 @@ case class SerializerOverride[T: ClassTag](
   @transient lazy val serOpt: Option[SerializerInstance] = overrideImpl.apply()
 
   @transient lazy val serObj: io.Serializable = _original match {
-    case ss: Serializable =>
-      ss
     case ss: java.io.Serializable =>
       ss
     case ww: Writable =>

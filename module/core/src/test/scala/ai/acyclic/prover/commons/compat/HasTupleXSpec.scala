@@ -51,7 +51,9 @@ class HasTupleXSpec extends BaseSpec {
     it("flatTuple should convert HList to flat tuple") {
       val t0 = HNil
       val r0: Unit = t0.flatTuple
-      assert(r0 == ())
+      r0 match {
+        case () => succeed
+      }
 
       val t1 = TupleX.of(1)
       val r1: Int = t1.flatTuple

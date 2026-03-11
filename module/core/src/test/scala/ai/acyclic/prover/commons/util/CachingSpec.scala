@@ -3,6 +3,9 @@ package ai.acyclic.prover.commons.util
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import org.scalatest.BeforeAndAfterEach
 
+import java.lang.ref.Cleaner
+import java.util.concurrent.atomic.AtomicInteger
+import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
@@ -12,11 +15,11 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
   implicit def global: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
   override def beforeEach(): Unit = {
-    count = 0
+    startTracking()
   }
 
   override def afterEach(): Unit = {
-    count = 0
+    startTracking()
   }
 
   def createData(): Unit = {
@@ -28,11 +31,7 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
 
       createData()
 
-      //      Thread.sleep(10000)
-      System.gc()
-      Thread.sleep(2000)
-
-      assert(count == 1)
+      waitForCollection(1)
     }
 
     it("termination of thread allows all referenced objected to be GC'ed") {
@@ -43,11 +42,7 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
       }
       Await.result(f, Duration.Inf)
 
-      //      Thread.sleep(10000)
-      System.gc()
-      Thread.sleep(2000)
-
-      assert(count == 1)
+      waitForCollection(1)
     }
   }
 
@@ -63,10 +58,7 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
         cache.put("a", myVal)
         myVal = null
 
-        System.gc()
-        Thread.sleep(10) // delay to allow gc
-
-        assert(count == 1)
+        waitForCollection(1)
       }
 
       it("if the value is not in scope") {
@@ -81,10 +73,7 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
         }
         Await.result(f, Duration.Inf)
 
-        System.gc()
-        Thread.sleep(2000)
-
-        assert(count == 1)
+        waitForCollection(1)
       }
     }
   }
@@ -92,13 +81,40 @@ class CachingSpec extends BaseSpec with BeforeAndAfterEach {
 
 object CachingSpec {
 
-  @volatile var count: Int = 0
+  private val cleaner = Cleaner.create()
+  private val trackingGeneration = new AtomicInteger(0)
+  private val collectedByGeneration = TrieMap.empty[Int, AtomicInteger]
+
+  private def generationCounter(generation: Int): AtomicInteger = {
+    collectedByGeneration.getOrElseUpdate(generation, new AtomicInteger(0))
+  }
+
+  startTracking()
+
+  def startTracking(): Unit = {
+    generationCounter(trackingGeneration.incrementAndGet()).set(0)
+  }
+
+  def count: Int = generationCounter(trackingGeneration.get()).get()
+
+  def waitForCollection(expected: Int, timeoutMillis: Long = 5000L): Unit = {
+    val deadlineNanos = System.nanoTime() + timeoutMillis * 1000000L
+
+    while (count < expected && System.nanoTime() < deadlineNanos) {
+      System.gc()
+      Thread.sleep(50)
+    }
+
+    assert(count == expected)
+  }
+
+  private final class CleanupAction(generation: Int) extends Runnable {
+    override def run(): Unit = {
+      generationCounter(generation).incrementAndGet()
+    }
+  }
 
   case class CacheTestData(s: String = "") {
-    // called when object is garbage collected, which allows verification of gc behaviour
-    override def finalize(): Unit = {
-      super.finalize()
-      count += 1
-    }
+    cleaner.register(this, new CleanupAction(trackingGeneration.get()))
   }
 }

@@ -1,8 +1,7 @@
 package ai.acyclic.prover.commons.jit.hom
 
-import ai.acyclic.prover.commons.jit.Hom.{Fn, Fn1, Fn2}
+import ai.acyclic.prover.commons.jit.Hom.{Fn, Fn1}
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 
 class LambdaInfoSpec extends BaseSpec {
 
