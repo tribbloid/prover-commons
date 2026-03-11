@@ -42,9 +42,11 @@ trait HasFunction {
 
     type Out <: O
 
-    lazy val asConstantFnOrNone: Option[ConstantFn[O]] = {
-
-      ???
+    lazy val asConstantOrNone: Option[ConstantFn[O]] = {
+      simplify match {
+        case constant: ConstantFn[O @unchecked] => Some(constant)
+        case _                                  => None
+      }
     }
 
 //    override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = this
