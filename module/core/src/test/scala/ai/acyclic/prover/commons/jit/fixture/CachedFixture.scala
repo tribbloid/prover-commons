@@ -1,14 +1,14 @@
 package ai.acyclic.prover.commons.jit.fixture
 
-import ai.acyclic.prover.commons.jit.Hom.{Const, Fn}
+import ai.acyclic.prover.commons.jit.Hom.{Const, Fn, Fn1, Fn2}
 import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 import java.util.concurrent.atomic.AtomicInteger
 
 object CachedFixture {
 
-  def createCounterFn(): (AtomicInteger, Fn[Int ><: T0, String]) = {
+  def createCounterFn(): (AtomicInteger, Fn1[Int, String]) = {
     val counter = new AtomicInteger(0)
-    val fn: Fn[Int ><: T0, String] = { (v: Int) =>
+    val fn: Fn1[Int, String] = { (v: Int) =>
       counter.incrementAndGet()
       s"value:$v"
     }

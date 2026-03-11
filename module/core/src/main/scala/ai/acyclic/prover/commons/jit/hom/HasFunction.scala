@@ -47,6 +47,7 @@ trait HasFunction {
     // TODO: this should be a special case of specialise/partial-eval
   }
 
+  type Fn0[+O] = Fn[T0, O]
   type Fn1[-I, +O] = Fn[I ><: T0, O]
   type Fn2[-I, -J, +O] = Fn[I ><: J ><: T0, O]
   case object Fn extends FnBuilder.Root {
@@ -98,7 +99,7 @@ trait HasFunction {
 
     case class Mapped[I <: Args, M, O](
         left: Fn[I, M],
-        right: Fn[M ><: T0, O]
+        right: Fn1[M, O]
     ) extends Impl[I, O] {
 
       override type Rules = left.Rules & right.Rules
@@ -267,7 +268,7 @@ trait HasFunction {
     }
 
     // typed helpers for CPS/tracing composition to keep structure stable in explain trees
-    def provided0[O](value: O): Fn[T0, O] = {
+    def provided0[O](value: O): Fn0[O] = {
       Const.Provided(value)
     }
 
@@ -371,7 +372,7 @@ trait HasFunction {
 //      }
 //    }
 
-    implicit def _as1View[I, O](v: CanSimplify[Fn[I ><: T0, O]])(
+    implicit def _as1View[I, O](v: CanSimplify[Fn1[I, O]])(
         implicit
         _definedAt: SrcDefinition
     ): Function1View[I, O] = {
@@ -388,11 +389,11 @@ trait HasFunction {
     implicit def fromFunction1[I, R](fn: I => R)(
         implicit
         _definedAt: SrcDefinition
-    ): Fn[I ><: T0, R] = {
+    ): Fn1[I, R] = {
       fn match {
         case vv: Function1View[I @unchecked, R @unchecked] =>
           vv.self match {
-            case impl: Fn[I ><: T0, R @unchecked] =>
+            case impl: Fn1[I, R @unchecked] =>
               impl
           }
         case _ =>
@@ -469,7 +470,7 @@ trait HasFunction {
       }
     }
 
-    override protected type BuildTarget[I, O] = Fn[I ><: T0, O]
+    override protected type BuildTarget[I, O] = Fn1[I, O]
 
     protected def build[I, O](fn: I => O)(
         implicit
@@ -481,7 +482,7 @@ trait HasFunction {
 
     case class DomainBuilder[I, O]() extends IDomainBuilder[I, O] {
 
-      type _Lemma = Fn[I ><: T0, O]
+      type _Lemma = Fn1[I, O]
       type _Impl = Fn.Impl[I ><: T0, O]
       type _Native = (I => O)
 
@@ -498,7 +499,7 @@ trait HasFunction {
   }
 
   case class Function1View[I, O] private[hom] (
-      self: Fn[I ><: T0, O],
+      self: Fn1[I, O],
       otherFnDefinedAt: SrcDefinition
   ) extends Function[I, O] {
 
@@ -509,7 +510,7 @@ trait HasFunction {
     // TODO: both of these are not narrow enough
     final override def andThen[O2](next: O => O2): Function1View[I, O2] = {
 
-      val _next: Fn[O ><: T0, O2] = Fn.at[O](next)(otherFnDefinedAt)
+      val _next: Fn1[O, O2] = Fn.at[O](next)(otherFnDefinedAt)
 
       val result =
         Fn.Mapped[I ><: T0, O, O2](self, _next)
@@ -546,13 +547,13 @@ trait HasFunction {
     val compute: O // should mostly be a lazy val
   }
 
-  type Thunk[+O] = Fn[T0, O]
+  type Thunk[+O] = Fn0[O]
   type Const[+O] = Thunk[O] & ConstantFn[O]
 
   object Const {
 
     // sanity (TODO: this may threaten behaviour of ZIO zippable or unzippable, need some test cases)
-    implicitly[Impl[Int] <:< Fn[T0, Int]] // this principle should be held at all cost
+    implicitly[Impl[Int] <:< Fn0[Int]] // this principle should be held at all cost
     implicitly[Const.Impl[Int] <:< Const[Int]]
     implicitly[Const[Int] <:< ConstantFn[Int]]
 
@@ -563,7 +564,7 @@ trait HasFunction {
 
       override def apply(arg: Args): O = compute
 
-      override def partialEval(env: () => PartialEvalEnv[Args]) = this
+      override def partialEval(env: () => PartialEvalEnv[Args]) = this // already the fastest
     }
 
     final case class Provided[O](compute: O) extends Impl[O] {

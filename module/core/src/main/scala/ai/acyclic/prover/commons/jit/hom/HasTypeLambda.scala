@@ -51,7 +51,7 @@ trait HasTypeLambda extends HasPoly {
       type In[T >: bound.Min <: bound.Max]
       type Out[T >: bound.Min <: bound.Max]
 
-      def refine[T >: bound.Min <: bound.Max]: Fn[In[T] ><: T0, Out[T]]
+      def refine[T >: bound.Min <: bound.Max]: Fn1[In[T], Out[T]]
 
       final def apply[T >: bound.Min <: bound.Max](arg: In[T] ><: T0): Out[T] = refine[T].apply(arg)
 
@@ -72,7 +72,7 @@ trait HasTypeLambda extends HasPoly {
 
         lazy val lookup: CacheMagnet[Any, Any] = getLookup()
 
-        override def refine[T >: bound.Min <: bound.Max]: Fn[In[T] ><: T0, Out[T]] = {
+        override def refine[T >: bound.Min <: bound.Max]: Fn1[In[T], Out[T]] = {
 
           val result = Fn.at[In[T]] { i =>
             lookup
@@ -96,7 +96,7 @@ trait HasTypeLambda extends HasPoly {
 
         object CachedOnly extends UnnaturalTransformation.Impl[In, _OutOpt] {
 
-          override def refine[T >: bound.Min <: bound.Max]: Fn[In[T] ><: T0, Option[_Out[T]]] = {
+          override def refine[T >: bound.Min <: bound.Max]: Fn1[In[T], Option[_Out[T]]] = {
 
             val result = Fn.at[In[T]] { i =>
               lookup
@@ -148,7 +148,7 @@ trait HasTypeLambda extends HasPoly {
         override type Out[T >: bound.Min <: bound.Max] = O
 
         // safe by construction: backbone type I may already be _ ><: T0, compiler can't prove after erasure
-        override def refine[T >: bound.Min <: bound.Max]: Fn[I ><: T0, O] = backbone.asInstanceOf[Fn[I ><: T0, O]]
+        override def refine[T >: bound.Min <: bound.Max]: Fn1[I, O] = backbone.asInstanceOf[Fn1[I, O]]
       }
       //    implicit def _fnIsPoly1[I, O](fn: Circuit[I, O]): Is[I, O] = Is(fn)
 

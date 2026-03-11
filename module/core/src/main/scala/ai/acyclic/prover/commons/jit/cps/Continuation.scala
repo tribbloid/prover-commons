@@ -1,10 +1,10 @@
 package ai.acyclic.prover.commons.jit.cps
 
 import ai.acyclic.prover.commons.debug.SrcDefinition
-import ai.acyclic.prover.commons.jit.Hom.Fn
+import ai.acyclic.prover.commons.jit.Hom.{Fn, Fn1}
 import ai.acyclic.prover.commons.multiverse.rewrite.Delegating
 import ai.acyclic.prover.commons.jit.eval.Args
-import Args.{><:, T0}
+import Args.T0
 
 import scala.language.implicitConversions
 
@@ -34,7 +34,7 @@ case class Continuation[I <: Args, +O](
       _definedAt: SrcDefinition
   ): Continuation[I, O2] = {
 
-    val _right: Fn[O ><: T0, O2] = Fn.at[O](
+    val _right: Fn1[O, O2] = Fn.at[O](
       right
     )(_definedAt)
 

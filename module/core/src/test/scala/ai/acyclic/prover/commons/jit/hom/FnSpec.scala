@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.jit.fixture.*
-import ai.acyclic.prover.commons.jit.Hom.{Const, Fn}
+import ai.acyclic.prover.commons.jit.Hom.{Const, Fn, Fn1, Fn2}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
@@ -29,7 +29,7 @@ class FnSpec extends BaseSpec {
 
     it("implicit cast") {
 
-      val cc: Fn[Int ><: T0, String] = { (v: Int) =>
+      val cc: Fn1[Int, String] = { (v: Int) =>
         "" + v
       }
       assert(cc.getClass == classOf[Fn.Blackbox[?, ?]])
@@ -48,7 +48,7 @@ class FnSpec extends BaseSpec {
   describe("Blackbox") {
     it("copy should preserve equality") {
 
-      val cc: Fn[Int ><: T0, String] = { (v: Int) =>
+      val cc: Fn1[Int, String] = { (v: Int) =>
         "" + v
       }
 
@@ -192,8 +192,8 @@ class FnSpec extends BaseSpec {
 
       it("with single-arg tail") {
 
-        val head: Fn[Int ><: T0, String] = { (v: Int) => "h" + v }
-        val tail: Fn[Long ><: T0, Double] = { (v: Long) => v * 0.5 }
+        val head: Fn1[Int, String] = { (v: Int) => "h" + v }
+        val tail: Fn1[Long, Double] = { (v: Long) => v * 0.5 }
 
         val pw = Fn.zip(head, tail)
 
@@ -205,9 +205,9 @@ class FnSpec extends BaseSpec {
 
       it("with multi-arg tail") {
 
-        val head: Fn[Int ><: T0, String] = { (v: Int) => "v=" + v }
+        val head: Fn1[Int, String] = { (v: Int) => "v=" + v }
 
-        val tail: Fn[String ><: Long ><: T0, (String, Long)] =
+        val tail: Fn2[String, Long, (String, Long)] =
           Fn.zip(
             (s: String) => s.toUpperCase,
             (l: Long) => l + 100L
@@ -223,8 +223,8 @@ class FnSpec extends BaseSpec {
 
       it("tree structure") {
 
-        val head: Fn[Int ><: T0, String] = { (v: Int) => "h" + v }
-        val tail: Fn[Long ><: T0, Double] = { (v: Long) => v * 0.5 }
+        val head: Fn1[Int, String] = { (v: Int) => "h" + v }
+        val tail: Fn1[Long, Double] = { (v: Long) => v * 0.5 }
 
         val pw = Fn.zip(head, tail)
 
@@ -235,8 +235,8 @@ class FnSpec extends BaseSpec {
 
       it("simplify preserves function") {
 
-        val head: Fn[Int ><: T0, String] = { (v: Int) => "s" + v }
-        val tail: Fn[Long ><: T0, Double] = { (v: Long) => v.toDouble }
+        val head: Fn1[Int, String] = { (v: Int) => "s" + v }
+        val tail: Fn1[Long, Double] = { (v: Long) => v.toDouble }
 
         val pw = Fn.zip(head, tail)
         val simplified = pw.simplify
@@ -361,8 +361,8 @@ class FnSpec extends BaseSpec {
   describe("Flatten") {
 
     it("basic usage") {
-      val baseFn: Fn[Int ><: T0, Int] = { (v: Int) => v * 2 }
-      val coerceFn: Int => Fn[Int ><: T0, String] = { (t: Int) =>
+      val baseFn: Fn1[Int, Int] = { (v: Int) => v * 2 }
+      val coerceFn: Int => Fn1[Int, String] = { (t: Int) =>
         { (v: Int) => s"v=$v, t=$t" }
       }
 
@@ -374,8 +374,8 @@ class FnSpec extends BaseSpec {
     }
 
     it("simplify preserves behavior") {
-      val baseFn: Fn[Int ><: T0, Int] = { (v: Int) => v * 2 }
-      val coerceFn: Int => Fn[Int ><: T0, String] = { (t: Int) =>
+      val baseFn: Fn1[Int, Int] = { (v: Int) => v * 2 }
+      val coerceFn: Int => Fn1[Int, String] = { (t: Int) =>
         { (v: Int) => s"v=$v, t=$t" }
       }
 

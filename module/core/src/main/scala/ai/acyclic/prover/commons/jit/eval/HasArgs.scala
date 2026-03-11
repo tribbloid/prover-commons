@@ -7,7 +7,7 @@ import ai.acyclic.prover.commons.tuple.{Products, Schemata}
 
 trait HasArgs {
 
-  trait Contra[-T]
+  trait Union[-T]
 
   import Args.><:
 
@@ -45,7 +45,7 @@ trait HasArgs {
       type ComputeAll <: TupleX.Prod
       val computeAll: ComputeAll
 
-      type Union <: Contra[?]
+      type _Union <: Union[?]
 
       type Peer >: this.type <: Prod
       def peer: Peer
@@ -80,7 +80,7 @@ trait HasArgs {
     trait NoInputK[-F <: Args] extends Args {
       // TODO: what if the F-bound is not required
 
-      type Union >: Contra[Nothing] <: Contra[?] // AKA type Union = Contra[? <: Nothing]
+      type _Union >: Union[Nothing] <: Union[?] // AKA type Union = Contra[? <: Nothing]
     }
 
     sealed trait eyeLike extends Prod with ElementsMixin.Eye with NoInputK[eyeLike] {
@@ -88,7 +88,7 @@ trait HasArgs {
       type ComputeAll = TupleXEmpty
       override lazy val computeAll: ComputeAll = TupleXEmpty
 
-      override type Union = Contra[Nothing]
+      override type _Union = Union[Nothing]
 
       override type Peer = this.type
       override def peer: Peer = this
@@ -114,7 +114,7 @@ trait HasArgs {
 
       def computeHead: H = head.compute
 
-      type Union = Contra[H] & tail.Union // equivalent to Contra[H | TU] where tail.Union = Contra[TU]
+      type _Union = Union[H] & tail._Union // equivalent to Contra[H | TU] where tail.Union = Contra[TU]
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
