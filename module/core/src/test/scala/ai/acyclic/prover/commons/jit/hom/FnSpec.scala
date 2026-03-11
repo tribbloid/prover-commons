@@ -45,39 +45,38 @@ class FnSpec extends BaseSpec {
     }
   }
 
-  describe("copy without SrcPosition change") {
-    it("should preserve equality") {
+  describe("Blackbox") {
+    it("copy should preserve equality") {
 
       val cc: Fn[Int ><: T0, String] = { (v: Int) =>
         "" + v
       }
 
       val cc1 = cc match {
-        case bb: Fn.Blackbox[Int @unchecked, String @unchecked] => bb
-        case other => fail(s"Expected Fn.Blackbox but got ${other.getClass}")
+        case bb: Fn.Blackbox[?, ?] => bb
+        case other                 => fail(s"Expected Fn.Blackbox but got ${other.getClass}")
       }
 
       val cc2 = cc1.copy()(fn = { _: Int => "" })
-
       assert(cc == cc2)
     }
-  }
 
-  it("explain") {
+    it("explain") {
 
-    fn0.explain.nodeText.shouldBe(
-      "Blackbox(fn0 <at Circuits.scala:8>)"
-    )
-
-    fn0.toString.shouldBe(
-      fn0.explain.nodeText
-    )
-
-    fn0.explain
-      .text_hierarchy()
-      .shouldBe(
-        s"- ${fn0.toString}"
+      fn0.explain.nodeText.shouldBe(
+        "Blackbox(fn0 <at Circuits.scala:8>)"
       )
+
+      fn0.toString.shouldBe(
+        fn0.explain.nodeText
+      )
+
+      fn0.explain
+        .text_hierarchy()
+        .shouldBe(
+          s"- ${fn0.toString}"
+        )
+    }
   }
 
   describe("chain") {
@@ -161,7 +160,7 @@ class FnSpec extends BaseSpec {
 
   }
 
-  describe("pointwise") {
+  describe("Zipped") {
 
     ZippedLike.pairs.zipWithIndex.foreach {
 
@@ -248,9 +247,63 @@ class FnSpec extends BaseSpec {
         assert(result == ("s5", 3.0))
       }
     }
+
+    describe("partialEval") {
+      import ai.acyclic.prover.commons.jit.eval.PartialEvalEnv
+      import ai.acyclic.prover.commons.jit.Hom.Const
+      import ai.acyclic.prover.commons.jit.fixture.ZippedLike.s1
+
+      val arg = Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye)
+      val expected = Seq(3.0, 4.1, 5.2)
+
+      val s1Tree =
+        """
+          |+ Mapped
+          |!-+ Zipped
+          |: !-- Blackbox(fn1 <at Circuits.scala:12>)
+          |: !-- Blackbox(fn2 <at Circuits.scala:16>)
+          |!-- Blackbox(s1 <at ZippedLike.scala:9>)
+          |""".stripMargin
+
+      it("both inputs NotProvided") {
+        val envBothNot =
+          () =>
+            PartialEvalEnv(Const.NotProvided ><: (Const.NotProvided ><: Args.eye), failFast = false, onlyPure = false)
+        val partial = s1.partialEval(envBothNot)
+        partial.explain.text_hierarchy().shouldBe(s1Tree)
+        assert(partial.apply(arg) == expected)
+      }
+
+      it("left inputs NotProvided") {
+        // left NotProvided, right provided
+        val envRightProvided = () =>
+          PartialEvalEnv(Const.NotProvided ><: (Const.Provided(2L) ><: Args.eye), failFast = false, onlyPure = false)
+        val partial = s1.partialEval(envRightProvided)
+        partial.explain.text_hierarchy().shouldBe(s1Tree)
+        assert(partial.apply(arg) == expected)
+      }
+
+      it("right inputs NotProvided") {
+        // left provided, right NotProvided
+        val envLeftProvided =
+          () =>
+            PartialEvalEnv(Const.Provided(1) ><: (Const.NotProvided ><: Args.eye), failFast = false, onlyPure = false)
+        val partial = s1.partialEval(envLeftProvided)
+        partial.explain.text_hierarchy().shouldBe(s1Tree)
+        assert(partial.apply(arg) == expected)
+      }
+
+      it("both inputs provided") {
+        val envBothProvided = () =>
+          PartialEvalEnv(Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye), failFast = false, onlyPure = false)
+        val partial = s1.partialEval(envBothProvided)
+        partial.explain.text_hierarchy().shouldBe(s1Tree)
+        assert(partial.apply(arg) == expected)
+      }
+    }
   }
 
-  describe("fork") {
+  describe("Fork") {
 
     ForkLike.pairs.zipWithIndex.foreach {
 
@@ -289,7 +342,7 @@ class FnSpec extends BaseSpec {
     }
   }
 
-  describe("flatten") {
+  describe("Flatten") {
 
     it("basic usage") {
       val baseFn: Fn[Int ><: T0, Int] = { (v: Int) => v * 2 }

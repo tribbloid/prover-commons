@@ -199,6 +199,24 @@ trait HasFunction {
         val (leftArg, rightArg) = zip.unzip(arg)
         left(leftArg) -> right(rightArg)
       }
+
+      override def partialEval(env: () => PartialEvalEnv[In]): Fn[Z, (O, O2)] = {
+        val simplifiedLeft = left.partialEval { () =>
+          val e = env()
+          val (leftIn, _) = zip.unzip(e.inputs)
+          PartialEvalEnv(leftIn, e.failFast, e.onlyPure)
+        }
+        val simplifiedRight = right.partialEval { () =>
+          val e = env()
+          val (_, rightIn) = zip.unzip(e.inputs)
+          PartialEvalEnv(rightIn, e.failFast, e.onlyPure)
+        }
+
+        copy(
+          left = simplifiedLeft,
+          right = simplifiedRight
+        )(zip)
+      }
     }
 
     // typed helpers for CPS/tracing composition to keep structure stable in explain trees
@@ -364,6 +382,10 @@ trait HasFunction {
         }
 
         override def apply(v: I): R = delegate.apply(v)
+
+        override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, R] = {
+          copy(delegate = delegate.partialEval(env))(inputSchema0)
+        }
       }
     }
 
@@ -393,6 +415,10 @@ trait HasFunction {
       def getExisting(arg: I): Option[R] = {
         lookup
           .get(arg)
+      }
+
+      override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, R] = {
+        copy(backbone = backbone.partialEval(env))(() => lookup)
       }
     }
 
