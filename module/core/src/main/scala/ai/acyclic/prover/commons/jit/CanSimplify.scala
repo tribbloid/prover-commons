@@ -25,7 +25,7 @@ trait CanSimplify[+FP <: CanSimplify[FP]] extends IntermediateRepresentation {
 
 object CanSimplify {
 
-  trait Elementary[+FP <: Elementary[FP]] extends CanSimplify[FP & Elementary[FP]] {
+  trait Elementary[+FP <: CanSimplify[FP]] extends CanSimplify[FP] {
 
     val noInput: In
 
@@ -35,7 +35,7 @@ object CanSimplify {
     private lazy val bottomEnvironment =
       PartialEvalEnv[In](inputs = noInput, failFast = false, onlyPure = true)
 
-//    def partialEval(env: () => PartialEvalEnv[In]): FP & Elementary[FP]
+//    def partialEval(env: () => PartialEvalEnv[In]): FP
 
     @transient final lazy val simplify = partialEval(() => bottomEnvironment)
   }
