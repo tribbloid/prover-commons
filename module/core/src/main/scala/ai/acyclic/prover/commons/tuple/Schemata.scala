@@ -49,6 +49,8 @@ object Schemata {
     type ><[X <: VBound, Y <: VBound] = X ><: Y ><: Eye
   }
 
+  trait Union[-T]
+
   /**
     * bounded Tuples/HLists
     *
@@ -82,11 +84,17 @@ object Schemata {
       trait Prod extends Serializable {
 
         type Header <: TupleX.Prod
+
+        type _Union <: Union[?]
+        type _Intersection <: Any
       }
 
       trait Eye extends Prod {
 
         override type Header = TupleX.Eye
+
+        override type _Union = Union[Nothing]
+        type _Intersection = Any
       }
       object Eye extends Eye
 
@@ -98,6 +106,9 @@ object Schemata {
         val tail: TAIL
 
         override type Header = L *: tail.Header
+
+        type _Union = Union[L] & tail._Union // equivalent to Contra[H | TU] where tail.Union = Contra[TU]
+        type _Intersection = L & tail._Intersection
       }
     }
   }

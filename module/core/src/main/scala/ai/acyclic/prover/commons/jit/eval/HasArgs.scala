@@ -3,11 +3,10 @@ package ai.acyclic.prover.commons.jit.eval
 import ai.acyclic.prover.commons.compat.{*:, TupleX, TupleXEmpty}
 import ai.acyclic.prover.commons.jit.Hom
 import ai.acyclic.prover.commons.jit.Hom.Const
+import ai.acyclic.prover.commons.tuple.Schemata.Union
 import ai.acyclic.prover.commons.tuple.{Products, Schemata}
 
 trait HasArgs {
-
-  trait Union[-T]
 
   import Args.><:
 
@@ -44,8 +43,6 @@ trait HasArgs {
 
       type ComputeAll <: TupleX.Prod
       val computeAll: ComputeAll
-
-      type _Union <: Union[?]
 
       type Peer >: this.type <: Prod
       def peer: Peer
@@ -88,8 +85,6 @@ trait HasArgs {
       type ComputeAll = TupleXEmpty
       override lazy val computeAll: ComputeAll = TupleXEmpty
 
-      override type _Union = Union[Nothing]
-
       override type Peer = this.type
       override def peer: Peer = this
 
@@ -113,8 +108,6 @@ trait HasArgs {
       override lazy val computeAll: ComputeAll = computeHead *: tail.computeAll
 
       def computeHead: H = head.compute
-
-      type _Union = Union[H] & tail._Union // equivalent to Contra[H | TU] where tail.Union = Contra[TU]
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
