@@ -4,22 +4,22 @@ object ZippedLike {
 
   import Circuits.*
 
-  private val pointwise = fn1.trace <*> fn2.trace
+  private val zipped = fn1.trace <*> fn2.trace
 
-  val s1 = pointwise.map {
+  val s1 = zipped.map {
     case (o1, o2) =>
       o1.zip(o2).map(v => v._1 + v._2)
   }
 
   val s2 =
-    for (case (o1, o2) <- pointwise)
+    for (case (o1, o2) <- zipped)
       yield {
         o1.zip(o2).map(v => v._1 + v._2)
       }
 
   val s3 =
     for (
-      tt <- pointwise;
+      tt <- zipped;
       o1 = tt._1;
       o2 = tt._2
     ) yield {
@@ -30,7 +30,7 @@ object ZippedLike {
   lazy val pairs = {
 
     Seq(
-      pointwise ->
+      zipped ->
         s"""
            |+ Zipped
            |!-- ${fn1.explain.nodeText}
