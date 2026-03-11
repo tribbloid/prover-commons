@@ -1,7 +1,7 @@
 package ai.acyclic.prover.commons.jit.hom
 
 import ai.acyclic.prover.commons.jit.fixture.*
-import ai.acyclic.prover.commons.jit.Hom.{Const, Fn, Fn1, Fn2}
+import ai.acyclic.prover.commons.jit.Hom.{Const, ConstantFn, Fn, Fn1, Fn2}
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.jit.eval.Args
 import Args.{><:, T0}
@@ -18,7 +18,7 @@ class FnSpec extends BaseSpec {
 
       case object cc extends Fn.Impl1[Int, String] {
 
-        def apply(v: Int ><: T0): String = "" + v.head.compute
+        def apply(v: Int ><: T0): String = "" + v.head.value
       }
       assert(
         (cc.apply(
@@ -251,26 +251,24 @@ class FnSpec extends BaseSpec {
     describe("partialEval") {
       import ai.acyclic.prover.commons.jit.eval.PartialEvalEnv
       import ai.acyclic.prover.commons.jit.Hom.Const
-      import ai.acyclic.prover.commons.jit.fixture.ZippedLike.s1
+      import ai.acyclic.prover.commons.jit.fixture.ZippedLike.zipped
 
       val arg = Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye)
-      val expected = Seq(3.0, 4.1, 5.2)
+      val expected = (Seq(1L, 2L, 3L), Seq(2.0, 2.1, 2.2))
 
-      val s1Tree =
+      val zippedTree =
         """
-          |+ Mapped
-          |!-+ Zipped
-          |: !-- Blackbox(fn1 <at Circuits.scala:12>)
-          |: !-- Blackbox(fn2 <at Circuits.scala:16>)
-          |!-- Blackbox(s1 <at ZippedLike.scala:9>)
+          |+ Zipped
+          |!-- Blackbox(fn1 <at Circuits.scala:12>)
+          |!-- Blackbox(fn2 <at Circuits.scala:16>)
           |""".stripMargin
 
       it("both inputs NotProvided") {
         val envBothNot =
           () =>
             PartialEvalEnv(Const.NotProvided ><: (Const.NotProvided ><: Args.eye), failFast = false, onlyPure = false)
-        val partial = s1.partialEval(envBothNot)
-        partial.explain.text_hierarchy().shouldBe(s1Tree)
+        val partial = zipped.partialEval(envBothNot)
+        partial.explain.text_hierarchy().shouldBe(zippedTree)
         assert(partial.apply(arg) == expected)
       }
 
@@ -278,16 +276,14 @@ class FnSpec extends BaseSpec {
         // left NotProvided, right provided
         val envRightProvided = () =>
           PartialEvalEnv(Const.NotProvided ><: (Const.Provided(2L) ><: Args.eye), failFast = false, onlyPure = false)
-        val partial = s1.partialEval(envRightProvided)
+        val partial = zipped.partialEval(envRightProvided)
         partial.explain
           .text_hierarchy()
           .shouldBe(
             """
-            |+ Mapped
-            |!-+ Zipped
-            |: !-- Blackbox(fn1 <at Circuits.scala:12>)
-            |: !-- Provided(List(2.0, 2.1, 2.2))
-            |!-- Blackbox(s1 <at ZippedLike.scala:9>)
+            |+ Zipped
+            |!-- Blackbox(fn1 <at Circuits.scala:12>)
+            |!-- Provided(List(2.0, 2.1, 2.2))
             |""".stripMargin
           )
         assert(partial.apply(arg) == expected)
@@ -298,16 +294,14 @@ class FnSpec extends BaseSpec {
         val envLeftProvided =
           () =>
             PartialEvalEnv(Const.Provided(1) ><: (Const.NotProvided ><: Args.eye), failFast = false, onlyPure = false)
-        val partial = s1.partialEval(envLeftProvided)
+        val partial = zipped.partialEval(envLeftProvided)
         partial.explain
           .text_hierarchy()
           .shouldBe(
             """
-            |+ Mapped
-            |!-+ Zipped
-            |: !-- Provided(List(1, 2, 3))
-            |: !-- Blackbox(fn2 <at Circuits.scala:16>)
-            |!-- Blackbox(s1 <at ZippedLike.scala:9>)
+            |+ Zipped
+            |!-- Provided(List(1, 2, 3))
+            |!-- Blackbox(fn2 <at Circuits.scala:16>)
             |""".stripMargin
           )
         assert(partial.apply(arg) == expected)
@@ -316,9 +310,10 @@ class FnSpec extends BaseSpec {
       it("both inputs provided") {
         val envBothProvided = () =>
           PartialEvalEnv(Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye), failFast = false, onlyPure = false)
-        val partial = s1.partialEval(envBothProvided)
-        partial.explain.text_hierarchy().shouldBe("- Provided(List(3.0, 4.1, 5.2))")
+        val partial = zipped.partialEval(envBothProvided)
+        partial.explain.text_hierarchy().shouldBe(s"- Provided(${expected.toString})")
         assert(partial.apply(arg) == expected)
+        assert(partial.asConstantOrNone.get.value == expected)
       }
     }
   }

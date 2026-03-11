@@ -4,7 +4,7 @@ object ZippedLike {
 
   import Circuits.*
 
-  private val zipped = fn1.trace <*> fn2.trace
+  val zipped = fn1.trace <*> fn2.trace
 
   val s1 = zipped.map {
     case (o1, o2) =>

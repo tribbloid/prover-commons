@@ -33,8 +33,8 @@ class HasArgsSpec extends BaseSpec {
         val (head2, tail2) = Args.deCons(tail)
 
         assert(viaOf == original)
-        assert(head.compute == 1)
-        assert(head2.compute == "a")
+        assert(head.value == 1)
+        assert(head2.value == "a")
         assert(tail2 == T0)
       }
 
@@ -47,8 +47,8 @@ class HasArgsSpec extends BaseSpec {
         val (head, tail) = Args.deCons(viaOfNarrow)
         val (head2, _) = Args.deCons(tail)
 
-        assert(head.compute == 1)
-        assert(head2.compute == "a")
+        assert(head.value == 1)
+        assert(head2.value == "a")
       }
     }
 
@@ -71,7 +71,7 @@ class HasArgsSpec extends BaseSpec {
         val _: Args = result
 
         val (head, tail) = Args.deCons(result)
-        assert(head.compute == 1)
+        assert(head.value == 1)
         assert(tail == T0)
       }
 
@@ -82,7 +82,7 @@ class HasArgsSpec extends BaseSpec {
           Const.Provided(true)
         )
 
-        assert(result.runtimeSeq.map(_.compute) == Seq(1, "a", true))
+        assert(result.runtimeSeq.map(_.value) == Seq(1, "a", true))
         assert(result.valueSeq == Seq(1, "a", true))
       }
 
@@ -94,7 +94,7 @@ class HasArgsSpec extends BaseSpec {
 
         assert(head eq Const.NotProvided)
         assert(tail == T0)
-        assertThrows[NoSuchElementException](head.compute)
+        assertThrows[NoSuchElementException](head.value)
       }
     }
 

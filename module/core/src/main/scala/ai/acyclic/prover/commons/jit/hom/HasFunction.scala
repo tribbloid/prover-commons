@@ -42,6 +42,11 @@ trait HasFunction {
 
     type Out <: O
 
+    lazy val asConstantFnOrNone: Option[ConstantFn[O]] = {
+
+      ???
+    }
+
 //    override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = this
 
     // TODO: this should be a special case of specialise/partial-eval
@@ -121,7 +126,7 @@ trait HasFunction {
           case p: (Const.Provided[_] @unchecked) =>
             val envRight = () => {
               val e = env()
-              PartialEvalEnv(Const.Provided(p.compute) ><: Args.eye, e.failFast, e.onlyPure)
+              PartialEvalEnv(Const.Provided(p.value) ><: Args.eye, e.failFast, e.onlyPure)
             }
             val simplifiedRight = right.partialEval(envRight)
             simplifiedRight match {
@@ -158,7 +163,7 @@ trait HasFunction {
       override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = {
         base.partialEval(env) match {
           case p: (Const.Provided[_] @unchecked) =>
-            val dynamicFn = coerce(p.compute)
+            val dynamicFn = coerce(p.value)
             dynamicFn.partialEval(env)
           case nonConst =>
             copy(base = nonConst)
@@ -207,7 +212,7 @@ trait HasFunction {
 
         (simplifiedLeft, simplifiedRight) match {
           case (l: (Const.Provided[_] @unchecked), r: (Const.Provided[_] @unchecked)) =>
-            Const.Provided((l.compute, r.compute))
+            Const.Provided((l.value, r.value))
           case _ =>
             copy(
               left = simplifiedLeft,
@@ -257,7 +262,7 @@ trait HasFunction {
 
         (simplifiedLeft, simplifiedRight) match {
           case (l: (Const.Provided[_] @unchecked), r: (Const.Provided[_] @unchecked)) =>
-            Const.Provided((l.compute, r.compute))
+            Const.Provided((l.value, r.value))
           case _ =>
             copy(
               left = simplifiedLeft,
@@ -296,7 +301,7 @@ trait HasFunction {
 
       override type Rules <: Rule.Linear
 
-      def apply(arg: I ><: T0): I = arg.head.compute
+      def apply(arg: I ><: T0): I = arg.head.value
     }
 
     case class Conditional[I](
@@ -304,7 +309,7 @@ trait HasFunction {
     ) extends Impl1[I, I] {
 
       override def apply(o: I ><: T0): I = {
-        val v = o.head.compute
+        val v = o.head.value
         val passes: Boolean = filter(o) // filter returns Boolean directly
         if (passes) v
         else throw new MatchError(s"condition ${_definedAt} is not applicable on $v")
@@ -357,7 +362,7 @@ trait HasFunction {
 
       override def apply(arg: I ><: T0): R = {
 
-        fn(arg.head.compute)
+        fn(arg.head.value)
       }
     }
 
@@ -544,7 +549,7 @@ trait HasFunction {
 
   sealed trait ConstantFn[+O] extends Fn[Args, O] with Fn.CachedPure {
 
-    val compute: O // should mostly be a lazy val
+    val value: O // should mostly be a lazy val
   }
 
   type Thunk[+O] = Fn0[O]
@@ -562,24 +567,24 @@ trait HasFunction {
     sealed trait Impl[O] extends Fn.Impl[Args, O] with ConstantFn[O] {
       override lazy val simplify: Const[O] = this
 
-      override def apply(arg: Args): O = compute
+      override def apply(arg: Args): O = value
 
       override def partialEval(env: () => PartialEvalEnv[Args]) = this // already the fastest
     }
 
-    final case class Provided[O](compute: O) extends Impl[O] {
-      canEqualProjections += CanEqual.Native.on(compute)
+    final case class Provided[O](value: O) extends Impl[O] {
+      canEqualProjections += CanEqual.Native.on(value)
     }
 
     final case class Lazy[O](gen: Thunk[O]) extends Impl[O] {
 
       // equivalent to CachedLazy[Unit, O], but much faster
-      @transient lazy val compute: O = gen(Args.eye)
+      @transient lazy val value: O = gen(Args.eye)
     }
 
     case object NotProvided extends Impl[Nothing] {
 
-      @transient lazy val compute: Nothing = throw new NoSuchElementException("missing, not provided")
+      @transient lazy val value: Nothing = throw new NoSuchElementException("missing, not provided")
     }
   }
 

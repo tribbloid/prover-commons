@@ -107,11 +107,11 @@ trait HasArgs {
       type ComputeAll = H *: tail.ComputeAll
       override lazy val computeAll: ComputeAll = computeHead *: tail.computeAll
 
-      def computeHead: H = head.compute
+      def computeHead: H = head.value
 
       override lazy val runtimeSeq = head +: tail.runtimeSeq
 
-      lazy val valueSeq: Seq[Any] = runtimeSeq.map(_.compute)
+      lazy val valueSeq: Seq[Any] = runtimeSeq.map(_.value)
 
       override type Peer = H ><: T
       override def peer: Peer = this
