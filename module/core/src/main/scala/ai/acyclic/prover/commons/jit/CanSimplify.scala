@@ -11,8 +11,11 @@ import ai.acyclic.prover.commons.jit.eval.PartialEvalEnv
   *     practical if FP is generic
   */
 trait CanSimplify[+FP <: CanSimplify[FP]] extends IntermediateRepresentation {
+  import CanSimplify.*
 
   def apply(arg: In): OutK[arg.type] // TODO: rename to eval
+
+  final lazy val isPure: Boolean = this.isInstanceOf[Pure]
 
   /**
     * given complete or incmplete input, it should return a simplified/partially evaluated version of itself with best
@@ -24,6 +27,10 @@ trait CanSimplify[+FP <: CanSimplify[FP]] extends IntermediateRepresentation {
 }
 
 object CanSimplify {
+
+  trait Pure {
+    self: CanSimplify[?] =>
+  }
 
   trait Elementary[+FP <: CanSimplify[FP]] extends CanSimplify[FP] {
 

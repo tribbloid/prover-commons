@@ -77,7 +77,7 @@ trait HasFunction {
       override def partialEval(env: () => PartialEvalEnv[In]): Fn[I, O] = {
         val e = env()
         if (!e.inputs.runtimeSeq.contains(Const.NotProvided)) {
-          if (!e.onlyPure || self.isInstanceOf[Pure]) {
+          if (!e.onlyPure || self.isInstanceOf[CanSimplify.Pure]) {
             Const.Provided(self.apply(e.inputs))
           } else {
             self
@@ -422,15 +422,13 @@ trait HasFunction {
       Const.Lazy(ThunkImpl())
     }
 
-    trait Pure {}
-
     object Pure {
 
       case class Is[I <: Args, R](delegate: Fn[I, R])(
           implicit
           inputSchema0: I
       ) extends Impl[I, R]
-          with Pure {
+          with CanSimplify.Pure {
 
         override lazy val simplify: Fn[I, R] = {
           copy(delegate = delegate.simplify)(inputSchema0)
@@ -444,7 +442,9 @@ trait HasFunction {
       }
     }
 
-    trait CachedPure extends Pure
+    trait CachedPure extends CanSimplify.Pure {
+      self: Fn[?, ?] =>
+    }
 
     // TODO: make a dependent class, also in Thunk
     final case class CachedImpl[I <: Args, R](backbone: Fn[I, R])(
