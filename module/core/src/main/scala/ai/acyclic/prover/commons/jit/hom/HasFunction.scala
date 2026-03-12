@@ -62,10 +62,7 @@ trait HasFunction {
     val Tracing: ai.acyclic.prover.commons.jit.cps.Continuation.type =
       ai.acyclic.prover.commons.jit.cps.Continuation
 
-    abstract class Impl[I <: Args, O](
-        implicit
-        override val _definedAt: SrcDefinition
-    ) extends Fn[I, O] { // most specific
+    abstract class Impl[I <: Args, O] extends Fn[I, O] { // most specific
 
       final type In = I
       type Out = O
