@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.jit.Hom.{Fn, Fn1}
 import ai.acyclic.prover.commons.jit.eval.Args.{><:, T0}
 import java.util.concurrent.atomic.AtomicInteger
 
-object CachedFixture {
+object Cached {
 
   def createCounterFn(): (AtomicInteger, Fn1[Int, String]) = {
     val counter = new AtomicInteger(0)

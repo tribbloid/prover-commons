@@ -3,12 +3,36 @@ package ai.acyclic.prover.commons.jit.hom
 import ai.acyclic.prover.commons.jit.fixture.*
 import ai.acyclic.prover.commons.jit.Hom.{Const, Fn, Fn1, Fn2}
 import ai.acyclic.prover.commons.testlib.BaseSpec
-import ai.acyclic.prover.commons.jit.eval.Args
+import ai.acyclic.prover.commons.jit.eval.{Args, PartialEvalEnv}
 import Args.{><:, T0}
 
 object FnSpec {}
 
 class FnSpec extends BaseSpec {
+
+  private def fullyProvidedEnv[I <: Args](arg: I): () => PartialEvalEnv[I] = { () =>
+    PartialEvalEnv(arg, failFast = false, onlyPure = false)
+  }
+
+  private def assertDirectEvalAndPartialEval[I <: Args, O](
+      fn: Fn[I, O],
+      arg: I,
+      expected: O,
+      expectConstant: Boolean
+  ): Unit = {
+
+    assert(fn.apply(arg) == expected)
+
+    val partial = fn.partialEval(fullyProvidedEnv(arg))
+    assert(partial.apply(arg) == expected)
+
+    val partialConst = partial.asConstantOrNone
+    if (expectConstant) {
+      assert(partialConst.get.value == expected)
+    } else {
+      assert(partialConst.isEmpty)
+    }
+  }
 
   import Circuits.*
 
@@ -76,6 +100,20 @@ class FnSpec extends BaseSpec {
         .shouldBe(
           s"- ${fn0.toString}"
         )
+    }
+
+    it("partialEval") {
+      Circuits.fn0 match {
+        case _: Fn.Blackbox[?, ?] => succeed
+        case other                => fail(s"Expected Fn.Blackbox but got ${other.getClass}")
+      }
+
+      assertDirectEvalAndPartialEval(
+        Circuits.fn0,
+        Const.Provided(1) ><: Args.eye,
+        2,
+        expectConstant = true
+      )
     }
   }
 
@@ -158,6 +196,48 @@ class FnSpec extends BaseSpec {
       }
     }
 
+  }
+
+  describe("Mapped") {
+
+    it("partialEval") {
+      ChainSelf.s0 match {
+        case _: Fn.Mapped[?, ?, ?] => succeed
+        case other                 => fail(s"Expected Fn.Mapped but got ${other.getClass}")
+      }
+
+      assertDirectEvalAndPartialEval(
+        ChainSelf.s0,
+        Const.Provided(1) ><: Args.eye,
+        3,
+        expectConstant = true
+      )
+    }
+  }
+
+  describe("Identity") {
+
+    it("embedded fixture node can be fully partially evaluated") {
+      val identity = ChainSelf.s2.simplify match {
+        case outer: (Fn.Mapped[Int ><: T0, Int, Int] @unchecked) =>
+          outer.left match {
+            case inner: (Fn.Mapped[Int ><: T0, Int, Int] @unchecked) =>
+              inner.left match {
+                case id: (Fn.Identity[Int] @unchecked) => id
+                case other                             => fail(s"Expected Fn.Identity but got ${other.getClass}")
+              }
+            case other => fail(s"Expected nested Fn.Mapped but got ${other.getClass}")
+          }
+        case other => fail(s"Expected Fn.Mapped but got ${other.getClass}")
+      }
+
+      assertDirectEvalAndPartialEval(
+        identity,
+        Const.Provided(7) ><: Args.eye,
+        7,
+        expectConstant = true
+      )
+    }
   }
 
   describe("Zipped") {
@@ -315,6 +395,22 @@ class FnSpec extends BaseSpec {
         assert(partial.apply(arg) == expected)
         assert(partial.asConstantOrNone.get.value == expected)
       }
+
+      it("partialEval") {
+        val zipped = ZippedLike.zipped.unbox
+
+        zipped match {
+          case _: Fn.Zipped[?, ?, ?, ?, ?] => succeed
+          case other                       => fail(s"Expected Fn.Zipped but got ${other.getClass}")
+        }
+
+        assertDirectEvalAndPartialEval(
+          zipped,
+          Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye),
+          (Seq(1L, 2L, 3L), Seq(2.0, 2.1, 2.2)),
+          expectConstant = true
+        )
+      }
     }
   }
 
@@ -421,10 +517,25 @@ class FnSpec extends BaseSpec {
     }
   }
 
+  describe("Const") {
+
+    it("embedded fixture node keeps the same value under partial evaluation") {
+
+      val provided = ConstLike.s1
+
+      val direct = provided.apply(Args.eye)
+      val partial = provided.partialEval(fullyProvidedEnv(Args.eye))
+
+      assert(direct == Circuits.fn0)
+      assert(partial.apply(Args.eye) == direct)
+      assert(partial.asConstantOrNone.get.value == direct)
+    }
+  }
+
   describe("Cached") {
 
     it("evaluates only once for identical inputs") {
-      val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.CachedFixture.createCachedFn()
+      val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.Cached.createCachedFn()
 
       val arg1 = Const.Provided(42) ><: Args.eye
       val arg2 = Const.Provided(42) ><: Args.eye
@@ -444,7 +555,7 @@ class FnSpec extends BaseSpec {
     }
 
     it("getExisting returns only evaluated results (like CachedOnly)") {
-      val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.CachedFixture.createCachedFn()
+      val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.Cached.createCachedFn()
 
       val arg1 = Const.Provided(42) ><: Args.eye
       val argOther = Const.Provided(99) ><: Args.eye
@@ -465,7 +576,7 @@ class FnSpec extends BaseSpec {
     }
 
     it("shares the same cache when invoked through Function1View") {
-      val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.CachedFixture.createCachedFn()
+      val (counter, cachedFn) = ai.acyclic.prover.commons.jit.fixture.Cached.createCachedFn()
 
       val naturalView: Int => String = cachedFn
       val arg = Const.Provided(42) ><: Args.eye
