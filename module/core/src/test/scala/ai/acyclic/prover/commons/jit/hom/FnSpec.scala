@@ -17,8 +17,7 @@ class FnSpec extends BaseSpec {
   private def assertDirectEvalAndPartialEval[I <: Args, O](
       fn: Fn[I, O],
       arg: I,
-      expected: O,
-      expectConstant: Boolean
+      expected: O
   ): Unit = {
 
     assert(fn.apply(arg) == expected)
@@ -27,11 +26,8 @@ class FnSpec extends BaseSpec {
     assert(partial.apply(arg) == expected)
 
     val partialConst = partial.asConstantOrNone
-    if (expectConstant) {
-      assert(partialConst.get.value == expected)
-    } else {
-      assert(partialConst.isEmpty)
-    }
+    assert(partialConst.get.value == expected)
+
   }
 
   import Circuits.*
@@ -111,8 +107,7 @@ class FnSpec extends BaseSpec {
       assertDirectEvalAndPartialEval(
         Circuits.fn0,
         Const.Provided(1) ><: Args.eye,
-        2,
-        expectConstant = true
+        2
       )
     }
   }
@@ -209,8 +204,7 @@ class FnSpec extends BaseSpec {
       assertDirectEvalAndPartialEval(
         ChainSelf.s0,
         Const.Provided(1) ><: Args.eye,
-        3,
-        expectConstant = true
+        3
       )
     }
   }
@@ -234,8 +228,7 @@ class FnSpec extends BaseSpec {
       assertDirectEvalAndPartialEval(
         identity,
         Const.Provided(7) ><: Args.eye,
-        7,
-        expectConstant = true
+        7
       )
     }
   }
@@ -392,8 +385,7 @@ class FnSpec extends BaseSpec {
           PartialEvalEnv(Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye), failFast = false, onlyPure = false)
         val partial = zipped.partialEval(envBothProvided)
         partial.explain.text_hierarchy().shouldBe(s"- Provided(${expected.toString})")
-        assert(partial.apply(arg) == expected)
-        assert(partial.asConstantOrNone.get.value == expected)
+        assertDirectEvalAndPartialEval(zipped, arg, expected)
       }
 
       it("partialEval") {
@@ -407,8 +399,7 @@ class FnSpec extends BaseSpec {
         assertDirectEvalAndPartialEval(
           zipped,
           Const.Provided(1) ><: (Const.Provided(2L) ><: Args.eye),
-          (Seq(1L, 2L, 3L), Seq(2.0, 2.1, 2.2)),
-          expectConstant = true
+          (Seq(1L, 2L, 3L), Seq(2.0, 2.1, 2.2))
         )
       }
     }
@@ -522,13 +513,7 @@ class FnSpec extends BaseSpec {
     it("embedded fixture node keeps the same value under partial evaluation") {
 
       val provided = ConstLike.s1
-
-      val direct = provided.apply(Args.eye)
-      val partial = provided.partialEval(fullyProvidedEnv(Args.eye))
-
-      assert(direct == Circuits.fn0)
-      assert(partial.apply(Args.eye) == direct)
-      assert(partial.asConstantOrNone.get.value == direct)
+      assertDirectEvalAndPartialEval(provided, Args.eye, 1)
     }
   }
 
