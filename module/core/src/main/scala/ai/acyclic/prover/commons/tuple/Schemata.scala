@@ -75,15 +75,15 @@ object Schemata {
     trait Backbone extends Schemata.Monoidal {
 
       override type VBound = Monoidal.this.VBound
+      override type Element[V <: VBound] = Monoidal.this.Element[V]
     }
 
     object SchemaMixin extends Backbone {
 
-      override type Element[V <: VBound] = Unit
-
       trait Prod extends Serializable {
 
         type Header <: TupleX.Prod
+        type Data <: TupleX.Prod
 
         type _Union <: Union[?]
         type _Intersection <: Any
@@ -92,6 +92,7 @@ object Schemata {
       trait Eye extends Prod {
 
         override type Header = TupleX.Eye
+        override type Data = TupleX.Eye
 
         override type _Union = Union[Nothing]
         type _Intersection = Any
@@ -106,6 +107,7 @@ object Schemata {
         val tail: TAIL
 
         override type Header = L *: tail.Header
+        override type Data = Element[L] *: tail.Data
 
         type _Union = Union[L] & tail._Union // equivalent to Contra[H | TU] where tail.Union = Contra[TU]
         type _Intersection = L & tail._Intersection

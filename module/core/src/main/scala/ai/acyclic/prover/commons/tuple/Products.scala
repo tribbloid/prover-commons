@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.tuple
 
-import ai.acyclic.prover.commons.compat.{*:, TupleX}
+import ai.acyclic.prover.commons.compat.TupleX
 import ai.acyclic.prover.commons.jit.Hom.Poly
 
 import ai.acyclic.prover.commons.typesetting.TextBlock
@@ -96,11 +96,8 @@ object Products {
 
     protected object ElementsMixin extends Backbone {
 
-      override type Element[V <: VBound] = Monoidal.this.Element[V]
-
       trait Prod extends SchemaMixin.Prod with Serializable {
 
-        type Data <: TupleX.Prod
         val data: Data
         final lazy val dataOps = TupleX._ops(data)
 
@@ -109,7 +106,6 @@ object Products {
 
       trait Eye extends Prod with SchemaMixin.Eye {
 
-        type Data = HNil
         override val data: HNil.type = HNil
 
         override def runtimeSeq: Vector[Element[? <: VBound]] = Vector.empty
@@ -125,7 +121,6 @@ object Products {
 
         def head: Element[L]
 
-        override type Data = Element[L] *: tail.Data
         final override lazy val data: Data = head *: TupleX._ops(tail.data)
 
         override lazy val toString: String = {

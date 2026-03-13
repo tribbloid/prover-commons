@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.jit.fixture
 
-import ai.acyclic.prover.commons.jit.Hom.{Const, Fn}
+import ai.acyclic.prover.commons.jit.Hom.Const
 
 object ConstLike {
 
