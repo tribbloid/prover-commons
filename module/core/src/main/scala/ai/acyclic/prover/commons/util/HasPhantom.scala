@@ -1,24 +1,31 @@
 package ai.acyclic.prover.commons.util
 
+import ai.acyclic.prover.commons.TypeTag
+
 import scala.reflect.ClassTag
 
 trait HasPhantom extends HasStatic {
 
   /**
-    * static object that should never be instantiated
+    * static, compile-time-only object with extremely lightweight constructor, it may be constructed at runtime for its
+    * terms/methods, but this is not recommended (until Scala 3, in which construction can be avoided 100% by opaque
+    * type or polymorphic extension view)
     *
     * used to circumvent lack of type projection in Scala 3, for example:
     *
     *   - Before: `type T = S#Dep`
     *   - After: `val s: S = Phantom(); type T = s.Dep`
     *
-    * this can make some generic type declaration shorter: e.g. `T |- R` and `T |-\- R` can be grouped into *
-    * `ForAll[T] { |-[R]; |-\-[R] }`, where `ForAll extends Case` * instances:
+    * this can be used to aggregate shared type arguments of many generics to make their declarations shorter: e.g.
+    * `T |- R` and `T |-\- R` can be grouped into * `ForAll[T] { |-[R]; |-\-[R] }`, where `ForAll extends Case`.
+    * Assuming lambdaP2-lambdaC conjecture, it is functionally identical to LEAN4 section or C# static generic class.
     *
-    *   - should only contain dependent types, no method or property is allowed
-    *   - method or property can exist in extension view
+    * instances:
+    *   - should only have 0 or 1 constructor, where the only arg is the tightest TypeTag of itself
+    *   - can contain dependent type members safely
+    *   - can contain properties or methods directly (not recommended) or through extension view
     */
-  abstract class Phantom extends Static
+  abstract class Phantom(maybeTypeTag: Option[TypeTag[?]] = None) extends Static {}
 
   object Phantom extends StaticGroup[Phantom] {
 
