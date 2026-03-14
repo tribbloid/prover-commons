@@ -109,7 +109,6 @@ object Products {
         override val data: HNil.type = HNil
 
         override def runtimeSeq: Vector[Element[? <: VBound]] = Vector.empty
-        override lazy val toString: String = EMPTY
       }
       object Eye extends Eye
 
@@ -134,7 +133,6 @@ object Products {
         }
       }
 
-      final val EMPTY = "∅"
     }
 
     /**

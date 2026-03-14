@@ -80,6 +80,7 @@ object Schemata {
 
     object SchemaMixin extends Backbone {
 
+      final val EMPTY = "∅"
       trait Prod extends Serializable {
 
         type Header <: TupleX.Prod
@@ -96,6 +97,8 @@ object Schemata {
 
         override type _Union = Union[Nothing]
         type _Intersection = Any
+
+        override lazy val toString: String = EMPTY
       }
       object Eye extends Eye
 
