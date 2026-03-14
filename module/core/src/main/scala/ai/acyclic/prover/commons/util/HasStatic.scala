@@ -4,7 +4,7 @@ import ai.acyclic.prover.commons.TypeTag
 
 trait HasStatic {
 
-  sealed trait Static extends Serializable
+  trait Static extends Serializable
 
   /**
     * similar to Singleton, but all [[Case]] that has the same final type signature (including type arguments) are
@@ -19,9 +19,7 @@ trait HasStatic {
     *   - instances of [[StaticGroup]] should declare implicit cases which will be picked up by [[get_noCache]]
     *   - [[Case]] creation should always be interned by type argument
     */
-  trait StaticGroup extends Serializable {
-
-    trait Case extends Static
+  trait StaticGroup[Case <: Static] extends Serializable {
 
     @transient final lazy val cache: Caching.Strong._Cache[TypeTag[?], Case] = Caching.Strong.build()
 

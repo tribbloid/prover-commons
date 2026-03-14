@@ -18,11 +18,11 @@ trait HasPhantom extends HasStatic {
     *   - should only contain dependent types, no method or property is allowed
     *   - method or property can exist in extension view
     */
-  type Phantom = Phantom.Case
+  abstract class Phantom extends Static
 
-  object Phantom extends StaticGroup {
+  object Phantom extends StaticGroup[Phantom] {
 
-    implicit def summon[T <: Case]: T = {
+    implicit def summon[T <: Phantom]: T = {
       throw new UnsupportedOperationException(
         "Phantom term should only be declare as lazy val for its dependent types, it should never be initialized"
       )

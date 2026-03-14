@@ -1,6 +1,6 @@
 package ai.acyclic.prover.commons.graph.topology
 
-import ai.acyclic.prover.commons.util.StaticGroup
+import ai.acyclic.prover.commons.util.{Static, StaticGroup}
 
 //trait HasAxiomUniverse {
 //
@@ -27,11 +27,9 @@ trait HasAxiom {
   /**
     * a container of graph constraints
     */
-  type Axiom = Axiom.Instance
+  trait Axiom extends Static {}
 
-  object Axiom extends StaticGroup {
-
-    trait Instance extends Case {}
+  object Axiom extends StaticGroup[Axiom] {
 
     type Top = Topology.AnyGraph._Axiom
 
