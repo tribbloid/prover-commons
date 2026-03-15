@@ -27,7 +27,7 @@ trait HasStatic {
 
     trait Case[+O <: T] {
 
-      def out: O
+      val out: O
     }
 
     object get {

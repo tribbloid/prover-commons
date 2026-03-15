@@ -49,26 +49,26 @@ class HasPhantomSpec extends BaseSpec {
     it("instantiates a concrete phantom with a nullary constructor") {
       val phantom = App.Phantom.summonConcrete[ConcretePhantom]
 
-      assert(phantom.value == 42)
+      assert(phantom.out.value == 42)
 
-      val out: phantom.Out = "ok"
+      val out: phantom.out.Out = "ok"
       assert(out == "ok")
     }
 
     it("can instantiate a phantom through a private nullary constructor") {
       val phantom = App.Phantom.summonConcrete[PrivateCtorPhantom]
 
-      assert(phantom.value == 7)
+      assert(phantom.out.value == 7)
     }
 
     it("instantiates a phantom object and preserves its runtime members") {
       val phantom =
         App.Phantom.summonConcrete[ConcreteObjectPhantom.type]
 
-      val _: ConcreteObjectPhantom.type = phantom
-      val out: phantom.Out = "ok"
+      val _: ConcreteObjectPhantom.type = phantom.out
+      val out: phantom.out.Out = "ok"
 
-      assert(phantom.value == 99)
+      assert(phantom.out.value == 99)
       assert(out == "ok")
     }
 
