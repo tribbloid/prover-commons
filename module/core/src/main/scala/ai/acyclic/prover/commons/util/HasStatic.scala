@@ -2,6 +2,8 @@ package ai.acyclic.prover.commons.util
 
 import ai.acyclic.prover.commons.TypeTag
 
+import scala.reflect.ClassTag
+
 trait HasStatic {
 
   trait Static extends Serializable
@@ -19,20 +21,25 @@ trait HasStatic {
     *   - instances of [[StaticGroup]] should declare implicit cases which will be picked up by [[get_noCache]]
     *   - [[Case]] creation should always be interned by type argument
     */
-  trait StaticGroup[Case <: Static] extends Serializable {
+  trait StaticGroup[T <: Static] extends Serializable {
 
-    @transient final lazy val cache: Caching.Strong._Cache[TypeTag[?], Case] = Caching.Strong.build()
+    @transient final lazy val cache: Caching.Strong._Cache[Class[?], T] = Caching.Strong.build()
+
+    trait Case[+O <: T] {
+
+      def out: O
+    }
 
     object get {
 
-      def apply[T <: Case](
+      def apply[O <: T](
           implicit
-          tag: TypeTag[T],
-          ev: T
-      ): T = {
+          tag: ClassTag[O],
+          ev: Case[O]
+      ): O = {
 
-        val result = cache.getOrElseUpdateOnce(tag)(ev)
-        result.asInstanceOf[T]
+        val result = cache.getOrElseUpdateOnce(tag.runtimeClass)(ev.out)
+        result.asInstanceOf[O]
       }
     }
 
