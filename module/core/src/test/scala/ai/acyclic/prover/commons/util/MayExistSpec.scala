@@ -3,8 +3,6 @@ package ai.acyclic.prover.commons.util
 import ai.acyclic.prover.commons.testlib.BaseSpec
 import ai.acyclic.prover.commons.verification.Verify
 
-final class Meter(val value: Int) extends AnyVal
-
 class MayExistSpec extends BaseSpec {
 
   trait OpenTrait
@@ -29,7 +27,7 @@ class MayExistSpec extends BaseSpec {
       assert(implicitly[MayExist[OpenClass]] != null)
       assert(implicitly[MayExist[String]] != null)
       assert(implicitly[MayExist[Int]] != null)
-      assert(implicitly[MayExist[Meter]] != null)
+      assert(implicitly[MayExist[MayExistSpec.Meter]] != null)
       assert(implicitly[MayExist[Array[String]]] != null)
       assert(implicitly[MayExist[Singleton.type]] != null)
     }
@@ -40,8 +38,8 @@ class MayExistSpec extends BaseSpec {
     }
 
     it("should materialize when a final type already satisfies the refinement") {
-      assert(implicitly[MayExist[String with CharSequence]] != null)
-      assert(implicitly[MayExist[Array[Int] with Cloneable]] != null)
+      assert(implicitly[MayExist[String & CharSequence]] != null)
+      assert(implicitly[MayExist[Array[Int] & Cloneable]] != null)
     }
 
     it("should fail for Nothing") {
@@ -58,7 +56,7 @@ class MayExistSpec extends BaseSpec {
         "implicitly[MayExist[String with Product]]"
       )
       Verify.typeError(
-        "implicitly[MayExist[Meter { type Out = Int }]]"
+        "implicitly[MayExist[MayExistSpec.Meter { type Out = Int }]]"
       )
     }
 
@@ -68,4 +66,8 @@ class MayExistSpec extends BaseSpec {
       )
     }
   }
+}
+
+object MayExistSpec {
+  final class Meter(val value: Int) extends AnyVal
 }
