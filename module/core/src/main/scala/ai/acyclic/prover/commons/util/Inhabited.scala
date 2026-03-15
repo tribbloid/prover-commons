@@ -3,7 +3,7 @@ package ai.acyclic.prover.commons.util
 import scala.collection.immutable
 
 // TODO: move to common
-class Inhabited[+A](val default: A)
+class Inhabited[+A](val default: A) extends MayExist[A]
 
 object Inhabited extends Inhabited_Imp0 {
   implicit object DefaultDouble extends Inhabited[Double](0.0)
