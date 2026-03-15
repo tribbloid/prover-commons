@@ -32,6 +32,15 @@ object HasPhantomSpec {
     type Out = Int
   }
 
+  class OneArgCtorPhantom(
+      implicit
+      ttg: ai.acyclic.prover.commons.WeakTypeTag[?]
+  ) extends App.Phantom(ttg) {
+    type Out = String
+    val value: Int = 100
+    val savedTtg = ttg
+  }
+
   object ConcreteObjectPhantom extends App.Phantom {
     type Out = String
 
@@ -97,6 +106,19 @@ class HasPhantomSpec extends BaseSpec {
       }
 
       assert(err.getMessage.contains(classOf[AbstractPhantom].getName))
+    }
+  }
+
+  describe("HasPhantom.Phantom.summonConcrete with 1-arg constructor") {
+
+    it("instantiates a concrete phantom with a 1-arg WeakTypeTag constructor") {
+      val phantom = App.Phantom.summonConcrete[OneArgCtorPhantom]
+
+      assert(phantom.out.value == 100)
+      assert(phantom.out.savedTtg != null)
+
+      val out: phantom.out.Out = "ok"
+      assert(out == "ok")
     }
   }
 }

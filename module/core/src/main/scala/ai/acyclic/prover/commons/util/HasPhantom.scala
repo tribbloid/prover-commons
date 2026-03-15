@@ -62,7 +62,48 @@ trait HasPhantom extends HasStatic {
       *   - cast it into [[T]]
       */
     def summonConcrete[T <: Phantom: WeakTypeTag]: Case[T] = {
-      ???
+      val mirror = scala.reflect.runtime.currentMirror
+      val tpg = implicitly[WeakTypeTag[T]]
+      val tpe = tpg.tpe
+      val classSymbol = tpe.typeSymbol.asClass
+
+      if (classSymbol.isAbstract && !classSymbol.isModuleClass) {
+        val className = mirror.runtimeClass(classSymbol).getName
+        throw new IllegalStateException(s"Cannot instantiate abstract Phantom class $className")
+      }
+
+      val instance = if (classSymbol.isModuleClass) {
+        mirror.reflectModule(classSymbol.module.asModule).instance
+      } else {
+        val classMirror = mirror.reflectClass(classSymbol)
+        val ctors = tpe.decl(scala.reflect.runtime.universe.termNames.CONSTRUCTOR).asTerm.alternatives
+        
+        val ctor1 = ctors.find(_.asMethod.paramLists.flatten.size == 1)
+        val ctor0 = ctors.find(_.asMethod.paramLists.flatten.size == 0)
+
+        ctor1.flatMap { c =>
+          try {
+            Some(classMirror.reflectConstructor(c.asMethod)(tpg))
+          } catch {
+            case _: IllegalArgumentException => None
+          }
+        }.orElse {
+          ctor0.flatMap { c =>
+            try {
+              Some(classMirror.reflectConstructor(c.asMethod)())
+            } catch {
+              case _: IllegalArgumentException => None
+            }
+          }
+        }.getOrElse {
+          val className = mirror.runtimeClass(classSymbol).getName
+          throw new IllegalArgumentException(s"Cannot find a 1-arg or nullary constructor for $className")
+        }
+      }
+
+      new Case[T] {
+        val out: T = instance.asInstanceOf[T]
+      }
     }
   }
 
