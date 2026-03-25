@@ -6,6 +6,15 @@ import scala.language.implicitConversions
 trait HasCoercion extends HasConversion with HasCoercion.MidPrioritySteps with HasCoercion.Imp1 {
   import HasCoercion.=!=
 
+  /**
+    * similar to [[Conversion]], but can happen transitively (compiler automatically chain multiple of them)
+    */
+  trait Coercion[-T, +R] extends Conversion[T, R] {}
+
+  infix type Coe[-T, +R] = Coercion[T, R]
+  infix type <%<[-T, +R] = Coercion[T, R] // resembles <:<
+  infix type >%>[+R, -T] = T <%< R // resembles >:>
+
   trait Step[-T, +R] {
     def normalise(v: T): R
   }
@@ -20,20 +29,12 @@ trait HasCoercion extends HasConversion with HasCoercion.MidPrioritySteps with H
   implicit def subtypeCoercion[T, R](
       implicit
       ev: T <:< R
-  ): Coercion[T, R] = new Coercion[T, R] {
-    override def normalise(v: T): R = ev(v)
-  }
+  ): Coercion[T, R] = (v: T) => ev(v)
 
   trait IsPartiallyCoerced[T]
   object IsPartiallyCoerced {
     implicit def witness[T <: Coerced]: IsPartiallyCoerced[T] = new IsPartiallyCoerced[T] {}
   }
-
-  trait Coercion[-T, +R] extends Conversion[T, R] {}
-
-  infix type Coe[-T, +R] = Coercion[T, R]
-  infix type <%<[-T, +R] = Coercion[T, R] // resembles <:<
-  infix type >%>[+R, -T] = T <%< R // resembles >:>
 
   trait Coerced {}
 

@@ -1,7 +1,5 @@
 package ai.acyclic.prover.commons.util
 
-import ai.acyclic.prover.commons.TypeTag
-
 import scala.reflect.ClassTag
 
 trait HasStatic {
